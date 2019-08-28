@@ -77,7 +77,6 @@ class RAdam(Optimizer):
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(1 - beta1, grad)
                 exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
-                denom = exp_avg_sq.sqrt().add_(group['eps'])
 
                 sma_inf = group.get('sma_inf')
                 # Compute max length of SMA on first step
@@ -100,6 +99,7 @@ class RAdam(Optimizer):
                 if sma_t > 4:
                     # Variance rectification term
                     step_size = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
+                    denom = exp_avg_sq.sqrt().add_(group['eps'])
                     update.addcdiv_(step_size, exp_avg, denom)
                 else:
                     update.add_(exp_avg)
