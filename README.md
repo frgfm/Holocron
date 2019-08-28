@@ -22,20 +22,17 @@ pip install -e Holocron/
 Using the models module, you can easily load torch modules or full models:
 
 ```python
-from holocron.models.resnets import TridentBlock
-# Load pretrained Resnet
-model = TridentBlock(64, 16, branches=3)
-model.eval()
+from holocron.models.res2net import res2net
+# Load pretrained Res2net
+model = res2net(depth=50, num_classes=10, pretrained=True).eval()
 ```
 
-Then, let's generate a random feature maps
+Then, let's generate a random input image
 
 ```python
 import torch
-# Get random inputs
-x1 = torch.rand(1, 64, 256, 256)
-x2 = torch.rand(1, 64, 256, 256)
-x3 = torch.rand(1, 64, 256, 256)
+# Get random image
+img_tensor = torch.rand(1, 3, 600, 600) 
 ```
 
 Now we can move them to GPU and forward them
@@ -44,10 +41,10 @@ Now we can move them to GPU and forward them
 # Move inputs and model to GPU
 if torch.cuda.is_available():
     model = model.cuda()
-    x1, x2, x3 = x1.cuda(), x2.cuda(), x3.cuda()
+    img_tensor = img_tensor.cuda()
 # Forward
 with torch.no_grad():
-    output = model([x1, x2, x3])
+    output = model(img_tensor)
 ```
 
 
