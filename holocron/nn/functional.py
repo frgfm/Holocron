@@ -15,7 +15,20 @@ def mish(x, inplace=False):
     Args:
         x (torch.Tensor): input tensor
     """
-    if inplace:
-    	raise NotImplementedError()
 
     return x * torch.tanh(F.softplus(x))
+
+
+def nl_relu(x, beta=1., inplace=False):
+    """Implements the natural logarithm ReLU activation function
+
+    Args:
+        x (torch.Tensor): input tensor
+        beta (float): beta used for 
+        inplace (bool): whether the operation should be performed inplace
+    """
+
+    if inplace:
+        return torch.log(F.relu_(x).mul_(beta).add_(1), out=x)
+    else:
+        return torch.log(1 + beta * F.relu(x))

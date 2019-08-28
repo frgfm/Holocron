@@ -1,3 +1,3 @@
-from .activation import Mish
+from .activation import Mish, NLReLU
 
-__all__ = ['Mish']
+__all__ = ['Mish', 'NLReLU']
