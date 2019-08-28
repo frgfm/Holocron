@@ -87,6 +87,10 @@ class RAdam(Optimizer):
                 bias_correction1 = 1 - beta1 ** state['step']
                 bias_correction2 = 1 - beta2 ** state['step']
 
+                # Bias-correction of first & second moments
+                exp_avg.div_(bias_correction1)
+                exp_avg_sq.div_(bias_correction2)
+
                 # Compute length of SMA
                 sma_t = sma_inf - 2 * state['step'] * (1 - bias_correction2) / bias_correction2
 
