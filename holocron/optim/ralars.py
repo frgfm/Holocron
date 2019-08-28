@@ -10,8 +10,9 @@ import torch
 from torch.optim.optimizer import Optimizer
 
 
-class RAdam(Optimizer):
+class RaLars(Optimizer):
     """Implements the RAdam optimizer from https://arxiv.org/pdf/1908.03265.pdf
+    with optional Layer-wise adaptive Scaling from https://arxiv.org/pdf/1708.03888.pdf
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
@@ -19,8 +20,10 @@ class RAdam(Optimizer):
         betas (Tuple[float, float], optional): coefficients used for computing running averages of gradient and its square (default: (0.9, 0.999))
         eps (float, optional): term added to the denominator to improve numerical stability (default: 1e-8)
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
+        scale_clip (float, optional): the maximal upper bound for the scale factor of LARS
     """
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0):
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0,
+                 use_lars=False, scale_clip=None):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -30,7 +33,11 @@ class RAdam(Optimizer):
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
-        super(RAdam, self).__init__(params, defaults)
+        super(RaLars, self).__init__(params, defaults)
+        # LARS arguments
+        self.scale_clip = scale_clip
+        if self.scale_clip is None:
+            self.scale_clip = (0, 10)
 
     def step(self, closure=None):
         """Performs a single optimization step.
@@ -80,6 +87,7 @@ class RAdam(Optimizer):
                 # Bias-correction of first & second moments
                 exp_avg.div_(bias_correction1)
                 exp_avg_sq.div_(bias_correction2)
+                denom = exp_avg_sq.sqrt().add_(group['eps'])
 
                 # Compute length of SMA
                 sma_t = sma_inf - 2 * state['step'] * (1 - bias_correction2) / bias_correction2
@@ -90,14 +98,22 @@ class RAdam(Optimizer):
                 if sma_t > 4:
                     # Variance rectification term
                     step_size = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
-                    update.addcdiv_(step_size, exp_avg, exp_avg_sq.sqrt())
                 else:
-                    update.add_(exp_avg)
+                    step_size = 1
+                update.addcdiv_(step_size, exp_avg, denom)
 
                 # Weight decay
                 if group['weight_decay'] != 0:
                     update.add_(group['weight_decay'], p.data)
 
-                p.data.add_(-group['lr'], update)
+                # LARS
+                p_norm = p.data.pow(2).sum().sqrt()
+                update_norm = update.pow(2).sum().sqrt()
+                # Compute the local LR
+                local_lr = p_norm.clamp(*self.scale_clip) / update_norm
+
+                state['local_lr'] = local_lr
+
+                p.data.add_(-group['lr'] * local_lr, update)
 
         return loss
