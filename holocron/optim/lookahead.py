@@ -87,6 +87,12 @@ class Lookahead(Optimizer):
         return format_string
 
     def _add_param_group(self, param_group):
+        """Adds a new slow parameter group
+
+        Args:
+            param_group (dict): parameter group of base_optimizer
+        """
+
         # Clone & detach params from base optimizer
         group = dict(params=[p.clone().detach()
                              for p in param_group['params']],
@@ -97,6 +103,12 @@ class Lookahead(Optimizer):
         self.param_groups.append(group)
 
     def add_param_group(self, param_group):
+        """Adds a parameter group to base optimizer (fast weights) and its corresponding slow version
+
+        Args:
+            param_group (dict): parameter group
+        """
+
         # Add param group to base optimizer
         self.base_optimizer.add_param_group(param_group)
 
