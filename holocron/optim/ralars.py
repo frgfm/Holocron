@@ -88,8 +88,8 @@ class RaLars(Optimizer):
                 bias_correction2 = 1 - beta2 ** state['step']
 
                 # Bias-correction of first & second moments
-                exp_avg.div_(bias_correction1)
-                exp_avg_sq.div_(bias_correction2)
+                exp_avg = exp_avg / bias_correction1
+                exp_avg_sq = exp_avg_sq / bias_correction2
 
                 # Compute length of SMA
                 sma_t = sma_inf - 2 * state['step'] * (1 - bias_correction2) / bias_correction2
