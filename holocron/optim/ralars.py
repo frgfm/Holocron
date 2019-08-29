@@ -50,6 +50,15 @@ class RaLars(Optimizer):
             loss = closure()
 
         for group in self.param_groups:
+
+            # Get group-shared variables
+            beta1, beta2 = group['betas']
+            sma_inf = group.get('sma_inf')
+            # Compute max length of SMA on first step
+            if not isinstance(sma_inf, float):
+                group['sma_inf'] = 2 / (1 - beta2) - 1
+                sma_inf = group.get('sma_inf')
+
             for p in group['params']:
                 if p.grad is None:
                     continue
@@ -68,7 +77,6 @@ class RaLars(Optimizer):
                     state['exp_avg_sq'] = torch.zeros_like(p.data)
 
                 exp_avg, exp_avg_sq = state['exp_avg'], state['exp_avg_sq']
-                beta1, beta2 = group['betas']
 
                 state['step'] += 1
 
@@ -76,11 +84,6 @@ class RaLars(Optimizer):
                 exp_avg.mul_(beta1).add_(1 - beta1, grad)
                 exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
 
-                sma_inf = group.get('sma_inf')
-                # Compute max length of SMA on first step
-                if not isinstance(sma_inf, float):
-                    group['sma_inf'] = 2 / (1 - beta2) - 1
-                    sma_inf = group.get('sma_inf')
                 bias_correction1 = 1 - beta1 ** state['step']
                 bias_correction2 = 1 - beta2 ** state['step']
 
