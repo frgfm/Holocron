@@ -23,7 +23,7 @@ class RaLars(Optimizer):
         scale_clip (float, optional): the maximal upper bound for the scale factor of LARS
     """
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0,
-                 use_lars=False, scale_clip=None):
+                 scale_clip=None):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
