@@ -95,15 +95,15 @@ class RaLars(Optimizer):
                 # Compute length of SMA
                 sma_t = sma_inf - 2 * state['step'] * (1 - bias_correction2) / bias_correction2
 
-                # Gradient term correction
                 update = torch.zeros_like(p.data)
-                # Check variance tractability
                 if sma_t > 4:
                     # Variance rectification term
-                    step_size = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
+                    r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
+                    # Adaptive momentum
+                    update.addcdiv_(r_t, exp_avg, denom)
                 else:
-                    step_size = 1
-                update.addcdiv_(step_size, exp_avg, denom)
+                    # Unadapted momentum
+                    update.add_(exp_avg)
 
                 # Weight decay
                 if group['weight_decay'] != 0:
