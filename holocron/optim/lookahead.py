@@ -68,12 +68,7 @@ class Lookahead(Optimizer):
         self.fast_steps += 1
         # Synchronization every sync_period steps on fast params
         if self.fast_steps % self.defaults['sync_period'] == 0:
-            for fast_group, slow_group in zip(self.base_optimizer.param_groups, self.param_groups):
-                for fast_p, slow_p in zip(fast_group['params'], slow_group['params']):
-                    # Outer update
-                    slow_p.data.add_(self.defaults['sync_rate'], fast_p.data - slow_p.data)
-                    # Synchronize fast and slow params
-                    fast_p.data.copy_(slow_p.data)
+            self.sync_params(self.defaults['sync_rate'])
 
         return loss
 
@@ -114,3 +109,19 @@ class Lookahead(Optimizer):
 
         # Add the corresponding slow param group
         self._add_param_group(self.base_optimizer.param_groups[-1])
+
+    def sync_params(self, sync_rate=0):
+        """Synchronize parameters as follows: 
+        slow_param <- slow_param + sync_rate * (fast_param - slow_param)
+
+        Args:
+            sync_rate (float): synchronization rate of parameters
+        """
+
+        for fast_group, slow_group in zip(self.base_optimizer.param_groups, self.param_groups):
+            for fast_p, slow_p in zip(fast_group['params'], slow_group['params']):
+                # Outer update
+                if sync_rate > 0:
+                    slow_p.data.add_(sync_rate, fast_p.data - slow_p.data)
+                # Synchronize fast and slow params
+                fast_p.data.copy_(slow_p.data)
