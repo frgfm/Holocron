@@ -80,7 +80,10 @@ class Lars(Optimizer):
                 p_norm = p.data.pow(2).sum().sqrt()
                 update_norm = d_p.pow(2).sum().sqrt()
                 # Compute the local LR
-                local_lr = p_norm.clamp(*self.scale_clip) / update_norm
+                if p_norm == 0 or update_norm == 0:
+                    local_lr = 1
+                else:
+                    local_lr = p_norm / update_norm
 
                 p.data.add_(-group['lr'] * local_lr, d_p)
 

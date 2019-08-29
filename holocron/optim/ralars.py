@@ -109,8 +109,12 @@ class RaLars(Optimizer):
                 # LARS
                 p_norm = p.data.pow(2).sum().sqrt()
                 update_norm = update.pow(2).sum().sqrt()
+                phi_p = p_norm.clamp(*self.scale_clip)
                 # Compute the local LR
-                local_lr = p_norm.clamp(*self.scale_clip) / update_norm
+                if phi_p == 0 or update_norm == 0:
+                    local_lr = 1
+                else:
+                    local_lr = phi_p / update_norm
 
                 state['local_lr'] = local_lr
 
