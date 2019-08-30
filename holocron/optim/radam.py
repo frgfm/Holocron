@@ -43,6 +43,15 @@ class RAdam(Optimizer):
             loss = closure()
 
         for group in self.param_groups:
+
+            # Get group-shared variables
+            beta1, beta2 = group['betas']
+            sma_inf = group.get('sma_inf')
+            # Compute max length of SMA on first step
+            if not isinstance(sma_inf, float):
+                group['sma_inf'] = 2 / (1 - beta2) - 1
+                sma_inf = group.get('sma_inf')
+
             for p in group['params']:
                 if p.grad is None:
                     continue
@@ -61,7 +70,6 @@ class RAdam(Optimizer):
                     state['exp_avg_sq'] = torch.zeros_like(p.data)
 
                 exp_avg, exp_avg_sq = state['exp_avg'], state['exp_avg_sq']
-                beta1, beta2 = group['betas']
 
                 state['step'] += 1
 
@@ -69,35 +77,24 @@ class RAdam(Optimizer):
                 exp_avg.mul_(beta1).add_(1 - beta1, grad)
                 exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
 
-                sma_inf = group.get('sma_inf')
-                # Compute max length of SMA on first step
-                if not isinstance(sma_inf, float):
-                    group['sma_inf'] = 2 / (1 - beta2) - 1
-                    sma_inf = group.get('sma_inf')
+                # Bias corrections
                 bias_correction1 = 1 - beta1 ** state['step']
                 bias_correction2 = 1 - beta2 ** state['step']
-
-                # Bias-correction of first & second moments
-                exp_avg.div_(bias_correction1)
-                exp_avg_sq.div_(bias_correction2)
 
                 # Compute length of SMA
                 sma_t = sma_inf - 2 * state['step'] * (1 - bias_correction2) / bias_correction2
 
-                # Gradient term correction
-                update = torch.zeros_like(p.data)
-                # Check variance tractability
-                if sma_t > 4:
-                    # Variance rectification term
-                    step_size = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
-                    update.addcdiv_(step_size, exp_avg, exp_avg_sq.sqrt())
-                else:
-                    update.add_(exp_avg)
-
                 # Weight decay
                 if group['weight_decay'] != 0:
-                    update.add_(group['weight_decay'], p.data)
+                    p.data.add_(-group['lr'] * group['weight_decay'], p.data)
 
-                p.data.add_(-group['lr'], update)
+                if sma_t > 4:
+                    # Variance rectification term
+                    r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
+                    # Adaptive momentum
+                    p.data.addcdiv_(-group['lr'] * r_t, exp_avg / bias_correction1, (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
+                else:
+                    # Unadapted momentum
+                    p.data.add_(-group['lr'], exp_avg / bias_correction1)
 
         return loss
