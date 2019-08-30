@@ -84,12 +84,9 @@ class RaLars(Optimizer):
                 exp_avg.mul_(beta1).add_(1 - beta1, grad)
                 exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
 
+                # Bias correction
                 bias_correction1 = 1 - beta1 ** state['step']
                 bias_correction2 = 1 - beta2 ** state['step']
-
-                # Bias-correction of first & second moments
-                exp_avg = exp_avg / bias_correction1
-                exp_avg_sq = exp_avg_sq / bias_correction2
 
                 # Compute length of SMA
                 sma_t = sma_inf - 2 * state['step'] * (1 - bias_correction2) / bias_correction2
@@ -99,10 +96,10 @@ class RaLars(Optimizer):
                     # Variance rectification term
                     r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
                     # Adaptive momentum
-                    update.addcdiv_(r_t, exp_avg, exp_avg_sq.sqrt().add_(group['eps']))
+                    update.addcdiv_(r_t, exp_avg / bias_correction1, (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
                 else:
                     # Unadapted momentum
-                    update.add_(exp_avg)
+                    update.add_(exp_avg / bias_correction1)
 
                 # Weight decay
                 if group['weight_decay'] != 0:
