@@ -15,9 +15,38 @@ git clone https://github.com/frgfm/Holocron.git
 pip install -e Holocron/
 ```
 
-## Usage
+## Modules
+
+### nn
+
+##### Main features
+
+- Activation: [Mish](https://arxiv.org/abs/1908.08681), [NLReLU](https://arxiv.org/abs/1908.03682)
+
+##### Usage
+
+Similar usage to  `torch.nn`
+
+```python
+import torch.nn as nn
+from holocron.nn import Mish, NLReLU
+
+# Both modules inherit from torch.nn.Module and can be used as such
+model = nn.Sequential(nn.Conv2d(3, 64, (3, 3)),
+                      Mish(),
+                      nn.Conv2d(64, 128, (3, 3)),
+                      NLReLU(),)
+```
+
+
 
 ### models
+
+##### Main features
+
+- Res2Net: [paper](https://arxiv.org/abs/1904.01169), based on the great [implementation](https://github.com/gasvn/Res2Net) from gasvn
+
+##### Usage
 
 Using the models module, you can easily load torch modules or full models:
 
@@ -49,9 +78,42 @@ with torch.no_grad():
 
 
 
-### optim.lr_scheduler
+### optim
 
-You can use the OneCycleLR scheduler as follows:
+##### Main features
+
+- Optimizer: [LARS](https://arxiv.org/abs/1708.03888), [Lamb](https://arxiv.org/abs/1904.00962), [RAdam](https://arxiv.org/abs/1908.03265) and customized versions (RaLars)
+- Optimizer wrapper: [Lookahead](https://arxiv.org/abs/1907.08610)
+- Scheduler: [OneCycleScheduler](https://arxiv.org/abs/1803.09820)
+
+##### Usage
+
+The optimizer wrapper can be used on any `torch.optim.optimizer.Optimizer` object 
+
+```python
+from torchvision.models.resnet import resnet50
+from holocron.optim import RaLars
+
+model = resnet50()
+# Common usage of optimizer
+optimizer = RaLars(model.parameters(), lr=3e-4)
+# Wrap it with Lookahead
+optimizer = Lookahead(optimizer, sync_rate=0.5, sync_period=6)
+
+for epoch in range(10):
+    # Train for an epoch
+    for input, target in dataset:
+        optimizer.zero_grad()
+        output = model(input)
+        loss = loss_fn(output, target)
+        loss.backward()
+        optimizer.step()
+    val_loss = validate(...)
+```
+
+
+
+You can use the `OneCycleScheduler` as follows:
 
 ```python
 from torchvision.models.resnet import resnet50
@@ -85,6 +147,8 @@ plt.plot(lrs[0], label='Weight LR'); plt.plot(lrs[1], label='Bias LR'); plt.lege
 ```
 
 ![onecycle](static/images/onecycle.png)
+
+
 
 
 
