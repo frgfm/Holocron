@@ -5,7 +5,10 @@
 Utils
 """
 
+import numpy as np
 import torch
+from PIL import Image
+from matplotlib import cm
 
 
 class ActivationMapper(object):
@@ -59,3 +62,32 @@ class ActivationMapper(object):
             batch_cams /= batch_cams.max(dim=2, keepdim=True)[0]
 
         return batch_cams.view(self.conv_fmap.size(0), len(class_idxs), self.conv_fmap.size(3), self.conv_fmap.size(2)).cpu()
+
+
+def overlay_mask(img, mask, colormap='jet', alpha=0.7):
+    """Overlay a colormapped mask on a background image
+
+    Args:
+        img (PIL.Image.Image): background image
+        mask (PIL.Image.Image): mask to be overlayed in grayscale
+        colormap (str): colormap to be applied on the mask
+        alpha (float): transparency of the background image
+
+    Returns:
+        overlayed_img (PIL.Image.Image): overlayed image
+    """
+
+    if not isinstance(img, Image.Image) or not isinstance(mask, Image.Image):
+        raise TypeError('img and mask arguments need to be PIL.Image')
+
+    if not isinstance(alpha, float) or alpha < 0 or alpha >= 1:
+        raise ValueError('alpha argument is expected to be of type float between 0 and 1')
+
+    cmap = cm.get_cmap(colormap)
+    # Resize mask and apply colormap
+    overlay = mask.resize(img.size, resample=Image.BICUBIC)
+    overlay = (255 * cmap(np.asarray(overlay) ** 2)[:, :, 1:]).astype(np.uint8)
+    # Overlay the image with the mask
+    overlayed_img = Image.fromarray((alpha * np.asarray(img) + (1 - alpha) * overlay).astype(np.uint8))
+
+    return overlayed_img
