@@ -150,6 +150,71 @@ plt.plot(lrs[0], label='Weight LR'); plt.plot(lrs[1], label='Bias LR'); plt.lege
 
 
 
+### utils
+
+##### Main features
+
+- Activation mapper: [Discriminative Localization](https://arxiv.org/abs/1512.04150) 
+
+##### Usage
+
+The class activation map (CAM) extractor can be used as follows: 
+
+```python
+import requests
+from PIL import Image
+import matplotlib.pyplot as plt
+from torchvision.models import resnet50
+from torchvision.transforms import transforms
+from torchvision.transforms.functional import to_pil_image
+from holocron.utils import ActivationMapper, overlay_mask
+
+
+# Pretrained imagenet model
+model = resnet50(pretrained=True).eval()
+# Specify layer to hook and fully connected
+last_conv_layer = 'layer4'
+fc_layer = 'fc'
+
+# Hook the corresponding layer in the model
+cam = ActivationMapper(model, last_conv_layer, fc_layer)
+
+# Get a dog image
+URL = 'https://www.woopets.fr/assets/races/000/030/mobile/berger-australien.jpg'
+response = requests.get(URL)
+file_name = URL.split('/')[-1]
+with open(file_name, 'wb') as f:
+    f.write(response.content)
+
+# Forward an image
+pil_img = Image.open(file_name, mode='r').convert('RGB')
+preprocess = transforms.Compose([
+   transforms.Resize((224,224)),
+   transforms.ToTensor(),
+   transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
+img_tensor = preprocess(pil_img)
+out = model(img_tensor.unsqueeze(0))
+
+# Select the class index
+classes = {int(key):value for (key, value)
+          in requests.get('https://s3.amazonaws.com/outcome-blog/imagenet/labels.json').json().items()}
+class_idx = 232
+
+# Use the hooked data to compute activation map
+activation_maps = cam.get_activation_maps([class_idx])
+# Convert it to PIL image
+# The indexing below means first image in batch and first requested class
+heatmap = to_pil_image(activation_maps[0, 0], mode='F')
+
+# Plot the result
+img = Image.open(file_name, mode='r').convert('RGB')
+result = overlay_mask(img, heatmap)
+plt.imshow(result); plt.axis('off'); plt.title(classes.get(class_idx)); plt.tight_layout; plt.show()
+```
+
+![cam_sample](static/images/cam_sample.png)
+
 
 
 ## Submitting a request / Reporting an issue
