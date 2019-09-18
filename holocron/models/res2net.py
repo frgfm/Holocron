@@ -245,7 +245,9 @@ def res2net(depth, num_classes, width_per_group=26, scale=4, pretrained=False, p
     model = Res2Net(block, RESNET_LAYERS.get(depth), num_classes=num_classes, scale=scale, **kwargs)
 
     if pretrained:
-        state_dict = load_state_dict_from_url(URLS.get(f"res2net{depth}_{width_per_group}w_{scale}s"), progress=progress)
+        state_dict = load_state_dict_from_url(URLS.get(f"res2net{depth}_{width_per_group}w_{scale}s"),
+                                              map_location=torch.device('cpu') if not torch.cuda.is_available() else None,
+                                              progress=progress)
         # Remove FC params from dict
         del state_dict['fc.weight']
         del state_dict['fc.bias']
@@ -281,7 +283,9 @@ def res2next(depth, num_classes, width_per_group=4, scale=4, pretrained=False, p
     model = Res2Net(block, RESNET_LAYERS.get(depth), num_classes=num_classes, scale=scale, **kwargs)
 
     if pretrained:
-        state_dict = load_state_dict_from_url(URLS.get(f"res2next{depth}_{width_per_group}w_{scale}s_{kwargs['groups']}c"), progress=progress)
+        state_dict = load_state_dict_from_url(URLS.get(f"res2next{depth}_{width_per_group}w_{scale}s_{kwargs['groups']}c"),
+                                              map_location=torch.device('cpu') if not torch.cuda.is_available() else None,
+                                              progress=progress)
         # Remove FC params from dict
         del state_dict['fc.weight']
         del state_dict['fc.bias']
