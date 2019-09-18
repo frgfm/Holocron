@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.5
 jobs:
   build:
     docker:
@@ -9,24 +11,25 @@ jobs:
     steps:
       - checkout
 
-      # Download and cache dependencies
+      # Cached build dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - dependencies-build-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - dependencies-build-{{ .Branch }}
+            - dependencies-build
 
       - run:
           name: install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            python -m pip install --upgrade pip
             pip install -e .
 
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          key: dependencies-build-{{ .Branch }}-{{ checksum "requirements.txt" }}
 
   unit_tests:
     docker:
@@ -37,15 +40,38 @@ jobs:
     steps:
       - checkout
 
+      # Cached test dependencies
+      - restore_cache:
+          keys:
+            - dependencies-ci-{{ .Branch }}-{{ checksum ".circleci/requirements.txt" }}
+            - dependencies-ci-{{ .Branch }}
+            - dependencies-ci
       - run:
-          name: unit_tests
+          name: install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            python -m pip install --upgrade pip
+            pip install -r .circleci/requirements.txt
+      - save_cache:
+          when: always
+          paths:
+            - "venv"
+          key: dependencies-ci-{{ .Branch }}-{{ checksum ".circleci/requirements.txt" }}
+
+      - run:
+          name: unit_tests
+          command: |
+            . venv/bin/activate
             pip install -e .
-            python3 test/unit_tests.py
+            coverage run test/unit_tests.py
+            coverage xml
+
+      - codecov/upload:
+          file: coverage.xml
+          flags: unittest
 workflows:
-  version: 2
+  version: 2.1
   build_and_test:
     jobs:
       - build
