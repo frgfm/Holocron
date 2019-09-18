@@ -6,6 +6,7 @@ Implementation of Res2Net
 based on https://github.com/gasvn/Res2Net
 """
 
+import torch
 import torch.nn as nn
 from torchvision.models.resnet import conv1x1, conv3x3
 from torchvision.models.utils import load_state_dict_from_url
