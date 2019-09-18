@@ -111,7 +111,7 @@ class Lookahead(Optimizer):
         self._add_param_group(self.base_optimizer.param_groups[-1])
 
     def sync_params(self, sync_rate=0):
-        """Synchronize parameters as follows: 
+        """Synchronize parameters as follows:
         slow_param <- slow_param + sync_rate * (fast_param - slow_param)
 
         Args:

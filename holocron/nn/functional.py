@@ -24,7 +24,7 @@ def nl_relu(x, beta=1., inplace=False):
 
     Args:
         x (torch.Tensor): input tensor
-        beta (float): beta used for 
+        beta (float): beta used for NReLU
         inplace (bool): whether the operation should be performed inplace
     """
 

@@ -42,7 +42,7 @@ class Res2Block(nn.Module):
             downsample (torch.nn.Module): module used for downsampling
             groups: num of convolution groups
             base_width: base width
-            dilation (int): dilation rate of conv3x3            
+            dilation (int): dilation rate of conv3x3
             scale (int): scaling ratio for cascade convs
             first_block (bool): whether the block is the first to be placed in the conv layer
             norm_layer (torch.nn.Module): norm layer to be used in blocks
