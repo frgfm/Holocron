@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 
 
-def mish(x, inplace=False):
+def mish(x):
     """Implements the Mish activation function
 
     Args:
