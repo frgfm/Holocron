@@ -64,7 +64,7 @@ jobs:
           command: |
             . venv/bin/activate
             pip install -e .
-            coverage run test/unit_tests.py
+            coverage run -m unittest discover test/
             coverage xml
 
       - codecov/upload:
