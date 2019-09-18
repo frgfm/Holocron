@@ -19,7 +19,7 @@ jobs:
             - dependencies-build
 
       - run:
-          name: install dependencies
+          name: Package installation
           command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -31,7 +31,7 @@ jobs:
             - ./venv
           key: dependencies-build-{{ .Branch }}-{{ checksum "requirements.txt" }}
 
-  unit_tests:
+  test:
     docker:
       - image: circleci/python:3.6.1
 
@@ -47,7 +47,7 @@ jobs:
             - dependencies-ci-{{ .Branch }}
             - dependencies-ci
       - run:
-          name: install dependencies
+          name: CI dependencies installation
           command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -60,7 +60,7 @@ jobs:
           key: dependencies-ci-{{ .Branch }}-{{ checksum ".circleci/requirements.txt" }}
 
       - run:
-          name: unit_tests
+          name: Package unit tests
           command: |
             . venv/bin/activate
             pip install -e .
@@ -75,4 +75,4 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - unit_tests
+      - test
