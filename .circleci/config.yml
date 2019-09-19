@@ -14,9 +14,9 @@ jobs:
       # Cached build dependencies
       - restore_cache:
           keys:
-            - dependencies-build-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - dependencies-build-{{ .Branch }}
-            - dependencies-build
+            - requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - requirements-{{ .Branch }}
+            - requirements
 
       - run:
           name: Package installation
@@ -29,7 +29,7 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: dependencies-build-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}
 
   test:
     docker:
@@ -43,9 +43,10 @@ jobs:
       # Cached test dependencies
       - restore_cache:
           keys:
-            - dependencies-ci-{{ .Branch }}-{{ checksum ".circleci/requirements.txt" }}
-            - dependencies-ci-{{ .Branch }}
-            - dependencies-ci
+            - requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
+            - requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - requirements-{{ .Branch }}
+            - requirements
       - run:
           name: CI dependencies installation
           command: |
@@ -57,7 +58,7 @@ jobs:
           when: always
           paths:
             - "venv"
-          key: dependencies-ci-{{ .Branch }}-{{ checksum ".circleci/requirements.txt" }}
+          key: requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
 
       - run:
           name: Package unit tests
