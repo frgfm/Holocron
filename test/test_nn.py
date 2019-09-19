@@ -1,4 +1,5 @@
 import unittest
+import inspect
 import torch
 from holocron.nn import functional as F
 from holocron.nn.modules import activation
@@ -18,15 +19,47 @@ class Tester(unittest.TestCase):
 
     def _test_activation_functions(self, name, input_shape):
         fn = F.__dict__[name]
+
+        # Optional testing
+        fn_args = inspect.signature(fn).parameters.keys()
+        cfg = {}
+        if 'inplace' in fn_args:
+            cfg['inplace'] = [False, True]
+
+        # Generate inputs
         x = torch.rand(input_shape)
-        out = fn(x)
-        self.assertEqual(out.size(), x.size())
+
+        # Optional argument testing
+        kwargs = {}
+        for inplace in cfg.get('inplace', [None]):
+            if isinstance(inplace, bool):
+                kwargs['inplace'] = inplace
+            out = fn(x, **kwargs)
+            self.assertEqual(out.size(), x.size())
+            if kwargs.get('inplace', False):
+                self.assertEqual(x.data_ptr(), out.data_ptr())
 
     def _test_activation_modules(self, name, input_shape):
-        module = activation.__dict__[name]()
+        module = activation.__dict__[name]
+
+        # Optional testing
+        fn_args = inspect.signature(module).parameters.keys()
+        cfg = {}
+        if 'inplace' in fn_args:
+            cfg['inplace'] = [False, True]
+
+        # Generate inputs
         x = torch.rand(input_shape)
-        out = module(x)
-        self.assertEqual(out.size(), x.size())
+
+        # Optional argument testing
+        kwargs = {}
+        for inplace in cfg.get('inplace', [None]):
+            if isinstance(inplace, bool):
+                kwargs['inplace'] = inplace
+            out = module(**kwargs)(x)
+            self.assertEqual(out.size(), x.size())
+            if kwargs.get('inplace', False):
+                self.assertEqual(x.data_ptr(), out.data_ptr())
 
 
 for fn_name in get_activation_functions():
