@@ -47,13 +47,16 @@ jobs:
             - requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}
             - requirements-{{ .Branch }}
             - requirements
+
       - run:
           name: CI dependencies installation
           command: |
             python3 -m venv venv
             . venv/bin/activate
             python -m pip install --upgrade pip
+            pip install -e .
             pip install -r .circleci/requirements.txt
+
       - save_cache:
           when: always
           paths:
@@ -64,13 +67,13 @@ jobs:
           name: Package unit tests
           command: |
             . venv/bin/activate
-            pip install -e .
             coverage run -m unittest discover test/
             coverage xml
 
       - codecov/upload:
           file: coverage.xml
-          flags: unittest
+          flags: unittests
+
 workflows:
   version: 2.1
   build_and_test:
