@@ -14,6 +14,8 @@ def mish(x):
 
     Args:
         x (torch.Tensor): input tensor
+    Returns:
+        torch.Tensor[x.size()]: output tensor
     """
 
     return x * torch.tanh(F.softplus(x))
@@ -26,6 +28,8 @@ def nl_relu(x, beta=1., inplace=False):
         x (torch.Tensor): input tensor
         beta (float): beta used for NReLU
         inplace (bool): whether the operation should be performed inplace
+    Returns:
+        torch.Tensor[x.size()]: output tensor
     """
 
     if inplace:
