@@ -19,13 +19,13 @@ RES2NEXT_PARAMS = {50: dict(groups=8, width_per_group=4),
                    101: dict(groups=8, width_per_group=8)}
 
 URLS = {
-    'res2net50_48w_2s': 'https://u09y8q.dm.files.1drv.com/y4mBXCZMGai94Kqq8v9rTHwQyx7u_w8uX4Ex1HzvKmWWskhKXECh9zhJQLDsJRaA2YPhDbV_xMOKEeltkKS6EArkhwTTY3PyQQOIrBm8gJbN96o8LS2XWu6HsG0iyt06yg7gY7Gy8oOlqH9EMYYJyDdNxh1ICcn2wOjwU6XTXgyeXG1IPMUNnyNiVYDTJwcqLuTfLNnVKojzq3PYlklfOWSZQ/res2net50_48w_2s-afed724a.pth',
-    'res2net50_26w_4s': 'https://inui8w.dm.files.1drv.com/y4mPYoCSbwQl9ueLgPxG68VnIt8HVvxi5--1coTjrqb4Y5eKhoRuUK8l1aUHmJA2snLEakscUQ4UXFaAFKPxgfmJG64O6g9sRWKM1e5mcIvLZS0x378WBJw1umBvhJBBDbvfwC694IP1qaUduElqbhjAQBzFqAVMrUdkDay-mmHXF7oeSbREoBP6mefRPa3-pH8WGifE_kvpqt68l8FnNqZaA/res2net50_26w_4s-06e79181.pth',
-    'res2net50_14w_8s': 'https://u0po2g.dm.files.1drv.com/y4mWya8g9auU6EgyQGBRsFZ2er5xW6Azd7hLcKUQU-zH3rwtGOhop7h0uewFTD5N1dfeW_WZpQUsLjP-33myzi69_2JhRzppuvyX7223WoyaIG11KCXV5zxoBnlCRbFfh3u7AThTxFA_BQhVPFMaYQt93C-06JKCKA909rLtTH_FxVpo-ZMfcAh819vC7yfQeJ69Z94ZZQhllH2nCA9LntE5A/res2net50_14w_8s-6527dddc.pth',
-    'res2net50_26w_6s': 'https://u08ptw.dm.files.1drv.com/y4m4VJ4BKIYWn81yLxG7E2pqQ5gyK9M9uqZZsOoKyNfrkaRJf7zzw3LvbHxhWY_DSlHrDOfgAbcvSDM6H0H8iaidlhWuDveMScUHWgam45-16RpiWs1hENXpUuRy206Jkm224mNnYuR_iK2QZ7K95DDEoHp0DQ5fHE-I-PTNpBV4184KJq0e2IpsELaihDXuOvDV-NPlxwZSI6_5SWsYxpGuw/res2net50_26w_6s-19041792.pth',
-    'res2net50_26w_8s': 'https://u0qzzq.dm.files.1drv.com/y4mzlxQhPPLhF0QPfws3kTXboNr9Bn3qEtvoixIinZ6Nr1WjRvjFNnrwj6ABhHsegDO5YGvDF8gaT9kSXGdyt9xfVQv7kB8qMJKYXJefbX9jcBmkW2l1-1xO8dco0RcJzQ0PEPl4tDfJk4JbBC1GiSO4NCSrTGXo1V35uyazHYmQQPIG0csDYqScqFjZW2jqmCwzsny-eoRo_WIbQlGh_IAZA/res2net50_26w_8s-2c7c9f12.pth',
-    'res2net101_26w_4s': 'https://u08ica.dm.files.1drv.com/y4mDxCx2nG_ydpaHrQB-xqACLuLtK9hUHFZMt_o4X-SHK1osIiePHq8ClztZNDg2WWKy6wsiotHGgHXN_Cy2M89yLY5-kankE4xXPl-SSEguLAzvpEiJmn5t9jfYVdb_brVgZm5K_rB6-rvUkUqwKwkjCb-GxDBbB2IvAdXIh2n1NfYRgYy2ZOK26gGjPj_7HPD5vY1BfiHrSiLgkgi9cEdpw/res2net101_26w_4s-02a759a1.pth',
-    'res2next50_4w_4s_8c': 'https://u0phkw.dm.files.1drv.com/y4mlohSCPf6nrI8dcRrBIqakX-C2Ltx6-2cMetYWqkFJZcxLlKvySq08kSU9GQCloD_qU5cWpp-FCK3L51JmCAXs9_bRemZhOsWpjvt2KpCa3PkDadnP2iI97s7YFUD78HWRYHn31CRUhFXoewTFpj4ybGcTl6NHeyDbNBrqjO2cd49pWGZvvmJyS73PLGF3jOBlWIqiqp3Kbwq1qCPyHBxmw/res2next50_4s-6ef7e7bf.pth'
+    'res2net50_48w_2s': 'http://mc.nankai.edu.cn/projects/res2net/pretrainmodels/res2net50_48w_2s-afed724a.pth',
+    'res2net50_26w_4s': 'http://mc.nankai.edu.cn/projects/res2net/pretrainmodels/res2net50_26w_4s-06e79181.pth',
+    'res2net50_14w_8s': 'http://mc.nankai.edu.cn/projects/res2net/pretrainmodels/res2net50_14w_8s-6527dddc.pth',
+    'res2net50_26w_6s': 'http://mc.nankai.edu.cn/projects/res2net/pretrainmodels/res2net50_26w_6s-19041792.pth',
+    'res2net50_26w_8s': 'http://mc.nankai.edu.cn/projects/res2net/pretrainmodels/res2net50_26w_8s-2c7c9f12.pth',
+    'res2net101_26w_4s': 'http://mc.nankai.edu.cn/projects/res2net/pretrainmodels/res2net101_26w_4s-02a759a1.pth',
+    'res2next50_4w_4s_8c': 'http://mc.nankai.edu.cn/projects/res2net/pretrainmodels/res2next50_4s-6ef7e7bf.pth'
 }
 
 
