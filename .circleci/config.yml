@@ -4,7 +4,7 @@ orbs:
 jobs:
   pkg-build:
     docker:
-      - image: circleci/python:3.6.1
+      - image: circleci/python:3.7.3
 
     working_directory: ~/repo
 
@@ -14,8 +14,8 @@ jobs:
       # Cached installation dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - v1-dependencies-{{ .Branch }}
+            - v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-deps-{{ .Branch }}
 
       - run:
           name: Package installation
@@ -28,11 +28,11 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
 
   pkg-test:
     docker:
-      - image: circleci/python:3.6.1
+      - image: circleci/python:3.7.3
 
     working_directory: ~/repo
 
@@ -42,9 +42,9 @@ jobs:
       # Cached test dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
-            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - v1-dependencies-{{ .Branch }}
+            - v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
+            - v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-deps-{{ .Branch }}
 
       - run:
           name: CI dependencies installation
@@ -59,7 +59,7 @@ jobs:
           when: always
           paths:
             - "venv"
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
+          key: v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
 
       - run:
           name: Package unit tests
@@ -73,16 +73,16 @@ jobs:
           flags: unittests
   docs-build:
     docker:
-      - image: python:3.7
+      - image: circleci/python:3.7.3
     steps:
       - checkout
 
       # Cached doc dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "docs/requirements.txt" }}
-            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - v1-dependencies-{{ .Branch }}
+            - v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "docs/requirements.txt" }}
+            - v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-deps-{{ .Branch }}
 
       - run:
           name: Install dependencies
@@ -97,7 +97,7 @@ jobs:
           when: always
           paths:
             - "venv"
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "docs/requirements.txt" }}
+          key: v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "docs/requirements.txt" }}
       - run:
           name: Build docs
           command: |
