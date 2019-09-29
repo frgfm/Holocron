@@ -1,6 +1,6 @@
 import unittest
 import torch
-from holocron.models import res2net
+from holocron import models
 
 
 class Tester(unittest.TestCase):
@@ -8,7 +8,7 @@ class Tester(unittest.TestCase):
     def _test_res2nets(self, name, input_shape):
         # passing num_class equal to a number other than 1000 helps in making the test
         # more enforcing in nature
-        model = res2net.__dict__[name](depth=50, num_classes=50, pretrained=True)
+        model = models.__dict__[name](depth=50, num_classes=50, pretrained=True)
         model.eval()
         x = torch.rand(input_shape)
         out = model(x)
