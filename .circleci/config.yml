@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.5
 jobs:
-  build:
+  pkg-build:
     docker:
       - image: circleci/python:3.6.1
 
@@ -11,12 +11,11 @@ jobs:
     steps:
       - checkout
 
-      # Cached build dependencies
+      # Cached installation dependencies
       - restore_cache:
           keys:
-            - requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - requirements-{{ .Branch }}
-            - requirements
+            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ .Branch }}
 
       - run:
           name: Package installation
@@ -29,9 +28,9 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
 
-  test:
+  pkg-test:
     docker:
       - image: circleci/python:3.6.1
 
@@ -43,10 +42,9 @@ jobs:
       # Cached test dependencies
       - restore_cache:
           keys:
-            - requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
-            - requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - requirements-{{ .Branch }}
-            - requirements
+            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
+            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ .Branch }}
 
       - run:
           name: CI dependencies installation
@@ -61,7 +59,7 @@ jobs:
           when: always
           paths:
             - "venv"
-          key: requirements-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
 
       - run:
           name: Package unit tests
@@ -73,12 +71,76 @@ jobs:
       - codecov/upload:
           file: coverage.xml
           flags: unittests
+  docs-build:
+    docker:
+      - image: python:3.7
+    steps:
+      - checkout
+
+      # Cached doc dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "docs/requirements.txt" }}
+            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ .Branch }}
+
+      - run:
+          name: Install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            python -m pip install --upgrade pip
+            pip install -e .
+            pip install -r docs/requirements.txt
+
+      - save_cache:
+          when: always
+          paths:
+            - "venv"
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum "docs/requirements.txt" }}
+      - run:
+          name: Build docs
+          command: |
+            . venv/bin/activate
+            sphinx-build docs/source docs/build -a
+      - persist_to_workspace:
+          root: docs/build
+          paths: .
+  docs-deploy:
+    docker:
+      - image: node:8.10.0
+    steps:
+      - checkout
+      - attach_workspace:
+          at: docs/build
+      - run:
+          name: Disable jekyll builds
+          command: touch docs/build/.nojekyll
+      - run:
+          name: Install and configure dependencies
+          command: |
+            npm install -g --silent gh-pages@2.0.1
+            git config user.email "***REMOVED***"
+            git config user.name "frgfm"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: gh-pages --dotfiles --message "[skip ci] Updates" --dist docs/build
 
 workflows:
   version: 2.1
-  build_and_test:
+  build:
     jobs:
-      - build
-      - test:
+      - pkg-build
+      - docs-build:
           requires:
-            - build
+            - pkg-build
+      - pkg-test:
+          requires:
+            - pkg-build
+      - docs-deploy:
+          requires:
+            - pkg-build
+            - docs-build
+          filters:
+            branches:
+              only: master

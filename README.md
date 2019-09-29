@@ -1,12 +1,14 @@
 # Holocron
 
-[![Donate](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5713eafaf8074e27a4013dbfcfad9d69)](https://www.codacy.com/manual/fg/Holocron?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frgfm/Holocron&amp;utm_campaign=Badge_Grade) [![CircleCI](https://circleci.com/gh/frgfm/Holocron.svg?style=shield)](https://circleci.com/gh/frgfm/Holocron) [![codecov](https://codecov.io/gh/frgfm/Holocron/branch/master/graph/badge.svg)](https://codecov.io/gh/frgfm/Holocron)
+[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5713eafaf8074e27a4013dbfcfad9d69)](https://www.codacy.com/manual/fg/Holocron?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frgfm/Holocron&amp;utm_campaign=Badge_Grade) [![CircleCI](https://circleci.com/gh/frgfm/Holocron.svg?style=shield)](https://circleci.com/gh/frgfm/Holocron) [![codecov](https://codecov.io/gh/frgfm/Holocron/branch/master/graph/badge.svg)](https://codecov.io/gh/frgfm/Holocron)[![Docs](https://img.shields.io/badge/docs-available-blue.svg)](https://frgfm.github.io/Holocron)
 
 Implementations of recent Deep Learning tricks in Computer Vision, easily paired up with your favorite framework and model zoo.
 
 > **Holocrons** were information-storage [datacron](https://starwars.fandom.com/wiki/Datacron) devices used by both the [Jedi Order](https://starwars.fandom.com/wiki/Jedi_Order) and the [Sith](https://starwars.fandom.com/wiki/Sith) that contained ancient lessons or valuable information in [holographic](https://starwars.fandom.com/wiki/Hologram) form.
 
 *Source: Wookieepedia*
+
+
 
 ## Installation
 
@@ -25,7 +27,9 @@ git clone https://github.com/frgfm/Holocron.git
 pip install -e Holocron/
 ```
 
-## Modules
+
+
+## Usage
 
 ### nn
 
@@ -224,6 +228,12 @@ plt.imshow(result); plt.axis('off'); plt.title(classes.get(class_idx)); plt.tigh
 ```
 
 ![cam_sample](static/images/cam_sample.png)
+
+
+
+## Documentation
+
+The full package documentation is available [here](<https://frgfm.github.io/Holocron/>) for detailed specifications.
 
 
 
