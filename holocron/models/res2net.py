@@ -255,8 +255,8 @@ def res2net(depth, num_classes, width_per_group=26, scale=4, pretrained=False, p
             warnings.warn(f"While downloading state_dict, received:\n{e}\nSkipping weight loading...")
         if isinstance(state_dict, dict):
             # Remove FC params from dict
-            del state_dict['fc.weight']
-            del state_dict['fc.bias']
+            for key in ('fc.weight', 'fc.bias'):
+                state_dict.pop(key, None)
             missing, unexpected = model.load_state_dict(state_dict, strict=False)
 
             if any(unexpected) or any(not elt.startswith('fc.') for elt in missing):
@@ -298,8 +298,8 @@ def res2next(depth, num_classes, width_per_group=4, scale=4, pretrained=False, p
             warnings.warn(f"While downloading state_dict, received:\n{e}\nSkipping weight loading...")
         if isinstance(state_dict, dict):
             # Remove FC params from dict
-            del state_dict['fc.weight']
-            del state_dict['fc.bias']
+            for key in ('fc.weight', 'fc.bias'):
+                state_dict.pop(key, None)
             missing, unexpected = model.load_state_dict(state_dict, strict=False)
 
             if any(unexpected) or any(not elt.startswith('fc.') for elt in missing):
