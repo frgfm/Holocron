@@ -10,7 +10,15 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 
 ## Installation
 
-This package was developed using minimal dependencies ([pytorch](https://github.com/pytorch/pytorch), [torchvision](https://github.com/pytorch/vision)). You can install it using the following commands:
+This package was developed using minimal dependencies ([pytorch](https://github.com/pytorch/pytorch), [torchvision](https://github.com/pytorch/vision)). 
+
+**User installation**
+
+```bash
+pip install git+https://github.com/frgfm/Holocron@master
+```
+
+**Developer installation**
 
 ```bash
 git clone https://github.com/frgfm/Holocron.git
