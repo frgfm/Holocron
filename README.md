@@ -233,7 +233,7 @@ plt.imshow(result); plt.axis('off'); plt.title(classes.get(class_idx)); plt.tigh
 
 ## Documentation
 
-The full package documentation is available [here](<https://frgfm.github.io/Holocron/>) for detailed specifications.
+The full package documentation is available [here](<https://frgfm.github.io/Holocron/>) for detailed specifications. The documentation was built with [Sphinx](sphinx-doc.org) using a [theme](github.com/readthedocs/sphinx_rtd_theme) provided by [Read the Docs](readthedocs.org) 
 
 
 
