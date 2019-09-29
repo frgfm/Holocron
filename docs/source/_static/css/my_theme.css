@@ -81,10 +81,14 @@ a {
     display: block;
 }
 
+.wy-side-nav-search .wy-dropdown>a, .wy-side-nav-search>a {
+    color: #B91444;
+}
+
 /* This ensures that multiple constructors will remain in separate lines. */
 .rst-content dl:not(.docutils) dt {
     display: block;
-    color: #B91444;
+    color: #797A7B;
     border-top: 0px;
     background: #f0f0f0;
 }
