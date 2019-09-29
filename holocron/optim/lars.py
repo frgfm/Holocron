@@ -8,7 +8,7 @@ class Lars(Optimizer):
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining
             parameter groups
-        lr (float): learning rate
+        lr (float, optional): learning rate
         momentum (float, optional): momentum factor (default: 0)
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
         dampening (float, optional): dampening for momentum (default: 0)
@@ -16,9 +16,9 @@ class Lars(Optimizer):
         scale_clip (tuple, optional): the lower and upper bounds for the weight norm in local LR of LARS
     """
 
-    def __init__(self, params, lr=required, momentum=0, dampening=0,
+    def __init__(self, params, lr=1e-3, momentum=0, dampening=0,
                  weight_decay=0, nesterov=False, scale_clip=None):
-        if lr is not required and lr < 0.0:
+        if not isinstance(lr, float) or lr < 0.0:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if momentum < 0.0:
             raise ValueError("Invalid momentum value: {}".format(momentum))
