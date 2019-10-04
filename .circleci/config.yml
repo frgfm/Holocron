@@ -120,8 +120,8 @@ jobs:
           name: Install and configure dependencies
           command: |
             npm install -g --silent gh-pages@2.0.1
-            git config user.email "fgfm03@hotmail.fr"
-            git config user.name "frgfm"
+            git config user.email "56176553+k2-s0@users.noreply.github.com"
+            git config user.name "k2-s0"
       - run:
           name: Deploy docs to gh-pages branch
           command: gh-pages --dotfiles --message "[skip ci] Updates" --dist docs/build
