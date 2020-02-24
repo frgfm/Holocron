@@ -20,7 +20,8 @@ class ActivationMapper(object):
         fc_layer (str): name of the fully connected layer
     """
 
-    conv_fmap = None
+    hook_a = None
+    hook_a, hook_g = None, None
 
     def __init__(self, model, conv_layer, fc_layer):
 
@@ -30,12 +31,20 @@ class ActivationMapper(object):
         self.fc_layer = fc_layer
         self.model = model
         # Forward hook
-        self.model._modules.get(self.conv_layer).register_forward_hook(self.__hook)
-        # Softmax weight
-        self.smax_weights = self.model._modules.get(fc_layer).weight.data
+        self.model._modules.get(self.conv_layer).register_forward_hook(self.__hook_a)
+        # Backward hook
+        self.model._modules.get(self.conv_layer).register_backward_hook(self.__hook_g)
+        # FC layer
+        if not hasattr(self.model, self.fc_layer):
+            raise ValueError(f'model has no attribute named: {self.model}')
+        elif not isinstance(getattr(self.model, self.fc_layer), torch.nn.Module):
+            raise NotImplementedError('post conv layer needs to be either a torch.nn.Module')
 
-    def __hook(self, module, input, output):
-        self.conv_fmap = output.data
+    def __hook_a(self, module, input, output):
+        self.hook_a = output.data
+
+    def __hook_g(self, module, input, output):
+        self.hook_g = output.grad
 
     def get_activation_maps(self, class_idxs, normalized=True):
         """Recreate class activation maps
@@ -48,20 +57,25 @@ class ActivationMapper(object):
             batch_cams (torch.Tensor<float>): activation maps of the last forwarded batch
         """
 
-        if any(idx >= self.smax_weights.size(0) for idx in class_idxs):
-            raise ValueError("Expected class_idx to be lower than number of output classes")
+        # if any(idx >= self.model._modules.get(self.fc_layer).weight.data.size(0) for idx in class_idxs):
+        #     raise ValueError("Expected class_idx to be lower than number of output classes")
 
-        if self.conv_fmap is None:
+        if self.hook_a is None:
             raise TypeError("Inputs need to be forwarded in the model for the conv features to be hooked")
 
+        # Grad
+        fmap_coeffs = torch.flatten(self.hook_g[0][0], 1).mean(1)
         # Flatten spatial dimensions of feature map
-        batch_cams = self.smax_weights[class_idxs, :] @ torch.flatten(self.conv_fmap, 2)
+        batch_cams = (self.hook_a * torch.flatten(self.hook_g[0], 2).mean(2)[..., None, None]).sum(1)
         # Normalize feature map
         if normalized:
             batch_cams -= batch_cams.min(dim=2, keepdim=True)[0]
             batch_cams /= batch_cams.max(dim=2, keepdim=True)[0]
+        else:
+            # Add bias if not normalized
+            batch_cams += self.model._modules.get(self.fc_layer).bias.data[class_idxs]
 
-        return batch_cams.view(self.conv_fmap.size(0), len(class_idxs), self.conv_fmap.size(3), self.conv_fmap.size(2)).cpu()
+        return batch_cams.view(self.hook_a.size(0), len(class_idxs), self.hook_a.size(3), self.hook_a.size(2)).cpu()
 
 
 def overlay_mask(img, mask, colormap='jet', alpha=0.7):
