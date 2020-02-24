@@ -10,7 +10,7 @@ from torch.optim.optimizer import Optimizer
 
 
 class Lamb(Optimizer):
-    """Implements the Lamb optimizer from https://arxiv.org/pdf/1904.00962v3.pdf
+    """Implements the Lamb optimizer from https://arxiv.org/pdf/1904.00962v3.pdf.
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
@@ -39,6 +39,7 @@ class Lamb(Optimizer):
 
     def step(self, closure=None):
         """Performs a single optimization step.
+
         Arguments:
             closure (callable, optional): A closure that reevaluates the model
                 and returns the loss.
