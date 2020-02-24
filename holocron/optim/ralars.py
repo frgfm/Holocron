@@ -20,10 +20,11 @@ class RaLars(Optimizer):
         betas (Tuple[float, float], optional): coefficients used for computing running averages of gradient and its square (default: (0.9, 0.999))
         eps (float, optional): term added to the denominator to improve numerical stability (default: 1e-8)
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
+        force_adaptive_momentum (float, optional): should the momentum be adaptive if variance is not tractable (default: False)
         scale_clip (float, optional): the maximal upper bound for the scale factor of LARS
     """
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0,
-                 scale_clip=None):
+                 force_adaptive_momentum=False, scale_clip=None):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -34,6 +35,8 @@ class RaLars(Optimizer):
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
         super(RaLars, self).__init__(params, defaults)
+        # RAdam tweaks
+        self.force_adaptive_momentum = force_adaptive_momentum
         # LARS arguments
         self.scale_clip = scale_clip
         if self.scale_clip is None:
@@ -98,8 +101,12 @@ class RaLars(Optimizer):
                     # Adaptive momentum
                     update.addcdiv_(r_t, exp_avg / bias_correction1, (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
                 else:
-                    # Unadapted momentum
-                    update.add_(exp_avg / bias_correction1)
+                    if self.force_adaptive_momentum:
+                        # Adaptive momentum without variance rectification (Adam)
+                        update.addcdiv_(1, exp_avg / bias_correction1, (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
+                    else:
+                        # Unadapted momentum
+                        update.add_(exp_avg / bias_correction1)
 
                 # Weight decay
                 if group['weight_decay'] != 0:
