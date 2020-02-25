@@ -11,6 +11,9 @@ from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
 
 
+__all__ = ['OneCycleScheduler']
+
+
 class OneCycleScheduler(_LRScheduler):
     """Implements the One Cycle scheduler from https://arxiv.org/pdf/1803.09820.pdf
 
