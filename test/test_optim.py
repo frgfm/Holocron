@@ -121,17 +121,17 @@ class Tester(unittest.TestCase):
 
 
 for opt_name in get_optimizers():
-    def do_test(self, fn_name=opt_name):
+    def opt_test(self, fn_name=opt_name):
         self._test_optimizer(opt_name)
 
-    setattr(Tester, "test_" + opt_name, do_test)
+    setattr(Tester, "test_" + opt_name, opt_test)
 
 
 for wrapper_name in get_wrappers():
-    def do_test(self, fn_name=wrapper_name):
+    def wrap_test(self, fn_name=wrapper_name):
         self._test_wrapper(wrapper_name)
 
-    setattr(Tester, "test_" + wrapper_name, do_test)
+    setattr(Tester, "test_" + wrapper_name, wrap_test)
 
 
 if __name__ == '__main__':
