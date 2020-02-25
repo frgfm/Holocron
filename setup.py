@@ -40,7 +40,7 @@ with open('README.md') as f:
     readme = f.read()
 
 with open('requirements.txt') as f:
-    install_requires = f.read().splitlines()
+    requirements = f.read().splitlines()
 
 setup(
     name=package_name,
