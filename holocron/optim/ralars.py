@@ -44,9 +44,9 @@ class RaLars(Optimizer):
 
     def step(self, closure=None):
         """Performs a single optimization step.
+
         Arguments:
-            closure (callable, optional): A closure that reevaluates the model
-                and returns the loss.
+            closure (callable, optional): A closure that reevaluates the model and returns the loss.
         """
         loss = None
         if closure is not None:
