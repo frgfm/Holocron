@@ -58,11 +58,11 @@ model = nn.Sequential(nn.Conv2d(3, 64, (3, 3)),
 
 ##### Main features
 
-- Res2Net: [paper](https://arxiv.org/abs/1904.01169), based on the great [implementation](https://github.com/gasvn/Res2Net) from gasvn
+- Classification: [Res2Net](https://arxiv.org/abs/1904.01169), based on the great [implementation](https://github.com/gasvn/Res2Net) from gasvn
 
 ##### Usage
 
-Using the models module, you can easily load torch modules or full models:
+Using the `models` module, you can easily load torch modules or full models:
 
 ```python
 from holocron.models.res2net import res2net
@@ -70,24 +70,26 @@ from holocron.models.res2net import res2net
 model = res2net(depth=50, num_classes=10, pretrained=True).eval()
 ```
 
-Then, let's generate a random input image
+
+
+### ops
+
+##### Main features
+
+- boxes: [Distance-IoU & Complete-IoU losses](https://arxiv.org/abs/1911.08287)
+
+##### Usage
+
+Similar usage to `torchvision.ops`
 
 ```python
 import torch
-# Get random image
-img_tensor = torch.rand(1, 3, 600, 600) 
-```
+from holocron.ops.boxes import box_ciou
 
-Now we can move them to GPU and forward them
+boxes1 = torch.tensor([[0, 0, 100, 100], [100, 100, 200, 200]], dtype=torch.float32)
+boxes1 = torch.tensor([[50, 50, 150, 150]], dtype=torch.float32)
 
-```python
-# Move inputs and model to GPU
-if torch.cuda.is_available():
-    model = model.cuda()
-    img_tensor = img_tensor.cuda()
-# Forward
-with torch.no_grad():
-    output = model(img_tensor)
+box_ciou(boxes1, boxes2)
 ```
 
 
@@ -97,7 +99,7 @@ with torch.no_grad():
 ##### Main features
 
 - Optimizer: [LARS](https://arxiv.org/abs/1708.03888), [Lamb](https://arxiv.org/abs/1904.00962), [RAdam](https://arxiv.org/abs/1908.03265) and customized versions (RaLars)
-- Optimizer wrapper: [Lookahead](https://arxiv.org/abs/1907.08610)
+- Optimizer wrapper: [Lookahead](https://arxiv.org/abs/1907.08610), Scout (experimental)
 - Scheduler: [OneCycleScheduler](https://arxiv.org/abs/1803.09820)
 
 ##### Usage
@@ -105,24 +107,15 @@ with torch.no_grad():
 The optimizer wrapper can be used on any `torch.optim.optimizer.Optimizer` object 
 
 ```python
-from torchvision.models.resnet import resnet50
+from torchvision.models.resnet import resnet18
 from holocron.optim import RaLars
 
-model = resnet50()
+model = resnet18()
 # Common usage of optimizer
 optimizer = RaLars(model.parameters(), lr=3e-4)
 # Wrap it with Lookahead
 optimizer = Lookahead(optimizer, sync_rate=0.5, sync_period=6)
-
-for epoch in range(10):
-    # Train for an epoch
-    for input, target in dataset:
-        optimizer.zero_grad()
-        output = model(input)
-        loss = loss_fn(output, target)
-        loss.backward()
-        optimizer.step()
-    val_loss = validate(...)
+# Now use it just like your base optimizer
 ```
 
 
@@ -130,11 +123,11 @@ for epoch in range(10):
 You can use the `OneCycleScheduler` as follows:
 
 ```python
-from torchvision.models.resnet import resnet50
+from torchvision.models.resnet import resnet18
 from torch.optim import Adam
 from holocron.optim.lr_scheduler import OneCycleScheduler
 
-model = resnet50()
+model = resnet18()
 # Let's have different LRs for weight and biases for instance
 bias_params, weight_params = [], []
 for n, p in model.named_parameters():
