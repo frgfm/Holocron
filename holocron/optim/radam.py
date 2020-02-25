@@ -16,7 +16,7 @@ class RAdam(Optimizer):
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
         lr (float, optional): learning rate
-        betas (Tuple[float, float], optional): coefficients used for computing running averages of gradient and its square (default: (0.9, 0.999))
+        betas (Tuple[float, float], optional): coefficients used for running averages (default: (0.9, 0.999))
         eps (float, optional): term added to the denominator to improve numerical stability (default: 1e-8)
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
     """
@@ -92,7 +92,8 @@ class RAdam(Optimizer):
                     # Variance rectification term
                     r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
                     # Adaptive momentum
-                    p.data.addcdiv_(-group['lr'] * r_t, exp_avg / bias_correction1, (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
+                    p.data.addcdiv_(-group['lr'] * r_t, exp_avg / bias_correction1,
+                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
                 else:
                     # Unadapted momentum
                     p.data.add_(-group['lr'], exp_avg / bias_correction1)

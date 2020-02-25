@@ -17,10 +17,10 @@ class RaLars(Optimizer):
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
         lr (float, optional): learning rate
-        betas (Tuple[float, float], optional): coefficients used for computing running averages of gradient and its square (default: (0.9, 0.999))
+        betas (Tuple[float, float], optional): coefficients used for running averages  (default: (0.9, 0.999))
         eps (float, optional): term added to the denominator to improve numerical stability (default: 1e-8)
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
-        force_adaptive_momentum (float, optional): should the momentum be adaptive if variance is not tractable (default: False)
+        force_adaptive_momentum (float, optional): use adaptive momentum if variance is not tractable (default: False)
         scale_clip (float, optional): the maximal upper bound for the scale factor of LARS
     """
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0,
@@ -99,11 +99,13 @@ class RaLars(Optimizer):
                     # Variance rectification term
                     r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
                     # Adaptive momentum
-                    update.addcdiv_(r_t, exp_avg / bias_correction1, (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
+                    update.addcdiv_(r_t, exp_avg / bias_correction1,
+                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
                 else:
                     if self.force_adaptive_momentum:
                         # Adaptive momentum without variance rectification (Adam)
-                        update.addcdiv_(1, exp_avg / bias_correction1, (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
+                        update.addcdiv_(1, exp_avg / bias_correction1,
+                                        (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
                     else:
                         # Unadapted momentum
                         update.add_(exp_avg / bias_correction1)
