@@ -10,12 +10,12 @@ from torch.optim.optimizer import Optimizer
 
 
 class Lamb(Optimizer):
-    """Implements the Lamb optimizer from https://arxiv.org/pdf/1904.00962v3.pdf
+    """Implements the Lamb optimizer from https://arxiv.org/pdf/1904.00962v3.pdf.
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
         lr (float, optional): learning rate
-        betas (Tuple[float, float], optional): coefficients used for computing running averages of gradient and its square (default: (0.9, 0.999))
+        betas (Tuple[float, float], optional): beta coefficients used for running averages (default: (0.9, 0.999))
         eps (float, optional): term added to the denominator to improve numerical stability (default: 1e-8)
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
         scale_clip (tuple, optional): the lower and upper bounds for the weight norm in local LR of LARS
@@ -39,6 +39,7 @@ class Lamb(Optimizer):
 
     def step(self, closure=None):
         """Performs a single optimization step.
+
         Arguments:
             closure (callable, optional): A closure that reevaluates the model
                 and returns the loss.

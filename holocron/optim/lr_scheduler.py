@@ -11,6 +11,9 @@ from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
 
 
+__all__ = ['OneCycleScheduler']
+
+
 class OneCycleScheduler(_LRScheduler):
     """Implements the One Cycle scheduler from https://arxiv.org/pdf/1803.09820.pdf
 
@@ -165,4 +168,5 @@ class OneCycleScheduler(_LRScheduler):
         return lrs
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(max_lr={max(self.max_lrs)}, warmup_ratio={self.warmup_ratio}, base_ratio={self.base_ratio}, final_ratio={self.final_ratio}, phases={self.phases})"
+        return (f"{self.__class__.__name__}(max_lr={max(self.max_lrs)}, warmup_ratio={self.warmup_ratio}, "
+                f"base_ratio={self.base_ratio}, final_ratio={self.final_ratio}, phases={self.phases})")

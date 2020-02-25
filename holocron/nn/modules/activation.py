@@ -8,6 +8,8 @@ Activation modules
 import torch.nn as nn
 from .. import functional as F
 
+__all__ = ['Mish', 'NLReLU']
+
 
 class Mish(nn.Module):
     """Implements the Mish activation module from https://arxiv.org/pdf/1908.08681.pdf"""
