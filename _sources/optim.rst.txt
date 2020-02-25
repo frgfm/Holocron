@@ -15,12 +15,28 @@ Optimizers
     :members:
 .. autoclass:: Lars
     :members:
-.. autoclass:: Lookahead
-    :members:
 .. autoclass:: RAdam
     :members:
 .. autoclass:: RaLars
     :members:
+
+
+Optimizer wrappers
+------------------
+
+:mod:`holocron.optim` implements optimizer wrappers.
+
+A base optimizer should always be passed to the wrapper; e.g., you
+should write your code this way:
+
+    >>> optimizer = ...
+    >>> optimizer = wrapper(optimizer)
+
+.. autoclass:: holocron.optim.wrapper.Lookahead
+    :members:
+.. autoclass:: holocron.optim.wrapper.Scout
+    :members:
+
 
 
 Learning rate schedulers

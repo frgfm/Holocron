@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; holocron 0.1.0a0+52af95a-git documentation</title>
+  <title>Index &mdash; holocron 0.1.0a0+eddcaf1-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.0a0+52af95a
+                0.1.0a0+eddcaf1
               </div>
             
           
@@ -113,6 +113,7 @@
 <li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
@@ -196,6 +197,7 @@
  | <a href="#O"><strong>O</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -203,6 +205,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="utils.html#holocron.utils.ActivationMapper">ActivationMapper (class in holocron.utils)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.add_param_group">add_param_group() (holocron.optim.wrapper.Lookahead method)</a>
+
+      <ul>
+        <li><a href="optim.html#holocron.optim.wrapper.Scout.add_param_group">(holocron.optim.wrapper.Scout method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -267,9 +277,17 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="optim.html#holocron.optim.Lamb">Lamb (class in holocron.optim)</a>
 </li>
+      <li><a href="optim.html#holocron.optim.Lars">Lars (class in holocron.optim)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="optim.html#holocron.optim.Lars">Lars (class in holocron.optim)</a>
+      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.load_state_dict">load_state_dict() (holocron.optim.wrapper.Lookahead method)</a>
+
+      <ul>
+        <li><a href="optim.html#holocron.optim.wrapper.Scout.load_state_dict">(holocron.optim.wrapper.Scout method)</a>
+</li>
+      </ul></li>
+      <li><a href="optim.html#holocron.optim.wrapper.Lookahead">Lookahead (class in holocron.optim.wrapper)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -331,6 +349,14 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="optim.html#holocron.optim.wrapper.Scout">Scout (class in holocron.optim.wrapper)</a>
+</li>
+      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.state_dict">state_dict() (holocron.optim.wrapper.Lookahead method)</a>
+
+      <ul>
+        <li><a href="optim.html#holocron.optim.wrapper.Scout.state_dict">(holocron.optim.wrapper.Scout method)</a>
+</li>
+      </ul></li>
       <li><a href="optim.html#holocron.optim.Lamb.step">step() (holocron.optim.Lamb method)</a>
 
       <ul>
@@ -339,6 +365,30 @@
         <li><a href="optim.html#holocron.optim.RAdam.step">(holocron.optim.RAdam method)</a>
 </li>
         <li><a href="optim.html#holocron.optim.RaLars.step">(holocron.optim.RaLars method)</a>
+</li>
+        <li><a href="optim.html#holocron.optim.wrapper.Lookahead.step">(holocron.optim.wrapper.Lookahead method)</a>
+</li>
+        <li><a href="optim.html#holocron.optim.wrapper.Scout.step">(holocron.optim.wrapper.Scout method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.sync_params">sync_params() (holocron.optim.wrapper.Lookahead method)</a>
+
+      <ul>
+        <li><a href="optim.html#holocron.optim.wrapper.Scout.sync_params">(holocron.optim.wrapper.Scout method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.zero_grad">zero_grad() (holocron.optim.wrapper.Lookahead method)</a>
+
+      <ul>
+        <li><a href="optim.html#holocron.optim.wrapper.Scout.zero_grad">(holocron.optim.wrapper.Scout method)</a>
 </li>
       </ul></li>
   </ul></td>
