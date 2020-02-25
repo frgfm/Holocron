@@ -1,20 +1,39 @@
 import unittest
 import torch
 from torch.nn import CrossEntropyLoss
-from torch.optim import Adam
+from torch.optim import SGD
 from torchvision.models import resnet18
 from holocron import optim
 
 
-class Tester(unittest.TestCase):
+def get_optimizers():
+    # Get all optimizers
+    return [k for k, v in optim.__dict__.items() if callable(v)]
 
-    def _get_model(self, num_classes=50):
-        return resnet18(num_classes=num_classes)
+
+def get_wrappers():
+    # Get all optimizer wrappers
+    return [k for k, v in optim.wrapper.__dict__.items() if callable(v)]
+
+
+def _get_model(num_classes=50):
+    return resnet18(num_classes=num_classes)
+
+
+def _get_learnable_param(model):
+
+    for p in model.parameters():
+        if p.requires_grad:
+            return p
+    raise AssertionError("No learnable parameter found")
+
+
+class Tester(unittest.TestCase):
 
     def _test_lr_scheduler(self, name, lr=1e-4, ratio_preserved=True, **kwargs):
 
         # Get model and optimizer
-        model = self._get_model()
+        model = _get_model()
         # Create param groups
         bias_params, weight_params = [], []
         for n, p in model.named_parameters():
@@ -22,8 +41,8 @@ class Tester(unittest.TestCase):
                 bias_params.append(p)
             else:
                 weight_params.append(p)
-        optimizer = Adam([dict(params=weight_params, lr=2 * lr),
-                          dict(params=bias_params, lr=lr)])
+        optimizer = SGD([dict(params=weight_params, lr=2 * lr),
+                         dict(params=bias_params, lr=lr)])
 
         scheduler = optim.lr_scheduler.__dict__[name](optimizer, **kwargs)
 
@@ -39,19 +58,19 @@ class Tester(unittest.TestCase):
 
         self._test_lr_scheduler('OneCycleScheduler', total_size=steps, cycle_momentum=False)
 
-    def _test_optimizer(self, name, input_shape=(3, 224, 224), nb_batches=4):
+    def _test_optimizer(self, name, lr=1e-4, input_shape=(3, 224, 224), nb_batches=4):
 
         # Get model and optimizer
-        model = self._get_model()
-        optimizer = optim.__dict__[name](model.parameters(), lr=1e-4)
+        model = _get_model()
+        optimizer = optim.__dict__[name](model.parameters(), lr=lr)
         criterion = CrossEntropyLoss()
 
         # Save param value
-        _p = list(model.parameters())[0]
+        _p = _get_learnable_param(model)
         p_val = _p.data.clone()
 
         # Random inputs
-        input_t = torch.rand((nb_batches, 3, 224, 224), dtype=torch.float32)
+        input_t = torch.rand((nb_batches, *input_shape), dtype=torch.float32)
         target = torch.zeros(nb_batches, dtype=torch.long)
 
         # Update
@@ -65,16 +84,54 @@ class Tester(unittest.TestCase):
         self.assertIsNotNone(_p.grad)
         self.assertFalse(torch.equal(_p.data, p_val))
 
+    def _test_wrapper(self, name, lr=1e-4, input_shape=(3, 224, 224), nb_batches=4, **kwargs):
 
-tested_opt = ['Lamb', 'Lars', 'RAdam', 'RaLars']
+        # Get model, optimizer and criterion
+        model = _get_model()
+        # Pick an optimizer whose update is easy to verify
+        optimizer = SGD(model.parameters(), lr=lr)
+        criterion = CrossEntropyLoss()
 
-for opt_name in tested_opt:
+        # Wrap the optimizer
+        wrapper = optim.wrapper.__dict__[name](optimizer, **kwargs)
+
+        # Check gradient reset
+        wrapper.zero_grad()
+        for group in optimizer.param_groups:
+            for p in group['params']:
+                if p.grad is not None:
+                    self.assertTrue(torch.all(p.grad == 0.))
+
+        # Check update step
+        _p = _get_learnable_param(model)
+        p_val = _p.data.clone()
+
+        # Random inputs
+        input_t = torch.rand((nb_batches, *input_shape), dtype=torch.float32)
+        target = torch.zeros(nb_batches, dtype=torch.long)
+
+        # Update
+        output = model(input_t)
+        loss = criterion(output, target)
+        loss.backward()
+        wrapper.step()
+
+        # Check update rule
+        self.assertFalse(torch.equal(_p.data, p_val - lr * _p.grad))
+
+
+for opt_name in get_optimizers():
     def do_test(self, fn_name=opt_name):
-        input_shape = (3, 224, 224)
-        nb_batches = 4
-        self._test_optimizer(opt_name, input_shape, nb_batches)
+        self._test_optimizer(opt_name)
 
     setattr(Tester, "test_" + opt_name, do_test)
+
+
+for wrapper_name in get_wrappers():
+    def do_test(self, fn_name=wrapper_name):
+        self._test_wrapper(wrapper_name)
+
+    setattr(Tester, "test_" + wrapper_name, do_test)
 
 
 if __name__ == '__main__':
