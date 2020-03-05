@@ -13,69 +13,69 @@ from matplotlib import cm
 
 class ActivationMapper(object):
     """Implements a class activation map extractor as described in https://arxiv.org/abs/1512.04150
+    as well as the GradCAM extractor as described in https://arxiv.org/pdf/1610.02391.pdf
 
     Args:
         model (torch.nn.Module): input model
         conv_layer (str): name of the last convolutional layer
-        fc_layer (str): name of the fully connected layer
     """
 
-    hook_a = None
     hook_a, hook_g = None, None
 
-    def __init__(self, model, conv_layer, fc_layer):
+    def __init__(self, model, conv_layer):
 
-        if not hasattr(model, conv_layer) or not hasattr(model, fc_layer):
-            raise ValueError(f"Unable to find submodules {conv_layer} and {fc_layer} in the model")
-        self.conv_layer = conv_layer
-        self.fc_layer = fc_layer
+        if not hasattr(model, conv_layer):
+            raise ValueError(f"Unable to find submodule {conv_layer} in the model")
         self.model = model
         # Forward hook
-        self.model._modules.get(self.conv_layer).register_forward_hook(self.__hook_a)
+        self.model._modules.get(conv_layer).register_forward_hook(self.__hook_a)
         # Backward hook
-        self.model._modules.get(self.conv_layer).register_backward_hook(self.__hook_g)
-        # FC layer
-        if not hasattr(self.model, self.fc_layer):
-            raise ValueError(f'model has no attribute named: {self.model}')
-        elif not isinstance(getattr(self.model, self.fc_layer), torch.nn.Module):
-            raise NotImplementedError('post conv layer needs to be either a torch.nn.Module')
+        self.model._modules.get(conv_layer).register_backward_hook(self.__hook_g)
 
     def __hook_a(self, module, input, output):
         self.hook_a = output.data
 
     def __hook_g(self, module, input, output):
-        self.hook_g = output.grad
+        self.hook_g = output[0].data
 
-    def get_activation_maps(self, class_idxs, normalized=True):
+    def get_activation_maps(self, output, class_idx, normalized=True):
         """Recreate class activation maps
 
         Args:
-            class_idxs (list<int>): class indices for expected activation maps
-            normalized (bool): should the activation map be normalized
+            output (torch.Tensor[N, K]): output of the hooked model
+            class_idx (int): class index for expected activation map
+            normalized (bool, optional): should the activation map be normalized
 
         Returns:
-            batch_cams (torch.Tensor<float>): activation maps of the last forwarded batch
+            torch.Tensor[N, H, W]: activation maps of the last forwarded batch at the hooked layer
         """
-
-        # if any(idx >= self.model._modules.get(self.fc_layer).weight.data.size(0) for idx in class_idxs):
-        #     raise ValueError("Expected class_idx to be lower than number of output classes")
 
         if self.hook_a is None:
             raise TypeError("Inputs need to be forwarded in the model for the conv features to be hooked")
 
-        # Grad
-        fmap_coeffs = torch.flatten(self.hook_g[0][0], 1).mean(1)
-        # Flatten spatial dimensions of feature map
-        batch_cams = (self.hook_a * torch.flatten(self.hook_g[0], 2).mean(2)[..., None, None]).sum(1)
-        # Normalize feature map
-        if normalized:
-            batch_cams -= batch_cams.min(dim=2, keepdim=True)[0]
-            batch_cams /= batch_cams.max(dim=2, keepdim=True)[0]
-        else:
-            # Add bias if not normalized
-            batch_cams += self.model._modules.get(self.fc_layer).bias.data[class_idxs]
+        # One-hot encode the expected class
+        one_hot = torch.zeros(output.shape[-1], dtype=torch.float32)
+        one_hot[class_idx] = 1
+        one_hot.requires_grad_(True).to(output.device)
 
-        return batch_cams.view(self.hook_a.size(0), len(class_idxs), self.hook_a.size(3), self.hook_a.size(2)).cpu()
+        # Backpropagate to get the gradients on the hooked layer
+        loss = (one_hot.unsqueeze(0) * output).sum()
+        self.model.zero_grad()
+        loss.backward(retain_graph=True)
+
+        # Global average pool the gradients over spatial dimensions
+        weights = self.hook_g.data.mean(axis=(2, 3))
+        # Get the feature activation map
+        fmap = self.hook_a.data
+        # Perform the weighted combination to get the CAM
+        batch_cams = torch.relu((weights.view(*weights.shape, 1, 1) * fmap).sum(dim=1))
+
+        # Normalize the CAM
+        if normalized:
+            batch_cams -= batch_cams.flatten(start_dim=1).min().view(-1, 1, 1)
+            batch_cams /= batch_cams.flatten(start_dim=1).max().view(-1, 1, 1)
+
+        return batch_cams
 
 
 def overlay_mask(img, mask, colormap='jet', alpha=0.7):
@@ -84,11 +84,11 @@ def overlay_mask(img, mask, colormap='jet', alpha=0.7):
     Args:
         img (PIL.Image.Image): background image
         mask (PIL.Image.Image): mask to be overlayed in grayscale
-        colormap (str): colormap to be applied on the mask
-        alpha (float): transparency of the background image
+        colormap (str, optional): colormap to be applied on the mask
+        alpha (float, optional): transparency of the background image
 
     Returns:
-        overlayed_img (PIL.Image.Image): overlayed image
+        PIL.Image.Image: overlayed image
     """
 
     if not isinstance(img, Image.Image) or not isinstance(mask, Image.Image):
