@@ -161,7 +161,7 @@ plt.plot(lrs[0], label='Weight LR'); plt.plot(lrs[1], label='Bias LR'); plt.lege
 
 ##### Main features
 
-- Activation mapper: [Discriminative Localization](https://arxiv.org/abs/1512.04150) 
+- Activation mapper: [Discriminative Localization](https://arxiv.org/abs/1512.04150), [Grad-CAM](https://arxiv.org/abs/1610.02391)
 
 ##### Usage
 
@@ -169,6 +169,7 @@ The class activation map (CAM) extractor can be used as follows:
 
 ```python
 import requests
+from io import BytesIO
 from PIL import Image
 import matplotlib.pyplot as plt
 from torchvision.models import resnet50
@@ -178,23 +179,19 @@ from holocron.utils import ActivationMapper, overlay_mask
 
 
 # Pretrained imagenet model
-model = resnet50(pretrained=True).eval()
+model = resnet50(pretrained=True)
 # Specify layer to hook and fully connected
-last_conv_layer = 'layer4'
-fc_layer = 'fc'
+conv_layer = 'layer4'
 
 # Hook the corresponding layer in the model
-cam = ActivationMapper(model, last_conv_layer, fc_layer)
+gradcam = ActivationMapper(model, conv_layer)
 
 # Get a dog image
-URL = 'https://www.woopets.fr/assets/races/000/030/mobile/berger-australien.jpg'
+URL = 'https://www.woopets.fr/assets/races/000/066/big-portrait/border-collie.jpg'
 response = requests.get(URL)
-file_name = URL.split('/')[-1]
-with open(file_name, 'wb') as f:
-    f.write(response.content)
 
 # Forward an image
-pil_img = Image.open(file_name, mode='r').convert('RGB')
+pil_img = Image.open(BytesIO(response.content), mode='r').convert('RGB')
 preprocess = transforms.Compose([
    transforms.Resize((224,224)),
    transforms.ToTensor(),
@@ -209,20 +206,17 @@ classes = {int(key):value for (key, value)
 class_idx = 232
 
 # Use the hooked data to compute activation map
-activation_maps = cam.get_activation_maps([class_idx])
+activation_maps = gradcam.get_activation_maps(out, class_idx)
 # Convert it to PIL image
-# The indexing below means first image in batch and first requested class
-heatmap = to_pil_image(activation_maps[0, 0], mode='F')
+# The indexing below means first image in batch
+heatmap = to_pil_image(activation_maps[0].cpu().numpy(), mode='F')
 
 # Plot the result
-img = Image.open(file_name, mode='r').convert('RGB')
-result = overlay_mask(img, heatmap)
+result = overlay_mask(pil_img, heatmap)
 plt.imshow(result); plt.axis('off'); plt.title(classes.get(class_idx)); plt.tight_layout; plt.show()
 ```
 
-![cam_sample](static/images/cam_sample.png)
-
-
+![gradcam_sample](static/images/gradcam_sample.png)
 
 ## Documentation
 
