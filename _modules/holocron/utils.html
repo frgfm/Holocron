@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils &mdash; holocron 0.1.0a0+eddcaf1-git documentation</title>
+  <title>holocron.utils &mdash; holocron 0.1.0a0+8c1f798-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+eddcaf1
+                0.1.0a0+8c1f798
               </div>
             
           
@@ -196,55 +196,69 @@
 
 <div class="viewcode-block" id="ActivationMapper"><a class="viewcode-back" href="../../utils.html#holocron.utils.ActivationMapper">[docs]</a><span class="k">class</span> <span class="nc">ActivationMapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implements a class activation map extractor as described in https://arxiv.org/abs/1512.04150</span>
+<span class="sd">    as well as the GradCAM extractor as described in https://arxiv.org/pdf/1610.02391.pdf</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): input model</span>
 <span class="sd">        conv_layer (str): name of the last convolutional layer</span>
-<span class="sd">        fc_layer (str): name of the fully connected layer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">conv_fmap</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">hook_a</span><span class="p">,</span> <span class="n">hook_g</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">fc_layer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">):</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fc_layer</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to find submodules </span><span class="si">{conv_layer}</span><span class="s2"> and </span><span class="si">{fc_layer}</span><span class="s2"> in the model&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv_layer</span> <span class="o">=</span> <span class="n">conv_layer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc_layer</span> <span class="o">=</span> <span class="n">fc_layer</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to find submodule </span><span class="si">{conv_layer}</span><span class="s2"> in the model&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
         <span class="c1"># Forward hook</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_layer</span><span class="p">)</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__hook</span><span class="p">)</span>
-        <span class="c1"># Softmax weight</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">smax_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fc_layer</span><span class="p">)</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">conv_layer</span><span class="p">)</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__hook_a</span><span class="p">)</span>
+        <span class="c1"># Backward hook</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">conv_layer</span><span class="p">)</span><span class="o">.</span><span class="n">register_backward_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__hook_g</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv_fmap</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">def</span> <span class="nf">__hook_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hook_a</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">data</span>
 
-    <span class="k">def</span> <span class="nf">get_activation_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_idxs</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__hook_g</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hook_g</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">get_activation_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">class_idx</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Recreate class activation maps</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            class_idxs (list&lt;int&gt;): class indices for expected activation maps</span>
-<span class="sd">            normalized (bool): should the activation map be normalized</span>
+<span class="sd">            output (torch.Tensor[N, K]): output of the hooked model</span>
+<span class="sd">            class_idx (int): class index for expected activation map</span>
+<span class="sd">            normalized (bool, optional): should the activation map be normalized</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            batch_cams (torch.Tensor&lt;float&gt;): activation maps of the last forwarded batch</span>
+<span class="sd">            torch.Tensor[N, H, W]: activation maps of the last forwarded batch at the hooked layer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">idx</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smax_weights</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">class_idxs</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected class_idx to be lower than number of output classes&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_fmap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hook_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Inputs need to be forwarded in the model for the conv features to be hooked&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Flatten spatial dimensions of feature map</span>
-        <span class="n">batch_cams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smax_weights</span><span class="p">[</span><span class="n">class_idxs</span><span class="p">,</span> <span class="p">:]</span> <span class="o">@</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_fmap</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="c1"># Normalize feature map</span>
-        <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
-            <span class="n">batch_cams</span> <span class="o">-=</span> <span class="n">batch_cams</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">batch_cams</span> <span class="o">/=</span> <span class="n">batch_cams</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># One-hot encode the expected class</span>
+        <span class="n">one_hot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">one_hot</span><span class="p">[</span><span class="n">class_idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">one_hot</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">batch_cams</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_fmap</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_idxs</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_fmap</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_fmap</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span></div>
+        <span class="c1"># Backpropagate to get the gradients on the hooked layer</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">one_hot</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">retain_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Global average pool the gradients over spatial dimensions</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hook_g</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="c1"># Get the feature activation map</span>
+        <span class="n">fmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hook_a</span><span class="o">.</span><span class="n">data</span>
+        <span class="c1"># Perform the weighted combination to get the CAM</span>
+        <span class="n">batch_cams</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">((</span><span class="n">weights</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">fmap</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Normalize the CAM</span>
+        <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
+            <span class="n">batch_cams</span> <span class="o">-=</span> <span class="n">batch_cams</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">batch_cams</span> <span class="o">/=</span> <span class="n">batch_cams</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">batch_cams</span></div>
 
 
 <div class="viewcode-block" id="overlay_mask"><a class="viewcode-back" href="../../utils.html#holocron.utils.overlay_mask">[docs]</a><span class="k">def</span> <span class="nf">overlay_mask</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;jet&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
@@ -253,11 +267,11 @@
 <span class="sd">    Args:</span>
 <span class="sd">        img (PIL.Image.Image): background image</span>
 <span class="sd">        mask (PIL.Image.Image): mask to be overlayed in grayscale</span>
-<span class="sd">        colormap (str): colormap to be applied on the mask</span>
-<span class="sd">        alpha (float): transparency of the background image</span>
+<span class="sd">        colormap (str, optional): colormap to be applied on the mask</span>
+<span class="sd">        alpha (float, optional): transparency of the background image</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        overlayed_img (PIL.Image.Image): overlayed image</span>
+<span class="sd">        PIL.Image.Image: overlayed image</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">):</span>

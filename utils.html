@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils &mdash; holocron 0.1.0a0+eddcaf1-git documentation</title>
+  <title>holocron.utils &mdash; holocron 0.1.0a0+8c1f798-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.0a0+eddcaf1
+                0.1.0a0+8c1f798
               </div>
             
           
@@ -187,14 +187,14 @@
 <h1>holocron.utils<a class="headerlink" href="#holocron-utils" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="holocron.utils.ActivationMapper">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">ActivationMapper</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">conv_layer</em>, <em class="sig-param">fc_layer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#ActivationMapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.ActivationMapper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a class activation map extractor as described in <a class="reference external" href="https://arxiv.org/abs/1512.04150">https://arxiv.org/abs/1512.04150</a></p>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">ActivationMapper</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">conv_layer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#ActivationMapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.ActivationMapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a class activation map extractor as described in <a class="reference external" href="https://arxiv.org/abs/1512.04150">https://arxiv.org/abs/1512.04150</a>
+as well as the GradCAM extractor as described in <a class="reference external" href="https://arxiv.org/pdf/1610.02391.pdf">https://arxiv.org/pdf/1610.02391.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (<em>torch.nn.Module</em>) – input model</p></li>
 <li><p><strong>conv_layer</strong> (<em>str</em>) – name of the last convolutional layer</p></li>
-<li><p><strong>fc_layer</strong> (<em>str</em>) – name of the fully connected layer</p></li>
 </ul>
 </dd>
 </dl>
@@ -209,15 +209,15 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>PIL.Image.Image</em>) – background image</p></li>
 <li><p><strong>mask</strong> (<em>PIL.Image.Image</em>) – mask to be overlayed in grayscale</p></li>
-<li><p><strong>colormap</strong> (<em>str</em>) – colormap to be applied on the mask</p></li>
-<li><p><strong>alpha</strong> (<em>python:float</em>) – transparency of the background image</p></li>
+<li><p><strong>colormap</strong> (<em>str</em><em>, </em><em>optional</em>) – colormap to be applied on the mask</p></li>
+<li><p><strong>alpha</strong> (<em>python:float</em><em>, </em><em>optional</em>) – transparency of the background image</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>overlayed image</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>overlayed_img (PIL.Image.Image)</p>
+<dd class="field-odd"><p>PIL.Image.Image</p>
 </dd>
 </dl>
 </dd></dl>
