@@ -42,6 +42,7 @@ jobs:
       # Cached test dependencies
       - restore_cache:
           keys:
+            - v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}-{{ checksum "test/requirements.txt" }}
             - v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
             - v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
             - v1-deps-{{ .Branch }}
@@ -54,12 +55,13 @@ jobs:
             python -m pip install --upgrade pip
             pip install -e .
             pip install -r .circleci/requirements.txt
+            pip install -r test/requirements.txt
 
       - save_cache:
           when: always
           paths:
             - "venv"
-          key: v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}
+          key: v1-deps-{{ .Branch }}-{{ checksum "requirements.txt" }}-{{ checksum ".circleci/requirements.txt" }}-{{ checksum "test/requirements.txt" }}
 
       - run:
           name: Package unit tests
