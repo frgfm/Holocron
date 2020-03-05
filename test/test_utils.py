@@ -27,9 +27,9 @@ class Tester(unittest.TestCase):
         # Forward an image
         pil_img = Image.open(BytesIO(response.content), mode='r').convert('RGB')
         preprocess = transforms.Compose([
-           transforms.Resize((224,224)),
-           transforms.ToTensor(),
-           transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
         img_tensor = preprocess(pil_img)
         out = model(img_tensor.unsqueeze(0))
