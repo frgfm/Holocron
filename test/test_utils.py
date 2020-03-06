@@ -42,3 +42,25 @@ class Tester(unittest.TestCase):
 
         self.assertIsInstance(activation_map, torch.Tensor)
         self.assertEqual(activation_map.shape, (1, 7, 7))
+
+    def test_get_module_names(self):
+
+        # Get a model
+        model = mobilenet_v2().eval()
+
+        layer_names = utils.get_module_names(model)
+
+        self.assertIsInstance(layer_names, list)
+        self.assertEqual(len(layer_names), 141)
+        self.assertEqual(layer_names[42], 'features.6.conv.0.2')
+
+    def test_summary(self):
+
+        # Get a model
+        model = mobilenet_v2().eval()
+
+        exec_sum = utils.summary(model, input_shape=(3, 224, 224))
+
+        self.assertIsInstance(exec_sum, list)
+        self.assertEqual(len(exec_sum), 141)
+        self.assertEqual(exec_sum[42]['output_shape'], (1, 192, 28, 28))
