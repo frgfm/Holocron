@@ -117,11 +117,9 @@ def get_module_names(module, prefix=''):
         list<str>: list of module names
     """
     # Add a full stop between parent and children names
-    if len(prefix) > 0:
-        prefix += '.'
     names = []
     for n, c in module.named_children():
-        current = f"{prefix}{n}"
+        current = f"{prefix}.{n}" if prefix else n
         # Get submodules names
         if any(c.children()):
             names.extend(get_module_names(c, prefix=current))
@@ -166,7 +164,8 @@ def summary(module, input_shape):
                 param_size += p.data.numel() * p.data.element_size()
 
             # Save information
-            summary.append(dict(type=module.__class__.__name__,
+            summary.append(dict(name='',
+                                type=module.__class__.__name__,
                                 output_shape=tuple(output.shape),
                                 nb_params=nb_params,
                                 param_size=param_size,
