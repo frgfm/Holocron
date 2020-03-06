@@ -105,3 +105,27 @@ def overlay_mask(img, mask, colormap='jet', alpha=0.7):
     overlayed_img = Image.fromarray((alpha * np.asarray(img) + (1 - alpha) * overlay).astype(np.uint8))
 
     return overlayed_img
+
+
+def get_module_names(module, prefix=''):
+    """Recursively gets all the module's children names
+
+    Args:
+        module (torch.nn.Module): input module
+        prefix (str, optional): name of the current module
+    Returns:
+        list<str>: list of module names
+    """
+    # Add a full stop between parent and children names
+    if len(prefix) > 0:
+        prefix += '.'
+    names = []
+    for n, c in module.named_children():
+        current = f"{prefix}{n}"
+        # Get submodules names
+        if any(c.children()):
+            names.extend(get_module_names(c, prefix=current))
+        # Add leaf name
+        else:
+            names.append(current)
+    return names
