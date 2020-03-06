@@ -3,7 +3,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 import torch
-from torchvision.models import resnet18
+from torchvision.models import mobilenet_v2
 from torchvision.transforms import transforms
 
 from holocron import utils
@@ -14,8 +14,8 @@ class Tester(unittest.TestCase):
     def test_gradcam(self):
 
         # Get a pretrained model
-        model = resnet18(pretrained=True)
-        conv_layer = 'layer4'
+        model = mobilenet_v2(pretrained=True)
+        conv_layer = 'features'
 
         # Hook the corresponding layer in the model
         gradcam = utils.ActivationMapper(model, conv_layer)
