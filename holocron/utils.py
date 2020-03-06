@@ -129,3 +129,67 @@ def get_module_names(module, prefix=''):
         else:
             names.append(current)
     return names
+
+
+def summary(module, input_shape):
+    """Retrieves module information for an expected input tensor shape
+
+    Args:
+        module (torch.nn.Module): module to inspect
+        input_shape (tuple<int>): expected input shapes
+    Returns:
+        list<dict>: information of each layer
+    """
+
+    # Get device and data types from model
+    p = next(module.parameters())
+    device, dtype = p.device, p.data.dtype
+
+    # input
+    if isinstance(input_shape[0], int):
+        input_shape = [input_shape]
+    dtypes = [dtype] * len(input_shape)
+    # Tensor arguments
+    input_ts = [torch.rand(1, *in_shape).to(dtype=dtype, device=device)
+                for in_shape, dtype in zip(input_shape, dtypes)]
+
+    def __hook_info(module):
+        def __inner_hook(module, input, output):
+
+            # Params
+            nb_params, param_size = 0, 0
+            is_trainable = False
+            for p in module.parameters():
+                if p.requires_grad:
+                    is_trainable = True
+                nb_params += p.data.numel()
+                param_size += p.data.numel() * p.data.element_size()
+
+            # Save information
+            summary.append(dict(type=module.__class__.__name__,
+                                output_shape=tuple(output.shape),
+                                nb_params=nb_params,
+                                param_size=param_size,
+                                output_size=output.data.numel() * output.data.element_size(),
+                                grad_size=output.data.numel() * output.data.element_size() if is_trainable else 0,
+                                is_trainable=is_trainable))
+
+            # Remove the hook by using its handle
+            handle.remove()
+
+        # Hook only leaf children
+        if not any(module.children()):
+            handle = module.register_forward_hook(__inner_hook)
+
+    # Hook model
+    summary = []
+    module.apply(__hook_info)
+
+    # Forward
+    module(*input_ts)
+
+    # Add children names
+    for idx, name in enumerate(get_module_names(module)):
+        summary[idx]['name'] = name
+
+    return summary
