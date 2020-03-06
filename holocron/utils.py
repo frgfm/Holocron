@@ -192,3 +192,50 @@ def module_summary(module, input_shape):
         summary[idx]['name'] = name
 
     return summary
+
+
+def summary(module, input_shape):
+    """Print module summary for an expected input tensor shape
+
+    Args:
+        module (torch.nn.Module): module to inspect
+        input_shape (tuple<int>): expected input shapes
+    """
+
+    # Get the summary dict
+    m_summary = module_summary(module, input_shape)
+
+    # Header
+    summary_str = "_________________________________________________________________________________\n"
+    summary_str += f"{'Layer':<25}  {'Type':<15}  {'Output Shape':<25} {'Param #':<10}\n"
+    summary_str += "=================================================================================\n"
+
+    # Layer information
+    for idx, layer in enumerate(m_summary):
+        # name, type, output_shape, nb_params
+        summary_str += (f"{layer['name']:<25}  {layer['type']:<15}  {str(layer['output_shape']):<25} "
+                        f"{layer['nb_params']:<10,}\n")
+        if idx < len(m_summary) - 1:
+            summary_str += "_________________________________________________________________________________\n"
+
+    # Parameter information
+    summary_str += "=================================================================================\n"
+    tot_params = sum(layer['nb_params'] for layer in m_summary)
+    trainable_params = sum(layer['nb_params'] for layer in m_summary if layer['is_trainable'])
+
+    summary_str += f"Total params: {tot_params:,}\n"
+    summary_str += f"Trainable params: {trainable_params:,}\n"
+    summary_str += f"Non-trainable params: {tot_params - trainable_params:,}\n"
+
+    # RAM information
+    summary_str += "---------------------------------------------------------------------------------\n"
+
+    output_size = sum(layer['output_size'] for layer in m_summary) / 1024 ** 2
+    grad_size = sum(layer['grad_size'] for layer in m_summary) / 1024 ** 2
+
+    summary_str += f"Forward pass size (eval mode): {output_size:.2f} Mb\n"
+    summary_str += f"Forward pass size (train mode): {output_size + grad_size:.2f} Mb\n"
+    summary_str += f"Params size: {sum(layer['param_size'] for layer in m_summary) / 1024 ** 2:.2f} Mb\n"
+    summary_str += "_________________________________________________________________________________\n"
+
+    return summary_str
