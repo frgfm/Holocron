@@ -7,3 +7,7 @@ holocron.utils
 
 .. autofunction:: overlay_mask
 
+.. autofunction:: get_module_names
+
+.. autofunction:: summary
+
