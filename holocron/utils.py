@@ -129,7 +129,7 @@ def get_module_names(module, prefix=''):
     return names
 
 
-def summary(module, input_shape):
+def module_summary(module, input_shape):
     """Retrieves module information for an expected input tensor shape
 
     Args:
@@ -166,7 +166,7 @@ def summary(module, input_shape):
             # Save information
             summary.append(dict(name='',
                                 type=module.__class__.__name__,
-                                output_shape=tuple(output.shape),
+                                output_shape=(None, *output.shape[1:]),
                                 nb_params=nb_params,
                                 param_size=param_size,
                                 output_size=output.data.numel() * output.data.element_size(),

@@ -54,13 +54,13 @@ class Tester(unittest.TestCase):
         self.assertEqual(len(layer_names), 141)
         self.assertEqual(layer_names[42], 'features.6.conv.0.2')
 
-    def test_summary(self):
+    def test_module_summary(self):
 
         # Get a model
         model = mobilenet_v2().eval()
 
-        exec_sum = utils.summary(model, input_shape=(3, 224, 224))
+        exec_sum = utils.module_summary(model, input_shape=(3, 224, 224))
 
         self.assertIsInstance(exec_sum, list)
         self.assertEqual(len(exec_sum), 141)
-        self.assertEqual(exec_sum[42]['output_shape'], (1, 192, 28, 28))
+        self.assertEqual(exec_sum[42]['output_shape'], (None, 192, 28, 28))
