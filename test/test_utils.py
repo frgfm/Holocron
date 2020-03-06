@@ -64,3 +64,12 @@ class Tester(unittest.TestCase):
         self.assertIsInstance(exec_sum, list)
         self.assertEqual(len(exec_sum), 141)
         self.assertEqual(exec_sum[42]['output_shape'], (None, 192, 28, 28))
+
+    def test_summary(self):
+
+        # Get a model
+        model = mobilenet_v2().eval()
+
+        summary_str = utils.summary(model, input_shape=(3, 224, 224))
+
+        self.assertEqual(summary_str.split('\n')[-9], 'Total params: 3,504,872')
