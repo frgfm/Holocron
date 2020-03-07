@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils &mdash; holocron 0.1.0a0+8c1f798-git documentation</title>
+  <title>holocron.utils &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+8c1f798
+                0.1.0a0+c12cd98
               </div>
             
           
@@ -288,6 +288,140 @@
     <span class="n">overlayed_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">((</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">img</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">overlay</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">overlayed_img</span></div>
+
+
+<div class="viewcode-block" id="get_module_names"><a class="viewcode-back" href="../../utils.html#holocron.utils.get_module_names">[docs]</a><span class="k">def</span> <span class="nf">get_module_names</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Recursively gets all the module&#39;s children names</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        module (torch.nn.Module): input module</span>
+<span class="sd">        prefix (str, optional): name of the current module</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        list&lt;str&gt;: list of module names</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Add a full stop between parent and children names</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{prefix}</span><span class="s2">.</span><span class="si">{n}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="n">n</span>
+        <span class="c1"># Get submodules names</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">children</span><span class="p">()):</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_module_names</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">current</span><span class="p">))</span>
+        <span class="c1"># Add leaf name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">names</span></div>
+
+
+<div class="viewcode-block" id="module_summary"><a class="viewcode-back" href="../../utils.html#holocron.utils.module_summary">[docs]</a><span class="k">def</span> <span class="nf">module_summary</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieves module information for an expected input tensor shape</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        module (torch.nn.Module): module to inspect</span>
+<span class="sd">        input_shape (tuple&lt;int&gt;): expected input shapes</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        list&lt;dict&gt;: information of each layer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get device and data types from model</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+    <span class="n">device</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span>
+
+    <span class="c1"># input</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">input_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_shape</span><span class="p">]</span>
+    <span class="n">dtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">dtype</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+    <span class="c1"># Tensor arguments</span>
+    <span class="n">input_ts</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">in_shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">in_shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_shape</span><span class="p">,</span> <span class="n">dtypes</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">__hook_info</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__inner_hook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+
+            <span class="c1"># Params</span>
+            <span class="n">nb_params</span><span class="p">,</span> <span class="n">param_size</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="n">is_trainable</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">:</span>
+                    <span class="n">is_trainable</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">nb_params</span> <span class="o">+=</span> <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+                <span class="n">param_size</span> <span class="o">+=</span> <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">element_size</span><span class="p">()</span>
+
+            <span class="c1"># Save information</span>
+            <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                                <span class="nb">type</span><span class="o">=</span><span class="n">module</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                                <span class="n">output_shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">output</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span>
+                                <span class="n">nb_params</span><span class="o">=</span><span class="n">nb_params</span><span class="p">,</span>
+                                <span class="n">param_size</span><span class="o">=</span><span class="n">param_size</span><span class="p">,</span>
+                                <span class="n">output_size</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="n">output</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">element_size</span><span class="p">(),</span>
+                                <span class="n">grad_size</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="n">output</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">element_size</span><span class="p">()</span> <span class="k">if</span> <span class="n">is_trainable</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+                                <span class="n">is_trainable</span><span class="o">=</span><span class="n">is_trainable</span><span class="p">))</span>
+
+            <span class="c1"># Remove the hook by using its handle</span>
+            <span class="n">handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+
+        <span class="c1"># Hook only leaf children</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">children</span><span class="p">()):</span>
+            <span class="n">handle</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span><span class="n">__inner_hook</span><span class="p">)</span>
+
+    <span class="c1"># Hook model</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">__hook_info</span><span class="p">)</span>
+
+    <span class="c1"># Forward</span>
+    <span class="n">module</span><span class="p">(</span><span class="o">*</span><span class="n">input_ts</span><span class="p">)</span>
+
+    <span class="c1"># Add children names</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">get_module_names</span><span class="p">(</span><span class="n">module</span><span class="p">)):</span>
+        <span class="n">summary</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">return</span> <span class="n">summary</span></div>
+
+
+<div class="viewcode-block" id="summary"><a class="viewcode-back" href="../../utils.html#holocron.utils.summary">[docs]</a><span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Print module summary for an expected input tensor shape</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        module (torch.nn.Module): module to inspect</span>
+<span class="sd">        input_shape (tuple&lt;int&gt;): expected input shapes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get the summary dict</span>
+    <span class="n">m_summary</span> <span class="o">=</span> <span class="n">module_summary</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">)</span>
+
+    <span class="c1"># Header</span>
+    <span class="n">summary_str</span> <span class="o">=</span> <span class="s2">&quot;_________________________________________________________________________________</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;{&#39;Layer&#39;:&lt;25}  {&#39;Type&#39;:&lt;15}  {&#39;Output Shape&#39;:&lt;25} {&#39;Param #&#39;:&lt;10}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;=================================================================================</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Layer information</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m_summary</span><span class="p">):</span>
+        <span class="c1"># name, type, output_shape, nb_params</span>
+        <span class="n">summary_str</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{layer[&#39;name&#39;]:&lt;25}</span><span class="s2">  </span><span class="si">{layer[&#39;type&#39;]:&lt;15}</span><span class="s2">  {str(layer[&#39;output_shape&#39;]):&lt;25} &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{layer[&#39;nb_params&#39;]:&lt;10,}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_summary</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;_________________________________________________________________________________</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Parameter information</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;=================================================================================</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">tot_params</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;nb_params&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span><span class="p">)</span>
+    <span class="n">trainable_params</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;nb_params&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span> <span class="k">if</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;is_trainable&#39;</span><span class="p">])</span>
+
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Total params: </span><span class="si">{tot_params:,}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Trainable params: </span><span class="si">{trainable_params:,}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Non-trainable params: {tot_params - trainable_params:,}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># RAM information</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;---------------------------------------------------------------------------------</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="n">output_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;output_size&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">grad_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;grad_size&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Forward pass size (eval mode): </span><span class="si">{output_size:.2f}</span><span class="s2"> Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Forward pass size (train mode): {output_size + grad_size:.2f} Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Params size: {sum(layer[&#39;param_size&#39;] for layer in m_summary) / 1024 ** 2:.2f} Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;_________________________________________________________________________________</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="k">return</span> <span class="n">summary_str</span></div>
 </pre></div>
 
            </div>

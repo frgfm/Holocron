@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils &mdash; holocron 0.1.0a0+8c1f798-git documentation</title>
+  <title>holocron.utils &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.0a0+8c1f798
+                0.1.0a0+c12cd98
               </div>
             
           
@@ -218,6 +218,60 @@ as well as the GradCAM extractor as described in <a class="reference external" h
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>PIL.Image.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="holocron.utils.get_module_names">
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">get_module_names</code><span class="sig-paren">(</span><em class="sig-param">module</em>, <em class="sig-param">prefix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#get_module_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.get_module_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively gets all the module’s children names</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> (<em>torch.nn.Module</em>) – input module</p></li>
+<li><p><strong>prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – name of the current module</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of module names</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list&lt;str&gt;</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="holocron.utils.module_summary">
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">module_summary</code><span class="sig-paren">(</span><em class="sig-param">module</em>, <em class="sig-param">input_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#module_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.module_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves module information for an expected input tensor shape</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> (<em>torch.nn.Module</em>) – module to inspect</p></li>
+<li><p><strong>input_shape</strong> (<em>tuple&lt;python:int&gt;</em>) – expected input shapes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>information of each layer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list&lt;dict&gt;</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="holocron.utils.summary">
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">summary</code><span class="sig-paren">(</span><em class="sig-param">module</em>, <em class="sig-param">input_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print module summary for an expected input tensor shape</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> (<em>torch.nn.Module</em>) – module to inspect</p></li>
+<li><p><strong>input_shape</strong> (<em>tuple&lt;python:int&gt;</em>) – expected input shapes</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
