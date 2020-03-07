@@ -9,5 +9,7 @@ holocron.utils
 
 .. autofunction:: get_module_names
 
+.. autofunction:: module_summary
+
 .. autofunction:: summary
 
