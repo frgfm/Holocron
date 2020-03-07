@@ -3,7 +3,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 import torch
-from torchvision.models import resnet18
+from torchvision.models import mobilenet_v2
 from torchvision.transforms import transforms
 
 from holocron import utils
@@ -14,8 +14,8 @@ class Tester(unittest.TestCase):
     def test_gradcam(self):
 
         # Get a pretrained model
-        model = resnet18(pretrained=True)
-        conv_layer = 'layer4'
+        model = mobilenet_v2(pretrained=True)
+        conv_layer = 'features'
 
         # Hook the corresponding layer in the model
         gradcam = utils.ActivationMapper(model, conv_layer)
@@ -42,3 +42,34 @@ class Tester(unittest.TestCase):
 
         self.assertIsInstance(activation_map, torch.Tensor)
         self.assertEqual(activation_map.shape, (1, 7, 7))
+
+    def test_get_module_names(self):
+
+        # Get a model
+        model = mobilenet_v2().eval()
+
+        layer_names = utils.get_module_names(model)
+
+        self.assertIsInstance(layer_names, list)
+        self.assertEqual(len(layer_names), 141)
+        self.assertEqual(layer_names[42], 'features.6.conv.0.2')
+
+    def test_module_summary(self):
+
+        # Get a model
+        model = mobilenet_v2().eval()
+
+        exec_sum = utils.module_summary(model, input_shape=(3, 224, 224))
+
+        self.assertIsInstance(exec_sum, list)
+        self.assertEqual(len(exec_sum), 141)
+        self.assertEqual(exec_sum[42]['output_shape'], (None, 192, 28, 28))
+
+    def test_summary(self):
+
+        # Get a model
+        model = mobilenet_v2().eval()
+
+        summary_str = utils.summary(model, input_shape=(3, 224, 224))
+
+        self.assertEqual(summary_str.split('\n')[-9], 'Total params: 3,504,872')

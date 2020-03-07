@@ -105,3 +105,137 @@ def overlay_mask(img, mask, colormap='jet', alpha=0.7):
     overlayed_img = Image.fromarray((alpha * np.asarray(img) + (1 - alpha) * overlay).astype(np.uint8))
 
     return overlayed_img
+
+
+def get_module_names(module, prefix=''):
+    """Recursively gets all the module's children names
+
+    Args:
+        module (torch.nn.Module): input module
+        prefix (str, optional): name of the current module
+    Returns:
+        list<str>: list of module names
+    """
+    # Add a full stop between parent and children names
+    names = []
+    for n, c in module.named_children():
+        current = f"{prefix}.{n}" if prefix else n
+        # Get submodules names
+        if any(c.children()):
+            names.extend(get_module_names(c, prefix=current))
+        # Add leaf name
+        else:
+            names.append(current)
+    return names
+
+
+def module_summary(module, input_shape):
+    """Retrieves module information for an expected input tensor shape
+
+    Args:
+        module (torch.nn.Module): module to inspect
+        input_shape (tuple<int>): expected input shapes
+    Returns:
+        list<dict>: information of each layer
+    """
+
+    # Get device and data types from model
+    p = next(module.parameters())
+    device, dtype = p.device, p.data.dtype
+
+    # input
+    if isinstance(input_shape[0], int):
+        input_shape = [input_shape]
+    dtypes = [dtype] * len(input_shape)
+    # Tensor arguments
+    input_ts = [torch.rand(1, *in_shape).to(dtype=dtype, device=device)
+                for in_shape, dtype in zip(input_shape, dtypes)]
+
+    def __hook_info(module):
+        def __inner_hook(module, input, output):
+
+            # Params
+            nb_params, param_size = 0, 0
+            is_trainable = False
+            for p in module.parameters():
+                if p.requires_grad:
+                    is_trainable = True
+                nb_params += p.data.numel()
+                param_size += p.data.numel() * p.data.element_size()
+
+            # Save information
+            summary.append(dict(name='',
+                                type=module.__class__.__name__,
+                                output_shape=(None, *output.shape[1:]),
+                                nb_params=nb_params,
+                                param_size=param_size,
+                                output_size=output.data.numel() * output.data.element_size(),
+                                grad_size=output.data.numel() * output.data.element_size() if is_trainable else 0,
+                                is_trainable=is_trainable))
+
+            # Remove the hook by using its handle
+            handle.remove()
+
+        # Hook only leaf children
+        if not any(module.children()):
+            handle = module.register_forward_hook(__inner_hook)
+
+    # Hook model
+    summary = []
+    module.apply(__hook_info)
+
+    # Forward
+    module(*input_ts)
+
+    # Add children names
+    for idx, name in enumerate(get_module_names(module)):
+        summary[idx]['name'] = name
+
+    return summary
+
+
+def summary(module, input_shape):
+    """Print module summary for an expected input tensor shape
+
+    Args:
+        module (torch.nn.Module): module to inspect
+        input_shape (tuple<int>): expected input shapes
+    """
+
+    # Get the summary dict
+    m_summary = module_summary(module, input_shape)
+
+    # Header
+    summary_str = "_________________________________________________________________________________\n"
+    summary_str += f"{'Layer':<25}  {'Type':<15}  {'Output Shape':<25} {'Param #':<10}\n"
+    summary_str += "=================================================================================\n"
+
+    # Layer information
+    for idx, layer in enumerate(m_summary):
+        # name, type, output_shape, nb_params
+        summary_str += (f"{layer['name']:<25}  {layer['type']:<15}  {str(layer['output_shape']):<25} "
+                        f"{layer['nb_params']:<10,}\n")
+        if idx < len(m_summary) - 1:
+            summary_str += "_________________________________________________________________________________\n"
+
+    # Parameter information
+    summary_str += "=================================================================================\n"
+    tot_params = sum(layer['nb_params'] for layer in m_summary)
+    trainable_params = sum(layer['nb_params'] for layer in m_summary if layer['is_trainable'])
+
+    summary_str += f"Total params: {tot_params:,}\n"
+    summary_str += f"Trainable params: {trainable_params:,}\n"
+    summary_str += f"Non-trainable params: {tot_params - trainable_params:,}\n"
+
+    # RAM information
+    summary_str += "---------------------------------------------------------------------------------\n"
+
+    output_size = sum(layer['output_size'] for layer in m_summary) / 1024 ** 2
+    grad_size = sum(layer['grad_size'] for layer in m_summary) / 1024 ** 2
+
+    summary_str += f"Forward pass size (eval mode): {output_size:.2f} Mb\n"
+    summary_str += f"Forward pass size (train mode): {output_size + grad_size:.2f} Mb\n"
+    summary_str += f"Params size: {sum(layer['param_size'] for layer in m_summary) / 1024 ** 2:.2f} Mb\n"
+    summary_str += "_________________________________________________________________________________\n"
+
+    return summary_str
