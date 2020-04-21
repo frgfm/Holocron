@@ -22,3 +22,12 @@ Non-linear activations
 
 .. autoclass:: NLReLU
     :members:
+
+Loss functions
+--------------
+
+:hidden:`FocalLoss`
+~~~~~~~~~~~~~~
+
+.. autoclass:: FocalLoss
+    :members:
