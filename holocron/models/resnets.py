@@ -1,10 +1,4 @@
-#!usr/bin/python
 # -*- coding: utf-8 -*-
-
-# --------------------------------------------------------
-# Copyright (c) 2019 Foodvisor
-# Written by François-Guillaume Fernandez
-# --------------------------------------------------------
 
 """
 Implementation of Res2Net
