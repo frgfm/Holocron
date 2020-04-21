@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.0a0+c12cd98
+                0.1.0a0+3cb79c6
               </div>
             
           
@@ -101,12 +101,20 @@
 <li class="toctree-l3"><a class="reference internal" href="#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
 <li class="toctree-l3"><a class="reference internal" href="nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
 </ul>
 </li>
 </ul>
@@ -190,13 +198,13 @@
 <h2>Non-linear activations<a class="headerlink" href="#non-linear-activations" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="mish">
 <h3><span class="hidden-section">Mish</span><a class="headerlink" href="#mish" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.nn.Mish">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">Mish</code><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#Mish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Mish" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Mish activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">https://arxiv.org/pdf/1908.08681.pdf</a></p>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.nn.Mish.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#Mish.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Mish.forward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#Mish.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Mish.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defines the computation performed at every call.</p>
 <p>Should be overridden by all subclasses.</p>
 <div class="admonition note">
@@ -213,16 +221,16 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <div class="section" id="nlrelu">
 <h3><span class="hidden-section">NLReLU</span><a class="headerlink" href="#nlrelu" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.nn.NLReLU">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">NLReLU</code><span class="sig-paren">(</span><em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#NLReLU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.NLReLU" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">NLReLU</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inplace</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#NLReLU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.NLReLU" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Natural-Logarithm ReLU activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.03682.pdf">https://arxiv.org/pdf/1908.03682.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em>) – should the operation be performed inplace</p>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.nn.NLReLU.extra_repr">
 <code class="sig-name descname">extra_repr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#NLReLU.extra_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.NLReLU.extra_repr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the extra representation of the module</p>
@@ -231,9 +239,45 @@ this method in your own modules. Both single-line and multi-line
 strings are acceptable.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.nn.NLReLU.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#NLReLU.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.NLReLU.forward" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#NLReLU.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.NLReLU.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="loss-functions">
+<h2>Loss functions<a class="headerlink" href="#loss-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="focalloss">
+<h3><span class="hidden-section">FocalLoss</span><a class="headerlink" href="#focalloss" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt id="holocron.nn.FocalLoss">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">FocalLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="o">=</span><span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="o">=</span><span class="default_value">'mean'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#FocalLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.FocalLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of Focal Loss as described in <a class="reference external" href="https://arxiv.org/pdf/1708.02002.pdf">https://arxiv.org/pdf/1708.02002.pdf</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gamma</strong> (<em>python:float</em>) – exponent parameter of the focal loss</p></li>
+<li><p><strong>weight</strong> (<em>torch.Tensor</em>) – class weight for loss computation</p></li>
+<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="holocron.nn.FocalLoss.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">target</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#FocalLoss.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.FocalLoss.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defines the computation performed at every call.</p>
 <p>Should be overridden by all subclasses.</p>
 <div class="admonition note">

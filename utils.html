@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
+  <title>holocron.utils &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.0a0+c12cd98
+                0.1.0a0+3cb79c6
               </div>
             
           
@@ -100,12 +100,20 @@
 <li class="toctree-l3"><a class="reference internal" href="nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
 <li class="toctree-l3"><a class="reference internal" href="nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
 </ul>
 </li>
 </ul>
@@ -185,9 +193,9 @@
             
   <div class="section" id="holocron-utils">
 <h1>holocron.utils<a class="headerlink" href="#holocron-utils" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.utils.ActivationMapper">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">ActivationMapper</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">conv_layer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#ActivationMapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.ActivationMapper" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">ActivationMapper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">conv_layer</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#ActivationMapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.ActivationMapper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a class activation map extractor as described in <a class="reference external" href="https://arxiv.org/abs/1512.04150">https://arxiv.org/abs/1512.04150</a>
 as well as the GradCAM extractor as described in <a class="reference external" href="https://arxiv.org/pdf/1610.02391.pdf">https://arxiv.org/pdf/1610.02391.pdf</a></p>
 <dl class="field-list simple">
@@ -200,9 +208,9 @@ as well as the GradCAM extractor as described in <a class="reference external" h
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="holocron.utils.overlay_mask">
-<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">overlay_mask</code><span class="sig-paren">(</span><em class="sig-param">img</em>, <em class="sig-param">mask</em>, <em class="sig-param">colormap='jet'</em>, <em class="sig-param">alpha=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#overlay_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.overlay_mask" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">overlay_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">mask</span></em>, <em class="sig-param"><span class="n">colormap</span><span class="o">=</span><span class="default_value">'jet'</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">0.7</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#overlay_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.overlay_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay a colormapped mask on a background image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -222,9 +230,9 @@ as well as the GradCAM extractor as described in <a class="reference external" h
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="holocron.utils.get_module_names">
-<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">get_module_names</code><span class="sig-paren">(</span><em class="sig-param">module</em>, <em class="sig-param">prefix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#get_module_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.get_module_names" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">get_module_names</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#get_module_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.get_module_names" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recursively gets all the module’s children names</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -242,9 +250,9 @@ as well as the GradCAM extractor as described in <a class="reference external" h
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="holocron.utils.module_summary">
-<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">module_summary</code><span class="sig-paren">(</span><em class="sig-param">module</em>, <em class="sig-param">input_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#module_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.module_summary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">module_summary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module</span></em>, <em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#module_summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.module_summary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves module information for an expected input tensor shape</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -262,9 +270,9 @@ as well as the GradCAM extractor as described in <a class="reference external" h
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="holocron.utils.summary">
-<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">summary</code><span class="sig-paren">(</span><em class="sig-param">module</em>, <em class="sig-param">input_shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.summary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">summary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module</span></em>, <em class="sig-param"><span class="n">input_shape</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils.html#summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.summary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print module summary for an expected input tensor shape</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.wrapper &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
+  <title>holocron.optim.wrapper &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+c12cd98
+                0.1.0a0+3cb79c6
               </div>
             
           
@@ -99,12 +99,20 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
 </ul>
 </li>
 </ul>
@@ -181,8 +189,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.optim.wrapper</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!usr/bin/python</span>
-<span class="c1"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">Lookahead optimizer wrapper</span>
@@ -207,9 +214,9 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_optimizer</span><span class="p">,</span> <span class="n">sync_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">sync_rate</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">sync_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive float lower than 1 as sync_rate, received: </span><span class="si">{sync_rate}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive float lower than 1 as sync_rate, received: </span><span class="si">{</span><span class="n">sync_rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sync_period</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sync_period</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive integer as sync_period, received: </span><span class="si">{sync_period}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive integer as sync_period, received: </span><span class="si">{</span><span class="n">sync_period</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1"># Optimizer attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sync_rate</span><span class="o">=</span><span class="n">sync_rate</span><span class="p">,</span> <span class="n">sync_period</span><span class="o">=</span><span class="n">sync_period</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
@@ -262,9 +269,9 @@
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">format_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39; (&#39;</span>
         <span class="n">optimizer_repr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">base_optimizer=</span><span class="si">{optimizer_repr}</span><span class="s2">,&quot;</span>
+        <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">base_optimizer=</span><span class="si">{</span><span class="n">optimizer_repr</span><span class="si">}</span><span class="s2">,&quot;</span>
         <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{arg}</span><span class="s2">=</span><span class="si">{val}</span><span class="s2">,&quot;</span>
+            <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">,&quot;</span>
         <span class="n">format_string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">)&#39;</span>
         <span class="k">return</span> <span class="n">format_string</span>
 
@@ -325,9 +332,9 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_optimizer</span><span class="p">,</span> <span class="n">sync_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">sync_rate</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">sync_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive float lower than 1 as sync_rate, received: </span><span class="si">{sync_rate}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive float lower than 1 as sync_rate, received: </span><span class="si">{</span><span class="n">sync_rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sync_period</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sync_period</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive integer as sync_period, received: </span><span class="si">{sync_period}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive integer as sync_period, received: </span><span class="si">{</span><span class="n">sync_period</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1"># Optimizer attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sync_rate</span><span class="o">=</span><span class="n">sync_rate</span><span class="p">,</span> <span class="n">sync_period</span><span class="o">=</span><span class="n">sync_period</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
@@ -407,9 +414,9 @@
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">format_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39; (&#39;</span>
         <span class="n">optimizer_repr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">base_optimizer=</span><span class="si">{optimizer_repr}</span><span class="s2">,&quot;</span>
+        <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">base_optimizer=</span><span class="si">{</span><span class="n">optimizer_repr</span><span class="si">}</span><span class="s2">,&quot;</span>
         <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{arg}</span><span class="s2">=</span><span class="si">{val}</span><span class="s2">,&quot;</span>
+            <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">,&quot;</span>
         <span class="n">format_string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">)&#39;</span>
         <span class="k">return</span> <span class="n">format_string</span>
 

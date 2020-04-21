@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
+  <title>holocron.optim &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.0a0+c12cd98
+                0.1.0a0+3cb79c6
               </div>
             
           
@@ -101,12 +101,20 @@
 <li class="toctree-l3"><a class="reference internal" href="nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
 <li class="toctree-l3"><a class="reference internal" href="nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
 </ul>
 </li>
 </ul>
@@ -190,9 +198,9 @@
 the current state and will update the parameters based on the computed gradients.</p>
 <div class="section" id="optimizers">
 <h2>Optimizers<a class="headerlink" href="#optimizers" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.optim.Lamb">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.</code><code class="sig-name descname">Lamb</code><span class="sig-paren">(</span><em class="sig-param">params</em>, <em class="sig-param">lr=0.001</em>, <em class="sig-param">betas=(0.9</em>, <em class="sig-param">0.999)</em>, <em class="sig-param">eps=1e-08</em>, <em class="sig-param">weight_decay=0</em>, <em class="sig-param">scale_clip=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lamb.html#Lamb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.Lamb" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.</code><code class="sig-name descname">Lamb</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">lr</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">betas</span><span class="o">=</span><span class="default_value">0.9, 0.999</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-08</span></em>, <em class="sig-param"><span class="n">weight_decay</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">scale_clip</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lamb.html#Lamb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.Lamb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Lamb optimizer from <a class="reference external" href="https://arxiv.org/pdf/1904.00962v3.pdf">https://arxiv.org/pdf/1904.00962v3.pdf</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -206,9 +214,9 @@ the current state and will update the parameters based on the computed gradients
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.Lamb.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lamb.html#Lamb.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.Lamb.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">closure</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lamb.html#Lamb.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.Lamb.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a single optimization step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -220,9 +228,9 @@ and returns the loss.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.optim.Lars">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.</code><code class="sig-name descname">Lars</code><span class="sig-paren">(</span><em class="sig-param">params</em>, <em class="sig-param">lr=0.001</em>, <em class="sig-param">momentum=0</em>, <em class="sig-param">dampening=0</em>, <em class="sig-param">weight_decay=0</em>, <em class="sig-param">nesterov=False</em>, <em class="sig-param">scale_clip=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lars.html#Lars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.Lars" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.</code><code class="sig-name descname">Lars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">lr</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">momentum</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dampening</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">weight_decay</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">nesterov</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale_clip</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lars.html#Lars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.Lars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the LARS optimizer from <a class="reference external" href="https://arxiv.org/pdf/1708.03888.pdf">https://arxiv.org/pdf/1708.03888.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -238,9 +246,9 @@ parameter groups</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.Lars.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lars.html#Lars.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.Lars.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">closure</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lars.html#Lars.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.Lars.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a single optimization step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -252,9 +260,9 @@ and returns the loss.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.optim.RAdam">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.</code><code class="sig-name descname">RAdam</code><span class="sig-paren">(</span><em class="sig-param">params</em>, <em class="sig-param">lr=0.001</em>, <em class="sig-param">betas=(0.9</em>, <em class="sig-param">0.999)</em>, <em class="sig-param">eps=1e-08</em>, <em class="sig-param">weight_decay=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/radam.html#RAdam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.RAdam" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.</code><code class="sig-name descname">RAdam</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">lr</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">betas</span><span class="o">=</span><span class="default_value">0.9, 0.999</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-08</span></em>, <em class="sig-param"><span class="n">weight_decay</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/radam.html#RAdam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.RAdam" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the RAdam optimizer from <a class="reference external" href="https://arxiv.org/pdf/1908.03265.pdf">https://arxiv.org/pdf/1908.03265.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -267,9 +275,9 @@ and returns the loss.</p>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.RAdam.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/radam.html#RAdam.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.RAdam.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">closure</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/radam.html#RAdam.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.RAdam.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a single optimization step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -280,9 +288,9 @@ and returns the loss.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.optim.RaLars">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.</code><code class="sig-name descname">RaLars</code><span class="sig-paren">(</span><em class="sig-param">params</em>, <em class="sig-param">lr=0.001</em>, <em class="sig-param">betas=(0.9</em>, <em class="sig-param">0.999)</em>, <em class="sig-param">eps=1e-08</em>, <em class="sig-param">weight_decay=0</em>, <em class="sig-param">force_adaptive_momentum=False</em>, <em class="sig-param">scale_clip=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/ralars.html#RaLars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.RaLars" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.</code><code class="sig-name descname">RaLars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">lr</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">betas</span><span class="o">=</span><span class="default_value">0.9, 0.999</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-08</span></em>, <em class="sig-param"><span class="n">weight_decay</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">force_adaptive_momentum</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale_clip</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/ralars.html#RaLars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.RaLars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the RAdam optimizer from <a class="reference external" href="https://arxiv.org/pdf/1908.03265.pdf">https://arxiv.org/pdf/1908.03265.pdf</a>
 with optional Layer-wise adaptive Scaling from <a class="reference external" href="https://arxiv.org/pdf/1708.03888.pdf">https://arxiv.org/pdf/1708.03888.pdf</a></p>
 <dl class="field-list simple">
@@ -298,9 +306,9 @@ with optional Layer-wise adaptive Scaling from <a class="reference external" hre
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.RaLars.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/ralars.html#RaLars.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.RaLars.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">closure</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/ralars.html#RaLars.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.RaLars.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a single optimization step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -321,9 +329,9 @@ should write your code this way:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">wrapper</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.optim.wrapper.Lookahead">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.wrapper.</code><code class="sig-name descname">Lookahead</code><span class="sig-paren">(</span><em class="sig-param">base_optimizer</em>, <em class="sig-param">sync_rate=0.5</em>, <em class="sig-param">sync_period=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.wrapper.</code><code class="sig-name descname">Lookahead</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_optimizer</span></em>, <em class="sig-param"><span class="n">sync_rate</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">sync_period</span><span class="o">=</span><span class="default_value">6</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Lookahead optimizer wrapper from <a class="reference external" href="https://arxiv.org/pdf/1907.08610.pdf">https://arxiv.org/pdf/1907.08610.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -334,9 +342,9 @@ should write your code this way:</p>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Lookahead.add_param_group">
-<code class="sig-name descname">add_param_group</code><span class="sig-paren">(</span><em class="sig-param">param_group</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.add_param_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.add_param_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_param_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_group</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.add_param_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.add_param_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a parameter group to base optimizer (fast weights) and its corresponding slow version</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -345,9 +353,9 @@ should write your code this way:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Lookahead.load_state_dict">
-<code class="sig-name descname">load_state_dict</code><span class="sig-paren">(</span><em class="sig-param">state_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.load_state_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.load_state_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">load_state_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.load_state_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.load_state_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads the optimizer state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -357,7 +365,7 @@ from a call to <a class="reference internal" href="#holocron.optim.wrapper.Looka
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Lookahead.state_dict">
 <code class="sig-name descname">state_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.state_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.state_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the state of the optimizer as a <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>.</p>
@@ -372,9 +380,9 @@ from a call to <a class="reference internal" href="#holocron.optim.wrapper.Looka
 </ul>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Lookahead.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">closure</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a single optimization step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -383,9 +391,9 @@ from a call to <a class="reference internal" href="#holocron.optim.wrapper.Looka
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Lookahead.sync_params">
-<code class="sig-name descname">sync_params</code><span class="sig-paren">(</span><em class="sig-param">sync_rate=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.sync_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.sync_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sync_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sync_rate</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.sync_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.sync_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Synchronize parameters as follows:
 slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</p>
 <dl class="field-list simple">
@@ -395,7 +403,7 @@ slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Lookahead.zero_grad">
 <code class="sig-name descname">zero_grad</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead.zero_grad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead.zero_grad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the gradients of all optimized <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code> s.</p>
@@ -403,9 +411,9 @@ slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.optim.wrapper.Scout">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.wrapper.</code><code class="sig-name descname">Scout</code><span class="sig-paren">(</span><em class="sig-param">base_optimizer</em>, <em class="sig-param">sync_rate=0.5</em>, <em class="sig-param">sync_period=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.wrapper.</code><code class="sig-name descname">Scout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_optimizer</span></em>, <em class="sig-param"><span class="n">sync_rate</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">sync_period</span><span class="o">=</span><span class="default_value">6</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a new optimizer wrapper based on the initial Lookahead paper <a class="reference external" href="https://arxiv.org/pdf/1907.08610.pdf">https://arxiv.org/pdf/1907.08610.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -416,9 +424,9 @@ slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</p>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Scout.add_param_group">
-<code class="sig-name descname">add_param_group</code><span class="sig-paren">(</span><em class="sig-param">param_group</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.add_param_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.add_param_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_param_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_group</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.add_param_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.add_param_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a parameter group to base optimizer (fast weights) and its corresponding slow version</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -427,9 +435,9 @@ slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Scout.load_state_dict">
-<code class="sig-name descname">load_state_dict</code><span class="sig-paren">(</span><em class="sig-param">state_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.load_state_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.load_state_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">load_state_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state_dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.load_state_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.load_state_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads the optimizer state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -439,7 +447,7 @@ from a call to <a class="reference internal" href="#holocron.optim.wrapper.Scout
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Scout.state_dict">
 <code class="sig-name descname">state_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.state_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.state_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the state of the optimizer as a <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>.</p>
@@ -454,9 +462,9 @@ from a call to <a class="reference internal" href="#holocron.optim.wrapper.Scout
 </ul>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Scout.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">closure</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a single optimization step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -465,9 +473,9 @@ from a call to <a class="reference internal" href="#holocron.optim.wrapper.Scout
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Scout.sync_params">
-<code class="sig-name descname">sync_params</code><span class="sig-paren">(</span><em class="sig-param">sync_rate=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.sync_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.sync_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sync_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sync_rate</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.sync_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.sync_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Synchronize parameters as follows:
 slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</p>
 <dl class="field-list simple">
@@ -477,7 +485,7 @@ slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.wrapper.Scout.zero_grad">
 <code class="sig-name descname">zero_grad</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout.zero_grad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout.zero_grad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the gradients of all optimized <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code> s.</p>
@@ -500,9 +508,9 @@ should write your code this way:</p>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 </pre></div>
 </div>
-<dl class="class">
+<dl class="py class">
 <dt id="holocron.optim.lr_scheduler.OneCycleScheduler">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.lr_scheduler.</code><code class="sig-name descname">OneCycleScheduler</code><span class="sig-paren">(</span><em class="sig-param">optimizer</em>, <em class="sig-param">total_size</em>, <em class="sig-param">max_lr=None</em>, <em class="sig-param">warmup_ratio=0.3</em>, <em class="sig-param">phases=None</em>, <em class="sig-param">base_ratio=0.2</em>, <em class="sig-param">final_ratio=None</em>, <em class="sig-param">cycle_momentum=True</em>, <em class="sig-param">base_momentum=0.8</em>, <em class="sig-param">max_momentum=0.9</em>, <em class="sig-param">last_epoch=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lr_scheduler.html#OneCycleScheduler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.lr_scheduler.OneCycleScheduler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.optim.lr_scheduler.</code><code class="sig-name descname">OneCycleScheduler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">total_size</span></em>, <em class="sig-param"><span class="n">max_lr</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">warmup_ratio</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">phases</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">base_ratio</span><span class="o">=</span><span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">final_ratio</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cycle_momentum</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">base_momentum</span><span class="o">=</span><span class="default_value">0.8</span></em>, <em class="sig-param"><span class="n">max_momentum</span><span class="o">=</span><span class="default_value">0.9</span></em>, <em class="sig-param"><span class="n">last_epoch</span><span class="o">=</span><span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lr_scheduler.html#OneCycleScheduler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.lr_scheduler.OneCycleScheduler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the One Cycle scheduler from <a class="reference external" href="https://arxiv.org/pdf/1803.09820.pdf">https://arxiv.org/pdf/1803.09820.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -547,7 +555,7 @@ Default: -1</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="holocron.optim.lr_scheduler.OneCycleScheduler.get_lr">
 <code class="sig-name descname">get_lr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lr_scheduler.html#OneCycleScheduler.get_lr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.optim.lr_scheduler.OneCycleScheduler.get_lr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the learning rate at batch index. This function treats

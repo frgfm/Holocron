@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.activation &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
+  <title>holocron.nn.modules.loss &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -173,7 +173,7 @@
         
           <li><a href="../../../index.html">Module code</a> &raquo;</li>
         
-      <li>holocron.nn.modules.activation</li>
+      <li>holocron.nn.modules.loss</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -188,47 +188,51 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for holocron.nn.modules.activation</h1><div class="highlight"><pre>
+  <h1>Source code for holocron.nn.modules.loss</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Activation modules</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Loss implementations</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Mish&#39;</span><span class="p">,</span> <span class="s1">&#39;NLReLU&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;FocalLoss&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="Mish"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.Mish">[docs]</a><span class="k">class</span> <span class="nc">Mish</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Mish activation module from https://arxiv.org/pdf/1908.08681.pdf&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Mish</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-
-<div class="viewcode-block" id="Mish.forward"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.Mish.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">mish</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span></div></div>
-
-
-<div class="viewcode-block" id="NLReLU"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NLReLU">[docs]</a><span class="k">class</span> <span class="nc">NLReLU</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Natural-Logarithm ReLU activation module from https://arxiv.org/pdf/1908.03682.pdf</span>
+<div class="viewcode-block" id="FocalLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.FocalLoss">[docs]</a><span class="k">class</span> <span class="nc">FocalLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Focal Loss as described in https://arxiv.org/pdf/1708.02002.pdf</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        inplace (bool): should the operation be performed inplace</span>
+<span class="sd">        gamma (float): exponent parameter of the focal loss</span>
+<span class="sd">        weight (torch.Tensor): class weight for loss computation</span>
+<span class="sd">        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient</span>
+<span class="sd">        reduction (str, optional): type of reduction to apply to the final loss</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">__constants__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;inplace&#39;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">NLReLU</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span> <span class="o">=</span> <span class="n">inplace</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FocalLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+        <span class="c1"># Cast class weights if possible</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">weight</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">weight</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span> <span class="o">=</span> <span class="n">ignore_index</span>
+        <span class="c1"># Set the reduction method</span>
+        <span class="k">if</span> <span class="n">reduction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;argument reduction received an incorrect input&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
 
-<div class="viewcode-block" id="NLReLU.forward"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NLReLU.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">nl_relu</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span></div>
+<div class="viewcode-block" id="FocalLoss.forward"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.FocalLoss.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">focal_loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NLReLU.extra_repr"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NLReLU.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">inplace_str</span> <span class="o">=</span> <span class="s1">&#39;inplace=True&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
-        <span class="k">return</span> <span class="n">inplace_str</span></div></div>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(gamma=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="si">}</span><span class="s2">, reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
 </pre></div>
 
            </div>

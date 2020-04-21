@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.ops &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
+  <title>holocron.ops &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.0a0+c12cd98
+                0.1.0a0+3cb79c6
               </div>
             
           
@@ -101,12 +101,20 @@
 <li class="toctree-l3"><a class="reference internal" href="nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
 <li class="toctree-l3"><a class="reference internal" href="nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
 </ul>
 </li>
 </ul>
@@ -191,9 +199,9 @@
 <p class="admonition-title">Note</p>
 <p>Those operators currently do not support TorchScript.</p>
 </div>
-<dl class="function">
+<dl class="py function">
 <dt id="holocron.ops.box_diou">
-<code class="sig-prename descclassname">holocron.ops.</code><code class="sig-name descname">box_diou</code><span class="sig-paren">(</span><em class="sig-param">boxes1</em>, <em class="sig-param">boxes2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_diou"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.ops.box_diou" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.ops.</code><code class="sig-name descname">box_diou</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes1</span></em>, <em class="sig-param"><span class="n">boxes2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_diou"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.ops.box_diou" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Distance-IoU loss as described in <a class="reference external" href="https://arxiv.org/pdf/1911.08287.pdf">https://arxiv.org/pdf/1911.08287.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -211,9 +219,9 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="holocron.ops.box_ciou">
-<code class="sig-prename descclassname">holocron.ops.</code><code class="sig-name descname">box_ciou</code><span class="sig-paren">(</span><em class="sig-param">boxes1</em>, <em class="sig-param">boxes2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_ciou"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.ops.box_ciou" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.ops.</code><code class="sig-name descname">box_ciou</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes1</span></em>, <em class="sig-param"><span class="n">boxes2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_ciou"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.ops.box_ciou" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Complete IoU loss as described in <a class="reference external" href="https://arxiv.org/pdf/1911.08287.pdf">https://arxiv.org/pdf/1911.08287.pdf</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

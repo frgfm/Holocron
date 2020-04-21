@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.radam &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
+  <title>holocron.optim.radam &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+c12cd98
+                0.1.0a0+3cb79c6
               </div>
             
           
@@ -99,12 +99,20 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
 </ul>
 </li>
 </ul>
@@ -181,8 +189,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.optim.radam</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!usr/bin/python</span>
-<span class="c1"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">Rectified Adam optimizer</span>

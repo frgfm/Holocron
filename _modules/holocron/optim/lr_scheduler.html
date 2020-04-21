@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.lr_scheduler &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
+  <title>holocron.optim.lr_scheduler &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+c12cd98
+                0.1.0a0+3cb79c6
               </div>
             
           
@@ -99,12 +99,20 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
 </ul>
 </li>
 </ul>
@@ -181,8 +189,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.optim.lr_scheduler</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!usr/bin/python</span>
-<span class="c1"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -263,7 +270,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">max_lrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">max_lr</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">]</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_lr</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_lr</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;expected {len(optimizer.param_groups)} values for max_lr, got {len(max_lr)}&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> values for max_lr, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">max_lr</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">max_lrs</span> <span class="o">=</span> <span class="n">max_lr</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Take current value as max_lr</span>
@@ -280,7 +287,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">phases</span> <span class="o">=</span> <span class="n">phases</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="s1">&#39;cosine&#39;</span><span class="p">)</span>
         <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="s1">&#39;cosine&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">phase</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">modes</span> <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">phases</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Phases can only take values from </span><span class="si">{modes}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Phases can only take values from </span><span class="si">{</span><span class="n">modes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Handle momentum for specific optimizer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cycle_momentum</span> <span class="o">=</span> <span class="n">cycle_momentum</span>
@@ -351,8 +358,8 @@
         <span class="k">return</span> <span class="n">lrs</span></div>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{self.__class__.__name__}</span><span class="s2">(max_lr={max(self.max_lrs)}, warmup_ratio=</span><span class="si">{self.warmup_ratio}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;base_ratio=</span><span class="si">{self.base_ratio}</span><span class="s2">, final_ratio=</span><span class="si">{self.final_ratio}</span><span class="s2">, phases=</span><span class="si">{self.phases}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(max_lr=</span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_lrs</span><span class="p">)</span><span class="si">}</span><span class="s2">, warmup_ratio=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">warmup_ratio</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;base_ratio=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_ratio</span><span class="si">}</span><span class="s2">, final_ratio=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">final_ratio</span><span class="si">}</span><span class="s2">, phases=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">phases</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

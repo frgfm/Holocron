@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils &mdash; holocron 0.1.0a0+c12cd98-git documentation</title>
+  <title>holocron.utils &mdash; holocron 0.1.0a0+3cb79c6-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+c12cd98
+                0.1.0a0+3cb79c6
               </div>
             
           
@@ -99,12 +99,20 @@
 <li class="toctree-l3"><a class="reference internal" href="../../nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../nn.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../nn.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
 </ul>
 </li>
 </ul>
@@ -181,8 +189,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.utils</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!usr/bin/python</span>
-<span class="c1"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Utils</span>
@@ -208,7 +215,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to find submodule </span><span class="si">{conv_layer}</span><span class="s2"> in the model&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to find submodule </span><span class="si">{</span><span class="n">conv_layer</span><span class="si">}</span><span class="s2"> in the model&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
         <span class="c1"># Forward hook</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">conv_layer</span><span class="p">)</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__hook_a</span><span class="p">)</span>
@@ -302,7 +309,7 @@
     <span class="c1"># Add a full stop between parent and children names</span>
     <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
-        <span class="n">current</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{prefix}</span><span class="s2">.</span><span class="si">{n}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="n">n</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="n">n</span>
         <span class="c1"># Get submodules names</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">children</span><span class="p">()):</span>
             <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_module_names</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">current</span><span class="p">))</span>
@@ -390,14 +397,14 @@
 
     <span class="c1"># Header</span>
     <span class="n">summary_str</span> <span class="o">=</span> <span class="s2">&quot;_________________________________________________________________________________</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;{&#39;Layer&#39;:&lt;25}  {&#39;Type&#39;:&lt;15}  {&#39;Output Shape&#39;:&lt;25} {&#39;Param #&#39;:&lt;10}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Layer&#39;</span><span class="si">:</span><span class="s2">&lt;25</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Type&#39;</span><span class="si">:</span><span class="s2">&lt;15</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Output Shape&#39;</span><span class="si">:</span><span class="s2">&lt;25</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Param #&#39;</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;=================================================================================</span><span class="se">\n</span><span class="s2">&quot;</span>
 
     <span class="c1"># Layer information</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m_summary</span><span class="p">):</span>
         <span class="c1"># name, type, output_shape, nb_params</span>
-        <span class="n">summary_str</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{layer[&#39;name&#39;]:&lt;25}</span><span class="s2">  </span><span class="si">{layer[&#39;type&#39;]:&lt;15}</span><span class="s2">  {str(layer[&#39;output_shape&#39;]):&lt;25} &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{layer[&#39;nb_params&#39;]:&lt;10,}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">summary_str</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&lt;25</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&lt;15</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;output_shape&#39;</span><span class="p">])</span><span class="si">:</span><span class="s2">&lt;25</span><span class="si">}</span><span class="s2"> &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;nb_params&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&lt;10,</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_summary</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;_________________________________________________________________________________</span><span class="se">\n</span><span class="s2">&quot;</span>
 
@@ -406,9 +413,9 @@
     <span class="n">tot_params</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;nb_params&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span><span class="p">)</span>
     <span class="n">trainable_params</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;nb_params&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span> <span class="k">if</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;is_trainable&#39;</span><span class="p">])</span>
 
-    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Total params: </span><span class="si">{tot_params:,}</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Trainable params: </span><span class="si">{trainable_params:,}</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Non-trainable params: {tot_params - trainable_params:,}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Total params: </span><span class="si">{</span><span class="n">tot_params</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Trainable params: </span><span class="si">{</span><span class="n">trainable_params</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Non-trainable params: </span><span class="si">{</span><span class="n">tot_params</span> <span class="o">-</span> <span class="n">trainable_params</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
 
     <span class="c1"># RAM information</span>
     <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;---------------------------------------------------------------------------------</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -416,9 +423,9 @@
     <span class="n">output_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;output_size&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">2</span>
     <span class="n">grad_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;grad_size&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">2</span>
 
-    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Forward pass size (eval mode): </span><span class="si">{output_size:.2f}</span><span class="s2"> Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Forward pass size (train mode): {output_size + grad_size:.2f} Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
-    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Params size: {sum(layer[&#39;param_size&#39;] for layer in m_summary) / 1024 ** 2:.2f} Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Forward pass size (eval mode): </span><span class="si">{</span><span class="n">output_size</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Forward pass size (train mode): </span><span class="si">{</span><span class="n">output_size</span> <span class="o">+</span> <span class="n">grad_size</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">summary_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;Params size: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;param_size&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m_summary</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Mb</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">summary_str</span> <span class="o">+=</span> <span class="s2">&quot;_________________________________________________________________________________</span><span class="se">\n</span><span class="s2">&quot;</span>
 
     <span class="k">return</span> <span class="n">summary_str</span></div>
