@@ -44,6 +44,12 @@ class Tester(unittest.TestCase):
         self.assertTrue(torch.allclose(loss_fn(x, target, reduction='none'),
                                        torch.zeros((num_batches, 20, 20), dtype=x.dtype)))
 
+        # Check that class rescaling works
+        x = torch.rand(num_batches, num_classes, 20, 20)
+        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+        weights = torch.ones(num_classes)
+        self.assertEqual(loss_fn(x, target).item(), loss_fn(x, target, weight=weights).item())
+
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
 
