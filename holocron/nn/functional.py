@@ -60,15 +60,12 @@ def focal_loss(input, target, weight=None, ignore_index=-100, reduction='mean', 
     # Use it to get pt
     pt = (-ce_loss).exp()
 
+    # Weight CE-Loss
+    if isinstance(weight, torch.Tensor) and torch.any(weight != 1):
+        ce_loss = F.cross_entropy(input, target, weight, ignore_index=ignore_index, reduction='none')
+
     # Get focal loss
     loss = (1 - pt) ** gamma * ce_loss
-
-    # Class rescaling
-    if weight is not None:
-        if weight.type() != x.data.type():
-            weight = weight.type_as(x.data)
-        at = weight.view(1, -1, *([1] * (logpt.ndim - 2)))
-        logpt = logpt * at
 
     # Loss reduction
     if reduction == 'mean':
