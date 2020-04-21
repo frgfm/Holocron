@@ -1,4 +1,3 @@
-#!usr/bin/python
 # -*- coding: utf-8 -*-
 
 '''
@@ -9,7 +8,7 @@ import torch
 import torch.nn.functional as F
 
 
-__all__ = ['mish', 'nl_relu']
+__all__ = ['mish', 'nl_relu', 'focal_loss']
 
 
 def mish(x):
@@ -39,3 +38,39 @@ def nl_relu(x, beta=1., inplace=False):
         return torch.log(F.relu_(x).mul_(beta).add_(1), out=x)
     else:
         return torch.log(1 + beta * F.relu(x))
+
+
+def focal_loss(input, target, weight=None, ignore_index=-100, reduction='mean', gamma=2):
+    """Implements the focal loss from https://arxiv.org/pdf/1708.02002.pdf
+
+    Args:
+        x (torch.Tensor): input tensor
+        target (torch.Tensor): target tensor
+        weight (torch.Tensor, optional): manual rescaling of each class
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): reduction method
+
+
+    Returns:
+        torch.Tensor: loss reduced with `reduction` method
+    """
+
+    # Non-reduced CE-Loss = -log(pt)
+    ce_loss = F.cross_entropy(input, target, ignore_index=ignore_index, reduction='none')
+    # Use it to get pt
+    pt = (-ce_loss).exp()
+
+    # Weight CE-Loss
+    if isinstance(weight, torch.Tensor) and torch.any(weight != 1):
+        ce_loss = F.cross_entropy(input, target, weight, ignore_index=ignore_index, reduction='none')
+
+    # Get focal loss
+    loss = (1 - pt) ** gamma * ce_loss
+
+    # Loss reduction
+    if reduction == 'mean':
+        loss = loss.mean()
+    if reduction == 'sum':
+        loss = loss.sum()
+
+    return loss
