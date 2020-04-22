@@ -6,13 +6,12 @@ Package installation setup
 """
 
 import os
-import sys
 import subprocess
 from setuptools import setup, find_packages
 
 version = '0.1.0a0'
 sha = 'Unknown'
-package_name = 'holocron'
+package_name = 'pylocron'
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 
@@ -39,8 +38,10 @@ write_version_file()
 with open('README.md') as f:
     readme = f.read()
 
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+requirements = [
+    'torch>=1.2.0',
+    'torchvision>=0.4.0'
+]
 
 setup(
     name=package_name,

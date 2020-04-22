@@ -1,6 +1,6 @@
 # Holocron
 
-[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5713eafaf8074e27a4013dbfcfad9d69)](https://www.codacy.com/manual/fg/Holocron?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frgfm/Holocron&amp;utm_campaign=Badge_Grade) [![CircleCI](https://circleci.com/gh/frgfm/Holocron.svg?style=shield)](https://circleci.com/gh/frgfm/Holocron) [![codecov](https://codecov.io/gh/frgfm/Holocron/branch/master/graph/badge.svg)](https://codecov.io/gh/frgfm/Holocron) [![Docs](https://img.shields.io/badge/docs-available-blue.svg)](https://frgfm.github.io/Holocron)
+[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5713eafaf8074e27a4013dbfcfad9d69)](https://www.codacy.com/manual/fg/Holocron?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frgfm/Holocron&amp;utm_campaign=Badge_Grade) ![Build Status](https://github.com/frgfm/Holocron/workflows/python-package/badge.svg) [![codecov](https://codecov.io/gh/frgfm/Holocron/branch/master/graph/badge.svg)](https://codecov.io/gh/frgfm/Holocron) [![Docs](https://img.shields.io/badge/docs-available-blue.svg)](https://frgfm.github.io/Holocron)
 
 Implementations of recent Deep Learning tricks in Computer Vision, easily paired up with your favorite framework and model zoo.
 
@@ -10,22 +10,40 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 
 
 
-## Installation
+## Table of Contents
 
-This package was developed using minimal dependencies ([pytorch](https://github.com/pytorch/pytorch), [torchvision](https://github.com/pytorch/vision)). 
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#usage)
+- [Technical Roadmap](#technical-roadmap)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
-**User installation**
 
-```bash
-pip install git+https://github.com/frgfm/Holocron@master
-```
 
-**Developer installation**
+*Note: support of activation mapper and model summary has been dropped and outsourced to independent packages ([torch-cam](https://github.com/frgfm/torch-cam) & [torch-scan](https://github.com/frgfm/torch-scan)) to clarify project scope.*
+
+
+
+## Getting started
+
+### Prerequisites
+
+- Python 3.6 (or more recent)
+- [pip](https://pip.pypa.io/en/stable/)
+
+### Installation
+
+Install the package in developer mode
 
 ```bash
 git clone https://github.com/frgfm/Holocron.git
 pip install -e Holocron/
 ```
+
+*Note: pip package release will soon be available*
 
 
 
@@ -36,6 +54,7 @@ pip install -e Holocron/
 ##### Main features
 
 - Activation: [Mish](https://arxiv.org/abs/1908.08681), [NLReLU](https://arxiv.org/abs/1908.03682)
+- Loss: [Focal Loss](https://arxiv.org/abs/1708.02002)
 
 ##### Usage
 
@@ -157,66 +176,15 @@ plt.plot(lrs[0], label='Weight LR'); plt.plot(lrs[1], label='Bias LR'); plt.lege
 
 
 
-### utils
+## Technical roadmap
 
-##### Main features
+The project is currently under development, here are the objectives for the next releases:
 
-- Activation mapper: [Discriminative Localization](https://arxiv.org/abs/1512.04150), [Grad-CAM](https://arxiv.org/abs/1610.02391)
-
-##### Usage
-
-The class activation map (CAM) extractor can be used as follows: 
-
-```python
-import requests
-from io import BytesIO
-from PIL import Image
-import matplotlib.pyplot as plt
-from torchvision.models import resnet50
-from torchvision.transforms import transforms
-from torchvision.transforms.functional import to_pil_image
-from holocron.utils import ActivationMapper, overlay_mask
+- [ ] Standardize models: standardize models by task.
+- [ ] Speed benchmark: compare `holocron.nn` functions execution speed.
+- [ ] Reference scripts: add reference training scripts
 
 
-# Pretrained imagenet model
-model = resnet50(pretrained=True)
-# Specify layer to hook and fully connected
-conv_layer = 'layer4'
-
-# Hook the corresponding layer in the model
-gradcam = ActivationMapper(model, conv_layer)
-
-# Get a dog image
-URL = 'https://www.woopets.fr/assets/races/000/066/big-portrait/border-collie.jpg'
-response = requests.get(URL)
-
-# Forward an image
-pil_img = Image.open(BytesIO(response.content), mode='r').convert('RGB')
-preprocess = transforms.Compose([
-   transforms.Resize((224,224)),
-   transforms.ToTensor(),
-   transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
-img_tensor = preprocess(pil_img)
-out = model(img_tensor.unsqueeze(0))
-
-# Select the class index
-classes = {int(key):value for (key, value)
-          in requests.get('https://s3.amazonaws.com/outcome-blog/imagenet/labels.json').json().items()}
-class_idx = 232
-
-# Use the hooked data to compute activation map
-activation_maps = gradcam.get_activation_maps(out, class_idx)
-# Convert it to PIL image
-# The indexing below means first image in batch
-heatmap = to_pil_image(activation_maps[0].cpu().numpy(), mode='F')
-
-# Plot the result
-result = overlay_mask(pil_img, heatmap)
-plt.imshow(result); plt.axis('off'); plt.title(classes.get(class_idx)); plt.tight_layout; plt.show()
-```
-
-![gradcam_sample](static/images/gradcam_sample.png)
 
 ## Documentation
 
@@ -224,12 +192,12 @@ The full package documentation is available [here](<https://frgfm.github.io/Holo
 
 
 
-## Submitting a request / Reporting an issue
+## Contributing
 
-Regarding issues, use the following format for the title:
+Please refer to `CONTRIBUTING` if you wish to contribute to this project.
 
-> [Topic] Your Issue name
 
-Example:
 
-> [models resnet] Add spectral normalization option
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.

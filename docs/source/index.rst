@@ -13,7 +13,6 @@ learning tricks in computer vision, easily paired up with your favorite framewor
    nn.functional
    ops
    optim
-   utils
 
 
 .. automodule:: holocron

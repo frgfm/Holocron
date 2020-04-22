@@ -104,6 +104,13 @@ def box_ciou(boxes1, boxes2):
 
     Returns:
         torch.Tensor[M, N]: Complete IoU loss
+
+    Example:
+        >>> import torch
+        >>> from holocron.ops.boxes import box_ciou
+        >>> boxes1 = torch.tensor([[0, 0, 100, 100], [100, 100, 200, 200]], dtype=torch.float32)
+        >>> boxes2 = torch.tensor([[50, 50, 150, 150]], dtype=torch.float32)
+        >>> box_ciou(boxes1, boxes2)
     """
 
     iou = box_iou(boxes1, boxes2)

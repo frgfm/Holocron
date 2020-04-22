@@ -248,7 +248,7 @@ def res2net(depth, num_classes, width_per_group=26, scale=4, pretrained=False, p
         state_dict = None
         try:
             state_dict = load_state_dict_from_url(URLS.get(f"res2net{depth}_{width_per_group}w_{scale}s"),
-                                                  map_location=torch.device('cpu') if not torch.cuda.is_available() else None,
+                                                  map_location=torch.device('cpu'),
                                                   progress=progress)
         except Exception as e:
             warnings.warn(f"While downloading state_dict, received:\n{e}\nSkipping weight loading...")
@@ -259,7 +259,8 @@ def res2net(depth, num_classes, width_per_group=26, scale=4, pretrained=False, p
             missing, unexpected = model.load_state_dict(state_dict, strict=False)
 
             if any(unexpected) or any(not elt.startswith('fc.') for elt in missing):
-                raise KeyError(f"Weight loading failed.\nMissing parameters: {missing}\nUnexpected parameters: {unexpected}")
+                raise KeyError(f"Weight loading failed.\nMissing parameters: {missing}\n"
+                               f"Unexpected parameters: {unexpected}")
 
     return model
 
@@ -290,8 +291,9 @@ def res2next(depth, num_classes, width_per_group=4, scale=4, pretrained=False, p
     if pretrained:
         state_dict = None
         try:
-            state_dict = load_state_dict_from_url(URLS.get(f"res2next{depth}_{width_per_group}w_{scale}s_{kwargs['groups']}c"),
-                                                  map_location=torch.device('cpu') if not torch.cuda.is_available() else None,
+            model_name = f"res2next{depth}_{width_per_group}w_{scale}s_{kwargs['groups']}c"
+            state_dict = load_state_dict_from_url(URLS.get(model_name),
+                                                  map_location=torch.device('cpu'),
                                                   progress=progress)
         except Exception as e:
             warnings.warn(f"While downloading state_dict, received:\n{e}\nSkipping weight loading...")
@@ -302,6 +304,7 @@ def res2next(depth, num_classes, width_per_group=4, scale=4, pretrained=False, p
             missing, unexpected = model.load_state_dict(state_dict, strict=False)
 
             if any(unexpected) or any(not elt.startswith('fc.') for elt in missing):
-                raise KeyError(f"Weight loading failed.\nMissing parameters: {missing}\nUnexpected parameters: {unexpected}")
+                raise KeyError(f"Weight loading failed.\nMissing parameters: {missing}\n"
+                               f"Unexpected parameters: {unexpected}")
 
     return model
