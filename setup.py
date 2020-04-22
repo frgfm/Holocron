@@ -6,7 +6,6 @@ Package installation setup
 """
 
 import os
-import sys
 import subprocess
 from setuptools import setup, find_packages
 
@@ -39,8 +38,10 @@ write_version_file()
 with open('README.md') as f:
     readme = f.read()
 
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+requirements = [
+    'torch>=1.2.0',
+    'torchvision>=0.4.0'
+]
 
 setup(
     name=package_name,
