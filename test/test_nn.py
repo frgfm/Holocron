@@ -56,6 +56,11 @@ class Tester(unittest.TestCase):
         self.assertNotEqual(loss_fn(x, target).item(),
                             loss_fn(x, target, ignore_index=torch.unique(target)[0].item()).item())
 
+        # Test reduction
+        self.assertEqual(loss_fn(x, target, reduction='sum').item(), loss_fn(x, target, reduction='none').sum().item())
+        self.assertEqual(loss_fn(x, target).item(),
+                         (loss_fn(x, target, reduction='sum') / target.view(-1).shape[0]).item())
+
 
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
