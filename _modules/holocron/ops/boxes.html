@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.ops.boxes &mdash; holocron 0.1.0a0+cf07058-git documentation</title>
+  <title>holocron.ops.boxes &mdash; holocron 0.1.0a0+9adf39c-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+cf07058
+                0.1.0a0+9adf39c
               </div>
             
           
@@ -124,7 +124,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../../utils.html">holocron.utils</a></li>
 </ul>
 
             
@@ -295,6 +294,13 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor[M, N]: Complete IoU loss</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; import torch</span>
+<span class="sd">        &gt;&gt;&gt; from holocron.ops.boxes import box_ciou</span>
+<span class="sd">        &gt;&gt;&gt; boxes1 = torch.tensor([[0, 0, 100, 100], [100, 100, 200, 200]], dtype=torch.float32)</span>
+<span class="sd">        &gt;&gt;&gt; boxes2 = torch.tensor([[50, 50, 150, 150]], dtype=torch.float32)</span>
+<span class="sd">        &gt;&gt;&gt; box_ciou(boxes1, boxes2)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">)</span>

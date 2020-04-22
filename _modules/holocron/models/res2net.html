@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.res2net &mdash; holocron 0.1.0a0+cf07058-git documentation</title>
+  <title>holocron.models.res2net &mdash; holocron 0.1.0a0+9adf39c-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+cf07058
+                0.1.0a0+9adf39c
               </div>
             
           
@@ -124,7 +124,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../../utils.html">holocron.utils</a></li>
 </ul>
 
             
@@ -439,7 +438,7 @@
         <span class="n">state_dict</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">state_dict</span> <span class="o">=</span> <span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">URLS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;res2net</span><span class="si">{</span><span class="n">depth</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">width_per_group</span><span class="si">}</span><span class="s2">w_</span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">),</span>
-                                                  <span class="n">map_location</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                                                  <span class="n">map_location</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span>
                                                   <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;While downloading state_dict, received:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">Skipping weight loading...&quot;</span><span class="p">)</span>
@@ -450,7 +449,8 @@
             <span class="n">missing</span><span class="p">,</span> <span class="n">unexpected</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">unexpected</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="ow">not</span> <span class="n">elt</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;fc.&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Weight loading failed.</span><span class="se">\n</span><span class="s2">Missing parameters: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="se">\n</span><span class="s2">Unexpected parameters: </span><span class="si">{</span><span class="n">unexpected</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Weight loading failed.</span><span class="se">\n</span><span class="s2">Missing parameters: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                               <span class="sa">f</span><span class="s2">&quot;Unexpected parameters: </span><span class="si">{</span><span class="n">unexpected</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span></div>
 
@@ -481,8 +481,9 @@
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="n">state_dict</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">URLS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;res2next</span><span class="si">{</span><span class="n">depth</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">width_per_group</span><span class="si">}</span><span class="s2">w_</span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">s_</span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;groups&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">c&quot;</span><span class="p">),</span>
-                                                  <span class="n">map_location</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">model_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;res2next</span><span class="si">{</span><span class="n">depth</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">width_per_group</span><span class="si">}</span><span class="s2">w_</span><span class="si">{</span><span class="n">scale</span><span class="si">}</span><span class="s2">s_</span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;groups&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">c&quot;</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">URLS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model_name</span><span class="p">),</span>
+                                                  <span class="n">map_location</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span>
                                                   <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;While downloading state_dict, received:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">Skipping weight loading...&quot;</span><span class="p">)</span>
@@ -493,7 +494,8 @@
             <span class="n">missing</span><span class="p">,</span> <span class="n">unexpected</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">unexpected</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="ow">not</span> <span class="n">elt</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;fc.&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Weight loading failed.</span><span class="se">\n</span><span class="s2">Missing parameters: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="se">\n</span><span class="s2">Unexpected parameters: </span><span class="si">{</span><span class="n">unexpected</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Weight loading failed.</span><span class="se">\n</span><span class="s2">Missing parameters: </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                               <span class="sa">f</span><span class="s2">&quot;Unexpected parameters: </span><span class="si">{</span><span class="n">unexpected</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span></div>
 </pre></div>
