@@ -23,6 +23,10 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 
 
 
+*Note: support of activation mapper and model summary has been dropped and outsourced to independent packages ([torch-cam](https://github.com/frgfm/torch-cam) & [torch-scan](https://github.com/frgfm/torch-scan)) to clarify project scope.*
+
+
+
 ## Getting started
 
 ### Prerequisites
