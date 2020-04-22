@@ -62,6 +62,24 @@ class Tester(unittest.TestCase):
                          (loss_fn(x, target, reduction='sum') / target.view(-1).shape[0]).item())
 
 
+    def test_focal_loss(self):
+
+        # Common verification
+        self._test_loss_function('focal_loss')
+
+        num_batches = 2
+        num_classes = 4
+        x = torch.rand(num_batches, num_classes, 20, 20)
+        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+
+        # Value check
+        self.assertAlmostEqual(F.focal_loss(x, target, gamma=0).item(),
+                               torch.nn.functional.cross_entropy(x, target).item(), places=5)
+        # Equal probabilities
+        x = torch.ones(num_batches, num_classes, 20, 20)
+        self.assertAlmostEqual((1 - 1 / num_classes) * F.focal_loss(x, target, gamma=0).item(),
+                               F.focal_loss(x, target, gamma=1).item(), places=5)
+
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
 
@@ -107,14 +125,6 @@ for fn_name in act_fns:
     def do_test(self, fn_name=fn_name):
         input_shape = (32, 3, 224, 224)
         self._test_activation_function(fn_name, input_shape)
-
-    setattr(Tester, "test_" + fn_name, do_test)
-
-act_fns = ['focal_loss']
-
-for fn_name in act_fns:
-    def do_test(self, fn_name=fn_name):
-        self._test_loss_function(fn_name)
 
     setattr(Tester, "test_" + fn_name, do_test)
 
