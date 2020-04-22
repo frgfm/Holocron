@@ -50,6 +50,13 @@ class Tester(unittest.TestCase):
         weights = torch.ones(num_classes)
         self.assertEqual(loss_fn(x, target).item(), loss_fn(x, target, weight=weights).item())
 
+        # Check that ignore_index works
+        self.assertEqual(loss_fn(x, target).item(), loss_fn(x, target, ignore_index=num_classes).item())
+        # Ignore an index we are certain to be in the target
+        self.assertNotEqual(loss_fn(x, target).item(),
+                            loss_fn(x, target, ignore_index=torch.unique(target)[0].item()).item())
+
+
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
 
