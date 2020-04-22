@@ -40,7 +40,7 @@ def nl_relu(x, beta=1., inplace=False):
         return torch.log(1 + beta * F.relu(x))
 
 
-def focal_loss(input, target, weight=None, ignore_index=-100, reduction='mean', gamma=2):
+def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamma=2):
     """Implements the focal loss from https://arxiv.org/pdf/1708.02002.pdf
 
     Args:
@@ -55,22 +55,39 @@ def focal_loss(input, target, weight=None, ignore_index=-100, reduction='mean', 
         torch.Tensor: loss reduced with `reduction` method
     """
 
-    # Non-reduced CE-Loss = -log(pt)
-    ce_loss = F.cross_entropy(input, target, ignore_index=ignore_index, reduction='none')
-    # Use it to get pt
-    pt = (-ce_loss).exp()
+    # log(P[class]) = log_softmax(score)[class]
+    logpt = F.log_softmax(x, dim=1)
 
-    # Weight CE-Loss
-    if isinstance(weight, torch.Tensor) and torch.any(weight != 1):
-        ce_loss = F.cross_entropy(input, target, weight, ignore_index=ignore_index, reduction='none')
+    # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
+    logpt = logpt.transpose(1, 0).flatten(1).gather(0, target.view(1, -1)).squeeze()
+    # Ignore index (set loss contribution to 0)
+    if ignore_index >= 0:
+        logpt[target.view(-1) == ignore_index] = 0
 
-    # Get focal loss
-    loss = (1 - pt) ** gamma * ce_loss
+    # Get P(class)
+    pt = logpt.exp()
+
+    # Weight
+    if weight is not None:
+        # Tensor type
+        if weight.type() != x.data.type():
+            weight = weight.type_as(x.data)
+        at = weight.gather(0, target.data.view(-1))
+        logpt *= at
+
+    # Loss
+    loss = -1 * (1 - pt) ** gamma * logpt
 
     # Loss reduction
     if reduction == 'mean':
+        # Ignore contribution to the loss if target is `ignore_index`
+        if ignore_index >= 0:
+            loss = loss[target.view(-1) != ignore_index]
         loss = loss.mean()
-    if reduction == 'sum':
+    elif reduction == 'sum':
         loss = loss.sum()
+    else:
+        # if no reduction, reshape tensor like target
+        loss = loss.view(*target.shape)
 
     return loss
