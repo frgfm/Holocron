@@ -10,22 +10,36 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 
 
 
-## Installation
+## Table of Contents
 
-This package was developed using minimal dependencies ([pytorch](https://github.com/pytorch/pytorch), [torchvision](https://github.com/pytorch/vision)). 
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#usage)
+- [Technical Roadmap](#technical-roadmap)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
-**User installation**
 
-```bash
-pip install git+https://github.com/frgfm/Holocron@master
-```
 
-**Developer installation**
+## Getting started
+
+### Prerequisites
+
+- Python 3.6 (or more recent)
+- [pip](https://pip.pypa.io/en/stable/)
+
+### Installation
+
+Install the package in developer mode
 
 ```bash
 git clone https://github.com/frgfm/Holocron.git
 pip install -e Holocron/
 ```
+
+*Note: pip package release will soon be available*
 
 
 
@@ -166,12 +180,12 @@ The full package documentation is available [here](<https://frgfm.github.io/Holo
 
 
 
-## Submitting a request / Reporting an issue
+## Contributing
 
-Regarding issues, use the following format for the title:
+Please refer to `CONTRIBUTING` if you wish to contribute to this project.
 
-> [Topic] Your Issue name
 
-Example:
 
-> [models resnet] Add spectral normalization option
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
