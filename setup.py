@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 
 version = '0.1.0a0'
 sha = 'Unknown'
-package_name = 'holocron'
+package_name = 'pylocron'
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 
