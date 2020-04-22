@@ -61,7 +61,6 @@ class Tester(unittest.TestCase):
         self.assertEqual(loss_fn(x, target).item(),
                          (loss_fn(x, target, reduction='sum') / target.view(-1).shape[0]).item())
 
-
     def test_focal_loss(self):
 
         # Common verification
