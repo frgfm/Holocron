@@ -59,7 +59,7 @@ def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamm
     logpt = F.log_softmax(x, dim=1)
 
     # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
-    logpt = logpt.transpose(1, -1).reshape(-1, x.shape[1]).index_select(-1, target.view(-1)).diag()
+    logpt = logpt.transpose(1, 0).flatten(1).gather(0, target.view(1, -1)).squeeze()
     # Ignore index (set loss contribution to 0)
     if ignore_index >= 0:
         logpt[target.view(-1) == ignore_index] = 0
