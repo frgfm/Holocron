@@ -36,6 +36,7 @@ pip install -e Holocron/
 ##### Main features
 
 - Activation: [Mish](https://arxiv.org/abs/1908.08681), [NLReLU](https://arxiv.org/abs/1908.03682)
+- Loss: [Focal Loss](https://arxiv.org/abs/1708.02002)
 
 ##### Usage
 
