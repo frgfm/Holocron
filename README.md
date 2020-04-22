@@ -172,6 +172,14 @@ plt.plot(lrs[0], label='Weight LR'); plt.plot(lrs[1], label='Bias LR'); plt.lege
 
 
 
+## Technical roadmap
+
+The project is currently under development, here are the objectives for the next releases:
+
+- [ ] Standardize models: standardize models by task.
+- [ ] Speed benchmark: compare `holocron.nn` functions execution speed.
+- [ ] Reference scripts: add reference training scripts
+
 
 
 ## Documentation
