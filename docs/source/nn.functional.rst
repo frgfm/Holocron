@@ -11,24 +11,20 @@ holocron.nn.functional
 Non-linear activations
 ----------------------
 
-:hidden:`mish`
-~~~~~~~~~~~~~~
+.. autofunction:: mish
 
-.. autoclass:: mish
-    :members:
+.. autofunction:: nl_relu
 
-:hidden:`nl_relu`
-~~~~~~~~~~~~~~~~~
-
-.. autoclass:: nl_relu
-    :members:
 
 
 Loss functions
 --------------
 
-:hidden:`focal_loss`
-~~~~~~~~~~~~~~
+.. autofunction:: focal_loss
 
-.. autoclass:: focal_loss
-    :members:
+
+Downsampling
+------------
+
+.. autofunction:: concat_downsample2d
+
