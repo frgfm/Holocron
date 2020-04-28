@@ -124,6 +124,7 @@ class Tester(unittest.TestCase):
         x = torch.rand(num_batches, num_chan, 4, 4)
 
         # Test functional API
+        self.assertRaises(AssertionError, F.concat_downsample2d, x, 3)
         out = F.concat_downsample2d(x, 2)
         self.assertEqual(out.shape, (num_batches, num_chan * 2 ** 2, x.shape[2] // 2, x.shape[3] // 2))
         self.assertTrue(torch.equal(out, torch.stack((x[..., ::2, ::2],
