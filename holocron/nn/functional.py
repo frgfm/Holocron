@@ -91,3 +91,31 @@ def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamm
         loss = loss.view(*target.shape)
 
     return loss
+
+
+def concat_downsample2d(x, scale_factor):
+    """Implements a loss-less downsampling operation described in https://pjreddie.com/media/files/papers/YOLO9000.pdf
+    by stacking adjacent information on the channel dimension.
+
+    Args:
+        x (torch.Tensor): input tensor
+        scale_factor (int): spatial scaling factor
+
+    Returns:
+        torch.Tensor: downsampled tensor
+    """
+
+    b, c, h, w = x.shape
+
+    if (h % scale_factor != 0) or (w % scale_factor != 0):
+        raise AssertionError("Spatial size of input tensor must be multiples of `scale_factor`")
+    new_h, new_w = h // scale_factor, w // scale_factor
+
+    # N * C * H * W --> N * C * (H/scale_factor) * scale_factor * (W/scale_factor) * scale_factor
+    out = x.view(b, c, new_h, scale_factor, new_w, scale_factor)
+    # Move extra axes to last position to flatten them with channel dimension
+    out = out.permute(0, 2, 4, 1, 3, 5).flatten(3)
+    # Reorder all axes
+    out = out.permute(0, 3, 1, 2)
+
+    return out
