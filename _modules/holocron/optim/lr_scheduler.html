@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.lr_scheduler &mdash; holocron 0.1.0a0+9adf39c-git documentation</title>
+  <title>holocron.optim.lr_scheduler &mdash; holocron 0.1.0a0+3a1b395-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.0a0+9adf39c
+                0.1.0a0+3a1b395
               </div>
             
           
@@ -94,27 +94,15 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.html">holocron.nn</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#non-linear-activations">Non-linear activations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../nn.html#mish"><span class="hidden-section">Mish</span></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-functions">Loss functions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#non-linear-activations">Non-linear activations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#loss-functions">Loss functions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#non-linear-activations">Non-linear activations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ops.html">holocron.ops</a></li>
@@ -313,7 +301,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OneCycleScheduler.get_lr"><a class="viewcode-back" href="../../../optim.html#holocron.optim.lr_scheduler.OneCycleScheduler.get_lr">[docs]</a>    <span class="k">def</span> <span class="nf">get_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculates the learning rate at batch index. This function treats</span>
 <span class="sd">        `self.last_epoch` as the last batch index.</span>
 
@@ -354,7 +342,7 @@
             <span class="k">for</span> <span class="n">param_group</span><span class="p">,</span> <span class="n">momentum</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">,</span> <span class="n">momentums</span><span class="p">):</span>
                 <span class="n">param_group</span><span class="p">[</span><span class="s1">&#39;momentum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">momentum</span>
 
-        <span class="k">return</span> <span class="n">lrs</span></div>
+        <span class="k">return</span> <span class="n">lrs</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(max_lr=</span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_lrs</span><span class="p">)</span><span class="si">}</span><span class="s2">, warmup_ratio=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">warmup_ratio</span><span class="si">}</span><span class="s2">, &quot;</span>

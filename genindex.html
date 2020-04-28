@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; holocron 0.1.0a0+9adf39c-git documentation</title>
+  <title>Index &mdash; holocron 0.1.0a0+3a1b395-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.0a0+9adf39c
+                0.1.0a0+3a1b395
               </div>
             
           
@@ -95,27 +95,15 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.html">holocron.nn</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="nn.html#non-linear-activations">Non-linear activations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="nn.html#mish"><span class="hidden-section">Mish</span></a></li>
-<li class="toctree-l3"><a class="reference internal" href="nn.html#nlrelu"><span class="hidden-section">NLReLU</span></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="nn.html#loss-functions">Loss functions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="nn.html#focalloss"><span class="hidden-section">FocalLoss</span></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#non-linear-activations">Non-linear activations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#non-linear-activations">Non-linear activations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="nn.functional.html#mish"><span class="hidden-section">mish</span></a></li>
-<li class="toctree-l3"><a class="reference internal" href="nn.functional.html#nl-relu"><span class="hidden-section">nl_relu</span></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#loss-functions">Loss functions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="nn.functional.html#focal-loss"><span class="hidden-section">focal_loss</span></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#non-linear-activations">Non-linear activations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a></li>
@@ -192,11 +180,9 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#A"><strong>A</strong></a>
- | <a href="#B"><strong>B</strong></a>
- | <a href="#E"><strong>E</strong></a>
+ <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
  | <a href="#F"><strong>F</strong></a>
- | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -204,21 +190,8 @@
  | <a href="#O"><strong>O</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
- | <a href="#Z"><strong>Z</strong></a>
  
 </div>
-<h2 id="A">A</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.add_param_group">add_param_group() (holocron.optim.wrapper.Lookahead method)</a>
-
-      <ul>
-        <li><a href="optim.html#holocron.optim.wrapper.Scout.add_param_group">(holocron.optim.wrapper.Scout method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -231,10 +204,14 @@
   </ul></td>
 </tr></table>
 
-<h2 id="E">E</h2>
+<h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="nn.html#holocron.nn.NLReLU.extra_repr">extra_repr() (holocron.nn.NLReLU method)</a>
+      <li><a href="nn.functional.html#holocron.nn.functional.concat_downsample2d">concat_downsample2d() (in module holocron.nn.functional)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="nn.html#holocron.nn.ConcatDownsample2d">ConcatDownsample2d (class in holocron.nn)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -242,27 +219,11 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="nn.functional.html#holocron.nn.functional.focal_loss">focal_loss (class in holocron.nn.functional)</a>
+      <li><a href="nn.functional.html#holocron.nn.functional.focal_loss">focal_loss() (in module holocron.nn.functional)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="nn.html#holocron.nn.FocalLoss">FocalLoss (class in holocron.nn)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="nn.html#holocron.nn.FocalLoss.forward">forward() (holocron.nn.FocalLoss method)</a>
-
-      <ul>
-        <li><a href="nn.html#holocron.nn.Mish.forward">(holocron.nn.Mish method)</a>
-</li>
-        <li><a href="nn.html#holocron.nn.NLReLU.forward">(holocron.nn.NLReLU method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="G">G</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="optim.html#holocron.optim.lr_scheduler.OneCycleScheduler.get_lr">get_lr() (holocron.optim.lr_scheduler.OneCycleScheduler method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -308,16 +269,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="optim.html#holocron.optim.Lamb">Lamb (class in holocron.optim)</a>
 </li>
-      <li><a href="optim.html#holocron.optim.Lars">Lars (class in holocron.optim)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.load_state_dict">load_state_dict() (holocron.optim.wrapper.Lookahead method)</a>
-
-      <ul>
-        <li><a href="optim.html#holocron.optim.wrapper.Scout.load_state_dict">(holocron.optim.wrapper.Scout method)</a>
+      <li><a href="optim.html#holocron.optim.Lars">Lars (class in holocron.optim)</a>
 </li>
-      </ul></li>
       <li><a href="optim.html#holocron.optim.wrapper.Lookahead">Lookahead (class in holocron.optim.wrapper)</a>
 </li>
   </ul></td>
@@ -328,7 +283,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="nn.html#holocron.nn.Mish">Mish (class in holocron.nn)</a>
 </li>
-      <li><a href="nn.functional.html#holocron.nn.functional.mish">mish (class in holocron.nn.functional)</a>
+      <li><a href="nn.functional.html#holocron.nn.functional.mish">mish() (in module holocron.nn.functional)</a>
 </li>
       <li>
     module
@@ -349,7 +304,7 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="nn.functional.html#holocron.nn.functional.nl_relu">nl_relu (class in holocron.nn.functional)</a>
+      <li><a href="nn.functional.html#holocron.nn.functional.nl_relu">nl_relu() (in module holocron.nn.functional)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -389,46 +344,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="optim.html#holocron.optim.wrapper.Scout">Scout (class in holocron.optim.wrapper)</a>
 </li>
-      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.state_dict">state_dict() (holocron.optim.wrapper.Lookahead method)</a>
-
-      <ul>
-        <li><a href="optim.html#holocron.optim.wrapper.Scout.state_dict">(holocron.optim.wrapper.Scout method)</a>
-</li>
-      </ul></li>
-      <li><a href="optim.html#holocron.optim.Lamb.step">step() (holocron.optim.Lamb method)</a>
-
-      <ul>
-        <li><a href="optim.html#holocron.optim.Lars.step">(holocron.optim.Lars method)</a>
-</li>
-        <li><a href="optim.html#holocron.optim.RAdam.step">(holocron.optim.RAdam method)</a>
-</li>
-        <li><a href="optim.html#holocron.optim.RaLars.step">(holocron.optim.RaLars method)</a>
-</li>
-        <li><a href="optim.html#holocron.optim.wrapper.Lookahead.step">(holocron.optim.wrapper.Lookahead method)</a>
-</li>
-        <li><a href="optim.html#holocron.optim.wrapper.Scout.step">(holocron.optim.wrapper.Scout method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.sync_params">sync_params() (holocron.optim.wrapper.Lookahead method)</a>
-
-      <ul>
-        <li><a href="optim.html#holocron.optim.wrapper.Scout.sync_params">(holocron.optim.wrapper.Scout method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="Z">Z</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="optim.html#holocron.optim.wrapper.Lookahead.zero_grad">zero_grad() (holocron.optim.wrapper.Lookahead method)</a>
-
-      <ul>
-        <li><a href="optim.html#holocron.optim.wrapper.Scout.zero_grad">(holocron.optim.wrapper.Scout method)</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 

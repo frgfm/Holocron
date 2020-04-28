@@ -11,23 +11,17 @@ holocron.nn
 Non-linear activations
 ----------------------
 
-:hidden:`Mish`
-~~~~~~~~~~~~~~
-
 .. autoclass:: Mish
-    :members:
-
-:hidden:`NLReLU`
-~~~~~~~~~~~~~~~~
 
 .. autoclass:: NLReLU
-    :members:
 
 Loss functions
 --------------
 
-:hidden:`FocalLoss`
-~~~~~~~~~~~~~~
-
 .. autoclass:: FocalLoss
-    :members:
+
+
+Downsampling
+------------
+
+.. autoclass:: ConcatDownsample2d
