@@ -12,13 +12,12 @@ Optimizers
 ----------
 
 .. autoclass:: Lamb
-    :members:
+
 .. autoclass:: Lars
-    :members:
+
 .. autoclass:: RAdam
-    :members:
+
 .. autoclass:: RaLars
-    :members:
 
 
 Optimizer wrappers
@@ -33,10 +32,8 @@ should write your code this way:
     >>> optimizer = wrapper(optimizer)
 
 .. autoclass:: holocron.optim.wrapper.Lookahead
-    :members:
-.. autoclass:: holocron.optim.wrapper.Scout
-    :members:
 
+.. autoclass:: holocron.optim.wrapper.Scout
 
 
 Learning rate schedulers
@@ -56,4 +53,4 @@ should write your code this way:
     >>>     scheduler.step()
 
 .. autoclass:: holocron.optim.lr_scheduler.OneCycleScheduler
-    :members:
+

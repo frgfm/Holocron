@@ -2,7 +2,7 @@ import unittest
 import inspect
 import torch
 from holocron.nn import functional as F
-from holocron.nn.modules import activation, loss
+from holocron.nn.modules import activation, loss, downsample
 
 
 class Tester(unittest.TestCase):
@@ -116,6 +116,26 @@ class Tester(unittest.TestCase):
         criterion = loss.__dict__[name](reduction='none')
         self.assertTrue(torch.allclose(criterion(x, target),
                                        torch.zeros((num_batches, 20, 20), dtype=x.dtype)))
+
+    def test_concatdownsample2d(self):
+
+        num_batches = 2
+        num_chan = 4
+        x = torch.rand(num_batches, num_chan, 4, 4)
+
+        # Test functional API
+        self.assertRaises(AssertionError, F.concat_downsample2d, x, 3)
+        out = F.concat_downsample2d(x, 2)
+        self.assertEqual(out.shape, (num_batches, num_chan * 2 ** 2, x.shape[2] // 2, x.shape[3] // 2))
+        self.assertTrue(torch.equal(out, torch.stack((x[..., ::2, ::2],
+                                                      x[..., ::2, 1::2],
+                                                      x[..., 1::2, ::2],
+                                                      x[..., 1::2, 1::2]), dim=2).view(num_batches, -1,
+                                                                                       x.shape[2] // 2,
+                                                                                       x.shape[3] // 2)))
+        # Test module
+        mod = downsample.ConcatDownsample2d(2)
+        self.assertTrue(torch.equal(mod(x), out))
 
 
 act_fns = ['mish', 'nl_relu']
