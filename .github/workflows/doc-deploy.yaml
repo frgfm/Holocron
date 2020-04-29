@@ -34,7 +34,7 @@ jobs:
 
       - name: Build documentation
         run: |
-          sphinx-build docs/source docs/build -a
+          sphinx-build docs/source docs/build -a -v
 
       - name: Install SSH Client 🔑
         uses: webfactory/ssh-agent@v0.2.0
