@@ -15,13 +15,14 @@
 # sys.path.insert(0, os.path.abspath('.'))
 import holocron
 import sphinx_rtd_theme
+from datetime import datetime
 
 
 # -- Project information -----------------------------------------------------
 
 master_doc = 'index'
 project = 'holocron'
-copyright = '2019, François-Guillaume Fernandez'
+copyright = f"{datetime.now().year}, François-Guillaume Fernandez"
 author = 'François-Guillaume Fernandez'
 
 # The full version, including alpha/beta/rc tags
@@ -47,9 +48,7 @@ extensions = [
 ]
 
 napoleon_use_ivar = True
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+source_suffix = '.rst'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -84,12 +83,10 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_context = {
-    'css_files': [
-        'https://fonts.googleapis.com/css?family=Lato',
-        '_static/css/my_theme.css'
-    ],
-}
+html_css_files = [
+    'https://fonts.googleapis.com/css?family=Lato',
+    'css/my_theme.css'
+]
 
 
 # -- A patch that prevents Sphinx from cross-referencing ivar tags -------
