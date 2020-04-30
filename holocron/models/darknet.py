@@ -72,7 +72,7 @@ class DarknetBody(nn.Module):
 
 class Darknet(nn.Module):
 
-    def __init__(self, layout, num_classes):
+    def __init__(self, layout, num_classes=20):
 
         super().__init__()
 
@@ -91,7 +91,7 @@ class Darknet(nn.Module):
         return x
 
 
-def darknet19(num_classes):
+def darknet19(num_classes=20):
     """Implements Darknet19 as described in https://pjreddie.com/media/files/papers/YOLO9000.pdf
 
     Args:
