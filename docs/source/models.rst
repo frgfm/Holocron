@@ -17,7 +17,7 @@ The following datasets are available:
 Classification
 ==============
 
-Classification models expects a 4D image tensor as an input (N x C x H x W) and returns a 2D output (N x K).
+Classification models expect a 4D image tensor as an input (N x C x H x W) and returns a 2D output (N x K).
 The output represents the classification scores for each output classes.
 
 .. code:: python
