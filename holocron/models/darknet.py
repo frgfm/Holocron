@@ -92,7 +92,8 @@ class Darknet(nn.Module):
 
 
 def darknet19(num_classes=20):
-    """Implements Darknet19 as described in https://pjreddie.com/media/files/papers/YOLO9000.pdf
+    """Darknet-19 from
+    `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
 
     Args:
         num_classes (int, optional): number of output classes
