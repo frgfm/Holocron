@@ -44,8 +44,7 @@ class YOLOv2(nn.Module):
             nn.LeakyReLU(0.1, inplace=True),
             conv3x3(layout[-1][0], layout[-1][0]),
             nn.BatchNorm2d(layout[-1][0]),
-            nn.LeakyReLU(0.1, inplace=True)
-            )
+            nn.LeakyReLU(0.1, inplace=True))
 
         self.block6 = nn.Sequential(
             conv3x3(layout[-1][0] + layout[-2][0] * 2 ** 2, layout[-1][0]),
@@ -83,9 +82,6 @@ class YOLOv2(nn.Module):
         # Cell offset
         c_x = torch.arange(0, w, dtype=torch.float) * img_w / w
         c_y = torch.arange(0, h, dtype=torch.float) * img_h / h
-        # Width & height priors
-        p_w = self.anchors[:, 0]
-        p_h = self.anchors[:, 1]
         # Box coordinates
         b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)).view(b, -1, self.anchors.shape[0])
         b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)).view(b, -1, self.anchors.shape[0])
@@ -204,7 +200,6 @@ class YOLOv2(nn.Module):
             detections.append(dict(boxes=coords, scores=scores, labels=labels))
 
         return detections
-
 
     def forward(self, x, gt_boxes=None, gt_labels=None):
 
