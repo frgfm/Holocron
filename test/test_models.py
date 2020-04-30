@@ -25,6 +25,21 @@ class Tester(unittest.TestCase):
         self.assertEqual(out.shape[0], x.shape[0])
         self.assertEqual(out.shape[-1], num_classes)
 
+    def _test_detection_model(self, name):
+
+        num_classes = 10
+        x = torch.rand((2, 3, 224, 224))
+        model = models.__dict__[name](num_classes=num_classes).eval()
+        with torch.no_grad():
+            out = model(x)
+
+        self.assertIsInstance(out, list)
+        self.assertEqual(len(out), x.shape[0])
+        if len(out) > 0:
+            self.assertIsInstance(out[0].get('boxes'), torch.Tensor)
+            self.assertIsInstance(out[0].get('scores'), torch.Tensor)
+            self.assertIsInstance(out[0].get('labels'), torch.Tensor)
+
 
 for model_name in ['res2net', 'res2next']:
     def do_test(self, model_name=model_name):
@@ -36,6 +51,13 @@ for model_name in ['res2net', 'res2next']:
 for model_name in ['darknet19']:
     def do_test(self, model_name=model_name):
         self._test_classification_model(model_name)
+
+    setattr(Tester, "test_" + model_name, do_test)
+
+
+for model_name in ['yolov2']:
+    def do_test(self, model_name=model_name):
+        self._test_detection_model(model_name)
 
     setattr(Tester, "test_" + model_name, do_test)
 
