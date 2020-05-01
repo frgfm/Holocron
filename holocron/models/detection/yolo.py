@@ -183,6 +183,7 @@ class YOLOv2(nn.Module):
                 # NMS
                 # Switch to xmin, ymin, xmax, ymax coords
                 coords[..., -2:] += coords[..., :2]
+                coords = coords.clamp_(0, 1)
                 is_kept = nms(coords, scores, iou_threshold=rpn_nms_thresh)
                 coords = coords[is_kept]
                 scores = scores[is_kept]
