@@ -18,20 +18,13 @@ __all__ = ['YOLOv2', 'yolov2']
 
 class YOLOv2(nn.Module):
 
-    # Default anchors
-    anchors = torch.tensor([[1.08, 1.19], [3.42, 4.41], [6.63, 11.38], [9.42, 5.11], [16.62, 10.52]])
-    # Losses
-    objectness_loss = None
-    bbox_loss = None
-    clf_loss = None
-
     def __init__(self, layout, num_classes=20, anchors=None):
 
         super().__init__()
 
         # Priors computed using K-means
-        if isinstance(anchors, torch.Tensor):
-            self.anchors = anchors
+        if anchors is None:
+            anchors = torch.tensor([[1.08, 1.19], [3.42, 4.41], [6.63, 11.38], [9.42, 5.11], [16.62, 10.52]])
         self.num_classes = num_classes
 
         self.backbone = DarknetBody(layout, passthrough=True)
@@ -53,6 +46,9 @@ class YOLOv2(nn.Module):
 
         # Each box has P_objectness, 4 coords, and score for each class
         self.head = conv1x1(layout[-1][0], self.num_anchors * (5 + num_classes))
+
+        # Register losses
+        self.register_buffer('anchors', anchors)
 
     @property
     def num_anchors(self):
