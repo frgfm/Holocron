@@ -99,7 +99,8 @@ class YOLOv2(nn.Module):
         return b_coords, b_o, b_scores
 
     def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
-        """Updates the detector losses
+        """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
+        <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
         Args:
             pred_boxes (torch.Tensor[N, H * W, num_anchors, 4]): relative coordinates in format (x, y, w, h)
@@ -107,6 +108,9 @@ class YOLOv2(nn.Module):
             pred_scores (torch.Tensor[N, H * W, num_anchors, num_classes]): classification scores
             gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes
             gt_labels (list<torch.Tensor>): ground truth labels
+
+        Returns:
+            dict: dictionary of losses
         """
 
         # Reset losses
