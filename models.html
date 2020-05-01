@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models &mdash; holocron 0.1.0a0+54b632b-git documentation</title>
+  <title>holocron.models &mdash; holocron 0.1.0a0+814836a-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.0a0+54b632b
+                0.1.0a0+814836a
               </div>
             
           
@@ -93,6 +93,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#res2net">Res2Net</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#res2next">Res2NeXt</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#darknet">Darknet</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#object-detection">Object Detection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#yolo">YOLO</a></li>
 </ul>
 </li>
 </ul>
@@ -190,25 +194,30 @@ keypoint detection and video classification.</p>
 <div class="contents local topic" id="models">
 <p class="topic-title">Models</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#classification" id="id1">Classification</a></p>
+<li><p><a class="reference internal" href="#classification" id="id2">Classification</a></p>
 <ul>
-<li><p><a class="reference internal" href="#res2net" id="id2">Res2Net</a></p></li>
-<li><p><a class="reference internal" href="#res2next" id="id3">Res2NeXt</a></p></li>
-<li><p><a class="reference internal" href="#darknet" id="id4">Darknet</a></p></li>
+<li><p><a class="reference internal" href="#res2net" id="id3">Res2Net</a></p></li>
+<li><p><a class="reference internal" href="#res2next" id="id4">Res2NeXt</a></p></li>
+<li><p><a class="reference internal" href="#darknet" id="id5">Darknet</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#object-detection" id="id6">Object Detection</a></p>
+<ul>
+<li><p><a class="reference internal" href="#yolo" id="id7">YOLO</a></p></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="section" id="classification">
-<h2><a class="toc-backref" href="#id1">Classification</a><a class="headerlink" href="#classification" title="Permalink to this headline">¶</a></h2>
-<p>Classification models expects a 4D image tensor as an input (N x C x H x W) and returns a 2D output (N x K).
+<h2><a class="toc-backref" href="#id2">Classification</a><a class="headerlink" href="#classification" title="Permalink to this headline">¶</a></h2>
+<p>Classification models expect a 4D image tensor as an input (N x C x H x W) and returns a 2D output (N x K).
 The output represents the classification scores for each output classes.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
 <span class="n">darknet19</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">darknet19</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="res2net">
-<h3><a class="toc-backref" href="#id2">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id3">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this headline">¶</a></h3>
 <dl class="py class">
 <dt id="holocron.models.Res2Net">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">Res2Net</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">block</span></em>, <em class="sig-param"><span class="n">layers</span></em>, <em class="sig-param"><span class="n">num_classes</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">zero_init_residual</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">width_per_group</span><span class="o">=</span><span class="default_value">26</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">replace_stride_with_dilation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm_layer</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/res2net.html#Res2Net"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.Res2Net" title="Permalink to this definition">¶</a></dt>
@@ -256,7 +265,7 @@ The output represents the classification scores for each output classes.</p>
 
 </div>
 <div class="section" id="res2next">
-<h3><a class="toc-backref" href="#id3">Res2NeXt</a><a class="headerlink" href="#res2next" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id4">Res2NeXt</a><a class="headerlink" href="#res2next" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.res2next">
 <code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">res2next</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">depth</span></em>, <em class="sig-param"><span class="n">num_classes</span></em>, <em class="sig-param"><span class="n">width_per_group</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/res2net.html#res2next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.res2next" title="Permalink to this definition">¶</a></dt>
@@ -283,17 +292,51 @@ The output represents the classification scores for each output classes.</p>
 
 </div>
 <div class="section" id="darknet">
-<h3><a class="toc-backref" href="#id4">Darknet</a><a class="headerlink" href="#darknet" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id5">Darknet</a><a class="headerlink" href="#darknet" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.darknet19">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">darknet19</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_classes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/darknet.html#darknet19"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.darknet19" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements Darknet19 as described in <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">https://pjreddie.com/media/files/papers/YOLO9000.pdf</a></p>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">darknet19</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_classes</span><span class="o">=</span><span class="default_value">20</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/darknet.html#darknet19"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.darknet19" title="Permalink to this definition">¶</a></dt>
+<dd><p>Darknet-19 from
+<a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>num_classes</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of output classes</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="object-detection">
+<h2><a class="toc-backref" href="#id6">Object Detection</a><a class="headerlink" href="#object-detection" title="Permalink to this headline">¶</a></h2>
+<p>Object detection models expect a 4D image tensor as an input (N x C x H x W) and returns a list of dictionaries.
+Each dictionary has 3 keys: box coordinates, classification probability, classification label.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
+<span class="n">yolov2</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">yolov2</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="yolo">
+<h3><a class="toc-backref" href="#id7">YOLO</a><a class="headerlink" href="#yolo" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt id="holocron.models.yolov2">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">yolov2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_classes</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">anchors</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/detection/yolo.html#yolov2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.yolov2" title="Permalink to this definition">¶</a></dt>
+<dd><p>YOLOv2 model from
+<a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_classes</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of output classes</p></li>
+<li><p><strong>anchors</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>2</em><em>]</em>) – priors for anchors</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>detection module</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
