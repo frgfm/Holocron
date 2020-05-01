@@ -28,7 +28,8 @@ class Tester(unittest.TestCase):
     def _test_detection_model(self, name):
 
         num_classes = 10
-        x = torch.rand((2, 3, 224, 224))
+        num_batches = 2
+        x = torch.rand((num_batches, 3, 224, 224))
         model = models.__dict__[name](num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
@@ -39,6 +40,28 @@ class Tester(unittest.TestCase):
             self.assertIsInstance(out[0].get('boxes'), torch.Tensor)
             self.assertIsInstance(out[0].get('scores'), torch.Tensor)
             self.assertIsInstance(out[0].get('labels'), torch.Tensor)
+
+        # Training mode without target
+        model = model.train()
+        self.assertRaises(ValueError, model, x)
+        # Generate targets
+        num_boxes = [2, 3]
+        gt_boxes = []
+        for num in num_boxes:
+            _boxes = torch.rand((num, 4), dtype=torch.float)
+            # Ensure format xmin, ymin, xmax, ymax
+            _boxes[:, :2] *= _boxes[:, 2:]
+            # Ensure some anchors will be assigned
+            _boxes[0, :2] = 0
+            _boxes[0, 2:] = 1
+        gt_boxes = [torch.rand((num, 4)) for num in num_boxes]
+        gt_labels = [(num_classes * torch.rand(num)).to(dtype=torch.long) for num in num_boxes]
+
+        # Loss computation
+        loss = model(x, gt_boxes, gt_labels)
+        self.assertIsInstance(loss, dict)
+        for subloss in loss.values():
+            self.assertIsInstance(subloss, torch.Tensor)
 
 
 for model_name in ['res2net', 'res2next']:
