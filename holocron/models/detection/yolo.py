@@ -230,14 +230,14 @@ class YOLOv2(nn.Module):
         if self.training:
             # Update losses
             return self._compute_losses(b_coords, b_o, b_scores, gt_boxes, gt_labels)
+        else:
+            # B * (H * W * num_anchors)
+            b_coords = b_coords.view(b_coords.shape[0], -1, 4)
+            b_o = b_o.view(b_o.shape[0], -1)
+            b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
 
-        # B * (H * W * num_anchors)
-        b_coords = b_coords.view(b_coords.shape[0], -1, 4)
-        b_o = b_o.view(b_o.shape[0], -1)
-        b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
-
-        # Stack detections into a list
-        return self.post_process(b_coords, b_o, b_scores)
+            # Stack detections into a list
+            return self.post_process(b_coords, b_o, b_scores)
 
 
 def yolov2(num_classes=20, anchors=None):
