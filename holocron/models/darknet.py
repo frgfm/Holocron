@@ -41,7 +41,7 @@ class DarkBlock(nn.Sequential):
 
 class DarknetBody(nn.Module):
 
-    def __init__(self, layout):
+    def __init__(self, layout, passthrough=False):
 
         super().__init__()
 
@@ -55,6 +55,7 @@ class DarknetBody(nn.Module):
         self.block2 = DarkBlock(layout[0][0], *layout[1])
         self.block3 = DarkBlock(layout[1][0], *layout[2])
         self.block4 = DarkBlock(layout[2][0], *layout[3])
+        self.passthrough = passthrough
 
     def forward(self, x):
 
@@ -64,22 +65,27 @@ class DarknetBody(nn.Module):
         x = self.pool(x)
         x = self.pool(self.block1(x))
         x = self.pool(self.block2(x))
-        x = self.pool(self.block3(x))
-        x = self.block4(x)
+        x = self.block3(x)
+        if self.passthrough:
+            y = x
+        x = self.block4(self.pool(x))
 
-        return x
+        if self.passthrough:
+            return x, y
+        else:
+            return x
 
 
 class Darknet(nn.Module):
 
-    def __init__(self, layout, num_classes):
+    def __init__(self, layout, num_classes=20):
 
         super().__init__()
 
         self.features = DarknetBody(layout)
 
         self.classifier = nn.Sequential(
-            conv1x1(layout[3][0], num_classes),
+            conv1x1(layout[-1][0], num_classes),
             nn.BatchNorm2d(num_classes),
             nn.AdaptiveAvgPool2d((1, 1)),
             nn.Flatten())
@@ -91,8 +97,9 @@ class Darknet(nn.Module):
         return x
 
 
-def darknet19(num_classes):
-    """Implements Darknet19 as described in https://pjreddie.com/media/files/papers/YOLO9000.pdf
+def darknet19(num_classes=20):
+    """Darknet-19 from
+    `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
 
     Args:
         num_classes (int, optional): number of output classes
