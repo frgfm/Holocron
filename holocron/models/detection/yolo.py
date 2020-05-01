@@ -45,7 +45,7 @@ class YOLOv2(nn.Module):
             nn.LeakyReLU(0.1, inplace=True))
 
         # Each box has P_objectness, 4 coords, and score for each class
-        self.head = conv1x1(layout[-1][0], self.num_anchors * (5 + num_classes))
+        self.head = conv1x1(layout[-1][0], anchors.shape[0] * (5 + num_classes))
 
         # Register losses
         self.register_buffer('anchors', anchors)
