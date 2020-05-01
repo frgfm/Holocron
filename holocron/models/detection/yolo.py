@@ -202,6 +202,15 @@ class YOLOv2(nn.Module):
         return detections
 
     def forward(self, x, gt_boxes=None, gt_labels=None):
+        """Perform detection on an image tensor and returns either the loss dictionary in training mode
+        or the list of detections in eval mode.
+
+        Args:
+            x (torch.Tensor[N, 3, H, W]): input image tensor
+            gt_boxes (list<torch.Tensor[-1, 4]>, optional): ground truth boxes relative coordinates
+            in format [xmin, ymin, xmax, ymax]
+            gt_labels (list<torch.Tensor[-1]>, optional): ground truth labels
+        """
 
         if self.training and (gt_boxes is None or gt_labels is None):
             raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
