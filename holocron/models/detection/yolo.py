@@ -10,7 +10,7 @@ import torch.nn.functional as F
 from torchvision.ops.boxes import box_iou, nms
 
 from ...nn import ConcatDownsample2d
-from ..darknet import conv1x1, conv3x3, DarknetBody
+from ..darknet import conv1x1, conv3x3, DarknetBodyV2
 
 
 __all__ = ['YOLOv2', 'yolov2']
@@ -27,7 +27,7 @@ class YOLOv2(nn.Module):
             anchors = torch.tensor([[1.08, 1.19], [3.42, 4.41], [6.63, 11.38], [9.42, 5.11], [16.62, 10.52]])
         self.num_classes = num_classes
 
-        self.backbone = DarknetBody(layout, passthrough=True)
+        self.backbone = DarknetBodyV2(layout, passthrough=True)
 
         self.reorg_layer = ConcatDownsample2d(scale_factor=2)
 
