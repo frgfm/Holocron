@@ -40,7 +40,7 @@ class DarknetBodyV1(nn.Module):
 
         super().__init__()
 
-        self.conv1 = nn.Conv2d(3, 64, 7, stride=2)
+        self.conv1 = nn.Conv2d(3, 64, 7, padding=3, stride=2)
         self.activation = nn.LeakyReLU(0.1, inplace=True)
         self.pool = nn.MaxPool2d(2)
         self.conv2 = conv3x3(64, 192)
