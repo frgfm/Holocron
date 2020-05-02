@@ -359,7 +359,6 @@ def yolov1(num_classes=20, num_anchors=2):
                   num_classes, num_anchors)
 
 
-
 def yolov2(num_classes=20, anchors=None):
     """YOLOv2 model from
     `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
