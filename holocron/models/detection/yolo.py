@@ -224,8 +224,6 @@ class YOLOv1(_YOLO):
             # Stack detections into a list
             return self.post_process(b_coords, b_o, b_scores)
 
-        return x
-
 
 class YOLOv2(_YOLO):
 
