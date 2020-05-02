@@ -71,7 +71,7 @@ for model_name in ['res2net', 'res2next']:
 
     setattr(Tester, "test_" + model_name, do_test)
 
-for model_name in ['darknet19']:
+for model_name in ['darknet24', 'darknet19']:
     def do_test(self, model_name=model_name):
         self._test_classification_model(model_name)
 
