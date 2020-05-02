@@ -60,4 +60,6 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
 YOLO
 -------
 
+.. autofunction:: yolov1
+
 .. autofunction:: yolov2
