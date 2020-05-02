@@ -25,11 +25,11 @@ class Tester(unittest.TestCase):
         self.assertEqual(out.shape[0], x.shape[0])
         self.assertEqual(out.shape[-1], num_classes)
 
-    def _test_detection_model(self, name):
+    def _test_detection_model(self, name, size):
 
         num_classes = 10
         num_batches = 2
-        x = torch.rand((num_batches, 3, 224, 224))
+        x = torch.rand((num_batches, 3, size, size))
         model = models.__dict__[name](num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
@@ -71,16 +71,16 @@ for model_name in ['res2net', 'res2next']:
 
     setattr(Tester, "test_" + model_name, do_test)
 
-for model_name in ['darknet19']:
+for model_name in ['darknet24', 'darknet19']:
     def do_test(self, model_name=model_name):
         self._test_classification_model(model_name)
 
     setattr(Tester, "test_" + model_name, do_test)
 
 
-for model_name in ['yolov2']:
-    def do_test(self, model_name=model_name):
-        self._test_detection_model(model_name)
+for model_name, size in [('yolov1', 448), ('yolov2', 416)]:
+    def do_test(self, model_name=model_name, size=size):
+        self._test_detection_model(model_name, size)
 
     setattr(Tester, "test_" + model_name, do_test)
 
