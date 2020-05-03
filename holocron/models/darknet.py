@@ -270,7 +270,7 @@ def _darknet(arch, pretrained, progress, **kwargs):
     # Load pretrained parameters
     if pretrained:
         if default_cfgs[arch]['url'] is None:
-            logging.warning("Invalid model URL, using default initialization.")
+            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
         else:
             state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
                                                   progress=progress)
