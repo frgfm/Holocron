@@ -30,7 +30,7 @@ class Tester(unittest.TestCase):
         num_classes = 10
         num_batches = 2
         x = torch.rand((num_batches, 3, size, size))
-        model = models.__dict__[name](num_classes=num_classes).eval()
+        model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
 
