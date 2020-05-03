@@ -18,7 +18,7 @@ class Tester(unittest.TestCase):
 
         num_classes = 10
         x = torch.rand((2, 3, 224, 224))
-        model = models.__dict__[name](num_classes=num_classes).eval()
+        model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
 
