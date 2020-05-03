@@ -66,7 +66,7 @@ class DarknetBodyV1(nn.Module):
 
 class DarknetV1(nn.Module):
 
-    def __init__(self, layout, num_classes=1000):
+    def __init__(self, layout, num_classes=10):
 
         super().__init__()
 
@@ -142,7 +142,7 @@ class DarknetBodyV2(nn.Module):
 
 class DarknetV2(nn.Module):
 
-    def __init__(self, layout, num_classes=1000):
+    def __init__(self, layout, num_classes=10):
 
         super().__init__()
 
@@ -161,29 +161,31 @@ class DarknetV2(nn.Module):
         return x
 
 
-def darknet24(num_classes=1000):
+def darknet24(pretrained=False, progress=True, **kwargs):
     """Darknet-24 from
     `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
     Args:
-        num_classes (int, optional): number of output classes
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
 
-    return DarknetV1([[128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024, 512, 1024]], num_classes)
+    return DarknetV1([[128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024, 512, 1024]], **kwargs)
 
 
-def darknet19(num_classes=1000):
+def darknet19(pretrained=False, progress=True):
     """Darknet-19 from
     `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
 
     Args:
-        num_classes (int, optional): number of output classes
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
 
-    return DarknetV2([(128, 1), (256, 1), (512, 2), (1024, 2)], num_classes)
+    return DarknetV2([(128, 1), (256, 1), (512, 2), (1024, 2)], **kwargs)
