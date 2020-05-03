@@ -13,7 +13,7 @@ from torchvision.models.utils import load_state_dict_from_url
 from holocron.nn.init import init_module
 
 
-__all__ = ['DarknetV1', 'DarknetV2', 'darknet24', 'darknet19']
+__all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'darknet24', 'darknet19', 'darknet53']
 
 
 default_cfgs = {
@@ -22,7 +22,10 @@ default_cfgs = {
                   'url': None},
     'darknet19': {'arch': 'DarknetV2',
                   'layout': [(128, 1), (256, 1), (512, 2), (1024, 2)],
-                  'url': None}
+                  'url': None},
+    'darknet53': {'arch': 'DarknetV3',
+                  'layout': [(1, 64, 128), (2, 128, 256), (8, 256, 512), (8, 512, 1024), (4, 1024)],
+                  'url': None},
 }
 
 
@@ -159,6 +162,105 @@ class DarknetV2(nn.Sequential):
         init_module(self, 'leaky_relu')
 
 
+class DarkBlockV3(nn.Module):
+    """Implements a residual block of Darknet as described in
+    `"YOLOv3: An Incremental Improvement" <https://pjreddie.com/media/files/papers/YOLOv3.pdf>`_
+
+    Args:
+        planes (int): number of input/output channels
+        mid_planes (int): number of intermediate channels
+    """
+
+    def __init__(self, planes, mid_planes):
+
+        super().__init__()
+
+        self.conv1 = conv1x1(planes, mid_planes)
+        self.bn1 = nn.BatchNorm2d(mid_planes)
+        self.conv2 = conv3x3(mid_planes, planes)
+        self.bn2 = nn.BatchNorm2d(planes)
+
+        self.activation = nn.LeakyReLU(0.1, inplace=True)
+
+    def forward(self, x):
+
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.activation(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.activation(out)
+
+        out += identity
+        out = self.activation(out)
+
+        return x
+
+
+class DarknetBodyV3(nn.Module):
+
+    def _make_layer(self, num_blocks, in_planes, out_planes=None):
+
+        layers = [DarkBlockV3(in_planes, in_planes // 2) for _ in range(num_blocks)]
+        if isinstance(out_planes, int):
+            layers.extend([
+                conv3x3(in_planes, out_planes, stride=2),
+                nn.BatchNorm2d(out_planes),
+                nn.LeakyReLU(0.1, inplace=True)
+            ])
+
+        return nn.Sequential(*layers)
+
+    def __init__(self, layout):
+
+        super(DarknetBodyV3, self).__init__()
+
+        self.conv1 = conv3x3(3, 32)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.conv2 = conv3x3(32, 64, stride=2)
+        self.bn2 = nn.BatchNorm2d(64)
+        self.activation = nn.LeakyReLU(0.1, inplace=True)
+
+        self.block1 = self._make_layer(*layout[0])
+        self.block2 = self._make_layer(*layout[1])
+        self.block3 = self._make_layer(*layout[2])
+        self.block4 = self._make_layer(*layout[3])
+        self.block5 = self._make_layer(*layout[4])
+
+    def forward(self, x):
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.activation(x)
+
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.activation(x)
+
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+        x = self.block4(x)
+        x = self.block5(x)
+
+        return x
+
+
+class DarknetV3(nn.Sequential):
+
+    def __init__(self, layout, num_classes=10):
+
+        super().__init__(OrderedDict([
+            ('features', DarknetBodyV3(layout)),
+            ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
+            ('classifier', nn.Linear(layout[4][-1], num_classes))]))
+
+        init_module(self, 'leaky_relu')
+
+
 def _darknet(arch, pretrained, progress, **kwargs):
 
     # Retrieve the correct Darknet layout type
@@ -205,3 +307,18 @@ def darknet19(pretrained=False, progress=True, **kwargs):
     """
 
     return _darknet('darknet19', pretrained, progress, **kwargs)
+
+
+def darknet53(pretrained=False, progress=True, **kwargs):
+    """Darknet-53 from
+    `"YOLOv3: An Incremental Improvement" <https://pjreddie.com/media/files/papers/YOLOv3.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _darknet('darknet53', pretrained, progress, **kwargs)
