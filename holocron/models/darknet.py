@@ -32,7 +32,7 @@ class DarkBlockV1(nn.Sequential):
             layers.append(nn.LeakyReLU(inplace=True))
             k1 = not k1
 
-        super(DarkBlockV1, self).__init__(*layers)
+        super().__init__(*layers)
 
 
 class DarknetBodyV1(nn.Module):
@@ -92,7 +92,7 @@ class DarkBlockV2(nn.Sequential):
                            nn.BatchNorm2d(out_planes),
                            nn.LeakyReLU(0.1, inplace=True)])
 
-        super(DarkBlockV2, self).__init__(*layers)
+        super().__init__(*layers)
 
 
 class DarknetBodyV2(nn.Module):
