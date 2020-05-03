@@ -4,10 +4,26 @@
 Implementation of DarkNet
 """
 
+import sys
+import logging
 from collections import OrderedDict
 import torch.nn as nn
+from torchvision.models.utils import load_state_dict_from_url
+
+from holocron.nn.init import init_module
+
 
 __all__ = ['DarknetV1', 'DarknetV2', 'darknet24', 'darknet19']
+
+
+default_cfgs = {
+    'darknet24': {'arch': 'DarknetV1',
+                  'layout': [[128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024, 512, 1024]],
+                  'url': None},
+    'darknet19': {'arch': 'DarknetV2',
+                  'layout': [(128, 1), (256, 1), (512, 2), (1024, 2)],
+                  'url': None}
+}
 
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
@@ -143,6 +159,24 @@ class DarknetV2(nn.Sequential):
         init_module(self, 'leaky_relu')
 
 
+def _darknet(arch, pretrained, progress, **kwargs):
+
+    # Retrieve the correct Darknet layout type
+    darknet_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
+    # Build the model
+    model = darknet_type(default_cfgs[arch]['layout'], **kwargs)
+    # Load pretrained parameters
+    if pretrained:
+        if default_cfgs[arch]['url'] is None:
+            logging.warning("Invalid model URL, using default initialization.")
+        else:
+            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
+                                                  progress=progress)
+            model.load_state_dict(state_dict)
+
+    return model
+
+
 def darknet24(pretrained=False, progress=True, **kwargs):
     """Darknet-24 from
     `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
@@ -155,10 +189,10 @@ def darknet24(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    return DarknetV1([[128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024, 512, 1024]], **kwargs)
+    return _darknet('darknet24', pretrained, progress, **kwargs)
 
 
-def darknet19(pretrained=False, progress=True):
+def darknet19(pretrained=False, progress=True, **kwargs):
     """Darknet-19 from
     `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
 
@@ -170,4 +204,4 @@ def darknet19(pretrained=False, progress=True):
         torch.nn.Module: classification model
     """
 
-    return DarknetV2([(128, 1), (256, 1), (512, 2), (1024, 2)], **kwargs)
+    return _darknet('darknet19', pretrained, progress, **kwargs)
