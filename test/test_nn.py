@@ -1,7 +1,9 @@
 import unittest
 import inspect
 import torch
+import torch.nn as nn
 from holocron.nn import functional as F
+from holocron.nn.init import init_module
 from holocron.nn.modules import activation, loss, downsample
 
 
@@ -73,7 +75,7 @@ class Tester(unittest.TestCase):
 
         # Value check
         self.assertAlmostEqual(F.focal_loss(x, target, gamma=0).item(),
-                               torch.nn.functional.cross_entropy(x, target).item(), places=5)
+                               nn.functional.cross_entropy(x, target).item(), places=5)
         # Equal probabilities
         x = torch.ones(num_batches, num_classes, 20, 20)
         self.assertAlmostEqual((1 - 1 / num_classes) * F.focal_loss(x, target, gamma=0).item(),
@@ -136,6 +138,19 @@ class Tester(unittest.TestCase):
         # Test module
         mod = downsample.ConcatDownsample2d(2)
         self.assertTrue(torch.equal(mod(x), out))
+
+    def test_init(self):
+
+        module = nn.Sequential(
+            nn.Conv2d(3, 32, 3),
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(inplace=True))
+
+        # Check that each layer was initialized correctly
+        init_module(module, 'leaky_relu')
+        self.assertTrue(torch.all(module[0].bias.data == 0))
+        self.assertTrue(torch.all(module[1].weight.data == 1))
+        self.assertTrue(torch.all(module[1].bias.data == 0))
 
 
 act_fns = ['mish', 'nl_relu']
