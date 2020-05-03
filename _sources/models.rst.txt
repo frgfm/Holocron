@@ -42,7 +42,11 @@ Res2NeXt
 Darknet
 -------
 
+.. autofunction:: darknet24
+
 .. autofunction:: darknet19
+
+.. autofunction:: darknet53
 
 
 Object Detection

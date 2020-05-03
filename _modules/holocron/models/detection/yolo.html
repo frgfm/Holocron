@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolo &mdash; holocron 0.1.0a0+6bfbc42-git documentation</title>
+  <title>holocron.models.detection.yolo &mdash; holocron 0.1.0a0+2b3c8a4-git documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.1.0a0+6bfbc42
+                0.1.0a0+2b3c8a4
               </div>
             
           
@@ -184,19 +184,32 @@
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Personal implementation of YOLOv2</span>
+<span class="sd">Personal implementation of YOLO models</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span><span class="p">,</span> <span class="n">nms</span>
+<span class="kn">from</span> <span class="nn">torchvision.models.utils</span> <span class="kn">import</span> <span class="n">load_state_dict_from_url</span>
+<span class="kn">from</span> <span class="nn">torchvision.models.resnet</span> <span class="kn">import</span> <span class="n">conv1x1</span><span class="p">,</span> <span class="n">conv3x3</span>
 
 <span class="kn">from</span> <span class="nn">...nn</span> <span class="kn">import</span> <span class="n">ConcatDownsample2d</span>
-<span class="kn">from</span> <span class="nn">..darknet</span> <span class="kn">import</span> <span class="n">conv1x1</span><span class="p">,</span> <span class="n">conv3x3</span><span class="p">,</span> <span class="n">DarknetBodyV1</span><span class="p">,</span> <span class="n">DarknetBodyV2</span>
+<span class="kn">from</span> <span class="nn">...nn.init</span> <span class="kn">import</span> <span class="n">init_module</span>
+<span class="kn">from</span> <span class="nn">..darknet</span> <span class="kn">import</span> <span class="n">DarknetBodyV1</span><span class="p">,</span> <span class="n">DarknetBodyV2</span><span class="p">,</span> <span class="n">default_cfgs</span> <span class="k">as</span> <span class="n">dark_cfgs</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;YOLOv1&#39;</span><span class="p">,</span> <span class="s1">&#39;YOLOv2&#39;</span><span class="p">,</span> <span class="s1">&#39;yolov1&#39;</span><span class="p">,</span> <span class="s1">&#39;yolov2&#39;</span><span class="p">]</span>
+
+
+<span class="n">default_cfgs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;yolov1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;YOLOv1&#39;</span><span class="p">,</span> <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="n">dark_cfgs</span><span class="p">[</span><span class="s1">&#39;darknet24&#39;</span><span class="p">][</span><span class="s1">&#39;layout&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;yolov2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;YOLOv2&#39;</span><span class="p">,</span> <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="n">dark_cfgs</span><span class="p">[</span><span class="s1">&#39;darknet19&#39;</span><span class="p">][</span><span class="s1">&#39;layout&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+<span class="p">}</span>
 
 
 <span class="k">class</span> <span class="nc">_YOLO</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -332,6 +345,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span> <span class="o">=</span> <span class="n">num_anchors</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
 
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_format_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Formats convolutional layer output</span>
 
@@ -442,6 +457,8 @@
         <span class="c1"># Register losses</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;anchors&#39;</span><span class="p">,</span> <span class="n">anchors</span><span class="p">)</span>
 
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -524,35 +541,52 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="yolov1"><a class="viewcode-back" href="../../../../models.html#holocron.models.yolov1">[docs]</a><span class="k">def</span> <span class="nf">yolov1</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">num_anchors</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_yolo</span><span class="p">(</span><span class="n">arch</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="c1"># Retrieve the correct Darknet layout type</span>
+    <span class="n">yolo_type</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;arch&#39;</span><span class="p">]]</span>
+    <span class="c1"># Build the model</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">yolo_type</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;layout&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># Load pretrained parameters</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid model URL for </span><span class="si">{</span><span class="n">arch</span><span class="si">}</span><span class="s2">, using default initialization.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span>
+                                                  <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+
+
+<div class="viewcode-block" id="yolov1"><a class="viewcode-back" href="../../../../models.html#holocron.models.yolov1">[docs]</a><span class="k">def</span> <span class="nf">yolov1</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;YOLO model from</span>
 <span class="sd">    `&quot;You Only Look Once: Unified, Real-Time Object Detection&quot; &lt;https://pjreddie.com/media/files/papers/yolo_1.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        num_classes (int, optional): number of output classes</span>
-<span class="sd">        anchors (int, optional): number of anchors per grid cell</span>
+<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: detection module</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">YOLOv1</span><span class="p">([[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="p">[</span><span class="o">*</span><span class="p">([</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">]],</span>
-                  <span class="n">num_classes</span><span class="p">,</span> <span class="n">num_anchors</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_yolo</span><span class="p">(</span><span class="s1">&#39;yolov1&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="yolov2"><a class="viewcode-back" href="../../../../models.html#holocron.models.yolov2">[docs]</a><span class="k">def</span> <span class="nf">yolov2</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">anchors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="yolov2"><a class="viewcode-back" href="../../../../models.html#holocron.models.yolov2">[docs]</a><span class="k">def</span> <span class="nf">yolov2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;YOLOv2 model from</span>
 <span class="sd">    `&quot;YOLO9000: Better, Faster, Stronger&quot; &lt;https://pjreddie.com/media/files/papers/YOLO9000.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        num_classes (int, optional): number of output classes</span>
-<span class="sd">        anchors (torch.Tensor[N, 2]): priors for anchors</span>
+<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: detection module</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">YOLOv2</span><span class="p">([(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">anchors</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_yolo</span><span class="p">(</span><span class="s1">&#39;yolov2&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
