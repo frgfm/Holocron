@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Personal implementation of YOLOv2
+Personal implementation of YOLO models
 """
 
 import sys
