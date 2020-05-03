@@ -14,6 +14,7 @@ from torchvision.models.utils import load_state_dict_from_url
 from torchvision.models.resnet import conv1x1, conv3x3
 
 from ...nn import ConcatDownsample2d
+from ...nn.init import init_module
 from ..darknet import DarknetBodyV1, DarknetBodyV2, default_cfgs as dark_cfgs
 
 
@@ -161,6 +162,8 @@ class YOLOv1(_YOLO):
         self.num_anchors = num_anchors
         self.num_classes = num_classes
 
+        init_module(self, 'leaky_relu')
+
     def _format_outputs(self, x, img_h, img_w):
         """Formats convolutional layer output
 
@@ -270,6 +273,8 @@ class YOLOv2(_YOLO):
 
         # Register losses
         self.register_buffer('anchors', anchors)
+
+        init_module(self, 'leaky_relu')
 
     @property
     def num_anchors(self):
