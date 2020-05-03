@@ -4,16 +4,28 @@
 Personal implementation of YOLOv2
 """
 
+import sys
+import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.ops.boxes import box_iou, nms
+from torchvision.models.utils import load_state_dict_from_url
+from torchvision.models.resnet import conv1x1, conv3x3
 
 from ...nn import ConcatDownsample2d
-from ..darknet import conv1x1, conv3x3, DarknetBodyV1, DarknetBodyV2
+from ..darknet import DarknetBodyV1, DarknetBodyV2, default_cfgs as dark_cfgs
 
 
 __all__ = ['YOLOv1', 'YOLOv2', 'yolov1', 'yolov2']
+
+
+default_cfgs = {
+    'yolov1': {'arch': 'YOLOv1', 'layout': dark_cfgs['darknet24']['layout'],
+               'url': None},
+    'yolov2': {'arch': 'YOLOv2', 'layout': dark_cfgs['darknet19']['layout'],
+               'url': None},
+}
 
 
 class _YOLO(nn.Module):
@@ -341,32 +353,49 @@ class YOLOv2(_YOLO):
             return self.post_process(b_coords, b_o, b_scores)
 
 
-def yolov1(num_classes=20, num_anchors=2):
+def _yolo(arch, pretrained, progress, **kwargs):
+
+    # Retrieve the correct Darknet layout type
+    yolo_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
+    # Build the model
+    model = yolo_type(default_cfgs[arch]['layout'], **kwargs)
+    # Load pretrained parameters
+    if pretrained:
+        if default_cfgs[arch]['url'] is None:
+            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
+        else:
+            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
+                                                  progress=progress)
+            model.load_state_dict(state_dict)
+
+    return model
+
+
+def yolov1(pretrained=False, progress=True, **kwargs):
     """YOLO model from
     `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
     Args:
-        num_classes (int, optional): number of output classes
-        num_anchors (int, optional): number of anchors per grid cell
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: detection module
     """
 
-    return YOLOv1([[128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024, 512, 1024]],
-                  num_classes, num_anchors)
+    return _yolo('yolov1', pretrained, progress, **kwargs)
 
 
-def yolov2(num_classes=20, anchors=None):
+def yolov2(pretrained=False, progress=True, **kwargs):
     """YOLOv2 model from
     `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
 
     Args:
-        num_classes (int, optional): number of output classes
-        anchors (torch.Tensor[N, 2]): priors for anchors
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: detection module
     """
 
-    return YOLOv2([(128, 1), (256, 1), (512, 2), (1024, 2)], num_classes, anchors)
+    return _yolo('yolov2', pretrained, progress, **kwargs)
