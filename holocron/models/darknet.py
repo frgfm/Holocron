@@ -68,13 +68,12 @@ class DarknetV1(nn.Sequential):
 
     def __init__(self, layout, num_classes=10):
 
-        super().__init__()
+        super().__init__(OrderedDict([
+            ('features', DarknetBodyV1(layout)),
+            ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
+            ('classifier', nn.Linear(layout[2][-1], num_classes))]))
 
-        self.add_module('features', DarknetBodyV1(layout))
-        self.add_module('global_pool', nn.Sequential(
-            nn.AdaptiveAvgPool2d((1, 1)),
-            nn.Flatten()))
-        self.add_module('classifier', nn.Linear(layout[2][-1], num_classes))
+        init_module(self, 'leaky_relu')
 
 
 class DarkBlockV2(nn.Sequential):
@@ -136,12 +135,12 @@ class DarknetV2(nn.Sequential):
 
     def __init__(self, layout, num_classes=10):
 
-        super().__init__()
+        super().__init__(OrderedDict([
+            ('features', DarknetBodyV2(layout)),
+            ('classifier', conv1x1(layout[-1][0], num_classes)),
+            ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten()))]))
 
-        self.add_module('features', DarknetBodyV2(layout))
-        self.add_module('classifier', conv1x1(layout[-1][0], num_classes))
-        self.add_module('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
-                                                     nn.Flatten()))
+        init_module(self, 'leaky_relu')
 
 
 def darknet24(pretrained=False, progress=True, **kwargs):
