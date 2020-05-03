@@ -64,25 +64,17 @@ class DarknetBodyV1(nn.Module):
         return x
 
 
-class DarknetV1(nn.Module):
+class DarknetV1(nn.Sequential):
 
     def __init__(self, layout, num_classes=10):
 
         super().__init__()
 
-        self.features = DarknetBodyV1(layout)
-
-        # Pooling (7, 7) or global ?
-        self.classifier = nn.Sequential(
+        self.add_module('features', DarknetBodyV1(layout))
+        self.add_module('global_pool', nn.Sequential(
             nn.AdaptiveAvgPool2d((1, 1)),
-            nn.Flatten(),
-            nn.Linear(layout[2][-1], num_classes))
-
-    def forward(self, x):
-
-        x = self.features(x)
-        x = self.classifier(x)
-        return x
+            nn.Flatten()))
+        self.add_module('classifier', nn.Linear(layout[2][-1], num_classes))
 
 
 class DarkBlockV2(nn.Sequential):
@@ -140,25 +132,16 @@ class DarknetBodyV2(nn.Module):
             return x
 
 
-class DarknetV2(nn.Module):
+class DarknetV2(nn.Sequential):
 
     def __init__(self, layout, num_classes=10):
 
         super().__init__()
 
-        self.features = DarknetBodyV2(layout)
-
-        self.classifier = nn.Sequential(
-            conv1x1(layout[-1][0], num_classes),
-            nn.BatchNorm2d(num_classes),
-            nn.AdaptiveAvgPool2d((1, 1)),
-            nn.Flatten())
-
-    def forward(self, x):
-        x = self.features(x)
-        x = self.classifier(x)
-
-        return x
+        self.add_module('features', DarknetBodyV2(layout))
+        self.add_module('classifier', conv1x1(layout[-1][0], num_classes))
+        self.add_module('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)),
+                                                     nn.Flatten()))
 
 
 def darknet24(pretrained=False, progress=True, **kwargs):
