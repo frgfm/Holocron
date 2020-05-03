@@ -18,7 +18,7 @@ class Tester(unittest.TestCase):
 
         num_classes = 10
         x = torch.rand((2, 3, 224, 224))
-        model = models.__dict__[name](num_classes=num_classes).eval()
+        model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
 
@@ -30,7 +30,7 @@ class Tester(unittest.TestCase):
         num_classes = 10
         num_batches = 2
         x = torch.rand((num_batches, 3, size, size))
-        model = models.__dict__[name](num_classes=num_classes).eval()
+        model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
 
@@ -71,7 +71,7 @@ for model_name in ['res2net', 'res2next']:
 
     setattr(Tester, "test_" + model_name, do_test)
 
-for model_name in ['darknet24', 'darknet19']:
+for model_name in ['darknet24', 'darknet19', 'darknet53']:
     def do_test(self, model_name=model_name):
         self._test_classification_model(model_name)
 
