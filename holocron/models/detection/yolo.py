@@ -347,7 +347,7 @@ def yolov1(num_classes=20, num_anchors=2):
 
     Args:
         num_classes (int, optional): number of output classes
-        anchors (int, optional): number of anchors per grid cell
+        num_anchors (int, optional): number of anchors per grid cell
 
     Returns:
         torch.nn.Module: detection module
