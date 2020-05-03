@@ -9,8 +9,9 @@ import logging
 from collections import OrderedDict
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
+from torchvision.models.resnet import conv1x1, conv3x3
 
-from holocron.nn.init import init_module
+from ..nn.init import init_module
 
 
 __all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'darknet24', 'darknet19', 'darknet53']
@@ -27,17 +28,6 @@ default_cfgs = {
                   'layout': [(1, 64, 128), (2, 128, 256), (8, 256, 512), (8, 512, 1024), (4, 1024)],
                   'url': None},
 }
-
-
-def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
-    """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=dilation, groups=groups, bias=False, dilation=dilation)
-
-
-def conv1x1(in_planes, out_planes, stride=1):
-    """1x1 convolution"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
 
 
 class DarkBlockV1(nn.Sequential):
