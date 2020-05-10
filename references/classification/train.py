@@ -95,7 +95,7 @@ def load_data(traindir, valdir, half=False):
             transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02),
             transforms.ToTensor(),
             normalize,
-            transforms.RandomErasing(p=0.9, value='random')
+            # transforms.RandomErasing(p=0.9, value='random')
         ]))
     print("Took", time.time() - st)
 
