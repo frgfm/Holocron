@@ -200,7 +200,6 @@ class Tester(unittest.TestCase):
         self.assertTrue(torch.all(module[1].weight.data == 1))
         self.assertTrue(torch.all(module[1].bias.data == 0))
 
-
     def test_mixuploss(self):
 
         num_batches = 8
