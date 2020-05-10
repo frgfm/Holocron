@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy']
+__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'MixupLoss']
 
 
 class _Loss(nn.Module):
@@ -90,3 +90,31 @@ class LabelSmoothingCrossEntropy(_Loss):
 
     def __repr__(self):
         return f"{self.__class__.__name__}(eps={self.eps}, reduction='{self.reduction}')"
+
+
+class MixupLoss(_Loss):
+    """Implements a Mixup wrapper as described in
+    `"mixup: Beyond Empirical Risk Minimization" <https://arxiv.org/pdf/1710.09412.pdf>`_
+
+    Args:
+        criterion (callable): initial criterion to be used on normal sample & targets
+    """
+    def __init__(self, criterion):
+        super().__init__()
+        self.criterion = criterion
+
+    def forward(self, x, target_a, target_b, lam):
+        """Computes the mixed-up loss
+
+        Args:
+            x (torch.Tensor): predictions
+            target_a (torch.Tensor): target for first sample
+            target_b (torch.Tensor): target for second sample
+            lam (float): lambda factor
+        Returns:
+            torch.Tensor: loss
+        """
+        return lam * self.criterion(x, target_a) + (1 - lam) * self.criterion(x, target_b)
+
+    def __repr__(self):
+        return f"Mixup_{self.criterion.__repr__()}"

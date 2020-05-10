@@ -24,6 +24,11 @@ Loss functions
 
 .. autoclass:: LabelSmoothingCrossEntropy
 
+Loss wrappers
+--------------
+
+.. autoclass:: MixupLoss
+
 
 Downsampling
 ------------
