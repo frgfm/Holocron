@@ -61,7 +61,7 @@ class DataTester(unittest.TestCase):
         batch_size = 2
         start_lr, end_lr = 1e-7, 10
         # Generate all dependencies
-        loader = torch.utils.data.DataLoader(dataset=MockDataset(num_it * batch_size), batch_size=batch_size,
+        loader = torch.utils.data.DataLoader(MockDataset(num_it * batch_size), batch_size=batch_size,
                                              collate_fn=utils.data.mixup_collate)
 
         inputs, targets_a, targets_b, lam = next(iter(loader))
