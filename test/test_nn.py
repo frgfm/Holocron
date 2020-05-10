@@ -219,7 +219,7 @@ class Tester(unittest.TestCase):
 
         # Check the forward
         out = mixup_criterion(x, target_a, target_b, lam)
-        self.assertEqual(out.item(), lam * criterion(x, target_a).item() + (1 - lam) * criterion(x, target_b).item())
+        self.assertEqual(out.item(), (lam * criterion(x, target_a) + (1 - lam) * criterion(x, target_b)).item())
         self.assertEqual(mixup_criterion(x, target_a, target_b, 1).item(), criterion(x, target_a).item())
         self.assertEqual(mixup_criterion(x, target_a, target_b, 0).item(), criterion(x, target_b).item())
 
