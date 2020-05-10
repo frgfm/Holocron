@@ -26,6 +26,8 @@ python train.py imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epoch
 
 
 
+## Training results
+
 | Size (px) | Epochs | args                                                         | Top-1 accuracy | # Runs |
 | --------- | ------ | ------------------------------------------------------------ | -------------- | ------ |
 | 224       | 5      | imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epochs 5 --opt radam --sched onecycle --loss label_smoothing | 66.88%         | 1      |
