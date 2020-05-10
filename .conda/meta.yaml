@@ -1,0 +1,45 @@
+{% set data = load_setup_py_data(setup_file='../setup.py', from_recipe_dir=True) %}
+
+package:
+  name: {{ data.name }}
+  version: "{{ data.version }}"
+
+source:
+  fn: {{ data.name }}-{{ data.version }}.tar.gz
+  url: ../dist/{{ data.name }}-{{ data.version }}.tar.gz
+
+build:
+  number: 0
+  noarch: python
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+
+  host:
+    - python>=3.6
+
+  run:
+    - pytorch >=1.2.0
+    - torchvision >=0.4.0
+
+test:
+  # Python imports
+  imports:
+    - holocron
+    - holocron.models
+    - holocron.nn
+    - holocron.ops
+    - holocron.optim
+  requires:
+    - python
+
+about:
+  home: {{ data.get('url') }}
+  license: {{ data['license'] }}
+  license_url: https://github.com/frgfm/Holocron/blob/master/LICENSE
+  license_file: LICENSE
+  summary: {{ data['description'] }}
+  description: |
+    {{ data['long_description'] | replace("\n", "\n    ") | replace("#", '\#')}}
+  doc_url: https://frgfm.github.io/Holocron/
+  dev_url: {{ data.get('url') }}
