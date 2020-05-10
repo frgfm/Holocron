@@ -8,7 +8,6 @@ from holocron.nn.modules import activation, loss, downsample
 
 
 class Tester(unittest.TestCase):
-
     def _test_activation_function(self, name, input_shape):
         fn = F.__dict__[name]
 
@@ -154,17 +153,13 @@ class Tester(unittest.TestCase):
 
         num_batches = 2
         num_classes = 4
-        # 4 classes
         x = torch.rand(num_batches, num_classes, 20, 20)
-        # x = torch.ones(num_batches, num_classes, 20, 20)
-        # x[:, 0, ...] = 10
 
         # Identical target
         if multi_label:
             target = torch.rand(x.shape)
         else:
             target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
-            # target = torch.zeros((num_batches, 20, 20), dtype=torch.long)
         criterion = loss.__dict__[name]()
         self.assertEqual(criterion(x, target).item(),
                          F.__dict__[fn_name](x, target).item())
