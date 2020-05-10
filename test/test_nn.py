@@ -161,8 +161,7 @@ class Tester(unittest.TestCase):
 
         # Identical target
         if multi_label:
-            target = torch.zeros_like(x)
-            target[:, 0] = 1.
+            target = torch.rand(x.shape)
         else:
             target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
             # target = torch.zeros((num_batches, 20, 20), dtype=torch.long)
