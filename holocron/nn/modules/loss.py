@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['FocalLoss', 'LabelSmoothingCrossEntropy']
+__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy']
 
 
 class _Loss(nn.Module):
@@ -49,6 +49,25 @@ class FocalLoss(_Loss):
 
     def __repr__(self):
         return f"{self.__class__.__name__}(gamma={self.gamma}, reduction='{self.reduction}')"
+
+
+class MultiLabelCrossEntropy(_Loss):
+    """Implementation of the cross-entropy loss for multi-label targets
+
+    Args:
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): type of reduction to apply to the final loss
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def forward(self, x, target):
+        return F.multilabel_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(reduction='{self.reduction}')"
 
 
 class LabelSmoothingCrossEntropy(_Loss):

@@ -8,7 +8,7 @@ import torch
 import torch.nn.functional as F
 
 
-__all__ = ['mish', 'nl_relu', 'focal_loss', 'ls_cross_entropy']
+__all__ = ['mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy']
 
 
 def mish(x):
@@ -121,6 +121,48 @@ def concat_downsample2d(x, scale_factor):
     out = out.permute(0, 3, 1, 2)
 
     return out
+
+
+def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'):
+    """Implements the cross entropy loss for multi-label targets
+
+    Args:
+        x (torch.Tensor[N, K, ...]): input tensor
+        target (torch.Tensor[N, K, ...]): target tensor
+        weight (torch.Tensor[K], optional): manual rescaling of each class
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): reduction method
+
+    Returns:
+        torch.Tensor: loss reduced with `reduction` method
+    """
+
+    # log(P[class]) = log_softmax(score)[class]
+    logpt = F.log_softmax(x, dim=1)
+
+    # Ignore index (set loss contribution to 0)
+    if ignore_index >= 0 and ignore_index < x.shape[1]:
+        logpt[:, ignore_index] = 0
+
+    # Weight
+    if weight is not None:
+        # Tensor type
+        if weight.type() != x.data.type():
+            weight = weight.type_as(x.data)
+        logpt *= weight.view(1, -1)
+
+    # CE Loss
+    loss = - target * logpt
+
+    # Loss reduction
+    if reduction == 'sum':
+        loss = loss.sum()
+    else:
+        loss = loss.sum(dim=1)
+        if reduction == 'mean':
+            loss = loss.mean()
+
+    return loss
 
 
 def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean', eps=0.1):
