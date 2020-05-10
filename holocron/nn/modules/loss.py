@@ -72,7 +72,7 @@ class LabelSmoothingCrossEntropy(nn.Module):
         else:
             self.reduction = reduction
 
-    def focal_loss(self, x, target):
+    def forward(self, x, target):
         return F.ls_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction, self.eps)
 
     def __repr__(self):
