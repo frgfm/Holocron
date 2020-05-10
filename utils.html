@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Python Module Index &mdash; holocron 0.1.0a0+a55dc1c-git documentation</title>
+  <title>holocron.utils &mdash; holocron 0.1.0a0+a55dc1c-git documentation</title>
   
 
   
@@ -37,9 +37,7 @@
   <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
- 
-
-
+    <link rel="prev" title="holocron.optim" href="optim.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -88,7 +86,7 @@
             
             
               <p class="caption"><span class="caption-text">Package Reference</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="models.html#res2net">Res2Net</a></li>
@@ -121,8 +119,8 @@
 <li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">holocron.utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#miscellaneous">Miscellaneous</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 </ul>
@@ -170,10 +168,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Python Module Index</li>
+      <li>holocron.utils</li>
     
     
       <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/utils.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -185,50 +187,58 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
+  <div class="section" id="module-holocron.utils">
+<span id="holocron-utils"></span><h1>holocron.utils<a class="headerlink" href="#module-holocron.utils" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="#module-holocron.utils" title="holocron.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.utils</span></code></a> provides some utilities for general usage.</p>
+<div class="section" id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="holocron.utils.lr_finder">
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">lr_finder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">batch_training_fn</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">train_loader</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">criterion</span></em>, <em class="sig-param"><span class="n">device</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start_lr</span><span class="o">=</span><span class="default_value">1e-07</span></em>, <em class="sig-param"><span class="n">end_lr</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">num_it</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">stop_div</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">stop_threshold</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">0.9</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/misc.html#lr_finder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.lr_finder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Learning rate finder as described in
+<a class="reference external" href="https://arxiv.org/pdf/1506.01186.pdf">“Cyclical Learning Rates for Training Neural Networks”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_training_fn</strong> (<em>python:float</em>) – function used to train a model for a step</p></li>
+<li><p><strong>model</strong> (<em>torch.Tensor</em>) – model to train</p></li>
+<li><p><strong>train_loader</strong> (<em>torch.utils.data.DataLoader</em>) – training dataloader</p></li>
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – model parameter optimizer</p></li>
+<li><p><strong>criterion</strong> (<em>nn.Module</em>) – loss computation function</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em><em>, </em><em>optional</em>) – device to perform iterations on</p></li>
+<li><p><strong>start_lr</strong> (<em>python:float</em>) – initial learning rate</p></li>
+<li><p><strong>end_lr</strong> (<em>python:float</em>) – peak learning rate</p></li>
+<li><p><strong>num_it</strong> (<em>python:int</em>) – number of iterations to perform</p></li>
+<li><p><strong>stop_div</strong> (<em>bool</em>) – should the evaluation be stopped if loss diverges</p></li>
+<li><p><strong>stop_threshold</strong> (<em>python:float</em>) – if stop_div is True, stops the evaluation when loss reaches stop_threshold * best_loss</p></li>
+<li><p><strong>beta</strong> (<em>python:float</em>) – smoothing parameter for loss</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of used learning rates
+losses (list&lt;float&gt;): list of training losses</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lrs (list&lt;float&gt;)</p>
+</dd>
+</dl>
+</dd></dl>
 
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-h"><strong>h</strong></a>
-   </div>
-
-   <table class="indextable modindextable">
-     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
-     <tr class="cap" id="cap-h"><td></td><td>
-       <strong>h</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <a href="index.html#module-holocron"><code class="xref">holocron</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="nn.html#module-holocron.nn"><code class="xref">holocron.nn</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="ops.html#module-holocron.ops"><code class="xref">holocron.ops</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="optim.html#module-holocron.optim"><code class="xref">holocron.optim</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="utils.html#module-holocron.utils"><code class="xref">holocron.utils</code></a></td><td>
-       <em></em></td></tr>
-   </table>
+</div>
+</div>
 
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="optim.html" class="btn btn-neutral float-left" title="holocron.optim" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
