@@ -28,8 +28,7 @@ python train.py imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epoch
 
 | Size (px) | Epochs | args                                                         | Top-1 accuracy | # Runs |
 | --------- | ------ | ------------------------------------------------------------ | -------------- | ------ |
-| 224       | 5      | imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epochs 5 --opt radam --sched onecycle --loss label_smoothing |                |        |
+| 224       | 5      | imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epochs 5 --opt radam --sched onecycle --loss label_smoothing | 66.88%         | 1      |
 | 224       | 10     | imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epochs 10 --opt radam --sched onecycle --loss label_smoothing | 76.18%         | 1      |
-| 224       | 20     | imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epochs 20 --opt radam --sched onecycle --loss label_smoothing |                | 1      |
-|           |        |                                                              |                | 1      |
+| 224       | 20     | imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epochs 20 --opt radam --sched onecycle --loss label_smoothing | 82.57%         | 1      |
 
