@@ -19,6 +19,11 @@ def mixup_collate(data, alpha=0.1):
     Args:
         data (list): list of elements
         alpha (float, optional): mixup factor
+
+    Example::
+        >>> import torch
+        >>> from holocron import utils
+        >>> loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=utils.data.mixup_collate)
     """
 
     inputs, targets = default_collate(data)
