@@ -22,6 +22,8 @@ Loss functions
 
 .. autofunction:: focal_loss
 
+.. autofunction:: ls_cross_entropy
+
 
 Downsampling
 ------------
