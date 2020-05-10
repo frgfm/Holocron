@@ -41,15 +41,16 @@ def nl_relu(x, beta=1., inplace=False):
 
 
 def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamma=2):
-    """Implements the focal loss from https://arxiv.org/pdf/1708.02002.pdf
+    """Implements the focal loss from
+    `"Focal Loss for Dense Object Detection" <https://arxiv.org/pdf/1708.02002.pdf>`_
 
     Args:
-        x (torch.Tensor): input tensor
-        target (torch.Tensor): target tensor
-        weight (torch.Tensor, optional): manual rescaling of each class
+        x (torch.Tensor[N, K, ...]): input tensor
+        target (torch.Tensor[N, ...]): hard target tensor
+        weight (torch.Tensor[K], optional): manual rescaling of each class
         ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
         reduction (str, optional): reduction method
-
+        gamma (float, optional): gamma parameter of focal loss
 
     Returns:
         torch.Tensor: loss reduced with `reduction` method
@@ -94,7 +95,8 @@ def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamm
 
 
 def concat_downsample2d(x, scale_factor):
-    """Implements a loss-less downsampling operation described in https://pjreddie.com/media/files/papers/YOLO9000.pdf
+    """Implements a loss-less downsampling operation described in
+    `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
     by stacking adjacent information on the channel dimension.
 
     Args:
