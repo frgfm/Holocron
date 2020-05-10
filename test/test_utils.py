@@ -4,13 +4,13 @@ from holocron import utils
 
 
 class MockDataset(torch.utils.data.Dataset):
-    """Mock dataset generating a random sample and a counting target"""
+    """Mock dataset generating a random sample and a fixed zero target"""
     def __init__(self, n):
         super(MockDataset, self).__init__()
         self.n = n
 
     def __getitem__(self, idx):
-        return torch.rand(32), torch.tensor(idx, dtype=torch.long)
+        return torch.rand(32), torch.zeros(1, dtype=torch.long)
 
     def __len__(self):
         return self.n
@@ -43,7 +43,7 @@ class Tester(unittest.TestCase):
         criterion = torch.nn.CrossEntropyLoss()
         # Perform the iterations
         lrs, losses = utils.misc.lr_finder(train_one_batch, model, train_loader, optimizer, criterion,
-                                           num_it=num_it, start_lr=start_lr, end_lr=end_lr)
+                                           num_it=num_it, start_lr=start_lr, end_lr=end_lr, stop_div=False)
 
         # Check integrity of results
         self.assertIsInstance(lrs, list)
