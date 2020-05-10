@@ -80,13 +80,13 @@ def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamm
     loss = -1 * (1 - pt) ** gamma * logpt
 
     # Loss reduction
-    if reduction == 'mean':
+    if reduction == 'sum':
+        loss = loss.sum()
+    elif reduction == 'mean':
         # Ignore contribution to the loss if target is `ignore_index`
         if ignore_index >= 0:
             loss = loss[target.view(-1) != ignore_index]
         loss = loss.mean()
-    elif reduction == 'sum':
-        loss = loss.sum()
     else:
         # if no reduction, reshape tensor like target
         loss = loss.view(*target.shape)
