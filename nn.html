@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.0a0+a55dc1c-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.0a0+5dc03c1-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.0a0+a55dc1c
+                0.1.0a0+5dc03c1
               </div>
             
           
@@ -104,6 +104,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.nn</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#non-linear-activations">Non-linear activations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loss-wrappers">Loss wrappers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#downsampling">Downsampling</a></li>
 </ul>
 </li>
@@ -122,6 +123,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">holocron.utils</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.data.html">holocron.utils.data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.data.html#batch-collate">Batch collate</a></li>
 </ul>
 </li>
 </ul>
@@ -257,6 +262,21 @@
 <li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="loss-wrappers">
+<h2>Loss wrappers<a class="headerlink" href="#loss-wrappers" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="holocron.nn.MixupLoss">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">MixupLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">criterion</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MixupLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.MixupLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a Mixup wrapper as described in
+<a class="reference external" href="https://arxiv.org/pdf/1710.09412.pdf">“mixup: Beyond Empirical Risk Minimization”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>criterion</strong> (<em>callable</em>) – initial criterion to be used on normal sample &amp; targets</p>
 </dd>
 </dl>
 </dd></dl>

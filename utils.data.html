@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Python Module Index &mdash; holocron 0.1.0a0+5dc03c1-git documentation</title>
+  <title>holocron.utils.data &mdash; holocron 0.1.0a0+5dc03c1-git documentation</title>
   
 
   
@@ -37,9 +37,7 @@
   <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
- 
-
-
+    <link rel="prev" title="holocron.utils" href="utils.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -88,7 +86,7 @@
             
             
               <p class="caption"><span class="caption-text">Package Reference</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="models.html#res2net">Res2Net</a></li>
@@ -126,8 +124,8 @@
 <li class="toctree-l2"><a class="reference internal" href="utils.html#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utils.data.html">holocron.utils.data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utils.data.html#batch-collate">Batch collate</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.utils.data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#batch-collate">Batch collate</a></li>
 </ul>
 </li>
 </ul>
@@ -175,10 +173,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Python Module Index</li>
+      <li>holocron.utils.data</li>
     
     
       <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/utils.data.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -190,50 +192,48 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
+  <div class="section" id="holocron-utils-data">
+<h1>holocron.utils.data<a class="headerlink" href="#holocron-utils-data" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="batch-collate">
+<h2>Batch collate<a class="headerlink" href="#batch-collate" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="holocron.utils.data.mixup_collate">
+<code class="sig-prename descclassname">holocron.utils.data.</code><code class="sig-name descname">mixup_collate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">0.1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/data/collate.html#mixup_collate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.data.mixup_collate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a batch collate function with MixUp strategy from
+<a class="reference external" href="https://arxiv.org/pdf/1710.09412.pdf">“mixup: Beyond Empirical Risk Minimization”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list</em>) – list of elements</p></li>
+<li><p><strong>alpha</strong> (<em>python:float</em><em>, </em><em>optional</em>) – mixup factor</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">holocron</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mixup_collate</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
 
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-h"><strong>h</strong></a>
-   </div>
-
-   <table class="indextable modindextable">
-     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
-     <tr class="cap" id="cap-h"><td></td><td>
-       <strong>h</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <a href="index.html#module-holocron"><code class="xref">holocron</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="nn.html#module-holocron.nn"><code class="xref">holocron.nn</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="ops.html#module-holocron.ops"><code class="xref">holocron.ops</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="optim.html#module-holocron.optim"><code class="xref">holocron.optim</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="utils.html#module-holocron.utils"><code class="xref">holocron.utils</code></a></td><td>
-       <em></em></td></tr>
-   </table>
+</div>
+</div>
 
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="utils.html" class="btn btn-neutral float-left" title="holocron.utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
