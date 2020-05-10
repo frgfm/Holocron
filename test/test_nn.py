@@ -201,6 +201,30 @@ class Tester(unittest.TestCase):
         self.assertTrue(torch.all(module[1].bias.data == 0))
 
 
+    def test_mixuploss(self):
+
+        num_batches = 8
+        num_classes = 10
+        # Generate inputs
+        x = torch.rand((num_batches, num_classes, 20, 20))
+        target_a = torch.rand((num_batches, num_classes, 20, 20))
+        target_b = torch.rand((num_batches, num_classes, 20, 20))
+        lam = 0.9
+
+        # Take a criterion compatible with one-hot encoded targets
+        criterion = loss.MultiLabelCrossEntropy()
+        mixup_criterion = loss.MixupLoss(criterion)
+
+        # Check the repr
+        self.assertEqual(mixup_criterion.__repr__(), f"Mixup_{criterion.__repr__()}")
+
+        # Check the forward
+        out = mixup_criterion(x, target_a, target_b, lam)
+        self.assertEqual(out.item(), lam * criterion(x, target_a).item() + (1 - lam) * criterion(x, target_b).item())
+        self.assertEqual(mixup_criterion(x, target_a, target_b, 1).item(), criterion(x, target_a).item())
+        self.assertEqual(mixup_criterion(x, target_a, target_b, 0).item(), criterion(x, target_b).item())
+
+
 act_fns = ['mish', 'nl_relu']
 
 for fn_name in act_fns:
