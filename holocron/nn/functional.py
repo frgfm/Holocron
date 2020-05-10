@@ -100,11 +100,11 @@ def concat_downsample2d(x, scale_factor):
     by stacking adjacent information on the channel dimension.
 
     Args:
-        x (torch.Tensor): input tensor
+        x (torch.Tensor[N, C, H, W]): input tensor
         scale_factor (int): spatial scaling factor
 
     Returns:
-        torch.Tensor: downsampled tensor
+        torch.Tensor[N, 4C, H / 2, W / 2]: downsampled tensor
     """
 
     b, c, h, w = x.shape
