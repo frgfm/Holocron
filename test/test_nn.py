@@ -8,7 +8,6 @@ from holocron.nn.modules import activation, loss, downsample
 
 
 class Tester(unittest.TestCase):
-
     def _test_activation_function(self, name, input_shape):
         fn = F.__dict__[name]
 
@@ -31,37 +30,50 @@ class Tester(unittest.TestCase):
             if kwargs.get('inplace', False):
                 self.assertEqual(x.data_ptr(), out.data_ptr())
 
-    def _test_loss_function(self, name):
+    def _test_loss_function(self, name, same_loss=0, multi_label=False):
 
         num_batches = 2
         num_classes = 4
         # 4 classes
-        x = torch.ones(num_batches, num_classes, 20, 20)
+        x = torch.ones(num_batches, num_classes)
         x[:, 0, ...] = 10
 
         # Identical target
-        target = torch.zeros((num_batches, 20, 20), dtype=torch.long)
+        if multi_label:
+            target = torch.zeros_like(x)
+            target[:, 0] = 1.
+        else:
+            target = torch.zeros(num_batches, dtype=torch.long)
         loss_fn = F.__dict__[name]
-        self.assertAlmostEqual(loss_fn(x, target).item(), 0)
+        self.assertAlmostEqual(loss_fn(x, target).item(), same_loss, places=3)
         self.assertTrue(torch.allclose(loss_fn(x, target, reduction='none'),
-                                       torch.zeros((num_batches, 20, 20), dtype=x.dtype)))
+                                       same_loss * torch.ones(num_batches, dtype=x.dtype),
+                                       atol=1e-3))
 
         # Check that class rescaling works
-        x = torch.rand(num_batches, num_classes, 20, 20)
-        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+        x = torch.rand(num_batches, num_classes)
+        if multi_label:
+            target = torch.rand(x.shape)
+        else:
+            target = (num_classes * torch.rand(num_batches)).to(torch.long)
         weights = torch.ones(num_classes)
         self.assertEqual(loss_fn(x, target).item(), loss_fn(x, target, weight=weights).item())
 
         # Check that ignore_index works
         self.assertEqual(loss_fn(x, target).item(), loss_fn(x, target, ignore_index=num_classes).item())
         # Ignore an index we are certain to be in the target
+        if multi_label:
+            ignore_index = torch.unique(target.argmax(dim=1))[0].item()
+        else:
+            ignore_index = torch.unique(target)[0].item()
         self.assertNotEqual(loss_fn(x, target).item(),
-                            loss_fn(x, target, ignore_index=torch.unique(target)[0].item()).item())
+                            loss_fn(x, target, ignore_index=ignore_index).item())
 
         # Test reduction
-        self.assertEqual(loss_fn(x, target, reduction='sum').item(), loss_fn(x, target, reduction='none').sum().item())
-        self.assertEqual(loss_fn(x, target).item(),
-                         (loss_fn(x, target, reduction='sum') / target.view(-1).shape[0]).item())
+        self.assertAlmostEqual(loss_fn(x, target, reduction='sum').item(),
+                               loss_fn(x, target, reduction='none').sum().item(), places=6)
+        self.assertAlmostEqual(loss_fn(x, target, reduction='mean').item(),
+                               (loss_fn(x, target, reduction='sum') / target.shape[0]).item(), places=6)
 
     def test_focal_loss(self):
 
@@ -80,6 +92,40 @@ class Tester(unittest.TestCase):
         x = torch.ones(num_batches, num_classes, 20, 20)
         self.assertAlmostEqual((1 - 1 / num_classes) * F.focal_loss(x, target, gamma=0).item(),
                                F.focal_loss(x, target, gamma=1).item(), places=5)
+
+    def test_ls_celoss(self):
+
+        num_batches = 2
+        num_classes = 4
+
+        # Common verification
+        self._test_loss_function('ls_cross_entropy', 0.1 / num_classes * (num_classes - 1) * 9)
+
+        x = torch.rand(num_batches, num_classes, 20, 20)
+        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+
+        # Value check
+        self.assertAlmostEqual(F.ls_cross_entropy(x, target, eps=0).item(),
+                               nn.functional.cross_entropy(x, target).item(), places=5)
+        self.assertAlmostEqual(F.ls_cross_entropy(x, target, eps=1).item(),
+                               -1 / num_classes * nn.functional.log_softmax(x, dim=1).sum(dim=1).mean().item(),
+                               places=5)
+
+    def test_multilabel_cross_entropy(self):
+
+        num_batches = 2
+        num_classes = 4
+
+        # Common verification
+        self._test_loss_function('multilabel_cross_entropy', multi_label=True)
+
+        x = torch.rand(num_batches, num_classes, 20, 20)
+        target = torch.zeros_like(x)
+        target[:, 0] = 1.
+
+        # Value check
+        self.assertAlmostEqual(F.multilabel_cross_entropy(x, target).item(),
+                               nn.functional.cross_entropy(x, target.argmax(dim=1)).item(), places=5)
 
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
@@ -103,21 +149,23 @@ class Tester(unittest.TestCase):
             if kwargs.get('inplace', False):
                 self.assertEqual(x.data_ptr(), out.data_ptr())
 
-    def _test_loss_module(self, name):
+    def _test_loss_module(self, name, fn_name, multi_label=False):
 
         num_batches = 2
         num_classes = 4
-        # 4 classes
-        x = torch.ones(num_batches, num_classes, 20, 20)
-        x[:, 0, ...] = 10
+        x = torch.rand(num_batches, num_classes, 20, 20)
 
         # Identical target
-        target = torch.zeros((num_batches, 20, 20), dtype=torch.long)
+        if multi_label:
+            target = torch.rand(x.shape)
+        else:
+            target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
         criterion = loss.__dict__[name]()
-        self.assertAlmostEqual(criterion(x, target).item(), 0)
+        self.assertEqual(criterion(x, target).item(),
+                         F.__dict__[fn_name](x, target).item())
         criterion = loss.__dict__[name](reduction='none')
-        self.assertTrue(torch.allclose(criterion(x, target),
-                                       torch.zeros((num_batches, 20, 20), dtype=x.dtype)))
+        self.assertTrue(torch.equal(criterion(x, target),
+                                    F.__dict__[fn_name](x, target, reduction='none')))
 
     def test_concatdownsample2d(self):
 
@@ -172,11 +220,21 @@ for mod_name in act_modules:
     setattr(Tester, "test_" + mod_name, do_test)
 
 
-loss_modules = ['FocalLoss']
+loss_modules = [('FocalLoss', 'focal_loss'),
+                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy')]
 
-for mod_name in loss_modules:
-    def do_test(self, mod_name=mod_name):
-        self._test_loss_module(mod_name)
+for (mod_name, fn_name) in loss_modules:
+    def do_test(self, mod_name=mod_name, fn_name=fn_name):
+        self._test_loss_module(mod_name, fn_name, multi_label=False)
+
+    setattr(Tester, "test_" + mod_name, do_test)
+
+
+loss_modules = [('MultiLabelCrossEntropy', 'multilabel_cross_entropy')]
+
+for (mod_name, fn_name) in loss_modules:
+    def do_test(self, mod_name=mod_name, fn_name=fn_name):
+        self._test_loss_module(mod_name, fn_name, multi_label=True)
 
     setattr(Tester, "test_" + mod_name, do_test)
 

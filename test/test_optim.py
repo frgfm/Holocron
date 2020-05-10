@@ -29,7 +29,6 @@ def _get_learnable_param(model):
 
 
 class Tester(unittest.TestCase):
-
     def _test_lr_scheduler(self, name, lr=1e-4, ratio_preserved=True, **kwargs):
 
         # Get model and optimizer

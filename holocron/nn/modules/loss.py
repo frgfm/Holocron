@@ -8,22 +8,13 @@ import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['FocalLoss']
+__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy']
 
 
-class FocalLoss(nn.Module):
-    """Implementation of Focal Loss as described in https://arxiv.org/pdf/1708.02002.pdf
+class _Loss(nn.Module):
 
-    Args:
-        gamma (float): exponent parameter of the focal loss
-        weight (torch.Tensor): class weight for loss computation
-        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
-        reduction (str, optional): type of reduction to apply to the final loss
-    """
-
-    def __init__(self, gamma=2, weight=None, ignore_index=-100, reduction='mean'):
-        super(FocalLoss, self).__init__()
-        self.gamma = gamma
+    def __init__(self, weight=None, ignore_index=-100, reduction='mean'):
+        super().__init__()
         self.weight = weight
         # Cast class weights if possible
         if isinstance(weight, (float, int)):
@@ -37,8 +28,65 @@ class FocalLoss(nn.Module):
         else:
             self.reduction = reduction
 
+
+class FocalLoss(_Loss):
+    """Implementation of Focal Loss as described in
+    `"Focal Loss for Dense Object Detection" <https://arxiv.org/pdf/1708.02002.pdf>`_
+
+    Args:
+        gamma (float, optional): exponent parameter of the focal loss
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): type of reduction to apply to the final loss
+    """
+
+    def __init__(self, gamma=2, **kwargs):
+        super().__init__(**kwargs)
+        self.gamma = gamma
+
     def forward(self, x, target):
         return F.focal_loss(x, target, self.weight, self.ignore_index, self.reduction, self.gamma)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(gamma={self.gamma}, reduction='{self.reduction}')"
+
+
+class MultiLabelCrossEntropy(_Loss):
+    """Implementation of the cross-entropy loss for multi-label targets
+
+    Args:
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): type of reduction to apply to the final loss
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def forward(self, x, target):
+        return F.multilabel_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(reduction='{self.reduction}')"
+
+
+class LabelSmoothingCrossEntropy(_Loss):
+    """Implementation of the cross-entropy loss with label smoothing on hard target as described in
+    `"Attention Is All You Need" <https://arxiv.org/pdf/1706.03762.pdf>`_
+
+    Args:
+        eps (float, optional): smoothing factor
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): type of reduction to apply to the final loss
+    """
+
+    def __init__(self, eps=0.1, **kwargs):
+        super().__init__(**kwargs)
+        self.eps = eps
+
+    def forward(self, x, target):
+        return F.ls_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction, self.eps)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(eps={self.eps}, reduction='{self.reduction}')"
