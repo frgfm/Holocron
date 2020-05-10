@@ -20,6 +20,8 @@ Loss functions
 
 .. autoclass:: FocalLoss
 
+.. autoclass:: MultiLabelCrossEntropy
+
 .. autoclass:: LabelSmoothingCrossEntropy
 
 
