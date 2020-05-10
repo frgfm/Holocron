@@ -1,5 +1,6 @@
 import unittest
 import inspect
+import math
 import torch
 import torch.nn as nn
 from holocron.nn import functional as F
@@ -31,24 +32,25 @@ class Tester(unittest.TestCase):
             if kwargs.get('inplace', False):
                 self.assertEqual(x.data_ptr(), out.data_ptr())
 
-    def _test_loss_function(self, name):
+    def _test_loss_function(self, name, same_loss=0):
 
         num_batches = 2
         num_classes = 4
         # 4 classes
-        x = torch.ones(num_batches, num_classes, 20, 20)
+        x = torch.ones(num_batches, num_classes)
         x[:, 0, ...] = 10
 
         # Identical target
-        target = torch.zeros((num_batches, 20, 20), dtype=torch.long)
+        target = torch.zeros(num_batches, dtype=torch.long)
         loss_fn = F.__dict__[name]
-        self.assertAlmostEqual(loss_fn(x, target).item(), 0)
+        self.assertAlmostEqual(loss_fn(x, target).item(), same_loss, places=3)
         self.assertTrue(torch.allclose(loss_fn(x, target, reduction='none'),
-                                       torch.zeros((num_batches, 20, 20), dtype=x.dtype)))
+                                       same_loss * torch.ones(num_batches, dtype=x.dtype),
+                                       atol=1e-3))
 
         # Check that class rescaling works
-        x = torch.rand(num_batches, num_classes, 20, 20)
-        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+        x = torch.rand(num_batches, num_classes)
+        target = (num_classes * torch.rand(num_batches)).to(torch.long)
         weights = torch.ones(num_classes)
         self.assertEqual(loss_fn(x, target).item(), loss_fn(x, target, weight=weights).item())
 
@@ -59,7 +61,8 @@ class Tester(unittest.TestCase):
                             loss_fn(x, target, ignore_index=torch.unique(target)[0].item()).item())
 
         # Test reduction
-        self.assertEqual(loss_fn(x, target, reduction='sum').item(), loss_fn(x, target, reduction='none').sum().item())
+        self.assertAlmostEqual(loss_fn(x, target, reduction='sum').item(),
+                               loss_fn(x, target, reduction='none').sum().item())
         self.assertEqual(loss_fn(x, target).item(),
                          (loss_fn(x, target, reduction='sum') / target.view(-1).shape[0]).item())
 
@@ -80,6 +83,24 @@ class Tester(unittest.TestCase):
         x = torch.ones(num_batches, num_classes, 20, 20)
         self.assertAlmostEqual((1 - 1 / num_classes) * F.focal_loss(x, target, gamma=0).item(),
                                F.focal_loss(x, target, gamma=1).item(), places=5)
+
+    def test_ls_celoss(self):
+
+        num_batches = 2
+        num_classes = 4
+
+        # Common verification
+        self._test_loss_function('ls_cross_entropy', 0.1 / num_classes * (num_classes - 1) * 9)
+
+        x = torch.rand(num_batches, num_classes, 20, 20)
+        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+
+        # Value check
+        self.assertAlmostEqual(F.ls_cross_entropy(x, target, eps=0).item(),
+                               nn.functional.cross_entropy(x, target).item(), places=5)
+        self.assertAlmostEqual(F.ls_cross_entropy(x, target, eps=1).item(),
+                               -1 / num_classes * nn.functional.log_softmax(x, dim=1).sum(dim=1).mean().item(),
+                               places=5)
 
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
