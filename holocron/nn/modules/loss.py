@@ -12,11 +12,12 @@ __all__ = ['FocalLoss']
 
 
 class FocalLoss(nn.Module):
-    """Implementation of Focal Loss as described in https://arxiv.org/pdf/1708.02002.pdf
+    """Implementation of Focal Loss as described in
+    `"Focal Loss for Dense Object Detection" <https://arxiv.org/pdf/1708.02002.pdf>`_
 
     Args:
         gamma (float): exponent parameter of the focal loss
-        weight (torch.Tensor): class weight for loss computation
+        weight (torch.Tensor[K], optional): class weight for loss computation
         ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
         reduction (str, optional): type of reduction to apply to the final loss
     """
