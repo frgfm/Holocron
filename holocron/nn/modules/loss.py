@@ -16,7 +16,7 @@ class FocalLoss(nn.Module):
     `"Focal Loss for Dense Object Detection" <https://arxiv.org/pdf/1708.02002.pdf>`_
 
     Args:
-        gamma (float): exponent parameter of the focal loss
+        gamma (float, optional): exponent parameter of the focal loss
         weight (torch.Tensor[K], optional): class weight for loss computation
         ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
         reduction (str, optional): type of reduction to apply to the final loss
@@ -50,13 +50,13 @@ class LabelSmoothingCrossEntropy(nn.Module):
     `"Attention Is All You Need" <https://arxiv.org/pdf/1706.03762.pdf>`_
 
     Args:
-        eps (float): smoothing factor
+        eps (float, optional): smoothing factor
         weight (torch.Tensor[K], optional): class weight for loss computation
         ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
         reduction (str, optional): type of reduction to apply to the final loss
     """
 
-    def __init__(self, eps=2, weight=None, ignore_index=-100, reduction='mean'):
+    def __init__(self, eps=0.1, weight=None, ignore_index=-100, reduction='mean'):
         super(LabelSmoothingCrossEntropy, self).__init__()
         self.eps = eps
         self.weight = weight
