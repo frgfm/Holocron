@@ -30,7 +30,7 @@ def train_one_batch(model, x, target, optimizer, criterion, device):
     return batch_loss.item()
 
 
-class Tester(unittest.TestCase):
+class MiscTester(unittest.TestCase):
     def test_lr_finder(self):
 
         num_it = 10
@@ -52,6 +52,21 @@ class Tester(unittest.TestCase):
         self.assertEqual(len(losses), num_it)
         self.assertEqual(lrs[0], start_lr)
         self.assertAlmostEqual(lrs[-1], end_lr)
+
+
+class DataTester(unittest.TestCase):
+    def test_mixup(self):
+
+        num_it = 10
+        batch_size = 2
+        start_lr, end_lr = 1e-7, 10
+        # Generate all dependencies
+        loader = torch.utils.data.DataLoader(dataset=MockDataset(num_it * batch_size), batch_size=batch_size,
+                                             collate_fn=utils.data.mixup_collate)
+
+        inputs, targets_a, targets_b, lam = next(iter(loader))
+        self.assertEqual(inputs.shape, (batch_size, 32))
+        self.assertEqual(targets_a.shape, targets_b.shape)
 
 
 if __name__ == '__main__':
