@@ -62,7 +62,7 @@ class Tester(unittest.TestCase):
 
         # Test reduction
         self.assertAlmostEqual(loss_fn(x, target, reduction='sum').item(),
-                               loss_fn(x, target, reduction='none').sum().item())
+                               loss_fn(x, target, reduction='none').sum().item(), places=6)
         self.assertEqual(loss_fn(x, target).item(),
                          (loss_fn(x, target, reduction='sum') / target.view(-1).shape[0]).item())
 
@@ -124,7 +124,7 @@ class Tester(unittest.TestCase):
             if kwargs.get('inplace', False):
                 self.assertEqual(x.data_ptr(), out.data_ptr())
 
-    def _test_loss_module(self, name):
+    def _test_loss_module(self, name, fn_name):
 
         num_batches = 2
         num_classes = 4
@@ -135,10 +135,11 @@ class Tester(unittest.TestCase):
         # Identical target
         target = torch.zeros((num_batches, 20, 20), dtype=torch.long)
         criterion = loss.__dict__[name]()
-        self.assertAlmostEqual(criterion(x, target).item(), 0)
+        self.assertEqual(criterion(x, target).item(),
+                         F.__dict__[fn_name](x, target).item())
         criterion = loss.__dict__[name](reduction='none')
-        self.assertTrue(torch.allclose(criterion(x, target),
-                                       torch.zeros((num_batches, 20, 20), dtype=x.dtype)))
+        self.assertTrue(torch.equal(criterion(x, target),
+                                    F.__dict__[fn_name](x, target, reduction='none')))
 
     def test_concatdownsample2d(self):
 
@@ -193,11 +194,12 @@ for mod_name in act_modules:
     setattr(Tester, "test_" + mod_name, do_test)
 
 
-loss_modules = ['FocalLoss']
+loss_modules = [('FocalLoss', 'focal_loss'),
+                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy')]
 
-for mod_name in loss_modules:
-    def do_test(self, mod_name=mod_name):
-        self._test_loss_module(mod_name)
+for (mod_name, fn_name) in loss_modules:
+    def do_test(self, mod_name=mod_name, fn_name=fn_name):
+        self._test_loss_module(mod_name, fn_name)
 
     setattr(Tester, "test_" + mod_name, do_test)
 
