@@ -74,8 +74,8 @@ class Tester(unittest.TestCase):
         # Test reduction
         self.assertAlmostEqual(loss_fn(x, target, reduction='sum').item(),
                                loss_fn(x, target, reduction='none').sum().item(), places=6)
-        self.assertEqual(loss_fn(x, target, reduction='mean').item(),
-                         (loss_fn(x, target, reduction='sum') / target.shape[0]).item())
+        self.assertAlmostEqual(loss_fn(x, target, reduction='mean').item(),
+                               (loss_fn(x, target, reduction='sum') / target.shape[0]).item(), places=6)
 
     def test_focal_loss(self):
 
@@ -127,7 +127,7 @@ class Tester(unittest.TestCase):
 
         # Value check
         self.assertAlmostEqual(F.multilabel_cross_entropy(x, target).item(),
-                               nn.functional.cross_entropy(x, target.argmax(dim=1)).item(), places=6)
+                               nn.functional.cross_entropy(x, target.argmax(dim=1)).item(), places=5)
 
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
