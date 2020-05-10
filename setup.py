@@ -40,7 +40,8 @@ with open('README.md') as f:
 
 requirements = [
     'torch>=1.2.0',
-    'torchvision>=0.4.0'
+    'torchvision>=0.4.0',
+    'tqdm>=4.1.0'
 ]
 
 setup(
