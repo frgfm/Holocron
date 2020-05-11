@@ -11,6 +11,8 @@ the current state and will update the parameters based on the computed gradients
 Optimizers
 ----------
 
+Implementations of recent parameter optimizer for Pytorch modules.
+
 .. autoclass:: Lamb
 
 .. autoclass:: Lars
@@ -23,7 +25,7 @@ Optimizers
 Optimizer wrappers
 ------------------
 
-:mod:`holocron.optim` implements optimizer wrappers.
+:mod:`holocron.optim` also implements optimizer wrappers.
 
 A base optimizer should always be passed to the wrapper; e.g., you
 should write your code this way:

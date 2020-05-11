@@ -1,7 +1,5 @@
 holocron.ops
-===============
-
-.. automodule:: holocron.ops
+============
 
 .. currentmodule:: holocron.ops
 
@@ -9,6 +7,9 @@ holocron.ops
 
 .. note::
   Those operators currently do not support TorchScript.
+
+Boxes
+-----
 
 .. autofunction:: box_diou
 .. autofunction:: box_ciou
