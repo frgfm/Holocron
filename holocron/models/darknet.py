@@ -26,7 +26,7 @@ default_cfgs = {
                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.0/darknet19_224-44aaede3.pth'},
     'darknet53': {'arch': 'DarknetV3',
                   'layout': [(1, 64, 128), (2, 128, 256), (8, 256, 512), (8, 512, 1024), (4, 1024)],
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.0/darknet53_224-f4c640a8.pth'},
+                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.0/darknet53_224-42576ca0.pth'},
 }
 
 
