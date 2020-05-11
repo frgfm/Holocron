@@ -1,11 +1,9 @@
-.. role:: hidden
-    :class: hidden-section
-
-
 holocron.nn
 ============
 
-.. automodule:: holocron.nn
+An addition to the :mod:`torch.nn` module of Pytorch to extend the range of neural networks building blocks.
+
+
 .. currentmodule:: holocron.nn
 
 Non-linear activations

@@ -13,7 +13,8 @@ __all__ = ['Lookahead', 'Scout']
 
 
 class Lookahead(Optimizer):
-    """Implements the Lookahead optimizer wrapper from https://arxiv.org/pdf/1907.08610.pdf
+    """Implements the Lookahead optimizer wrapper from `"Lookahead Optimizer: k steps forward, 1 step back"
+    <https://arxiv.org/pdf/1907.08610.pdf>`_.
 
     Args:
         base_optimizer (torch.optim.optimizer.Optimizer): base parameter optimizer
@@ -131,7 +132,8 @@ class Lookahead(Optimizer):
 
 
 class Scout(Optimizer):
-    """Implements a new optimizer wrapper based on the initial Lookahead paper https://arxiv.org/pdf/1907.08610.pdf
+    """Implements a new optimizer wrapper based on `"Lookahead Optimizer: k steps forward, 1 step back"
+    <https://arxiv.org/pdf/1907.08610.pdf>`_.
 
     Args:
         base_optimizer (torch.optim.optimizer.Optimizer): base parameter optimizer

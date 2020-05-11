@@ -10,8 +10,9 @@ from torch.optim.optimizer import Optimizer
 
 
 class RaLars(Optimizer):
-    """Implements the RAdam optimizer from https://arxiv.org/pdf/1908.03265.pdf
-    with optional Layer-wise adaptive Scaling from https://arxiv.org/pdf/1708.03888.pdf
+    """Implements the RAdam optimizer from `"On the variance of the Adaptive Learning Rate and Beyond"
+    <https://arxiv.org/pdf/1908.03265.pdf>`_ with optional Layer-wise adaptive Scaling from
+    `"Large Batch Training of Convolutional Networks" <https://arxiv.org/pdf/1708.03888.pdf>`_
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups

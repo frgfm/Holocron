@@ -14,7 +14,9 @@ __all__ = ['OneCycleScheduler']
 
 
 class OneCycleScheduler(_LRScheduler):
-    """Implements the One Cycle scheduler from https://arxiv.org/pdf/1803.09820.pdf
+    """Implements the One Cycle scheduler from `"A disciplined approach to neural network hyper-parameters"
+    <https://arxiv.org/pdf/1803.09820.pdf>`_. Please note that this implementation was made before pytorch supports it,
+    using the official Pytorch implementation is advised.
 
     Args:
         optimizer (Optimizer): Wrapped optimizer.

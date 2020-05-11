@@ -24,7 +24,7 @@ class _Loss(nn.Module):
         self.ignore_index = ignore_index
         # Set the reduction method
         if reduction not in ['none', 'mean', 'sum']:
-            raise NotImplementedError(f"argument reduction received an incorrect input")
+            raise NotImplementedError("argument reduction received an incorrect input")
         else:
             self.reduction = reduction
 

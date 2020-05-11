@@ -5,7 +5,8 @@ from torch.optim.optimizer import Optimizer
 
 
 class Lars(Optimizer):
-    r"""Implements the LARS optimizer from https://arxiv.org/pdf/1708.03888.pdf
+    r"""Implements the LARS optimizer from `"Large batch training of convolutional networks"
+    <https://arxiv.org/pdf/1708.03888.pdf>`_.
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining

@@ -11,7 +11,8 @@ __all__ = ['Mish', 'NLReLU']
 
 
 class Mish(nn.Module):
-    """Implements the Mish activation module from https://arxiv.org/pdf/1908.08681.pdf"""
+    """Implements the Mish activation module from `"Mish: A Self Regularized Non-Monotonic Neural Activation Function"
+    <https://arxiv.org/pdf/1908.08681.pdf>`_"""
 
     def __init__(self):
         super(Mish, self).__init__()
@@ -21,7 +22,8 @@ class Mish(nn.Module):
 
 
 class NLReLU(nn.Module):
-    """Implements the Natural-Logarithm ReLU activation module from https://arxiv.org/pdf/1908.03682.pdf
+    """Implements the Natural-Logarithm ReLU activation module from `"Natural-Logarithm-Rectified Activation
+    Function in Convolutional Neural Networks" <https://arxiv.org/pdf/1908.03682.pdf>`_
 
     Args:
         inplace (bool): should the operation be performed inplace
