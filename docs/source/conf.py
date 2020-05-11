@@ -76,6 +76,7 @@ html_theme_options = {
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': False,
+    'analytics_id': 'UA-148140560-2',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
