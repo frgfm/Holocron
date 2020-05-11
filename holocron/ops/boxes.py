@@ -51,7 +51,8 @@ def iou_penalty(boxes1, boxes2):
 
 
 def box_diou(boxes1, boxes2):
-    """Computes the Distance-IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf
+    """Computes the Distance-IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
+    Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_
 
     Args:
         boxes1 (torch.Tensor[M, 4]): bounding boxes
@@ -96,7 +97,8 @@ def aspect_ratio_consistency(boxes1, boxes2):
 
 
 def box_ciou(boxes1, boxes2):
-    """Computes the Complete IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf
+    """Computes the Complete IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
+    Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_
 
     Args:
         boxes1 (torch.Tensor[M, 4]): bounding boxes

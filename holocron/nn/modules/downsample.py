@@ -11,8 +11,8 @@ __all__ = ['ConcatDownsample2d']
 
 
 class ConcatDownsample2d(nn.Module):
-    """Implements a loss-less downsampling operation described in https://pjreddie.com/media/files/papers/YOLO9000.pdf
-    by stacking adjacent information on the channel dimension.
+    """Implements a loss-less downsampling operation described in `"YOLO9000: Better, Faster, Stronger"
+    <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_ by stacking adjacent information on the channel dimension.
 
     Args:
         scale_factor (int): spatial scaling factor

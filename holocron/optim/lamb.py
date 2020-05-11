@@ -9,7 +9,8 @@ from torch.optim.optimizer import Optimizer
 
 
 class Lamb(Optimizer):
-    """Implements the Lamb optimizer from https://arxiv.org/pdf/1904.00962v3.pdf.
+    """Implements the Lamb optimizer from `"Large batch optimization for deep learning: training BERT in 76 minutes"
+    <https://arxiv.org/pdf/1904.00962v3.pdf>`_.
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
