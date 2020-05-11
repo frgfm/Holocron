@@ -12,7 +12,7 @@ learning tricks in computer vision, easily paired up with your favorite framewor
    installing
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Package Documentation
 
    models
