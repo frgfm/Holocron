@@ -29,7 +29,7 @@ Use Github [issues](https://github.com/frgfm/Holocron/issues) for feature reques
 
 
 
-## Developping torchcam
+## Developping holocron
 
 
 ### Commits
