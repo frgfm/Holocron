@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.radam &mdash; holocron 0.1.1a0+d0c789d-git documentation</title>
+  <title>holocron.optim.radam &mdash; holocron 0.1.1a0+9b3f927-git documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.1.1a0+d0c789d
+                0.1.1a0+9b3f927
               </div>
             
           
@@ -84,7 +84,16 @@
               
             
             
-              <p class="caption"><span class="caption-text">Package Reference</span></p>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installing.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../installing.html#via-python-package">Via Python Package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installing.html#via-conda">Via Conda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installing.html#via-git">Via Git</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#classification">Classification</a><ul>
@@ -112,7 +121,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ops.html">holocron.ops</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ops.html">holocron.ops</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../ops.html#boxes">Boxes</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
@@ -202,7 +214,8 @@
 
 
 <div class="viewcode-block" id="RAdam"><a class="viewcode-back" href="../../../optim.html#holocron.optim.RAdam">[docs]</a><span class="k">class</span> <span class="nc">RAdam</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the RAdam optimizer from https://arxiv.org/pdf/1908.03265.pdf</span>
+    <span class="sd">&quot;&quot;&quot;Implements the RAdam optimizer from `&quot;On the variance of the Adaptive Learning Rate and Beyond&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/1908.03265.pdf&gt;`_.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        params (iterable): iterable of parameters to optimize or dicts defining parameter groups</span>
@@ -327,6 +340,18 @@
 
   
   
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-148140560-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
     
    
 

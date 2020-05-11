@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.1a0+d0c789d-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.1a0+9b3f927-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.1a0+d0c789d
+                0.1.1a0+9b3f927
               </div>
             
           
@@ -86,7 +86,16 @@
               
             
             
-              <p class="caption"><span class="caption-text">Package Reference</span></p>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installing.html#via-python-package">Via Python Package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installing.html#via-conda">Via Conda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installing.html#via-git">Via Git</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
@@ -114,7 +123,10 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ops.html#boxes">Boxes</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
@@ -193,20 +205,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-holocron.nn">
-<span id="holocron-nn"></span><h1>holocron.nn<a class="headerlink" href="#module-holocron.nn" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="holocron-nn">
+<h1>holocron.nn<a class="headerlink" href="#holocron-nn" title="Permalink to this headline">¶</a></h1>
+<p>An addition to the <code class="xref py py-mod docutils literal notranslate"><span class="pre">torch.nn</span></code> module of Pytorch to extend the range of neural networks building blocks.</p>
 <div class="section" id="non-linear-activations">
 <h2>Non-linear activations<a class="headerlink" href="#non-linear-activations" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="holocron.nn.Mish">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">Mish</code><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#Mish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Mish" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the Mish activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">https://arxiv.org/pdf/1908.08681.pdf</a></p>
+<dd><p>Implements the Mish activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">“Mish: A Self Regularized Non-Monotonic Neural Activation Function”</a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt id="holocron.nn.NLReLU">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">NLReLU</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inplace</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#NLReLU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.NLReLU" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the Natural-Logarithm ReLU activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.03682.pdf">https://arxiv.org/pdf/1908.03682.pdf</a></p>
+<dd><p>Implements the Natural-Logarithm ReLU activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.03682.pdf">“Natural-Logarithm-Rectified Activation
+Function in Convolutional Neural Networks”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em>) – should the operation be performed inplace</p>
@@ -287,8 +301,7 @@
 <dl class="py class">
 <dt id="holocron.nn.ConcatDownsample2d">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">ConcatDownsample2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scale_factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#ConcatDownsample2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.ConcatDownsample2d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a loss-less downsampling operation described in <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">https://pjreddie.com/media/files/papers/YOLO9000.pdf</a>
-by stacking adjacent information on the channel dimension.</p>
+<dd><p>Implements a loss-less downsampling operation described in <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a> by stacking adjacent information on the channel dimension.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>scale_factor</strong> (<em>python:int</em>) – spatial scaling factor</p>
@@ -344,6 +357,18 @@ by stacking adjacent information on the channel dimension.</p>
 
   
   
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-148140560-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
     
    
 
