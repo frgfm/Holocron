@@ -70,7 +70,7 @@ jobs:
         run: |
           VERSION="${VERSION:1}"
           export BUILD_VERSION=$VERSION
-          python setup.py sdist
+          BUILD_VERSION=$VERSION python setup.py sdist
           mkdir conda-dist
           conda-build ./conda/ -c pytorch --output-folder conda-dist
           ls -l conda-dist/noarch/*tar.bz2

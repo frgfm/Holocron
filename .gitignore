@@ -104,3 +104,4 @@ venv.bak/
 .mypy_cache/
 holocron/version.py
 *.pth
+conda-dist/
