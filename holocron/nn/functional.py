@@ -213,7 +213,7 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
 
 
 def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, eps=1e-14):
-    """Implements a normalized convolution operations in 2D. Based on the `"implementation"
+    """Implements a normalized convolution operations in 2D. Based on the `implementation
     <https://github.com/kimdongsuk1/NormalizedCNN>`_ by the paper's author.
     See :class:`~holocron.nn.NormConv2d` for details and output shape.
 

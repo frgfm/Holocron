@@ -23,7 +23,7 @@ class _NormConvNd(_ConvNd):
 
 class NormConv2d(_NormConvNd):
     """Implements the normalized convolution module from `"Normalized Convolutional Neural Network"
-    <https://arxiv.org/pdf/2005.05274v2.pdf>`_
+    <https://arxiv.org/pdf/2005.05274v2.pdf>`_.
 
     In the simplest case, the output value of the layer with input size
     :math:`(N, C_{in}, H, W)` and output :math:`(N, C_{out}, H_{out}, W_{out})`
