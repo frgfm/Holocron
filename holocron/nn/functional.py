@@ -243,7 +243,7 @@ def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1,
     x = F.unfold(x, weight.shape[-2:], dilation=dilation, padding=padding, stride=stride)
     x = x.transpose(1, 2)
     # Normalize the slices
-    unfold_scale = (x.var(-1, unbiased=False, keepdim=True) + eps).rqsrt()
+    unfold_scale = (x.var(-1, unbiased=False, keepdim=True) + eps).rsqrt()
     x -= x.mean(-1, keepdim=True)
     x *= unfold_scale.expand_as(x)
 
