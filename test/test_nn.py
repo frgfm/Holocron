@@ -223,13 +223,13 @@ class Tester(unittest.TestCase):
         self.assertEqual(mixup_criterion(x, target_a, target_b, 1).item(), criterion(x, target_a).item())
         self.assertEqual(mixup_criterion(x, target_a, target_b, 0).item(), criterion(x, target_b).item())
 
-    def test_norm_conv2d_mod(self):
+    def _test_xcorr2d(self, name):
 
         x = torch.rand(2, 8, 19, 19)
 
         # Normalized Conv
         for padding_mode in ['zeros', 'reflect']:
-            mod = conv.NormConv2d(8, 16, 3, padding=1, padding_mode=padding_mode)
+            mod = conv.__dict__[name](8, 16, 3, padding=1, padding_mode=padding_mode)
 
             with torch.no_grad():
                 out = mod(x)
@@ -270,6 +270,15 @@ loss_modules = [('MultiLabelCrossEntropy', 'multilabel_cross_entropy')]
 for (mod_name, fn_name) in loss_modules:
     def do_test(self, mod_name=mod_name, fn_name=fn_name):
         self._test_loss_module(mod_name, fn_name, multi_label=True)
+
+    setattr(Tester, "test_" + mod_name, do_test)
+
+
+xcorr_modules = ['NormConv2d', 'Add2d']
+
+for mod_name in xcorr_modules:
+    def do_test(self, mod_name=mod_name):
+        self._test_xcorr2d(mod_name)
 
     setattr(Tester, "test_" + mod_name, do_test)
 
