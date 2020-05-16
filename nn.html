@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.2a0+3cfde81-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.2a0+9cd9eaa-git documentation</title>
   
 
   
@@ -25,6 +25,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -62,7 +63,7 @@
             
             
               <div class="version">
-                0.1.2a0+3cfde81
+                0.1.2a0+9cd9eaa
               </div>
             
           
@@ -114,12 +115,14 @@
 <li class="toctree-l2"><a class="reference internal" href="#non-linear-activations">Non-linear activations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#loss-functions">Loss functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#loss-wrappers">Loss wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#convolution-layers">Convolution layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#downsampling">Downsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#non-linear-activations">Non-linear activations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
@@ -291,6 +294,49 @@ Function in Convolutional Neural Networks”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>criterion</strong> (<em>callable</em>) – initial criterion to be used on normal sample &amp; targets</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="convolution-layers">
+<h2>Convolution layers<a class="headerlink" href="#convolution-layers" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="holocron.nn.NormConv2d">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">NormConv2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="o">=</span><span class="default_value">'zeros'</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-14</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/conv.html#NormConv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.NormConv2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the normalized convolution module from <a class="reference external" href="https://arxiv.org/pdf/2005.05274v2.pdf">“Normalized Convolutional Neural Network”</a>.</p>
+<p>In the simplest case, the output value of the layer with input size
+<span class="math notranslate nohighlight">\((N, C_{in}, H, W)\)</span> and output <span class="math notranslate nohighlight">\((N, C_{out}, H_{out}, W_{out})\)</span>
+can be precisely described as:</p>
+<div class="math notranslate nohighlight">
+\[out(N_i, C_{out_j}) = bias(C_{out_j}) +
+\sum_{k = 0}^{C_{in} - 1} weight(C_{out_j}, k) \star
+\frac{input(N_i, k) - \mu(N_i, k)}{\sqrt{\sigma^2(N_i, k) + \epsilon}}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\star\)</span> is the valid 2D cross-correlation operator,
+<span class="math notranslate nohighlight">\(\mu(N_i, k)\)</span> and <span class="math notranslate nohighlight">\(\sigma²(N_i, k)\)</span> are the mean and variance of <span class="math notranslate nohighlight">\(input(N_i, k)\)</span> over all slices,
+<span class="math notranslate nohighlight">\(N\)</span> is a batch size, <span class="math notranslate nohighlight">\(C\)</span> denotes a number of channels,
+<span class="math notranslate nohighlight">\(H\)</span> is a height of input planes in pixels, and <span class="math notranslate nohighlight">\(W\)</span> is
+width in pixels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>python:int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>out_channels</strong> (<em>python:int</em>) – Number of channels produced by the convolution</p></li>
+<li><p><strong>kernel_size</strong> (<em>python:int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>stride</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
+<li><p><strong>padding</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+the input. Default: 0</p></li>
+<li><p><strong>dilation</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
+elements. Default: 1</p></li>
+<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
+channels to output channels. Default: 1</p></li>
+<li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a learnable bias to the
+output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>padding_mode</strong> (<em>string</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code>, <code class="docutils literal notranslate"><span class="pre">'reflect'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'replicate'</span></code> or <code class="docutils literal notranslate"><span class="pre">'circular'</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code></p></li>
+<li><p><strong>eps</strong> – a value added to the denominator for numerical stability.
+Default: 1e-14</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

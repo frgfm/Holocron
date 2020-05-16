@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.2a0+3cfde81-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.2a0+9cd9eaa-git documentation</title>
   
 
   
@@ -25,6 +25,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -62,7 +63,7 @@
             
             
               <div class="version">
-                0.1.2a0+3cfde81
+                0.1.2a0+9cd9eaa
               </div>
             
           
@@ -114,12 +115,14 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.html#non-linear-activations">Non-linear activations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#loss-functions">Loss functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#loss-wrappers">Loss wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#convolution-layers">Convolution layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#non-linear-activations">Non-linear activations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#downsampling">Downsampling</a></li>
 </ul>
 </li>
@@ -319,6 +322,45 @@
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="convolutions">
+<h2>Convolutions<a class="headerlink" href="#convolutions" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="holocron.nn.functional.norm_conv2d">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">norm_conv2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">weight</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-14</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#norm_conv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.norm_conv2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a normalized convolution operations in 2D. Based on the <a class="reference external" href="https://github.com/kimdongsuk1/NormalizedCNN">implementation</a> by the paper’s author.
+See <a class="reference internal" href="nn.html#holocron.nn.NormConv2d" title="holocron.nn.NormConv2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormConv2d</span></code></a> for details and output shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>in_channels</em><em>, </em><em>H</em><em>, </em><em>W</em><em>]</em>) – input tensor</p></li>
+<li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>out_channels</em><em>, </em><em>in_channels</em><em>, </em><em>Kh</em><em>, </em><em>Kw</em><em>]</em>) – filters</p></li>
+<li><p><strong>bias</strong> (<em>torch.Tensor</em><em>[</em><em>out_channels</em><em>]</em><em>, </em><em>optional</em>) – optional bias tensor of shape (out_channels).
+Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>stride</strong> (<em>python:int</em><em>, </em><em>optional</em>) – the stride of the convolving kernel. Can be a single number or a
+tuple <cite>(sH, sW)</cite>. Default: 1</p></li>
+<li><p><strong>padding</strong> (<em>python:int</em><em>, </em><em>optional</em>) – implicit paddings on both sides of the input. Can be a
+single number or a tuple <cite>(padH, padW)</cite>. Default: 0</p></li>
+<li><p><strong>dilation</strong> (<em>python:int</em><em>, </em><em>optional</em>) – the spacing between kernel elements. Can be a single number or
+a tuple <cite>(dH, dW)</cite>. Default: 1</p></li>
+<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – split input into groups, in_channels should be divisible by the
+number of groups. Default: 1</p></li>
+<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
+Default: 1e-14</p></li>
+</ul>
+</dd>
+</dl>
+<dl>
+<dt>Examples::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># With square kernels and equal stride</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filters</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">F</span><span class="o">.</span><span class="n">norm_conv2d</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd>
 </dl>
 </dd></dl>

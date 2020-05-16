@@ -27,6 +27,11 @@ Loss wrappers
 
 .. autoclass:: MixupLoss
 
+Convolution layers
+------------------
+
+.. autoclass:: NormConv2d
+
 
 Downsampling
 ------------
