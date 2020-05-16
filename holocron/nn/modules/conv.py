@@ -9,16 +9,17 @@ from torch.nn.modules.utils import _pair
 from torch.nn.functional import pad
 from .. import functional as F
 
-__all__ = ['NormConv2d']
+__all__ = ['NormConv2d', 'Add2d']
 
 
 class _NormConvNd(_ConvNd):
     def __init__(self, in_channels, out_channels, kernel_size, stride,
                  padding, dilation, transposed, output_padding,
-                 groups, bias, padding_mode, eps=1e-14):
+                 groups, bias, padding_mode, normalize_slices=False, eps=1e-14):
         super().__init__(in_channels, out_channels, kernel_size, stride,
                          padding, dilation, transposed, output_padding,
                          groups, bias, padding_mode)
+        self.normalize_slices = normalize_slices
         self.eps = eps
 
 
@@ -56,7 +57,7 @@ class NormConv2d(_NormConvNd):
             output. Default: ``True``
         padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
             ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
-        eps: a value added to the denominator for numerical stability.
+        eps (float, optional): a value added to the denominator for numerical stability.
             Default: 1e-14
     """
 
@@ -69,7 +70,7 @@ class NormConv2d(_NormConvNd):
         dilation = _pair(dilation)
         super().__init__(
             in_channels, out_channels, kernel_size, stride, padding, dilation,
-            False, _pair(0), groups, bias, padding_mode, eps)
+            False, _pair(0), groups, bias, padding_mode, False, eps)
 
     def forward(self, input):
         if self.padding_mode != 'zeros':
@@ -78,3 +79,48 @@ class NormConv2d(_NormConvNd):
                                  self.dilation, self.groups, self.eps)
         return F.norm_conv2d(input, self.weight, self.bias, self.stride, self.padding,
                              self.dilation, self.groups, self.eps)
+
+
+class Add2d(_NormConvNd):
+    """Implements the adder module from `"AdderNet: Do We Really Need Multiplications in Deep Learning?"
+    <https://arxiv.org/pdf/1912.13200.pdf>`_.
+
+    Args:
+        in_channels (int): Number of channels in the input image
+        out_channels (int): Number of channels produced by the convolution
+        kernel_size (int or tuple): Size of the convolving kernel
+        stride (int or tuple, optional): Stride of the convolution. Default: 1
+        padding (int or tuple, optional): Zero-padding added to both sides of
+            the input. Default: 0
+        dilation (int or tuple, optional): Spacing between kernel
+            elements. Default: 1
+        groups (int, optional): Number of blocked connections from input
+            channels to output channels. Default: 1
+        bias (bool, optional): If ``True``, adds a learnable bias to the
+            output. Default: ``True``
+        padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
+            ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
+        normalize_slices (bool, optional): whether slices should be normalized before performing cross-correlation.
+            Default: False
+        eps (float, optional): a value added to the denominator for numerical stability.
+            Default: 1e-14
+    """
+
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
+                 padding=0, dilation=1, groups=1, bias=True,
+                 padding_mode='zeros', normalize_slices=False, eps=1e-14):
+        kernel_size = _pair(kernel_size)
+        stride = _pair(stride)
+        padding = _pair(padding)
+        dilation = _pair(dilation)
+        super().__init__(
+            in_channels, out_channels, kernel_size, stride, padding, dilation,
+            False, _pair(0), groups, bias, padding_mode, normalize_slices, eps)
+
+    def forward(self, input):
+        if self.padding_mode != 'zeros':
+            return F.add2d(pad(input, self._padding_repeated_twice, mode=self.padding_mode),
+                           self.weight, self.bias, self.stride, _pair(0),
+                           self.dilation, self.groups, self.normalize_slices, self.eps)
+        return F.add2d(input, self.weight, self.bias, self.stride, self.padding,
+                       self.dilation, self.groups, self.normalize_slices, self.eps)
