@@ -212,6 +212,7 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
     return eps / x.shape[1] * loss + (1 - eps) * F.nll_loss(logpt, target, weight,
                                                             ignore_index=ignore_index, reduction=reduction)
 
+
 def _xcorrNd(fn, x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1,
              normalize_slices=False, eps=1e-14):
     """Implements cross-correlation operation"""
@@ -254,6 +255,7 @@ def _convNd(x, weight):
     """
 
     return x @ weight.view(weight.size(0), -1).t()
+
 
 def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, eps=1e-14):
     """Implements a normalized convolution operations in 2D. Based on the `implementation
