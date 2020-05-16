@@ -70,10 +70,10 @@ class NormConv2d(_NormConvNd):
             in_channels, out_channels, kernel_size, stride, padding, dilation,
             False, _pair(0), groups, bias, padding_mode, eps)
 
-    def _conv_forward(self, input, weight):
+    def forward(self, input):
         if self.padding_mode != 'zeros':
             return F.norm_conv2d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
-                                 weight, self.bias, self.stride, _pair(0),
+                                 self.weight, self.bias, self.stride, _pair(0),
                                  self.dilation, self.groups, self.eps)
-        return F.norm_conv2d(input, weight, self.bias, self.stride, self.padding,
+        return F.norm_conv2d(input, self.weight, self.bias, self.stride, self.padding,
                              self.dilation, self.groups, self.eps)
