@@ -4,11 +4,12 @@
 Functional interface
 '''
 
+from math import floor
 import torch
 import torch.nn.functional as F
 
 
-__all__ = ['mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy']
+__all__ = ['mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy', 'norm_conv2d']
 
 
 def mish(x):
@@ -209,3 +210,57 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
     # Smooth the labels
     return eps / x.shape[1] * loss + (1 - eps) * F.nll_loss(logpt, target, weight,
                                                             ignore_index=ignore_index, reduction=reduction)
+
+
+def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, eps=1e-14):
+    """Implements a normalized convolution operations in 2D. Based on the `implementation
+    <https://github.com/kimdongsuk1/NormalizedCNN>`_ by the paper's author.
+    See :class:`~holocron.nn.NormConv2d` for details and output shape.
+
+    Args:
+        x (torch.Tensor[N, in_channels, H, W]): input tensor
+        weight (torch.Tensor[out_channels, in_channels, Kh, Kw]): filters
+        bias (torch.Tensor[out_channels], optional): optional bias tensor of shape (out_channels).
+          Default: ``None``
+        stride (int, optional): the stride of the convolving kernel. Can be a single number or a
+          tuple `(sH, sW)`. Default: 1
+        padding (int, optional): implicit paddings on both sides of the input. Can be a
+          single number or a tuple `(padH, padW)`. Default: 0
+        dilation (int, optional): the spacing between kernel elements. Can be a single number or
+          a tuple `(dH, dW)`. Default: 1
+        groups (int, optional): split input into groups, in_channels should be divisible by the
+          number of groups. Default: 1
+        eps (float, optional): a value added to the denominator for numerical stability.
+            Default: 1e-14
+    Examples::
+        >>> # With square kernels and equal stride
+        >>> filters = torch.randn(8,4,3,3)
+        >>> inputs = torch.randn(1,4,5,5)
+        >>> F.norm_conv2d(inputs, filters, padding=1)
+    """
+
+    h, w = x.shape[-2:]
+    x = F.unfold(x, weight.shape[-2:], dilation=dilation, padding=padding, stride=stride)
+    x = x.transpose(1, 2)
+    # Normalize the slices
+    unfold_scale = (x.var(-1, unbiased=False, keepdim=True) + eps).rsqrt()
+    x -= x.mean(-1, keepdim=True)
+    x *= unfold_scale.expand_as(x)
+
+    # Perform common convolutions
+    x = x @ weight.view(weight.size(0), -1).t()
+    if bias is not None:
+        x += bias
+    x = x.transpose(1, 2)
+
+    # Check output shape
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    h = floor((h + (2 * padding[0]) - (dilation[0] * (weight.shape[-2] - 1)) - 1) / stride[0] + 1)
+    w = floor((w + (2 * padding[1]) - (dilation[1] * (weight.shape[-1] - 1)) - 1) / stride[1] + 1)
+
+    x = x.view(-1, weight.shape[0], h, w)
+
+    return x

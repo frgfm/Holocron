@@ -26,6 +26,11 @@ Loss functions
 
 .. autofunction:: ls_cross_entropy
 
+Convolutions
+--------------
+
+.. autofunction:: norm_conv2d
+
 
 Downsampling
 ------------
