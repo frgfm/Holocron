@@ -6,6 +6,7 @@ Convolutional modules
 
 from torch.nn.modules.conv import _ConvNd
 from torch.nn.modules.utils import _pair
+from torch.nn.functional import pad
 from .. import functional as F
 
 __all__ = ['NormConv2d']
@@ -72,7 +73,7 @@ class NormConv2d(_NormConvNd):
 
     def forward(self, input):
         if self.padding_mode != 'zeros':
-            return F.norm_conv2d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+            return F.norm_conv2d(pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
                                  self.weight, self.bias, self.stride, _pair(0),
                                  self.dilation, self.groups, self.eps)
         return F.norm_conv2d(input, self.weight, self.bias, self.stride, self.padding,
