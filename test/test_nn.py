@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from holocron.nn import functional as F
 from holocron.nn.init import init_module
-from holocron.nn.modules import activation, loss, downsample
+from holocron.nn.modules import activation, conv, loss, downsample
 
 
 class Tester(unittest.TestCase):
@@ -222,6 +222,17 @@ class Tester(unittest.TestCase):
         self.assertEqual(out.item(), (lam * criterion(x, target_a) + (1 - lam) * criterion(x, target_b)).item())
         self.assertEqual(mixup_criterion(x, target_a, target_b, 1).item(), criterion(x, target_a).item())
         self.assertEqual(mixup_criterion(x, target_a, target_b, 0).item(), criterion(x, target_b).item())
+
+    def test_norm_conv2d(self):
+
+        x = torch.rand(2, 8, 19, 19)
+
+        # Normalized Conv
+        mod = conv.NormConv2d(8, 16, 3, padding=1)
+
+        with torch.no_grad():
+            out = mod(x)
+        self.assertEqual(out.shape, (2, 16, 19, 19))
 
 
 act_fns = ['mish', 'nl_relu']
