@@ -5,6 +5,7 @@ Convolutional modules
 '''
 
 from torch.nn.modules.conv import _ConvNd
+from torch.nn.modules.utils import _pair
 from .. import functional as F
 
 __all__ = ['NormConv2d']
@@ -46,17 +47,28 @@ class NormConv2d(_NormConvNd):
         stride (int or tuple, optional): Stride of the convolution. Default: 1
         padding (int or tuple, optional): Zero-padding added to both sides of
             the input. Default: 0
-        padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
-            ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
         dilation (int or tuple, optional): Spacing between kernel
             elements. Default: 1
         groups (int, optional): Number of blocked connections from input
             channels to output channels. Default: 1
         bias (bool, optional): If ``True``, adds a learnable bias to the
             output. Default: ``True``
+        padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
+            ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
         eps: a value added to the denominator for numerical stability.
             Default: 1e-14
     """
+
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
+                 padding=0, dilation=1, groups=1, bias=True,
+                 padding_mode='zeros', eps=1e-14):
+        kernel_size = _pair(kernel_size)
+        stride = _pair(stride)
+        padding = _pair(padding)
+        dilation = _pair(dilation)
+        super().__init__(
+            in_channels, out_channels, kernel_size, stride, padding, dilation,
+            False, _pair(0), groups, bias, padding_mode, eps)
 
     def _conv_forward(self, input, weight):
         if self.padding_mode != 'zeros':
