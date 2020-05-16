@@ -5,6 +5,7 @@ Parameter initialization
 """
 
 import torch.nn as nn
+from torch.nn.modules.conv import _ConvNd
 
 
 def init_module(module, nonlinearity=None):
@@ -16,7 +17,7 @@ def init_module(module, nonlinearity=None):
     """
 
     for m in module.modules():
-        if isinstance(m, nn.Conv2d):
+        if isinstance(m, _ConvNd):
             nn.init.kaiming_normal_(m.weight.data, mode='fan_out', nonlinearity=nonlinearity)
             if m.bias is not None:
                 m.bias.data.zero_()
