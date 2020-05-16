@@ -211,6 +211,48 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
     return eps / x.shape[1] * loss + (1 - eps) * F.nll_loss(logpt, target, weight,
                                                             ignore_index=ignore_index, reduction=reduction)
 
+def _xcorrNd(fn, x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1,
+             normalize_slices=False, eps=1e-14):
+    """Implements cross-correlation operation"""
+
+    # Reshape input Tensor into properly sized slices
+    h, w = x.shape[-2:]
+    x = F.unfold(x, weight.shape[-2:], dilation=dilation, padding=padding, stride=stride)
+    x = x.transpose(1, 2)
+    # Normalize the slices
+    if normalize_slices:
+        unfold_scale = (x.var(-1, unbiased=False, keepdim=True) + eps).rsqrt()
+        x -= x.mean(-1, keepdim=True)
+        x *= unfold_scale.expand_as(x)
+
+    # Perform common convolutions
+    x = fn(x, weight)
+    if bias is not None:
+        x += bias
+    x = x.transpose(1, 2)
+
+    # Check output shape
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    h = floor((h + (2 * padding[0]) - (dilation[0] * (weight.shape[-2] - 1)) - 1) / stride[0] + 1)
+    w = floor((w + (2 * padding[1]) - (dilation[1] * (weight.shape[-1] - 1)) - 1) / stride[1] + 1)
+
+    x = x.view(-1, weight.shape[0], h, w)
+
+    return x
+
+
+def _convNd(x, weight):
+    """Implements inner cross-correlation operation over slices
+
+    Args:
+        x (torch.Tensor[N, num_slices, Cin * K1 * ...]): input Tensor
+        weight (torch.Tensor[Cout, Cin, K1, ...]): filters
+    """
+
+    return x @ weight.view(weight.size(0), -1).t()
 
 def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, eps=1e-14):
     """Implements a normalized convolution operations in 2D. Based on the `implementation
@@ -239,28 +281,4 @@ def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1,
         >>> F.norm_conv2d(inputs, filters, padding=1)
     """
 
-    h, w = x.shape[-2:]
-    x = F.unfold(x, weight.shape[-2:], dilation=dilation, padding=padding, stride=stride)
-    x = x.transpose(1, 2)
-    # Normalize the slices
-    unfold_scale = (x.var(-1, unbiased=False, keepdim=True) + eps).rsqrt()
-    x -= x.mean(-1, keepdim=True)
-    x *= unfold_scale.expand_as(x)
-
-    # Perform common convolutions
-    x = x @ weight.view(weight.size(0), -1).t()
-    if bias is not None:
-        x += bias
-    x = x.transpose(1, 2)
-
-    # Check output shape
-    if isinstance(padding, int):
-        padding = (padding, padding)
-    if isinstance(stride, int):
-        stride = (stride, stride)
-    h = floor((h + (2 * padding[0]) - (dilation[0] * (weight.shape[-2] - 1)) - 1) / stride[0] + 1)
-    w = floor((w + (2 * padding[1]) - (dilation[1] * (weight.shape[-1] - 1)) - 1) / stride[1] + 1)
-
-    x = x.view(-1, weight.shape[0], h, w)
-
-    return x
+    return _xcorrNd(_convNd, x, weight, bias, stride, padding, dilation, groups, True, eps)
