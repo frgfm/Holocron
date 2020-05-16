@@ -9,7 +9,8 @@ import torch
 import torch.nn.functional as F
 
 
-__all__ = ['mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy', 'norm_conv2d']
+__all__ = ['mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
+           'norm_conv2d', 'add2d']
 
 
 def mish(x):
@@ -282,3 +283,44 @@ def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1,
     """
 
     return _xcorrNd(_convNd, x, weight, bias, stride, padding, dilation, groups, True, eps)
+
+
+def _addNd(x, weight):
+    """Implements inner adder operation over slices
+
+    Args:
+        x (torch.Tensor[N, num_slices, Cin * K1 * ...]): input Tensor
+        weight (torch.Tensor[Cout, Cin, K1, ...]): filters
+    """
+
+    return -(x.unsqueeze(2) - weight.view(weight.size(0), -1)).abs().sum(-1)
+
+
+def add2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, normalize_slices=False, eps=1e-14):
+    """Implements an adder operation in 2D from `"AdderNet: Do We Really Need Multiplications in Deep Learning?"
+    <https://arxiv.org/pdf/1912.13200.pdf>`_. See :class:`~holocron.nn.Add2d` for details and output shape.
+
+    Args:
+        x (torch.Tensor[N, in_channels, H, W]): input tensor
+        weight (torch.Tensor[out_channels, in_channels, Kh, Kw]): filters
+        bias (torch.Tensor[out_channels], optional): optional bias tensor of shape (out_channels).
+          Default: ``None``
+        stride (int, optional): the stride of the convolving kernel. Can be a single number or a
+          tuple `(sH, sW)`. Default: 1
+        padding (int, optional): implicit paddings on both sides of the input. Can be a
+          single number or a tuple `(padH, padW)`. Default: 0
+        dilation (int, optional): the spacing between kernel elements. Can be a single number or
+          a tuple `(dH, dW)`. Default: 1
+        groups (int, optional): split input into groups, in_channels should be divisible by the
+          number of groups. Default: 1
+        normalize_slices (bool, optional): whether input slices should be normalized
+        eps (float, optional): a value added to the denominator for numerical stability.
+            Default: 1e-14
+    Examples::
+        >>> # With square kernels and equal stride
+        >>> filters = torch.randn(8,4,3,3)
+        >>> inputs = torch.randn(1,4,5,5)
+        >>> F.norm_conv2d(inputs, filters, padding=1)
+    """
+
+    return _xcorrNd(_addNd, x, weight, bias, stride, padding, dilation, groups, normalize_slices, eps)
