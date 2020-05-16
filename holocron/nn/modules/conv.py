@@ -9,7 +9,7 @@ from torch.nn.modules.utils import _pair
 from torch.nn.functional import pad
 from .. import functional as F
 
-__all__ = ['NormConv2d']
+__all__ = ['NormConv2d', 'Add2d']
 
 
 class _NormConvNd(_ConvNd):
