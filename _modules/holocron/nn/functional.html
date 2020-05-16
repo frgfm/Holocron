@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.2a0+9cd9eaa-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.2a0+e0b18c6-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.2a0+9cd9eaa
+                0.1.2a0+e0b18c6
               </div>
             
           
@@ -216,7 +216,8 @@
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mish&#39;</span><span class="p">,</span> <span class="s1">&#39;nl_relu&#39;</span><span class="p">,</span> <span class="s1">&#39;focal_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;multilabel_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ls_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mish&#39;</span><span class="p">,</span> <span class="s1">&#39;nl_relu&#39;</span><span class="p">,</span> <span class="s1">&#39;focal_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;multilabel_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ls_cross_entropy&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="mish"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.mish">[docs]</a><span class="k">def</span> <span class="nf">mish</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -419,6 +420,50 @@
                                                             <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
+<span class="k">def</span> <span class="nf">_xcorrNd</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+             <span class="n">normalize_slices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-14</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements cross-correlation operation&quot;&quot;&quot;</span>
+
+    <span class="c1"># Reshape input Tensor into properly sized slices</span>
+    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:],</span> <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># Normalize the slices</span>
+    <span class="k">if</span> <span class="n">normalize_slices</span><span class="p">:</span>
+        <span class="n">unfold_scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">unbiased</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span><span class="o">.</span><span class="n">rsqrt</span><span class="p">()</span>
+        <span class="n">x</span> <span class="o">-=</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">*=</span> <span class="n">unfold_scale</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Perform common convolutions</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">+=</span> <span class="n">bias</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Check output shape</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">stride</span> <span class="o">=</span> <span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">stride</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">floor</span><span class="p">((</span><span class="n">h</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">dilation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">stride</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">floor</span><span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">dilation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">stride</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">def</span> <span class="nf">_convNd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements inner cross-correlation operation over slices</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (torch.Tensor[N, num_slices, Cin * K1 * ...]): input Tensor</span>
+<span class="sd">        weight (torch.Tensor[Cout, Cin, K1, ...]): filters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">x</span> <span class="o">@</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+
+
 <div class="viewcode-block" id="norm_conv2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.norm_conv2d">[docs]</a><span class="k">def</span> <span class="nf">norm_conv2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-14</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implements a normalized convolution operations in 2D. Based on the `implementation</span>
 <span class="sd">    &lt;https://github.com/kimdongsuk1/NormalizedCNN&gt;`_ by the paper&#39;s author.</span>
@@ -446,31 +491,48 @@
 <span class="sd">        &gt;&gt;&gt; F.norm_conv2d(inputs, filters, padding=1)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:],</span> <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">)</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="c1"># Normalize the slices</span>
-    <span class="n">unfold_scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">unbiased</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span><span class="o">.</span><span class="n">rsqrt</span><span class="p">()</span>
-    <span class="n">x</span> <span class="o">-=</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">x</span> <span class="o">*=</span> <span class="n">unfold_scale</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_xcorrNd</span><span class="p">(</span><span class="n">_convNd</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span></div>
 
-    <span class="c1"># Perform common convolutions</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">@</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">x</span> <span class="o">+=</span> <span class="n">bias</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-    <span class="c1"># Check output shape</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">stride</span> <span class="o">=</span> <span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">stride</span><span class="p">)</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">floor</span><span class="p">((</span><span class="n">h</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">dilation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">stride</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">w</span> <span class="o">=</span> <span class="n">floor</span><span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">dilation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">stride</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_addNd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements inner adder operation over slices</span>
 
-    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+<span class="sd">    Args:</span>
+<span class="sd">        x (torch.Tensor[N, num_slices, Cin * K1 * ...]): input Tensor</span>
+<span class="sd">        weight (torch.Tensor[Cout, Cin, K1, ...]): filters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">x</span></div>
+    <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="add2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.add2d">[docs]</a><span class="k">def</span> <span class="nf">add2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">normalize_slices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-14</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements an adder operation in 2D from `&quot;AdderNet: Do We Really Need Multiplications in Deep Learning?&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/1912.13200.pdf&gt;`_. See :class:`~holocron.nn.Add2d` for details and output shape.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (torch.Tensor[N, in_channels, H, W]): input tensor</span>
+<span class="sd">        weight (torch.Tensor[out_channels, in_channels, Kh, Kw]): filters</span>
+<span class="sd">        bias (torch.Tensor[out_channels], optional): optional bias tensor of shape (out_channels).</span>
+<span class="sd">          Default: ``None``</span>
+<span class="sd">        stride (int, optional): the stride of the convolving kernel. Can be a single number or a</span>
+<span class="sd">          tuple `(sH, sW)`. Default: 1</span>
+<span class="sd">        padding (int, optional): implicit paddings on both sides of the input. Can be a</span>
+<span class="sd">          single number or a tuple `(padH, padW)`. Default: 0</span>
+<span class="sd">        dilation (int, optional): the spacing between kernel elements. Can be a single number or</span>
+<span class="sd">          a tuple `(dH, dW)`. Default: 1</span>
+<span class="sd">        groups (int, optional): split input into groups, in_channels should be divisible by the</span>
+<span class="sd">          number of groups. Default: 1</span>
+<span class="sd">        normalize_slices (bool, optional): whether input slices should be normalized</span>
+<span class="sd">        eps (float, optional): a value added to the denominator for numerical stability.</span>
+<span class="sd">            Default: 1e-14</span>
+<span class="sd">    Examples::</span>
+<span class="sd">        &gt;&gt;&gt; # With square kernels and equal stride</span>
+<span class="sd">        &gt;&gt;&gt; filters = torch.randn(8,4,3,3)</span>
+<span class="sd">        &gt;&gt;&gt; inputs = torch.randn(1,4,5,5)</span>
+<span class="sd">        &gt;&gt;&gt; F.norm_conv2d(inputs, filters, padding=1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">_xcorrNd</span><span class="p">(</span><span class="n">_addNd</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">normalize_slices</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

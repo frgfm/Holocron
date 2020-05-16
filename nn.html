@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.2a0+9cd9eaa-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.2a0+e0b18c6-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.2a0+9cd9eaa
+                0.1.2a0+e0b18c6
               </div>
             
           
@@ -334,7 +334,37 @@ channels to output channels. Default: 1</p></li>
 output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 <li><p><strong>padding_mode</strong> (<em>string</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code>, <code class="docutils literal notranslate"><span class="pre">'reflect'</span></code>,
 <code class="docutils literal notranslate"><span class="pre">'replicate'</span></code> or <code class="docutils literal notranslate"><span class="pre">'circular'</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code></p></li>
-<li><p><strong>eps</strong> – a value added to the denominator for numerical stability.
+<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
+Default: 1e-14</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.Add2d">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">Add2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="o">=</span><span class="default_value">'zeros'</span></em>, <em class="sig-param"><span class="n">normalize_slices</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-14</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/conv.html#Add2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Add2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the adder module from <a class="reference external" href="https://arxiv.org/pdf/1912.13200.pdf">“AdderNet: Do We Really Need Multiplications in Deep Learning?”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>python:int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>out_channels</strong> (<em>python:int</em>) – Number of channels produced by the convolution</p></li>
+<li><p><strong>kernel_size</strong> (<em>python:int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>stride</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
+<li><p><strong>padding</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+the input. Default: 0</p></li>
+<li><p><strong>dilation</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
+elements. Default: 1</p></li>
+<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
+channels to output channels. Default: 1</p></li>
+<li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a learnable bias to the
+output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>padding_mode</strong> (<em>string</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code>, <code class="docutils literal notranslate"><span class="pre">'reflect'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'replicate'</span></code> or <code class="docutils literal notranslate"><span class="pre">'circular'</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code></p></li>
+<li><p><strong>normalize_slices</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether slices should be normalized before performing cross-correlation.
+Default: False</p></li>
+<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
 Default: 1e-14</p></li>
 </ul>
 </dd>

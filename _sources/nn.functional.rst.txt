@@ -31,6 +31,8 @@ Convolutions
 
 .. autofunction:: norm_conv2d
 
+.. autofunction:: add2d
+
 
 Downsampling
 ------------
