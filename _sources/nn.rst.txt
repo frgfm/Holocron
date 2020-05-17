@@ -34,6 +34,8 @@ Convolution layers
 
 .. autoclass:: Add2d
 
+.. autoclass:: SlimConv2d
+
 
 Downsampling
 ------------

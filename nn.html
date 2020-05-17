@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.2a0+e0b18c6-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.2a0+b922333-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.2a0+e0b18c6
+                0.1.2a0+b922333
               </div>
             
           
@@ -345,6 +345,15 @@ Default: 1e-14</p></li>
 <dt id="holocron.nn.Add2d">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">Add2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="o">=</span><span class="default_value">'zeros'</span></em>, <em class="sig-param"><span class="n">normalize_slices</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-14</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/conv.html#Add2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Add2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the adder module from <a class="reference external" href="https://arxiv.org/pdf/1912.13200.pdf">“AdderNet: Do We Really Need Multiplications in Deep Learning?”</a>.</p>
+<p>In the simplest case, the output value of the layer at position <span class="math notranslate nohighlight">\((m, n)\)</span> in channel <span class="math notranslate nohighlight">\(c\)</span>
+with filter F of spatial size <span class="math notranslate nohighlight">\((d, d)\)</span>, intput size <span class="math notranslate nohighlight">\((C_{in}, H, W)\)</span> and output <span class="math notranslate nohighlight">\((C_{out}, H, W)\)</span>
+can be precisely described as:</p>
+<div class="math notranslate nohighlight">
+\[out(m, n, c) = - \sum\limits_{i=0}^d \sum\limits_{j=0}^d \sum\limits_{k=0}^{C_{in}}
+|X(m + i, n + j, k) - F(i, j, k, c)|\]</div>
+<p>where <span class="math notranslate nohighlight">\(C\)</span> denotes a number of channels,
+<span class="math notranslate nohighlight">\(H\)</span> is a height of input planes in pixels, and <span class="math notranslate nohighlight">\(W\)</span> is
+width in pixels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -366,6 +375,68 @@ output. Default: <code class="docutils literal notranslate"><span class="pre">Tr
 Default: False</p></li>
 <li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
 Default: 1e-14</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.SlimConv2d">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">SlimConv2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="o">=</span><span class="default_value">'zeros'</span></em>, <em class="sig-param"><span class="n">r</span><span class="o">=</span><span class="default_value">32</span></em>, <em class="sig-param"><span class="n">L</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/conv.html#SlimConv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.SlimConv2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the adder module from <a class="reference external" href="https://arxiv.org/pdf/2003.07469.pdf">“SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
+by Weights Flipping”</a>.</p>
+<p>First, we compute channel-wise weights as follows:</p>
+<div class="math notranslate nohighlight">
+\[z(c) = \frac{1}{H \cdot W} \sum\limits_{i=1}^H \sum\limits_{j=1}^W X_{c,i,j}\]</div>
+<p>where <span class="math notranslate nohighlight">\(X \in \mathbb{R}^{C \times H \times W}\)</span> is the input tensor,
+<span class="math notranslate nohighlight">\(H\)</span> is height in pixels, and <span class="math notranslate nohighlight">\(W\)</span> is
+width in pixels.</p>
+<div class="math notranslate nohighlight">
+\[w = \sigma(F_{fc2}(\delta(F_{fc1}(z))))\]</div>
+<p>where <span class="math notranslate nohighlight">\(z \in \mathbb{R}^{C}\)</span> contains channel-wise statistics,
+<span class="math notranslate nohighlight">\(\sigma\)</span> refers to the sigmoid function,
+<span class="math notranslate nohighlight">\(\delta\)</span> refers to the ReLU function,
+<span class="math notranslate nohighlight">\(F_{fc1}\)</span> is a convolution operation with kernel of size <span class="math notranslate nohighlight">\((1, 1)\)</span>
+with <span class="math notranslate nohighlight">\(max(C/r, L)\)</span> output channels followed by batch normalization,
+and <span class="math notranslate nohighlight">\(F_{fc2}\)</span> is a plain convolution operation with kernel of size <span class="math notranslate nohighlight">\((1, 1)\)</span>
+with <span class="math notranslate nohighlight">\(C\)</span> output channels.</p>
+<p>We then proceed with reconstructing and transforming both pathways:</p>
+<div class="math notranslate nohighlight">
+\[X_{top} = X \odot w\]</div>
+<div class="math notranslate nohighlight">
+\[X_{bot} = X \odot \check{w}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\odot\)</span> refers to the element-wise multiplication and <span class="math notranslate nohighlight">\(\check{w}\)</span> is
+the channel-wise reverse-flip of <span class="math notranslate nohighlight">\(w\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[T_{top} = F_{top}(X_{top}^{(1)} + X_{top}^{(2)})\]</div>
+<div class="math notranslate nohighlight">
+\[T_{bot} = F_{bot}(X_{bot}^{(1)} + X_{bot}^{(2)})\]</div>
+<p>where <span class="math notranslate nohighlight">\(X^{(1)}\)</span> and <span class="math notranslate nohighlight">\(X^{(2)}\)</span> are the channel-wise first and second halves of <span class="math notranslate nohighlight">\(X\)</span>,
+<span class="math notranslate nohighlight">\(F_{top}\)</span> is a convolution of kernel size <span class="math notranslate nohighlight">\((3, 3)\)</span>,
+and <span class="math notranslate nohighlight">\(F_{bot}\)</span> is a convolution of kernel size <span class="math notranslate nohighlight">\((1, 1)\)</span> reducing channels by half,
+followed by a convolution of kernel size <span class="math notranslate nohighlight">\((3, 3)\)</span>.</p>
+<p>Finally we fuse both pathways to yield the output:</p>
+<div class="math notranslate nohighlight">
+\[Y = T_{top} \oplus T_{bot}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\oplus\)</span> is the channel-wise concatenation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>python:int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>kernel_size</strong> (<em>python:int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>stride</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
+<li><p><strong>padding</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+the input. Default: 0</p></li>
+<li><p><strong>dilation</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
+elements. Default: 1</p></li>
+<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
+channels to output channels. Default: 1</p></li>
+<li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a learnable bias to the
+output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>padding_mode</strong> (<em>string</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code>, <code class="docutils literal notranslate"><span class="pre">'reflect'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'replicate'</span></code> or <code class="docutils literal notranslate"><span class="pre">'circular'</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code></p></li>
+<li><p><strong>r</strong> (<em>python:int</em><em>, </em><em>optional</em>) – squeezing divider. Default: 32</p></li>
+<li><p><strong>L</strong> (<em>python:int</em><em>, </em><em>optional</em>) – minimum squeezed channels. Default: 8</p></li>
 </ul>
 </dd>
 </dl>
