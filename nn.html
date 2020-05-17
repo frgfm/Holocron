@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.2a0+b922333-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.2a0+6965f0f-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.2a0+b922333
+                0.1.2a0+6965f0f
               </div>
             
           
@@ -217,6 +217,9 @@
 <dt id="holocron.nn.Mish">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">Mish</code><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#Mish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Mish" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Mish activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">“Mish: A Self Regularized Non-Monotonic Neural Activation Function”</a></p>
+<p>This activation is computed as follows:</p>
+<div class="math notranslate nohighlight">
+\[f(x) = x \cdot \tanh(ln(1 + e^x))\]</div>
 </dd></dl>
 
 <dl class="py class">
@@ -224,6 +227,9 @@
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">NLReLU</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inplace</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#NLReLU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.NLReLU" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Natural-Logarithm ReLU activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.03682.pdf">“Natural-Logarithm-Rectified Activation
 Function in Convolutional Neural Networks”</a></p>
+<p>This activation is computed as follows:</p>
+<div class="math notranslate nohighlight">
+\[f(x) = ln(1 + \beta \cdot max(0, x))\]</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em>) – should the operation be performed inplace</p>
@@ -238,7 +244,16 @@ Function in Convolutional Neural Networks”</a></p>
 <dt id="holocron.nn.FocalLoss">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">FocalLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#FocalLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.FocalLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implementation of Focal Loss as described in
-<a class="reference external" href="https://arxiv.org/pdf/1708.02002.pdf">“Focal Loss for Dense Object Detection”</a></p>
+<a class="reference external" href="https://arxiv.org/pdf/1708.02002.pdf">“Focal Loss for Dense Object Detection”</a>.</p>
+<p>While the weighted cross-entropy is described by:</p>
+<div class="math notranslate nohighlight">
+\[CE(p_t) = -\alpha_t log(p_t)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha_t\)</span> is the loss weight of class <span class="math notranslate nohighlight">\(t\)</span>,
+and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted probability of class <span class="math notranslate nohighlight">\(t\)</span>.</p>
+<p>the focal loss introduces a modulating factor</p>
+<div class="math notranslate nohighlight">
+\[FL(p_t) = -\alpha_t (1 - p_t)^\gamma log(p_t)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\gamma\)</span> is a positive focusing parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
