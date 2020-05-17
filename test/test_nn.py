@@ -235,6 +235,16 @@ class Tester(unittest.TestCase):
                 out = mod(x)
             self.assertEqual(out.shape, (2, 16, 19, 19))
 
+    def test_slimconv2d(self):
+
+        x = torch.rand(2, 8, 19, 19)
+
+        mod = conv.SlimConv2d(8, 3, padding=1, r=32, L=2)
+
+        with torch.no_grad():
+            out = mod(x)
+        self.assertEqual(out.shape, (2, 6, 19, 19))
+
 
 act_fns = ['mish', 'nl_relu']
 
