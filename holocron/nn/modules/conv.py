@@ -213,7 +213,7 @@ class SlimConv2d(nn.Module):
     """
 
     def __init__(self, in_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True,
-                 padding_more='zeros', r=32, L=2):
+                 padding_mode='zeros', r=32, L=2):
         super().__init__()
         self.fc1 = nn.Conv2d(in_channels, max(in_channels // r, L), 1)
         self.bn = nn.BatchNorm2d(max(in_channels // r, L))
