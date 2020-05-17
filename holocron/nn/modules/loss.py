@@ -31,7 +31,22 @@ class _Loss(nn.Module):
 
 class FocalLoss(_Loss):
     """Implementation of Focal Loss as described in
-    `"Focal Loss for Dense Object Detection" <https://arxiv.org/pdf/1708.02002.pdf>`_
+    `"Focal Loss for Dense Object Detection" <https://arxiv.org/pdf/1708.02002.pdf>`_.
+
+    While the weighted cross-entropy is described by:
+
+    .. math::
+        CE(p_t) = -\\alpha_t log(p_t)
+
+    where :math:`\\alpha_t` is the loss weight of class :math:`t`,
+    and :math:`p_t` is the predicted probability of class :math:`t`.
+
+    the focal loss introduces a modulating factor
+
+    .. math::
+        FL(p_t) = -\\alpha_t (1 - p_t)^\\gamma log(p_t)
+
+    where :math:`\\gamma` is a positive focusing parameter.
 
     Args:
         gamma (float, optional): exponent parameter of the focal loss
