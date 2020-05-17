@@ -52,7 +52,17 @@ def iou_penalty(boxes1, boxes2):
 
 def box_diou(boxes1, boxes2):
     """Computes the Distance-IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
-    Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_
+    Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_.
+
+    The loss is defined as follows:
+
+    .. math::
+        \\mathcal{L}_{DIoU} = 1 - IoU + \\frac{\\rho^2(b, b^{GT})}{c^2}
+
+    where :math:`IoU` is the Intersection over Union,
+    :math:`b` and :math:`b^{GT}` are the centers of the box and the ground truth box respectively,
+    :math:`c` c is the diagonal length of the smallest enclosing box covering the two boxes,
+    and :math:`\\rho(.)` is the Euclidean distance.
 
     Args:
         boxes1 (torch.Tensor[M, 4]): bounding boxes
@@ -98,7 +108,29 @@ def aspect_ratio_consistency(boxes1, boxes2):
 
 def box_ciou(boxes1, boxes2):
     """Computes the Complete IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
-    Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_
+    Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_.
+
+    The loss is defined as follows:
+
+    .. math::
+        \\mathcal{L}_{CIoU} = 1 - IoU + \\frac{\\rho^2(b, b^{GT})}{c^2} + \\alpha v
+
+    where :math:`IoU` is the Intersection over Union,
+    :math:`b` and :math:`b^{GT}` are the centers of the box and the ground truth box respectively,
+    :math:`c` c is the diagonal length of the smallest enclosing box covering the two boxes,
+    :math:`\\rho(.)` is the Euclidean distance,
+    :math:`\\alpha` is a positive trade-off parameter,
+    and :math:`v` is the aspect ratio consistency.
+
+    More specifically:
+
+    .. math::
+        v = \\frac{4}{\\pi^2} \\Big(\\arctan{\\frac{w^{GT}}{h^{GT}}} - \\arctan{\\frac{w}{h}}\\Big)^2
+
+    and
+
+    .. math::
+        \\alpha = \\frac{v}{(1 - IoU) + v}
 
     Args:
         boxes1 (torch.Tensor[M, 4]): bounding boxes
