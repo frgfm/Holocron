@@ -36,14 +36,17 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 
 ### Installation
 
-Install the package in developer mode
+You can install the package using [pypi](https://pypi.org/project/pylocronn/) as follows:
 
 ```bash
-git clone https://github.com/frgfm/Holocron.git
-pip install -e Holocron/
+pip install pylocron
 ```
 
-*Note: pip package release will soon be available*
+or using [conda](https://anaconda.org/frgfm/pylocron):
+
+```bash
+conda install -c frgfm pylocron
+```
 
 
 
@@ -54,64 +57,21 @@ pip install -e Holocron/
 ##### Main features
 
 - Activation: [Mish](https://arxiv.org/abs/1908.08681), [NLReLU](https://arxiv.org/abs/1908.03682)
-- Loss: [Focal Loss](https://arxiv.org/abs/1708.02002)
-
-##### Usage
-
-Similar usage to  `torch.nn`
-
-```python
-import torch.nn as nn
-from holocron.nn import Mish, NLReLU
-
-# Both modules inherit from torch.nn.Module and can be used as such
-model = nn.Sequential(nn.Conv2d(3, 64, (3, 3)),
-                      Mish(),
-                      nn.Conv2d(64, 128, (3, 3)),
-                      NLReLU(),)
-```
-
-
+- Loss: [Focal Loss](https://arxiv.org/abs/1708.02002), MultiLabelCrossEntropy, [LabelSmoothingCrossEntropy](https://arxiv.org/pdf/1706.03762.pdf), [MixupLoss](https://arxiv.org/pdf/1710.09412.pdf)
+- Convolutions: [NormConv2d](https://arxiv.org/pdf/2005.05274v2.pdf), [Add2d](https://arxiv.org/pdf/1912.13200.pdf), [SlimConv2d](https://arxiv.org/pdf/2003.07469.pdf)
 
 ### models
 
 ##### Main features
 
-- Classification: [Res2Net](https://arxiv.org/abs/1904.01169), based on the great [implementation](https://github.com/gasvn/Res2Net) from gasvn
-
-##### Usage
-
-Using the `models` module, you can easily load torch modules or full models:
-
-```python
-from holocron.models.res2net import res2net
-# Load pretrained Res2net
-model = res2net(depth=50, num_classes=10, pretrained=True).eval()
-```
-
-
+- Classification: [Res2Net](https://arxiv.org/abs/1904.01169) (based on the great [implementation](https://github.com/gasvn/Res2Net) from gasvn), [darknet24](https://pjreddie.com/media/files/papers/yolo_1.pdf), [darknet19](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [darknet53](https://pjreddie.com/media/files/papers/YOLOv3.pdf).
+- Detection: [YOLOv1](https://pjreddie.com/media/files/papers/yolo_1.pdf), [YOLOv2](https://pjreddie.com/media/files/papers/YOLO9000.pdf)
 
 ### ops
 
 ##### Main features
 
 - boxes: [Distance-IoU & Complete-IoU losses](https://arxiv.org/abs/1911.08287)
-
-##### Usage
-
-Similar usage to `torchvision.ops`
-
-```python
-import torch
-from holocron.ops.boxes import box_ciou
-
-boxes1 = torch.tensor([[0, 0, 100, 100], [100, 100, 200, 200]], dtype=torch.float32)
-boxes1 = torch.tensor([[50, 50, 150, 150]], dtype=torch.float32)
-
-box_ciou(boxes1, boxes2)
-```
-
-
 
 ### optim
 
@@ -123,56 +83,11 @@ box_ciou(boxes1, boxes2)
 
 ##### Usage
 
-The optimizer wrapper can be used on any `torch.optim.optimizer.Optimizer` object 
-
-```python
-from torchvision.models.resnet import resnet18
-from holocron.optim import RaLars
-
-model = resnet18()
-# Common usage of optimizer
-optimizer = RaLars(model.parameters(), lr=3e-4)
-# Wrap it with Lookahead
-optimizer = Lookahead(optimizer, sync_rate=0.5, sync_period=6)
-# Now use it just like your base optimizer
-```
-
-
-
-You can use the `OneCycleScheduler` as follows:
-
-```python
-from torchvision.models.resnet import resnet18
-from torch.optim import Adam
-from holocron.optim.lr_scheduler import OneCycleScheduler
-
-model = resnet18()
-# Let's have different LRs for weight and biases for instance
-bias_params, weight_params = [], []
-for n, p in model.named_parameters():
-	if n.endswith('.bias'):
-		bias_params.append(p)
-    else:
-    	weight_params.append(p)
-# We pass the parameters to the optimizer
-optimizer = Adam([dict(params=weight_params, lr=2e-4), dict(params=bias_params, lr=1e-4)])
-
-steps = 500
-scheduler = OneCycleScheduler(optimizer, steps, cycle_momentum=False)
-# Let's record the evolution of LR in each group
-lrs = [[], []]
-for step in range(steps):
-	for idx, group in enumerate(optimizer.param_groups):
-		lrs[idx].append(group['lr'])
-	# Train your model and perform optimizer.step() here
-	scheduler.step()
-
-# And plot the result
-import matplotlib.pyplot as plt
-plt.plot(lrs[0], label='Weight LR'); plt.plot(lrs[1], label='Bias LR'); plt.legend(); plt.show()
-```
+You can use the `OneCycleScheduler` just like any other LR scheduler of pytorch. Please note that it is designed to take step at every iteration. Over the full training, the learning rate should look like:
 
 ![onecycle](static/images/onecycle.png)
+
+Here two different parameter groups have been made to illustrate the effect of the scheduler. This implementation was made before PyTorch officially had an [implementation](https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.OneCycleLR). For better support, it is recommended to consider the PyTorch version.
 
 
 
