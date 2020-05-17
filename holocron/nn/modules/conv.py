@@ -85,6 +85,18 @@ class Add2d(_NormConvNd):
     """Implements the adder module from `"AdderNet: Do We Really Need Multiplications in Deep Learning?"
     <https://arxiv.org/pdf/1912.13200.pdf>`_.
 
+    In the simplest case, the output value of the layer at position :math:`(m, n)` in channel :math:`c`
+    with filter F of spatial size :math:`(d, d)`, intput size :math:`(C_{in}, H, W)` and output :math:`(C_{out}, H, W)`
+    can be precisely described as:
+
+    .. math::
+        out(m, n, c) = - \\sum\\limits_{i=0}^d \\sum\\limits_{j=0}^d \\sum\\limits_{k=0}^{C_{in}}
+        |X(m + i, n + j, k) - F(i, j, k, c)|
+
+    where :math:`C` denotes a number of channels,
+    :math:`H` is a height of input planes in pixels, and :math:`W` is
+    width in pixels.
+
     Args:
         in_channels (int): Number of channels in the input image
         out_channels (int): Number of channels produced by the convolution
