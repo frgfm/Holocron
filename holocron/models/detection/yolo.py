@@ -85,8 +85,9 @@ class _YOLO(nn.Module):
                 clf_loss += F.cross_entropy(selected_scores, select_gt_labels, reduction='sum')
 
             # Objectness loss for cells where no object was detected
-            empty_cell_o = pred_o[idx][~cell_selection].max(dim=1).values
-            objectness_loss += 0.5 * F.mse_loss(empty_cell_o, torch.zeros_like(empty_cell_o), reduction='sum')
+            if torch.any(~cell_selection):
+                empty_cell_o = pred_o[idx][~cell_selection].max(dim=1).values
+                objectness_loss += 0.5 * F.mse_loss(empty_cell_o, torch.zeros_like(empty_cell_o), reduction='sum')
 
         return dict(objectness_loss=objectness_loss,
                     bbox_loss=bbox_loss,
