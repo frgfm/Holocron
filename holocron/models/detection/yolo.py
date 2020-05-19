@@ -47,9 +47,9 @@ class _YOLO(nn.Module):
         """
 
         # Reset losses
-        objectness_loss = torch.zeros(1).to(pred_boxes.device)
-        bbox_loss = torch.zeros(1).to(pred_boxes.device)
-        clf_loss = torch.zeros(1).to(pred_boxes.device)
+        objectness_loss = torch.zeros(1, device=pred_boxes.device)
+        bbox_loss = torch.zeros(1, device=pred_boxes.device)
+        clf_loss = torch.zeros(1, device=pred_boxes.device)
         # Convert from x, y, w, h to xmin, ymin, xmax, ymax
         pred_boxes[..., 2:] += pred_boxes[..., :2]
         # B * cells * predictors * info
@@ -110,9 +110,9 @@ class _YOLO(nn.Module):
         detections = []
         for idx in range(b_coords.shape[0]):
 
-            coords = torch.zeros((0, 4), dtype=torch.float).to(device=b_o.device)
-            scores = torch.zeros(0, dtype=torch.float).to(device=b_o.device)
-            labels = torch.zeros(0, dtype=torch.long).to(device=b_o.device)
+            coords = torch.zeros((0, 4), dtype=torch.float, device=b_o.device)
+            scores = torch.zeros(0, dtype=torch.float, device=b_o.device)
+            labels = torch.zeros(0, dtype=torch.long, device=b_o.device)
 
             # Objectness filter
             if torch.any(b_o[idx] >= 0.5):
@@ -189,8 +189,8 @@ class YOLOv1(_YOLO):
         #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
         x = x[..., :self.num_anchors * 5].view(b, h, w, self.num_anchors, 5)
         # Cell offset
-        c_x = torch.arange(0, w, dtype=torch.float) * img_w / w
-        c_y = torch.arange(0, h, dtype=torch.float) * img_h / h
+        c_x = torch.arange(0, w, dtype=torch.float, device=x.device) * img_w / w
+        c_y = torch.arange(0, h, dtype=torch.float, device=x.device) * img_h / h
         # Box coordinates
         b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)).view(b, -1, self.num_anchors)
         b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)).view(b, -1, self.num_anchors)
@@ -298,8 +298,8 @@ class YOLOv2(_YOLO):
         # B * C * H * W --> B * H * W * num_anchors * (5 + num_classes)
         x = x.view(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
         # Cell offset
-        c_x = torch.arange(0, w, dtype=torch.float) * img_w / w
-        c_y = torch.arange(0, h, dtype=torch.float) * img_h / h
+        c_x = torch.arange(0, w, dtype=torch.float, device=x.device) * img_w / w
+        c_y = torch.arange(0, h, dtype=torch.float, device=x.device) * img_h / h
         # Box coordinates
         b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)).view(b, -1, self.num_anchors)
         b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)).view(b, -1, self.num_anchors)
