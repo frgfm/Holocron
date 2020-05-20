@@ -347,6 +347,9 @@ class YOLOv2(_YOLO):
         b_coords, b_o, b_scores = self._format_outputs(x, img_h, img_w)
 
         if self.training:
+            # Convert GT coordinates to relative
+            gt_boxes[:, [0, 2]] = gt_boxes[:, [0, 2]] / img_w
+            gt_boxes[:, [1, 3]] = gt_boxes[:, [1, 3]] / img_h
             # Update losses
             return self._compute_losses(b_coords, b_o, b_scores, gt_boxes, gt_labels)
         else:
