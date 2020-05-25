@@ -44,7 +44,8 @@ class Tester(unittest.TestCase):
         # Check that list of Tensors does not change output
         x_list = [torch.rand(3, size, size) for _ in range(num_batches)]
         with torch.no_grad():
-            self.assertTrue(torch.equal(model(x_list), out))
+            out_list = model(x_list)
+            self.assertEqual(len(out_list), len(out))
 
         # Training mode without target
         model = model.train()
