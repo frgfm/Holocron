@@ -74,6 +74,7 @@ class Tester(unittest.TestCase):
         gt_labels = [(num_classes * torch.rand(0)).to(dtype=torch.long) for _ in num_boxes]
         loss = model(x, gt_boxes, gt_labels)
 
+
 for model_name in ['res2net', 'res2next']:
     def do_test(self, model_name=model_name):
         input_shape = (4, 3, 224, 224)
