@@ -220,6 +220,9 @@ class YOLOv1(_YOLO):
         if self.training and (gt_boxes is None or gt_labels is None):
             raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
 
+        if isinstance(x, (list, tuple)):
+            x = torch.stack(x, dim=0)
+
         img_h, img_w = x.shape[-2:]
         x = self.backbone(x)
         x = self.block4(x)
@@ -330,6 +333,9 @@ class YOLOv2(_YOLO):
 
         if self.training and (gt_boxes is None or gt_labels is None):
             raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
+
+        if isinstance(x, (list, tuple)):
+            x = torch.stack(x, dim=0)
 
         img_h, img_w = x.shape[-2:]
         x, passthrough = self.backbone(x)
