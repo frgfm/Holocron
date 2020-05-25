@@ -78,9 +78,12 @@ class _YOLO(nn.Module):
                 objectness_loss[cell_selection] += F.mse_loss(selected_o, max_iou.values, reduction='none')
                 # Regression loss
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                selected_pred_boxes[..., 2:] = selected_pred_boxes[..., 2:].sqrt_()
-                selected_gt_boxes[..., 2:] = selected_gt_boxes[..., 2:].sqrt_()
-                bbox_loss[cell_selection] += F.mse_loss(selected_pred_boxes, selected_gt_boxes, reduction='none').sum(dim=-1)
+                bbox_loss[cell_selection] += F.mse_loss(selected_pred_boxes[..., :2],
+                                                        selected_gt_boxes[..., :2],
+                                                        reduction='none').sum(dim=-1)
+                bbox_loss[cell_selection] += F.mse_loss(selected_pred_boxes[..., 2:].sqrt(),
+                                                        selected_gt_boxes[..., 2:].sqrt(),
+                                                        reduction='none').sum(dim=-1)
 
                 # Classification loss
                 clf_loss[cell_selection] += F.cross_entropy(selected_scores, select_gt_labels, reduction='none')
@@ -88,7 +91,9 @@ class _YOLO(nn.Module):
             # Objectness loss for cells where no object was detected
             if torch.any(~cell_selection):
                 empty_cell_o = pred_o[idx, ~cell_selection].max(dim=1).values
-                objectness_loss[~cell_selection] += 0.5 * F.mse_loss(empty_cell_o, torch.zeros_like(empty_cell_o), reduction='none')
+                objectness_loss[~cell_selection] += 0.5 * F.mse_loss(empty_cell_o,
+                                                                     torch.zeros_like(empty_cell_o),
+                                                                     reduction='none')
 
         return dict(objectness_loss=objectness_loss.mean() / pred_boxes.shape[0],
                     bbox_loss=bbox_loss.mean() / pred_boxes.shape[0],
