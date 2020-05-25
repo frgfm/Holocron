@@ -69,6 +69,10 @@ class Tester(unittest.TestCase):
         for subloss in loss.values():
             self.assertIsInstance(subloss, torch.Tensor)
 
+        # Loss computation with no GT
+        gt_boxes = [torch.rand((0, 4)) for _ in num_boxes]
+        gt_labels = [(num_classes * torch.rand(0)).to(dtype=torch.long) for _ in num_boxes]
+        loss = model(x, gt_boxes, gt_labels)
 
 for model_name in ['res2net', 'res2next']:
     def do_test(self, model_name=model_name):
