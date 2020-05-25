@@ -41,6 +41,11 @@ class Tester(unittest.TestCase):
             self.assertIsInstance(out[0].get('scores'), torch.Tensor)
             self.assertIsInstance(out[0].get('labels'), torch.Tensor)
 
+        # Check that list of Tensors does not change output
+        x_list = [torch.rand(3, size, size) for _ in range(num_batches)]
+        with torch.no_grad():
+            self.assertTrue(torch.equal(model(x_list), out))
+
         # Training mode without target
         model = model.train()
         self.assertRaises(ValueError, model, x)
