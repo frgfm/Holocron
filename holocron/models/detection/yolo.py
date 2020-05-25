@@ -98,9 +98,9 @@ class _YOLO(nn.Module):
                                                                      torch.zeros_like(empty_cell_o),
                                                                      reduction='none')
 
-        return dict(objectness_loss=objectness_loss.mean() / pred_boxes.shape[0],
-                    bbox_loss=bbox_loss.mean() / pred_boxes.shape[0],
-                    clf_loss=clf_loss.mean() / pred_boxes.shape[0])
+        return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
+                    bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
+                    clf_loss=clf_loss.sum() / pred_boxes.shape[0])
 
     @staticmethod
     def post_process(b_coords, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
