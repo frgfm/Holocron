@@ -60,7 +60,7 @@ class Tester(unittest.TestCase):
             # Ensure some anchors will be assigned
             _boxes[0, :2] = 0
             _boxes[0, 2:] = 1
-        gt_boxes = [torch.rand((num, 4)) for num in num_boxes]
+            gt_boxes.append(_boxes)
         gt_labels = [(num_classes * torch.rand(num)).to(dtype=torch.long) for num in num_boxes]
 
         # Loss computation
