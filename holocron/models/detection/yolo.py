@@ -31,7 +31,7 @@ default_cfgs = {
 
 class _YOLO(nn.Module):
 
-    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
+    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, gt_xywh=False):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
@@ -41,6 +41,7 @@ class _YOLO(nn.Module):
             pred_scores (torch.Tensor[N, H * W, num_anchors, num_classes]): classification scores
             gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes
             gt_labels (list<torch.Tensor>): ground truth labels
+            gt_xywh (bool, optional): whether the GT box format is (x, y, w, h) instead of (xmin, ymin, xmax, ymax)
 
         Returns:
             dict: dictionary of losses
@@ -72,6 +73,11 @@ class _YOLO(nn.Module):
                 # GT selection
                 max_iou = iou_mat.view(-1, gt_boxes[idx].shape[0])[selection].max(dim=1)
                 selected_gt_boxes = gt_boxes[idx][max_iou.indices]
+                selected_gt_xy = selected_gt_boxes[..., :2]
+                if gt_xywh:
+                    selected_gt_wh = selected_gt_boxes[..., 2:]
+                else:
+                    selected_gt_wh = selected_gt_boxes[..., 2:] - selected_gt_xy
                 select_gt_labels = gt_labels[idx][max_iou.indices]
 
                 # Objectness loss for cells where any object was detected
@@ -79,10 +85,10 @@ class _YOLO(nn.Module):
                 # Regression loss
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
                 bbox_loss[cell_selection] += F.mse_loss(selected_pred_boxes[..., :2],
-                                                        selected_gt_boxes[..., :2],
+                                                        selected_gt_xy,
                                                         reduction='none').sum(dim=-1)
                 bbox_loss[cell_selection] += F.mse_loss(selected_pred_boxes[..., 2:].sqrt(),
-                                                        selected_gt_boxes[..., 2:].sqrt(),
+                                                        selected_gt_wh.sqrt(),
                                                         reduction='none').sum(dim=-1)
 
                 # Classification loss
