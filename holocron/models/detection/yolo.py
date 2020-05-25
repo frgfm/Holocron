@@ -31,17 +31,16 @@ default_cfgs = {
 
 class _YOLO(nn.Module):
 
-    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, gt_xywh=False):
+    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
         Args:
-            pred_boxes (torch.Tensor[N, H * W, num_anchors, 4]): relative coordinates in format (x, y, w, h)
+            pred_boxes (torch.Tensor[N, H * W, num_anchors, 4]): relative coordinates in format (xc, yc, w, h)
             pred_o (torch.Tensor[N, H * W, num_anchors]): objectness scores
             pred_scores (torch.Tensor[N, H * W, num_anchors, num_classes]): classification scores
-            gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes
+            gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes in format (xmin, ymin, xmax, ymax)
             gt_labels (list<torch.Tensor>): ground truth labels
-            gt_xywh (bool, optional): whether the GT box format is (x, y, w, h) instead of (xmin, ymin, xmax, ymax)
 
         Returns:
             dict: dictionary of losses
@@ -73,11 +72,9 @@ class _YOLO(nn.Module):
                 # GT selection
                 max_iou = iou_mat.view(-1, gt_boxes[idx].shape[0])[selection].max(dim=1)
                 selected_gt_boxes = gt_boxes[idx][max_iou.indices]
-                selected_gt_xy = selected_gt_boxes[..., :2]
-                if gt_xywh:
-                    selected_gt_wh = selected_gt_boxes[..., 2:]
-                else:
-                    selected_gt_wh = selected_gt_boxes[..., 2:] - selected_gt_xy
+                # Center coordinates
+                selected_gt_xy = (selected_gt_boxes[..., :2] + selected_gt_boxes[..., 2:]) / 2
+                selected_gt_wh = selected_gt_boxes[..., 2:] - selected_gt_boxes[..., :2]
                 select_gt_labels = gt_labels[idx][max_iou.indices]
 
                 # Objectness loss for cells where any object was detected
