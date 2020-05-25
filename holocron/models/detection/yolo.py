@@ -47,9 +47,9 @@ class _YOLO(nn.Module):
         """
 
         # Reset losses
-        objectness_loss = torch.zeros(1, device=pred_boxes.device)
-        bbox_loss = torch.zeros(1, device=pred_boxes.device)
-        clf_loss = torch.zeros(1, device=pred_boxes.device)
+        objectness_loss = torch.zeros(pred_boxes.shape[1], device=pred_boxes.device)
+        bbox_loss = torch.zeros(pred_boxes.shape[1], device=pred_boxes.device)
+        clf_loss = torch.zeros(pred_boxes.shape[1], device=pred_boxes.device)
         # Convert from x, y, w, h to xmin, ymin, xmax, ymax
         pred_boxes[..., 2:] += pred_boxes[..., :2]
         # B * cells * predictors * info
@@ -75,23 +75,24 @@ class _YOLO(nn.Module):
                 select_gt_labels = gt_labels[idx][max_iou.indices]
 
                 # Objectness loss for cells where any object was detected
-                objectness_loss += F.mse_loss(selected_o, max_iou.values, reduction='sum')
+                objectness_loss[cell_selection] += F.mse_loss(selected_o, max_iou.values, reduction='none')
                 # Regression loss
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                bbox_loss += F.mse_loss(selected_pred_boxes[..., :2], selected_gt_boxes[..., :2], reduction='sum')
-                bbox_loss += F.mse_loss(selected_pred_boxes[..., 2:].sqrt(), selected_gt_boxes[..., 2:].sqrt(),
-                                        reduction='sum')
+                selected_pred_boxes[..., 2:] = selected_pred_boxes[..., 2:].sqrt_()
+                selected_gt_boxes[..., 2:] = selected_gt_boxes[..., 2:].sqrt_()
+                bbox_loss[cell_selection] += F.mse_loss(selected_pred_boxes, selected_gt_boxes, reduction='none').sum(dim=-1)
+
                 # Classification loss
-                clf_loss += F.cross_entropy(selected_scores, select_gt_labels, reduction='sum')
+                clf_loss[cell_selection] += F.cross_entropy(selected_scores, select_gt_labels, reduction='none')
 
             # Objectness loss for cells where no object was detected
             if torch.any(~cell_selection):
-                empty_cell_o = pred_o[idx][~cell_selection].max(dim=1).values
-                objectness_loss += 0.5 * F.mse_loss(empty_cell_o, torch.zeros_like(empty_cell_o), reduction='sum')
+                empty_cell_o = pred_o[idx, ~cell_selection].max(dim=1).values
+                objectness_loss[~cell_selection] += 0.5 * F.mse_loss(empty_cell_o, torch.zeros_like(empty_cell_o), reduction='none')
 
-        return dict(objectness_loss=objectness_loss,
-                    bbox_loss=bbox_loss,
-                    clf_loss=clf_loss)
+        return dict(objectness_loss=objectness_loss.mean() / pred_boxes.shape[0],
+                    bbox_loss=bbox_loss.mean() / pred_boxes.shape[0],
+                    clf_loss=clf_loss.mean() / pred_boxes.shape[0])
 
     @staticmethod
     def post_process(b_coords, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
