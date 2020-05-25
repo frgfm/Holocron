@@ -55,11 +55,16 @@ class _YOLO(nn.Module):
         # B * cells * predictors * info
         for idx in range(pred_boxes.shape[0]):
 
-            # cells * predictors * num_gt
-            iou_mat = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[idx])
-            # Assign in each cell the best box predictors
-            # Compute max IoU for each predictor, take the highest predictor in each cell
-            cell_selection = iou_mat.view(pred_boxes.shape[1], -1).max(dim=1).values > 0
+            # If no GT, don't compute IoU
+            if gt_boxes[idx].shape[0] > 0:
+                # cells * predictors * num_gt
+                iou_mat = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[idx])
+                # Assign in each cell the best box predictors
+                # Compute max IoU for each predictor, take the highest predictor in each cell
+                cell_selection = iou_mat.view(pred_boxes.shape[1], -1).max(dim=1).values > 0
+            else:
+                cell_selection = torch.zeros(pred_boxes.shape[1], dtype=torch.bool, device=pred_boxes.device)
+
             if torch.any(cell_selection):
                 # S * predictors * num_gt
                 iou_mat = iou_mat.view(pred_boxes.shape[1], self.num_anchors, -1)[cell_selection]
