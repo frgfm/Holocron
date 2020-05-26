@@ -104,14 +104,14 @@ class _YOLO(nn.Module):
 
                 # Localization
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                bbox_loss[cell_selection] += F.mse_loss(selected_boxes[:, :2], gt_centers,
+                bbox_loss[cell_idxs] += F.mse_loss(selected_boxes[:, :2], gt_centers,
                                                         reduction='none').sum(dim=-1)
-                bbox_loss[cell_selection] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
+                bbox_loss[cell_idxs] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
                                                         reduction='none').sum(dim=-1)
                 # Objectness
-                objectness_loss[cell_selection] += F.mse_loss(selection_o, selection_iou, reduction='none')
+                objectness_loss[cell_idxs] += F.mse_loss(selection_o, selection_iou, reduction='none')
                 # Classification
-                clf_loss[cell_selection] += F.cross_entropy(selected_scores, gt_labels[idx], reduction='none')
+                clf_loss[cell_idxs] += F.cross_entropy(selected_scores, gt_labels[idx], reduction='none')
 
         return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
                     bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
