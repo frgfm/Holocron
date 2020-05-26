@@ -54,7 +54,7 @@ class _YOLO(nn.Module):
 
         # Convert from x, y, w, h to xmin, ymin, xmax, ymax
         pred_wh = pred_boxes[..., 2:]
-        pred_boxes[..., 2:] = pred_boxes[..., :2] + pred_wh
+        pred_boxes[..., 2:] = pred_boxes[..., :2] + pred_wh / 2
         pred_boxes[..., :2] -= pred_wh / 2
 
         # B * cells * predictors * info
@@ -153,8 +153,7 @@ class _YOLO(nn.Module):
                 # NMS
                 # Switch to xmin, ymin, xmax, ymax coords
                 wh = coords[..., 2:]
-                coords[..., 2:] /= 2
-                coords[..., 2:] += coords[..., :2]
+                coords[..., 2:] = coords[..., :2] + wh / 2
                 coords[..., :2] -= wh / 2
                 coords = coords.clamp_(0, 1)
                 is_kept = nms(coords, scores, iou_threshold=rpn_nms_thresh)
