@@ -55,7 +55,7 @@ class _YOLO(nn.Module):
         # Convert from x, y, w, h to xmin, ymin, xmax, ymax
         pred_wh = pred_boxes[..., 2:]
         pred_boxes[..., 2:] = pred_boxes[..., :2] + pred_wh
-        pred_boxes[..., :2] += pred_wh / 2
+        pred_boxes[..., :2] -= pred_wh / 2
 
         # B * cells * predictors * info
         for idx in range(b):
