@@ -92,8 +92,8 @@ class _YOLO(nn.Module):
                 selected_scores = selected_scores.view(-1, pred_scores.shape[-1])
                 selected_boxes = pred_boxes.view(b, h * w, num_anchors, -1)[idx, cell_idxs, box_idxs].view(-1, 4)
                 # Convert GT --> xc, yc, w, h
-                gt_wh = gt_boxes[idx][:, [2, 3]] - gt_boxes[idx][:, [0, 1]]
-                gt_centers = (gt_boxes[idx][:, [2, 3]] + gt_boxes[idx][:, [0, 1]]) / 2
+                gt_wh = gt_boxes[idx][:, 2:] - gt_boxes[idx][:, :2]
+                gt_centers = (gt_boxes[idx][:, 2:] + gt_boxes[idx][:, :2]) / 2
                 # Make xy relative to cell
                 gt_centers[:, 0] *= w
                 gt_centers[:, 1] *= h
