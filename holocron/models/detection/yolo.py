@@ -30,7 +30,6 @@ default_cfgs = {
 
 
 class _YOLO(nn.Module):
-
     def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
@@ -51,7 +50,10 @@ class _YOLO(nn.Module):
         bbox_loss = torch.zeros(pred_boxes.shape[1], device=pred_boxes.device)
         clf_loss = torch.zeros(pred_boxes.shape[1], device=pred_boxes.device)
         # Convert from x, y, w, h to xmin, ymin, xmax, ymax
+        pred_wh = pred_boxes[..., 2:]
+        pred_boxes[..., 2:] /= 2
         pred_boxes[..., 2:] += pred_boxes[..., :2]
+        pred_boxes[..., :2] -= pred_wh / 2
         # B * cells * predictors * info
         for idx in range(pred_boxes.shape[0]):
 
