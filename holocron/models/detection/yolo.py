@@ -47,15 +47,16 @@ class _YOLO(nn.Module):
         """
 
         b, h, w, num_anchors = pred_o.shape
-        # Reset losses
+        # Initialize losses
         objectness_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
         bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
         clf_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
 
         # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
+        pred_xyxy = torch.zeros_like(pred_boxes)
         pred_wh = pred_boxes[..., 2:]
-        pred_boxes[..., 2:] = pred_boxes[..., :2] + pred_wh / 2
-        pred_boxes[..., :2] -= pred_wh / 2
+        pred_xyxy[..., 2:] = pred_boxes[..., :2] + pred_wh / 2
+        pred_xyxy[..., :2] = pred_boxes[..., :2] - pred_wh / 2
 
         # B * cells * predictors * info
         for idx in range(b):
@@ -69,7 +70,7 @@ class _YOLO(nn.Module):
                                            gt_boxes[idx][:, [1, 3]].sum(dim=-1) * h), dim=1) / 2).to(dtype=torch.long)
                 cell_idxs = gt_centers[:, 1] * w + gt_centers[:, 0]
                 # Assign the best anchor in each corresponding cell
-                iou_mat = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[idx]).view(h * w, num_anchors, -1)
+                iou_mat = box_iou(pred_xyxy[idx].view(-1, 4), gt_boxes[idx]).view(h * w, num_anchors, -1)
                 iou_max = iou_mat[cell_idxs, :, range(gt_boxes[idx].shape[0])].max(dim=1)
                 box_idxs = iou_max.indices
                 # Keep IoU for loss computation
