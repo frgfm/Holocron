@@ -31,6 +31,8 @@ class Tester(unittest.TestCase):
         num_batches = 2
         x = torch.rand((num_batches, 3, size, size))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
+        # Check backbone pretrained
+        model = models.__dict__[name](pretrained_backbone=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
 
