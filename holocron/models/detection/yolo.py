@@ -22,9 +22,9 @@ __all__ = ['YOLOv1', 'YOLOv2', 'yolov1', 'yolov2']
 
 
 default_cfgs = {
-    'yolov1': {'arch': 'YOLOv1', 'layout': dark_cfgs['darknet24']['layout'],
+    'yolov1': {'arch': 'YOLOv1', 'backbone': dark_cfgs['darknet24'],
                'url': None},
-    'yolov2': {'arch': 'YOLOv2', 'layout': dark_cfgs['darknet19']['layout'],
+    'yolov2': {'arch': 'YOLOv2', 'backbone': dark_cfgs['darknet19'],
                'url': None},
 }
 
@@ -388,12 +388,25 @@ class YOLOv2(_YOLO):
             return self.post_process(b_coords, b_o, b_scores)
 
 
-def _yolo(arch, pretrained, progress, **kwargs):
+def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
+
+    if pretrained:
+        pretrained_backbone = False
 
     # Retrieve the correct Darknet layout type
     yolo_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
     # Build the model
-    model = yolo_type(default_cfgs[arch]['layout'], **kwargs)
+    model = yolo_type(default_cfgs[arch]['backbone']['layout'], **kwargs)
+    # Load backbone pretrained parameters
+    if pretrained_backbone:
+        if default_cfgs[arch]['backbone']['url'] is None:
+            logging.warning(f"Invalid model URL for {arch}'s backbone, using default initialization.")
+        else:
+            state_dict = load_state_dict_from_url(default_cfgs[arch]['backbone']['url'],
+                                                  progress=progress)
+            state_dict = {k.replace('features.', ''): v
+                          for k, v in state_dict.items() if k.startswith('features')}
+            model.backbone.load_state_dict(state_dict)
     # Load pretrained parameters
     if pretrained:
         if default_cfgs[arch]['url'] is None:
@@ -406,31 +419,33 @@ def _yolo(arch, pretrained, progress, **kwargs):
     return model
 
 
-def yolov1(pretrained=False, progress=True, **kwargs):
+def yolov1(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     """YOLO model from
     `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
+        progress (bool, optional): If True, displays a progress bar of the download to stderr
+        pretrained_backbone (bool, optional): If True, backbone parameters will have been pretrained on Imagenette
 
     Returns:
         torch.nn.Module: detection module
     """
 
-    return _yolo('yolov1', pretrained, progress, **kwargs)
+    return _yolo('yolov1', pretrained, progress, pretrained_backbone, **kwargs)
 
 
-def yolov2(pretrained=False, progress=True, **kwargs):
+def yolov2(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     """YOLOv2 model from
     `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
+        progress (bool, optional): If True, displays a progress bar of the download to stderr
+        pretrained_backbone (bool, optional): If True, backbone parameters will have been pretrained on Imagenette
 
     Returns:
         torch.nn.Module: detection module
     """
 
-    return _yolo('yolov2', pretrained, progress, **kwargs)
+    return _yolo('yolov2', pretrained, progress, pretrained_backbone, **kwargs)
