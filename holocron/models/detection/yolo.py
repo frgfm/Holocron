@@ -105,9 +105,9 @@ class _YOLO(nn.Module):
                 # Localization
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
                 bbox_loss[cell_idxs] += F.mse_loss(selected_boxes[:, :2], gt_centers,
-                                                        reduction='none').sum(dim=-1)
+                                                   reduction='none').sum(dim=-1)
                 bbox_loss[cell_idxs] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
-                                                        reduction='none').sum(dim=-1)
+                                                   reduction='none').sum(dim=-1)
                 # Objectness
                 objectness_loss[cell_idxs] += F.mse_loss(selection_o, selection_iou, reduction='none')
                 # Classification
