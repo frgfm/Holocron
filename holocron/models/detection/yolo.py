@@ -48,9 +48,9 @@ class _YOLO(nn.Module):
 
         b, h, w, num_anchors = pred_o.shape
         # Reset losses
-        objectness_loss = torch.zeros(w * h, device=pred_boxes.device)
-        bbox_loss = torch.zeros(w * h, device=pred_boxes.device)
-        clf_loss = torch.zeros(w * h, device=pred_boxes.device)
+        objectness_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
+        bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
+        clf_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
 
         # Convert from x, y, w, h to xmin, ymin, xmax, ymax
         pred_wh = pred_boxes[..., 2:]
@@ -60,37 +60,41 @@ class _YOLO(nn.Module):
         # B * cells * predictors * info
         for idx in range(b):
 
-            # Locate grid cells where there is an object
-            cell_selection = torch.zeros(h * w, dtype=torch.bool)
-            # Selection the anchor boxes
-            box_selection = torch.zeros((h * w, num_anchors), dtype=torch.bool)
+            # Match the anchor boxes
+            is_matched = torch.arange(0)
+            not_matched = torch.arange(h * w * num_anchors)
             if gt_boxes[idx].shape[0] > 0:
+                # Locate the cell of each GT
                 gt_centers = (torch.stack((gt_boxes[idx][:, [0, 2]].sum(dim=-1) * w,
                                            gt_boxes[idx][:, [1, 3]].sum(dim=-1) * h), dim=1) / 2).to(dtype=torch.long)
                 cell_idxs = gt_centers[:, 1] * w + gt_centers[:, 0]
+                # Assign the best anchor in each corresponding cell
                 iou_mat = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[idx]).view(h * w, num_anchors, -1)
                 iou_max = iou_mat[cell_idxs, :, range(gt_boxes[idx].shape[0])].max(dim=1)
                 box_idxs = iou_max.indices
+                # Keep IoU for loss computation
                 selection_iou = iou_max.values
-
-                cell_selection[cell_idxs] = True
+                # Updated anchor box matching
+                box_selection = torch.zeros((h * w, num_anchors), dtype=torch.bool)
                 box_selection[cell_idxs, box_idxs] = True
+                is_matched = torch.arange(h * w * num_anchors).view(-1, num_anchors)[cell_idxs, box_idxs]
+                not_matched = not_matched[box_selection.view(-1)]
 
-            # Update losses for cells without any object
-            if torch.any(~cell_selection):
+            # Update losses for boxes without any object
+            if not_matched.shape[0] > 0:
                 # SSE between objectness and IoU
-                selection_o = pred_o.view(b, h * w, -1)[idx, ~cell_selection].max(dim=-1).values
+                selection_o = pred_o.view(b, -1)[idx, not_matched]
                 # Update loss
-                objectness_loss[~cell_selection] += 0.5 * F.mse_loss(selection_o, torch.zeros_like(selection_o),
-                                                                     reduction='none')
+                objectness_loss[not_matched] += 0.5 * F.mse_loss(selection_o, torch.zeros_like(selection_o),
+                                                                    reduction='none')
 
-            # Update loss for cells with an object
-            if torch.any(cell_selection):
+            # Update loss for boxes with an object
+            if is_matched.shape[0] > 0:
                 # Get prediction assignment
-                selection_o = pred_o.view(b, h * w, -1)[idx, cell_idxs, box_idxs].view(-1)
-                selected_scores = pred_scores.view(b, h * w, num_anchors, -1)[idx, cell_idxs, box_idxs]
+                selection_o = pred_o.view(b, -1)[idx, is_matched]
+                selected_scores = pred_scores.reshape(b, h * w * num_anchors, -1)[idx, is_matched]
                 selected_scores = selected_scores.view(-1, pred_scores.shape[-1])
-                selected_boxes = pred_boxes.view(b, h * w, num_anchors, -1)[idx, cell_idxs, box_idxs].view(-1, 4)
+                selected_boxes = pred_boxes.view(b, h * w * num_anchors, -1)[idx, is_matched].view(-1, 4)
                 # Convert GT --> xc, yc, w, h
                 gt_wh = gt_boxes[idx][:, 2:] - gt_boxes[idx][:, :2]
                 gt_centers = (gt_boxes[idx][:, 2:] + gt_boxes[idx][:, :2]) / 2
@@ -104,14 +108,14 @@ class _YOLO(nn.Module):
 
                 # Localization
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                bbox_loss[cell_idxs] += F.mse_loss(selected_boxes[:, :2], gt_centers,
-                                                   reduction='none').sum(dim=-1)
-                bbox_loss[cell_idxs] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
-                                                   reduction='none').sum(dim=-1)
+                bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, :2], gt_centers,
+                                                    reduction='none').sum(dim=-1)
+                bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
+                                                    reduction='none').sum(dim=-1)
                 # Objectness
-                objectness_loss[cell_idxs] += F.mse_loss(selection_o, selection_iou, reduction='none')
+                objectness_loss[is_matched] += F.mse_loss(selection_o, selection_iou, reduction='none')
                 # Classification
-                clf_loss[cell_idxs] += F.cross_entropy(selected_scores, gt_labels[idx], reduction='none')
+                clf_loss[is_matched] += F.cross_entropy(selected_scores, gt_labels[idx], reduction='none')
 
         return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
                     bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
