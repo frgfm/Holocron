@@ -73,10 +73,11 @@ class Tester(unittest.TestCase):
         self.assertIsInstance(loss, dict)
         for subloss in loss.values():
             self.assertIsInstance(subloss, torch.Tensor)
+            self.assertFalse(torch.isnan(subloss))
 
         # Loss computation with no GT
-        gt_boxes = [torch.rand((0, 4)) for _ in num_boxes]
-        gt_labels = [(num_classes * torch.rand(0)).to(dtype=torch.long) for _ in num_boxes]
+        gt_boxes = [torch.zeros((0, 4)) for _ in num_boxes]
+        gt_labels = [torch.zeros(0, dtype=torch.long) for _ in num_boxes]
         loss = model(x, gt_boxes, gt_labels)
 
 
