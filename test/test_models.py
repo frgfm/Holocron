@@ -51,7 +51,7 @@ class Tester(unittest.TestCase):
         model = model.train()
         self.assertRaises(ValueError, model, x)
         # Generate targets
-        num_boxes = [2, 3]
+        num_boxes = [3, 4]
         gt_boxes = []
         for num in num_boxes:
             _boxes = torch.rand((num, 4), dtype=torch.float)
@@ -60,6 +60,9 @@ class Tester(unittest.TestCase):
             # Ensure some anchors will be assigned
             _boxes[0, :2] = 0
             _boxes[0, 2:] = 1
+            # Check cases where cell can get two assignments
+            _boxes[1, :2] = 0.2
+            _boxes[1, 2:] = 0.8
             gt_boxes.append(_boxes)
         gt_labels = [(num_classes * torch.rand(num)).to(dtype=torch.long) for num in num_boxes]
 
