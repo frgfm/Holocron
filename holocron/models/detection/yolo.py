@@ -35,9 +35,9 @@ class _YOLO(nn.Module):
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
         Args:
-            pred_boxes (torch.Tensor[N, H * W, num_anchors, 4]): relative coordinates in format (xc, yc, w, h)
-            pred_o (torch.Tensor[N, H * W, num_anchors]): objectness scores
-            pred_scores (torch.Tensor[N, H * W, num_anchors, num_classes]): classification scores
+            pred_boxes (torch.Tensor[N, H, W, num_anchors, 4]): relative coordinates in format (xc, yc, w, h)
+            pred_o (torch.Tensor[N, H, W, num_anchors]): objectness scores
+            pred_scores (torch.Tensor[N, H, W, num_anchors, num_classes]): classification scores
             gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes in format (xmin, ymin, xmax, ymax)
             gt_labels (list<torch.Tensor>): ground truth labels
 
@@ -45,65 +45,79 @@ class _YOLO(nn.Module):
             dict: dictionary of losses
         """
 
+        b, h, w, num_anchors = pred_o.shape
         # Reset losses
-        objectness_loss = torch.zeros(pred_boxes.shape[1], device=pred_boxes.device)
-        bbox_loss = torch.zeros(pred_boxes.shape[1], device=pred_boxes.device)
-        clf_loss = torch.zeros(pred_boxes.shape[1], device=pred_boxes.device)
+        objectness_loss = torch.zeros(w * h, device=pred_boxes.device)
+        bbox_loss = torch.zeros(w * h, device=pred_boxes.device)
+        clf_loss = torch.zeros(w * h, device=pred_boxes.device)
+
         # Convert from x, y, w, h to xmin, ymin, xmax, ymax
         pred_wh = pred_boxes[..., 2:]
         pred_boxes[..., 2:] /= 2
         pred_boxes[..., 2:] += pred_boxes[..., :2]
         pred_boxes[..., :2] -= pred_wh / 2
+
         # B * cells * predictors * info
-        for idx in range(pred_boxes.shape[0]):
+        for idx in range(b):
 
-            # If no GT, don't compute IoU
+            # Locate grid cells where there is an object
+            cell_selection = torch.zeros(h * w, dtype=torch.bool)
             if gt_boxes[idx].shape[0] > 0:
-                # cells * predictors * num_gt
-                iou_mat = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[idx])
-                # Assign in each cell the best box predictors
-                # Compute max IoU for each predictor, take the highest predictor in each cell
-                cell_selection = iou_mat.view(pred_boxes.shape[1], -1).max(dim=1).values > 0
-            else:
-                cell_selection = torch.zeros(pred_boxes.shape[1], dtype=torch.bool, device=pred_boxes.device)
+                gt_centers = (torch.stack((gt_boxes[idx][:, [0, 2]].sum(dim=-1) * w,
+                                           gt_boxes[idx][:, [1, 3]].sum(dim=-1) * h), dim=1) / 2).to(dtype=torch.long)
+                cell_selection[gt_centers[:, 1] * w + gt_centers[:, 0]] = True
 
-            if torch.any(cell_selection):
-                # S * predictors * num_gt
-                iou_mat = iou_mat.view(pred_boxes.shape[1], self.num_anchors, -1)[cell_selection]
-                anchor_selection = iou_mat.max(dim=2).values.argmax(dim=1)
-                selection = [idx * self.num_anchors + anchor.item() for idx, anchor in enumerate(anchor_selection)]
-                # Predictor selection
-                selected_pred_boxes = pred_boxes[idx, cell_selection].view(-1, 4)[selection]
-                selected_o = pred_o[idx, cell_selection].view(-1)[selection]
-                selected_scores = pred_scores[idx, cell_selection].view(-1, self.num_classes)[selection]
-                # GT selection
-                max_iou = iou_mat.view(-1, gt_boxes[idx].shape[0])[selection].max(dim=1)
-                selected_gt_boxes = gt_boxes[idx][max_iou.indices]
-                # Center coordinates
-                selected_gt_xy = (selected_gt_boxes[..., :2] + selected_gt_boxes[..., 2:]) / 2
-                selected_gt_wh = selected_gt_boxes[..., 2:] - selected_gt_boxes[..., :2]
-                select_gt_labels = gt_labels[idx][max_iou.indices]
-
-                # Objectness loss for cells where any object was detected
-                objectness_loss[cell_selection] += F.mse_loss(selected_o, max_iou.values, reduction='none')
-                # Regression loss
-                # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                bbox_loss[cell_selection] += F.mse_loss(selected_pred_boxes[..., :2],
-                                                        selected_gt_xy,
-                                                        reduction='none').sum(dim=-1)
-                bbox_loss[cell_selection] += F.mse_loss(selected_pred_boxes[..., 2:].sqrt(),
-                                                        selected_gt_wh.sqrt(),
-                                                        reduction='none').sum(dim=-1)
-
-                # Classification loss
-                clf_loss[cell_selection] += F.cross_entropy(selected_scores, select_gt_labels, reduction='none')
-
-            # Objectness loss for cells where no object was detected
+            iou_mat = box_iou(pred_boxes.view(b, h * w, -1)[idx].view(-1, 4), gt_boxes[idx])
+            # Update losses for cells without any object
             if torch.any(~cell_selection):
-                empty_cell_o = pred_o[idx, ~cell_selection].max(dim=1).values
-                objectness_loss[~cell_selection] += 0.5 * F.mse_loss(empty_cell_o,
-                                                                     torch.zeros_like(empty_cell_o),
-                                                                     reduction='none')
+                # SSE between objectness and IoU
+                if gt_boxes[idx].shape[0] > 0:
+                    # (cell_selection * num_anchors) * num_gt --> cell_selection * num_anchors * num_gt
+                    _iou = iou_mat.view(-1, num_anchors, gt_boxes[idx].shape[0])[~cell_selection]
+                    iou_max = _iou.view(-1, num_anchors, gt_boxes[idx].shape[0]).max(dim=-1).values.max(dim=1)
+                    selection_iou = iou_max.values
+                    anchor_idxs = iou_max.indices
+                    selection_o = pred_o.view(b, h * w, -1)[idx, ~cell_selection, anchor_idxs]
+                else:
+                    selection_o = pred_o.view(b, h * w, -1)[idx, ~cell_selection].max(dim=-1).values
+                    selection_iou = torch.zeros_like(selection_o)
+                # Update loss
+                objectness_loss[~cell_selection] += 0.5 * F.mse_loss(selection_o, selection_iou, reduction='none')
+
+            # Update loss for cells with an object
+            if torch.any(cell_selection):
+                # (cell_selection * num_anchors) * num_gt --> cell_selection * num_anchors * num_gt
+                _iou = iou_mat.view(-1, num_anchors, gt_boxes[idx].shape[0])[cell_selection]
+                iou_max = _iou.max(dim=-1).values.max(dim=1)
+                # Predictor assignment
+                selection_iou = iou_max.values
+                anchor_idxs = iou_max.indices
+                gt_idxs = _iou.max(dim=1).values.max(dim=-1).indices
+                selection_o = pred_o.view(b, h * w, -1)[idx, cell_selection, anchor_idxs]
+                selected_scores = pred_scores.view(b, h * w, num_anchors, -1)[idx, cell_selection, anchor_idxs]
+                selected_boxes = pred_boxes.view(b, h * w, num_anchors, -1)[idx, cell_selection, anchor_idxs]
+                # Convert GT --> xc, yc, w, h
+                gt_wh = gt_boxes[idx][..., [2, 3]] - gt_boxes[idx][..., [0, 1]]
+                gt_centers = gt_boxes[idx][..., :2] + gt_wh / 2
+                # Make xy relative to cell
+                gt_centers[..., 0] *= w
+                gt_centers[..., 1] *= h
+                gt_centers -= gt_centers.round()
+                selected_boxes[..., 0] *= w
+                selected_boxes[..., 1] *= h
+                selected_boxes[..., :2] -= selected_boxes[..., :2].round()
+
+                # Localization
+                # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
+                bbox_loss[cell_selection] += F.mse_loss(selected_boxes[..., :2], gt_centers,
+                                                        reduction='none').sum(dim=-1)
+                bbox_loss[cell_selection] += F.mse_loss(selected_boxes[..., 2:].sqrt(), gt_wh.sqrt(),
+                                                        reduction='none').sum(dim=-1)
+                # Objectness
+                objectness_loss[cell_selection] += F.mse_loss(selection_o, selection_iou, reduction='none')
+                # Classification
+                clf_loss[cell_selection] += F.cross_entropy(selected_scores,
+                                                            gt_labels[idx][gt_idxs], reduction='none')
 
         return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
                     bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
@@ -188,7 +202,7 @@ class YOLOv1(_YOLO):
         """Formats convolutional layer output
 
         Args:
-            x (torch.Tensor[N, num_anchors * (5 + num_classes), H, W]): output tensor
+            x (torch.Tensor[N, num_anchors * (5 + num_classes) * H * W]): output tensor
             img_h (int): input image height
             img_w (int): input image width
 
@@ -198,29 +212,28 @@ class YOLOv1(_YOLO):
             torch.Tensor[N, H * W, num_anchors, num_classes]: classification scores
         """
 
-        b, c = x.shape
+        b, _ = x.shape
         h, w = 7, 7
         # B * (H * W * (num_anchors * 5 + num_classes)) --> B * H * W * (num_anchors * 5 + num_classes)
         x = x.view(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
-        b_scores = x[..., -self.num_classes:].view(b, h * w, -1)
+        b_scores = x[..., -self.num_classes:]
         # Repeat for anchors to keep compatibility across YOLO versions
-        b_scores = b_scores.unsqueeze(2).repeat_interleave(self.num_anchors, dim=2)
+        b_scores = b_scores.unsqueeze(3).repeat_interleave(self.num_anchors, dim=3)
         #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
         x = x[..., :self.num_anchors * 5].view(b, h, w, self.num_anchors, 5)
         # Cell offset
         c_x = torch.arange(0, w, dtype=torch.float, device=x.device) / w
         c_y = torch.arange(0, h, dtype=torch.float, device=x.device) / h
         # Box coordinates
-        b_x = (torch.sigmoid(x[..., 0]) / w + c_x.view(1, 1, -1, 1)).view(b, -1, self.num_anchors)
-        b_y = (torch.sigmoid(x[..., 1]) / h + c_y.view(1, -1, 1, 1)).view(b, -1, self.num_anchors)
-        # B * H * W * num_anchors * (5 + num_classes) --> B * (H * W) * num_anchors * (5 + num_classes)
-        b_w = torch.sigmoid(x[..., 2]).view(b, -1, self.num_anchors)
-        b_h = torch.sigmoid(x[..., 3]).view(b, -1, self.num_anchors)
-        # B * (H * W) * num_anchors * 4
-        b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=3)
+        b_x = torch.sigmoid(x[..., 0]) / w + c_x.view(1, 1, -1, 1)
+        b_y = torch.sigmoid(x[..., 1]) / h + c_y.view(1, -1, 1, 1)
+        b_w = torch.sigmoid(x[..., 2])
+        b_h = torch.sigmoid(x[..., 3])
+        # B * H * W * num_anchors * 4
+        b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
-        b_o = torch.sigmoid(x[..., 4]).view(b, -1, self.num_anchors)
+        b_o = torch.sigmoid(x[..., 4])
 
         return b_coords, b_o, b_scores
 
@@ -311,26 +324,24 @@ class YOLOv2(_YOLO):
             img_w (int): input image width
 
         Returns:
-            torch.Tensor[N, H * W, num_anchors, 4]: relative coordinates in format (x, y, w, h)
-            torch.Tensor[N, H * W, num_anchors]: objectness scores
-            torch.Tensor[N, H * W, num_anchors, num_classes]: classification scores
+            torch.Tensor[N, H, W, num_anchors, 4]: relative coordinates in format (x, y, w, h)
+            torch.Tensor[N, H, W, num_anchors]: objectness scores
+            torch.Tensor[N, H, W, num_anchors, num_classes]: classification scores
         """
 
-        b, c, h, w = x.shape
+        b, _, h, w = x.shape
         # B * C * H * W --> B * H * W * num_anchors * (5 + num_classes)
         x = x.view(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
         # Cell offset
         c_x = torch.arange(0, w, dtype=torch.float, device=x.device) / w
         c_y = torch.arange(0, h, dtype=torch.float, device=x.device) / h
         # Box coordinates
-        b_x = (torch.sigmoid(x[..., 0]) / w + c_x.view(1, 1, -1, 1)).view(b, -1, self.num_anchors)
-        b_y = (torch.sigmoid(x[..., 1]) / h + c_y.view(1, -1, 1, 1)).view(b, -1, self.num_anchors)
-        # B * H * W * num_anchors * (5 + num_classes) --> B * (H * W) * num_anchors * (5 + num_classes)
-        x = x.view(b, h * w, self.num_anchors, -1)
-        b_w = self.anchors[:, 0].view(1, 1, -1) / w * torch.exp(x[..., 2])
-        b_h = self.anchors[:, 1].view(1, 1, -1) / h * torch.exp(x[..., 3])
-        # B * (H * W) * num_anchors * 4
-        b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=3)
+        b_x = torch.sigmoid(x[..., 0]) / w + c_x.view(1, 1, -1, 1)
+        b_y = torch.sigmoid(x[..., 1]) / h + c_y.view(1, -1, 1, 1)
+        b_w = self.anchors[:, 0].view(1, 1, 1, -1) / w * torch.exp(x[..., 2])
+        b_h = self.anchors[:, 1].view(1, 1, 1, -1) / h * torch.exp(x[..., 3])
+        # B * H * W * num_anchors * 4
+        b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
         b_o = torch.sigmoid(x[..., 4])
         # Classification scores
@@ -367,7 +378,7 @@ class YOLOv2(_YOLO):
 
         x = self.head(x)
 
-        # B * (H * W) * num_anchors
+        # B * H * W * num_anchors
         b_coords, b_o, b_scores = self._format_outputs(x, img_h, img_w)
 
         if self.training:
