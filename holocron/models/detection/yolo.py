@@ -52,7 +52,7 @@ class _YOLO(nn.Module):
         bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
         clf_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
 
-        # Convert from x, y, w, h to xmin, ymin, xmax, ymax
+        # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
         pred_wh = pred_boxes[..., 2:]
         pred_boxes[..., 2:] = pred_boxes[..., :2] + pred_wh / 2
         pred_boxes[..., :2] -= pred_wh / 2
