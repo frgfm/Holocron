@@ -261,8 +261,8 @@ def main(args):
         best_error = checkpoint['det_err']
 
     if args.test_only:
-        recall, precision = evaluate(model, val_loader, device=device)
-        print(f"Recall: {recall:.2%} | Precision: {precision:.2%}")
+        loc_err, clf_err, det_err = evaluate(model, val_loader, device=device)
+        print(f"Loc error: {loc_err:.2%} | Clf error: {clf_err:.2%} | Det error: {det_err:.2%}")
         return
 
     print("Start training")
