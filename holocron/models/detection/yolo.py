@@ -221,11 +221,11 @@ class YOLOv1(_YOLO):
         #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
         x = x[..., :self.num_anchors * 5].view(b, h, w, self.num_anchors, 5)
         # Cell offset
-        c_x = torch.arange(0, w, dtype=torch.float, device=x.device) / w
-        c_y = torch.arange(0, h, dtype=torch.float, device=x.device) / h
+        c_x = torch.arange(w, dtype=torch.float, device=x.device)
+        c_y = torch.arange(h, dtype=torch.float, device=x.device)
         # Box coordinates
-        b_x = torch.sigmoid(x[..., 0]) / w + c_x.view(1, 1, -1, 1)
-        b_y = torch.sigmoid(x[..., 1]) / h + c_y.view(1, -1, 1, 1)
+        b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)) / w
+        b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)) / h
         b_w = torch.sigmoid(x[..., 2])
         b_h = torch.sigmoid(x[..., 3])
         # B * H * W * num_anchors * 4
@@ -331,11 +331,11 @@ class YOLOv2(_YOLO):
         # B * C * H * W --> B * H * W * num_anchors * (5 + num_classes)
         x = x.view(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
         # Cell offset
-        c_x = torch.arange(0, w, dtype=torch.float, device=x.device) / w
-        c_y = torch.arange(0, h, dtype=torch.float, device=x.device) / h
+        c_x = torch.arange(w, dtype=torch.float, device=x.device)
+        c_y = torch.arange(h, dtype=torch.float, device=x.device)
         # Box coordinates
-        b_x = torch.sigmoid(x[..., 0]) / w + c_x.view(1, 1, -1, 1)
-        b_y = torch.sigmoid(x[..., 1]) / h + c_y.view(1, -1, 1, 1)
+        b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)) / w
+        b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)) / h
         b_w = self.anchors[:, 0].view(1, 1, 1, -1) / w * torch.exp(x[..., 2])
         b_h = self.anchors[:, 1].view(1, 1, 1, -1) / h * torch.exp(x[..., 3])
         # B * H * W * num_anchors * 4
@@ -386,7 +386,7 @@ class YOLOv2(_YOLO):
             # B * (H * W * num_anchors)
             b_coords = b_coords.view(b_coords.shape[0], -1, 4)
             b_o = b_o.view(b_o.shape[0], -1)
-            b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
+            b_scores = b_scores.reshape(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
             return self.post_process(b_coords, b_o, b_scores)
