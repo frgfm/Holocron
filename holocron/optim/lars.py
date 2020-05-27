@@ -43,16 +43,17 @@ class Lars(Optimizer):
         for group in self.param_groups:
             group.setdefault('nesterov', False)
 
+    @torch.no_grad()
     def step(self, closure=None):
         """Performs a single optimization step.
 
         Arguments:
-            closure (callable, optional): A closure that reevaluates the model
-                and returns the loss.
+            closure (callable, optional): A closure that reevaluates the model and returns the loss.
         """
         loss = None
         if closure is not None:
-            loss = closure()
+            with torch.enable_grad():
+                loss = closure()
 
         for group in self.param_groups:
             weight_decay = group['weight_decay']
@@ -65,16 +66,16 @@ class Lars(Optimizer):
                     continue
                 d_p = p.grad.data
                 if weight_decay != 0:
-                    d_p.add_(weight_decay, p.data)
+                    d_p.add_(p.data, alpha=weight_decay)
                 if momentum != 0:
                     param_state = self.state[p]
                     if 'momentum_buffer' not in param_state:
                         buf = param_state['momentum_buffer'] = torch.clone(d_p).detach()
                     else:
                         buf = param_state['momentum_buffer']
-                        buf.mul_(momentum).add_(1 - dampening, d_p)
+                        buf.mul_(momentum).add_(d_p, alpha=1 - dampening)
                     if nesterov:
-                        d_p = d_p.add(momentum, buf)
+                        d_p = d_p.add(buf, alpha=momentum)
                     else:
                         d_p = buf
 
@@ -87,6 +88,6 @@ class Lars(Optimizer):
                 else:
                     local_lr = p_norm / update_norm
 
-                p.data.add_(-group['lr'] * local_lr, d_p)
+                p.data.add_(d_p, alpha=-group['lr'] * local_lr)
 
         return loss

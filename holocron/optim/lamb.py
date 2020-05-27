@@ -37,16 +37,17 @@ class Lamb(Optimizer):
         if self.scale_clip is None:
             self.scale_clip = (0, 10)
 
+    @torch.no_grad()
     def step(self, closure=None):
         """Performs a single optimization step.
 
         Arguments:
-            closure (callable, optional): A closure that reevaluates the model
-                and returns the loss.
+            closure (callable, optional): A closure that reevaluates the model and returns the loss.
         """
         loss = None
         if closure is not None:
-            loss = closure()
+            with torch.enable_grad():
+                loss = closure()
 
         for group in self.param_groups:
             for p in group['params']:
@@ -72,17 +73,17 @@ class Lamb(Optimizer):
                 state['step'] += 1
 
                 # Decay the first and second moment running average coefficient
-                exp_avg.mul_(beta1).add_(1 - beta1, grad)
-                exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
+                exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
+                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, alpha=1 - beta2)
 
                 # Gradient term correction
                 update = torch.zeros_like(p.data)
                 denom = exp_avg_sq.sqrt().add_(group['eps'])
-                update.addcdiv_(1, exp_avg, denom)
+                update.addcdiv_(exp_avg, denom)
 
                 # Weight decay
                 if group['weight_decay'] != 0:
-                    update.add_(group['weight_decay'], p.data)
+                    update.add_(p.data, alpha=group['weight_decay'])
 
                 # LARS
                 p_norm = p.data.pow(2).sum().sqrt()
@@ -96,6 +97,6 @@ class Lamb(Optimizer):
 
                 state['local_lr'] = local_lr
 
-                p.data.add_(-group['lr'] * local_lr, update)
+                p.data.add_(update, alpha=-group['lr'] * local_lr)
 
         return loss

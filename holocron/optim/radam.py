@@ -32,6 +32,7 @@ class RAdam(Optimizer):
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
         super(RAdam, self).__init__(params, defaults)
 
+    @torch.no_grad()
     def step(self, closure=None):
         """Performs a single optimization step.
 
@@ -40,7 +41,8 @@ class RAdam(Optimizer):
         """
         loss = None
         if closure is not None:
-            loss = closure()
+            with torch.enable_grad():
+                loss = closure()
 
         for group in self.param_groups:
 
@@ -74,8 +76,8 @@ class RAdam(Optimizer):
                 state['step'] += 1
 
                 # Decay the first and second moment running average coefficient
-                exp_avg.mul_(beta1).add_(1 - beta1, grad)
-                exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
+                exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
+                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, alpha=1 - beta2)
 
                 # Bias corrections
                 bias_correction1 = 1 - beta1 ** state['step']
@@ -86,16 +88,16 @@ class RAdam(Optimizer):
 
                 # Weight decay
                 if group['weight_decay'] != 0:
-                    p.data.add_(-group['lr'] * group['weight_decay'], p.data)
+                    p.data.add_(p.data, alpha=-group['lr'] * group['weight_decay'])
 
                 if sma_t > 4:
                     # Variance rectification term
                     r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
                     # Adaptive momentum
-                    p.data.addcdiv_(-group['lr'] * r_t, exp_avg / bias_correction1,
-                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
+                    p.data.addcdiv_(exp_avg / bias_correction1,
+                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']), alpha=-group['lr'] * r_t)
                 else:
                     # Unadapted momentum
-                    p.data.add_(-group['lr'], exp_avg / bias_correction1)
+                    p.data.add_(exp_avg / bias_correction1, alpha=-group['lr'])
 
         return loss
