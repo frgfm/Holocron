@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.wrapper &mdash; holocron 0.1.2a0+cf3f5fc-git documentation</title>
+  <title>holocron.optim.wrapper &mdash; holocron 0.1.2a0+f2ff704-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.2a0+cf3f5fc
+                0.1.2a0+f2ff704
               </div>
             
           
@@ -333,7 +333,7 @@
             <span class="k">for</span> <span class="n">fast_p</span><span class="p">,</span> <span class="n">slow_p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fast_group</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">],</span> <span class="n">slow_group</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]):</span>
                 <span class="c1"># Outer update</span>
                 <span class="k">if</span> <span class="n">sync_rate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">sync_rate</span><span class="p">,</span> <span class="n">fast_p</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">fast_p</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">sync_rate</span><span class="p">)</span>
                 <span class="c1"># Synchronize fast and slow params</span>
                 <span class="n">fast_p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
 
@@ -479,7 +479,7 @@
             <span class="k">for</span> <span class="n">fast_p</span><span class="p">,</span> <span class="n">slow_p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fast_group</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">],</span> <span class="n">slow_group</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]):</span>
                 <span class="c1"># Outer update</span>
                 <span class="k">if</span> <span class="n">sync_rate</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">sync_rate</span><span class="p">,</span> <span class="n">fast_p</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">fast_p</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">sync_rate</span><span class="p">)</span>
                 <span class="c1"># Synchronize fast and slow params</span>
                 <span class="n">fast_p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">slow_p</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
 </pre></div>
