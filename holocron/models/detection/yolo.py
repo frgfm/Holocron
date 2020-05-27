@@ -46,7 +46,7 @@ class _YOLO(nn.Module):
             dict: dictionary of losses
         """
 
-        b, h, w, num_anchors = pred_o.shape
+        b, h, w, num_anchors, num_classes = pred_scores.shape
         # Initialize losses
         objectness_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
         bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
@@ -75,7 +75,7 @@ class _YOLO(nn.Module):
                 box_idxs = iou_max.indices
                 # Keep IoU for loss computation
                 selection_iou = iou_max.values
-                # Updated anchor box matching
+                # Update anchor box matching
                 box_selection = torch.zeros((h * w, num_anchors), dtype=torch.bool)
                 box_selection[cell_idxs, box_idxs] = True
                 is_matched = torch.arange(h * w * num_anchors).view(-1, num_anchors)[cell_idxs, box_idxs]
@@ -93,9 +93,8 @@ class _YOLO(nn.Module):
             if is_matched.shape[0] > 0:
                 # Get prediction assignment
                 selection_o = pred_o.view(b, -1)[idx, is_matched]
-                selected_scores = pred_scores.reshape(b, h * w * num_anchors, -1)[idx, is_matched]
-                selected_scores = selected_scores.view(-1, pred_scores.shape[-1])
-                selected_boxes = pred_boxes.view(b, h * w * num_anchors, -1)[idx, is_matched].view(-1, 4)
+                selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, is_matched].view(-1, num_classes)
+                selected_boxes = pred_boxes.view(b, -1, 4)[idx, is_matched].view(-1, 4)
                 # Convert GT --> xc, yc, w, h
                 gt_wh = gt_boxes[idx][:, 2:] - gt_boxes[idx][:, :2]
                 gt_centers = (gt_boxes[idx][:, 2:] + gt_boxes[idx][:, :2]) / 2
