@@ -126,7 +126,7 @@ class Lookahead(Optimizer):
             for fast_p, slow_p in zip(fast_group['params'], slow_group['params']):
                 # Outer update
                 if sync_rate > 0:
-                    slow_p.data.add_(sync_rate, fast_p.data - slow_p.data)
+                    slow_p.data.add_(fast_p.data - slow_p.data, alpha=sync_rate)
                 # Synchronize fast and slow params
                 fast_p.data.copy_(slow_p.data)
 
@@ -272,6 +272,6 @@ class Scout(Optimizer):
             for fast_p, slow_p in zip(fast_group['params'], slow_group['params']):
                 # Outer update
                 if sync_rate > 0:
-                    slow_p.data.add_(sync_rate, fast_p.data - slow_p.data)
+                    slow_p.data.add_(fast_p.data - slow_p.data, alpha=sync_rate)
                 # Synchronize fast and slow params
                 fast_p.data.copy_(slow_p.data)
