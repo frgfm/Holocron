@@ -94,8 +94,9 @@ def assign_iou(gt_boxes, pred_boxes, iou_threshold=0.5):
         return gt_indices, pred_indices
 
 
-def evaluate(model, data_loader, device):
+def evaluate(model, data_loader, device, iou_threshold=0.5):
     model.eval()
+    loc_assigns = 0
     correct, clf_error, loc_fn, loc_fp, nb_boxes = 0, 0, 0, 0, 0
     with torch.no_grad():
         for x, target in data_loader:
@@ -105,7 +106,8 @@ def evaluate(model, data_loader, device):
             for dets, t in zip(detections, target):
                 if t['boxes'].shape[0] > 0 and dets['boxes'].shape[0] > 0:
                     t = {k: v.to(device) for k, v in t.items()}
-                    gt_indices, pred_indices = assign_iou(t['boxes'], dets['boxes'])
+                    gt_indices, pred_indices = assign_iou(t['boxes'], dets['boxes'], iou_threshold)
+                    loc_assigns += len(gt_indices)
                     _correct = (t['labels'][gt_indices] == dets['labels'][pred_indices]).sum().item()
                 else:
                     gt_indices, pred_indices = [], []
@@ -116,9 +118,14 @@ def evaluate(model, data_loader, device):
                 loc_fp += dets['boxes'].shape[0] - len(pred_indices)
             nb_boxes += sum(t['boxes'].shape[0] for t in target)
 
-    recall = correct / nb_boxes if nb_boxes > 0 else 0.
-    precision = correct / (nb_boxes - loc_fn + loc_fp) if (nb_boxes - loc_fn + loc_fp) > 0 else 0.
-    return recall, precision
+    nb_preds = nb_boxes - loc_fn + loc_fp
+    # Localization
+    loc_err = 1 - 2 * loc_assigns / (nb_preds + nb_boxes) if nb_preds + nb_boxes > 0 else 1.
+    # Classification
+    clf_err = 1 - correct / loc_assigns if loc_assigns > 0 else 1.
+    # End-to-end
+    det_err = 1 - 2 * correct / (nb_preds + nb_boxes) if nb_preds + nb_boxes > 0 else 1.
+    return loc_err, clf_err, det_err
 
 
 def load_data(datadir):
@@ -253,7 +260,7 @@ def main(args):
         optimizer.load_state_dict(checkpoint['optimizer'])
         lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
         args.start_epoch = checkpoint['epoch'] + 1
-        best_error = checkpoint['f1_error']
+        best_error = checkpoint['det_err']
 
     if args.test_only:
         recall, precision = evaluate(model, val_loader, device=device)
@@ -265,23 +272,22 @@ def main(args):
     mb = master_bar(range(args.start_epoch, args.epochs))
     for epoch in mb:
         train_one_epoch(model, optimizer, lr_scheduler, train_loader, device, mb)
-        recall, precision = evaluate(model, val_loader, device=device)
+        loc_err, clf_err, det_err = evaluate(model, val_loader, device=device)
         mb.main_bar.comment = f"Epoch {args.start_epoch+epoch+1}/{args.start_epoch+args.epochs}"
         mb.write(f"Epoch {args.start_epoch+epoch+1}/{args.start_epoch+args.epochs} - "
-                 f"Recall: {recall:.2%} | Precision: {precision:.2%}")
-        f1_error = 1 - recall * precision / (recall + precision)
+                 f"Loc error: {loc_err:.2%} | Clf error: {clf_err:.2%} | Det error: {det_err:.2%}")
         if args.sched == 'plateau':
-            lr_scheduler.step(f1_error)
-        if f1_error < best_error:
+            lr_scheduler.step(det_err)
+        if det_err < best_error:
             if args.output_dir:
-                print(f"Validation loss decreased {best_error:.4} --> {f1_error:.4}: saving state...")
+                print(f"Validation loss decreased {best_error:.4} --> {det_err:.4}: saving state...")
                 torch.save(dict(model=model.state_dict(),
                                 optimizer=optimizer.state_dict(),
                                 lr_scheduler=lr_scheduler.state_dict(),
                                 epoch=epoch,
-                                f1_error=f1_error),
+                                det_err=det_err),
                            Path(args.output_dir, f"{args.checkpoint}_best_state.pth"))
-            best_error = f1_error
+            best_error = det_err
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
