@@ -55,7 +55,7 @@ def train_one_batch(model, x, target, optimizer, criterion=None, device=None):
     return batch_loss.item()
 
 
-def train_one_epoch(model, criterion, optimizer, scheduler, data_loader, device, master_bar):
+def train_one_epoch(model, optimizer, scheduler, data_loader, device, master_bar):
     model.train()
 
     for x, target in progress_bar(data_loader, parent=master_bar):
