@@ -4,7 +4,7 @@
 Misc utilities
 """
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import torch
 
 __all__ = ['lr_finder']
