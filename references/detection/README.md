@@ -23,22 +23,30 @@ python train.py VOC2012 --model yolov2 --lr 1e-5 -b 32 -j 16 --epochs 20 --opt r
 
 ### PASCAL VOC 2012
 
-Performances are evaluated on the validation set of the dataset. Since the mAP does not allow easy interpretation by humans, the selected performance metrics are the recall and precision at IoU 0.5. A prediction is considered as correct if:
+Performances are evaluated on the validation set of the dataset. Since the mAP does not allow easy interpretation by humans, the performance metrics have been changed here. 
 
-- it is the best acceptable localization candidate (highest IoU among predictions with the GT, and IoU >= 0.5)
-- the top predicted probabilities is for the class label of the matched ground truth object.
+A prediction is considered as correct if it checks two criteria:
+
+- Localization: it is the best acceptable localization candidate (highest IoU among predictions with the GT, and IoU >= 0.5)
+- Classification: the top predicted probabilities is for the class label of the matched ground truth object.
+
+Then we define:
+
+- **Localization error rate**: with loc_recall being the matching rate of ground truth boxes, and loc_precision being the matching rate of predicted boxes, we define the localization error as 1 - (harmonic mean of localization loc_recall & loc_precision)
+- **Classification error rate**: classification error rate of matched predictions.
+- **Detection error rate**: with det_recall being the correctness rate of ground truth boxes, and det_precision being the correctness rate of predicted boxes, we define the localization error as 1 - (harmonic mean of localization det_recall & det_precision)
 
 Here, the recall being the ratio of correctly predicted ground truth predictions by the total number of ground truth objects, and the precision being the ratio of correctly predicted ground truth predictions by the total number of predicted boxes.
 
-| Size (px) | Epochs | args                                                         | Recall@.5 | Precision@.5 | # Runs |
-| --------- | ------ | ------------------------------------------------------------ | --------- | ------------ | ------ |
-| 416       | 80     | VOC2012 --model yolov2 --lr 1e-4 -b 32 -j 16 --epochs 80 --opt radam --sched onecycle | 13.82%    | 2.56%        | 1      |
+| Size (px) | Epochs | args                                                         | Loc@.5 | Clf@.5 | Det@.5 | # Runs |
+| --------- | ------ | ------------------------------------------------------------ | ------ | ------ | ------ | ------ |
+| 416       | 80     | VOC2012 --model yolov2 --lr 5e-5 -b 32 -j 16 --epochs 80 --opt radam --sched onecycle |        |        |        | 1      |
 
 
 
 ## Model zoo
 
-| Model  | Recall@.5 | Precision@.5 | Param # | MACs | Interpolation | Image size |
-| ------ | --------- | ------------ | ------- | ---- | ------------- | ---------- |
-| yolov2 | 13.82%    | 2.56%        | 67.14M  |      | bilinear      | 416        |
+| Model  | Loc@.5 | Clf@.5 | Det@.5 | Param # | MACs | Interpolation | Image size |
+| ------ | ------ | ------ | ------ | ------- | ---- | ------------- | ---------- |
+| yolov2 |        |        |        | 67.14M  |      | bilinear      | 416        |
 
