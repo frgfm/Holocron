@@ -151,7 +151,8 @@ class _YOLO(nn.Module):
                 coords = b_coords[idx, b_o[idx] >= 0.5]
                 scores = b_scores[idx, b_o[idx] >= 0.5].max(dim=-1)
                 labels = scores.indices
-                scores = scores.values
+                # Multiply by the objectness
+                scores = scores.values * b_o[idx, b_o[idx] >= 0.5]
 
                 # NMS
                 # Switch to xmin, ymin, xmax, ymax coords
