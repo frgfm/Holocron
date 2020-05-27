@@ -1,0 +1,112 @@
+# -*- coding: utf-8 -*-
+
+'''
+Transformation for object detection
+'''
+
+import random
+import torch
+from torchvision.transforms import transforms
+from torchvision.transforms import functional as F
+
+
+class VOCTargetTransform:
+    def __init__(self, classes):
+        self.class_map = {label: idx for idx, label in enumerate(classes)}
+
+    def __call__(self, image, target):
+        # Format boxes properly
+        boxes = torch.tensor([[int(obj['bndbox']['xmin']), int(obj['bndbox']['ymin']),
+                               int(obj['bndbox']['xmax']), int(obj['bndbox']['ymax'])]
+                              for obj in target['annotation']['object']], dtype=torch.float32)
+        # Encode class labels
+        labels = torch.tensor([self.class_map[obj['name']] for obj in target['annotation']['object']], dtype=torch.long)
+
+        return image, dict(boxes=boxes, labels=labels)
+
+
+class Compose(transforms.Compose):
+    def __call__(self, image, target):
+        for t in self.transforms:
+            image, target = t(image, target)
+        return image, target
+
+
+class ImageTransform(object):
+    def __init__(self, transform):
+        self.transform = transform
+
+    def __call__(self, image, target):
+        image = self.transform.__call__(image)
+        return image, target
+
+    def __repr__(self):
+        return self.transform.__repr__()
+
+
+class CenterCrop(transforms.CenterCrop):
+    def __call__(self, image, target):
+        image = F.center_crop(img, self.size)
+        x = int(image.size[0] / 2 - self.size[0] / 2)
+        y = int(image.size[1] / 2 - self.size[1] / 2)
+        # Crop
+        target['boxes'][:, [0, 2]] = target['boxes'][:, [0, 2]].clamp_(x, x + self.size[0])
+        target['boxes'][:, [1, 3]] = target['boxes'][:, [1, 3]].clamp_(y, y + self.size[1])
+        target['boxes'][:, [0, 2]] -= x
+        target['boxes'][:, [1, 3]] -= y
+
+        return image, target
+
+
+class Resize(transforms.Resize):
+    def __call__(self, image, target):
+        if isinstance(self.size, int):
+            if image.size[1] < image.size[0]:
+                target['boxes'] *= self.size / image.size[1]
+            else:
+                target['boxes'] *= self.size / image.size[0]
+        elif isinstance(self.size, tuple):
+            target['boxes'][:, [0, 2]] *= self.size[0] / image.size[0]
+            target['boxes'][:, [1, 3]] *= self.size[1] / image.size[1]
+        return F.resize(image, self.size, self.interpolation), target
+
+
+class RandomResizedCrop(transforms.RandomResizedCrop):
+    def __call__(self, image, target):
+        i, j, h, w = self.get_params(image, self.scale, self.ratio)
+        image = F.resized_crop(image, i, j, h, w, self.size, self.interpolation)
+        # Crop
+        target['boxes'][:, [0, 2]] = target['boxes'][:, [0, 2]].clamp_(j, j + w)
+        target['boxes'][:, [1, 3]] = target['boxes'][:, [1, 3]].clamp_(i, i + h)
+        # Reset origin
+        target['boxes'][:, [0, 2]] -= j
+        target['boxes'][:, [1, 3]] -= i
+        # Remove targets that are out of crop
+        target_filter = (target['boxes'][:, 0] != target['boxes'][:, 2]) & \
+                        (target['boxes'][:, 1] != target['boxes'][:, 3])
+        target['boxes'] = target['boxes'][target_filter]
+        target['labels'] = target['labels'][target_filter]
+        # Resize
+        target['boxes'][:, [0, 2]] *= self.size[0] / w
+        target['boxes'][:, [1, 3]] *= self.size[1] / h
+
+        return image, target
+
+
+def convert_to_relative(image, target):
+
+    target['boxes'][:, [0, 2]] /= image.size[0]
+    target['boxes'][:, [1, 3]] /= image.size[1]
+
+    return image, target
+
+
+class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
+    def __call__(self, image, target):
+        if random.random() < self.p:
+            height, width = image.size
+            image = F.hflip(img)
+            target['boxes'][:, [-4, -2]] = width - target['boxes'][:, [-4, -2]]
+            # Reorder them correctly
+            target['boxes'][:, -4:] = target['boxes'][:, [-2, -3, -4, -1]]
+        return image, target
