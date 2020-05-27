@@ -432,7 +432,60 @@ def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
 
 def yolov1(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     """YOLO model from
-    `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
+    `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_.
+
+    YOLO's particularity is to make predictions in a grid (same size as last feature map). For each grid cell,
+    the model predicts classification scores and a fixed number of boxes (default: 2). Each box in the cell gets
+    5 predictions: an objectness score, and 4 coordinates. The 4 coordinates are composed of: the 2-D coordinates of
+    the predicted box center (relative to the cell), and the width and height of the predicted box (relative to
+    the whole image).
+
+    For training, YOLO uses a multi-part loss whose components are computed by:
+
+    .. math::
+        \\mathcal{L}_{coords} = \\sum\\limits_{i=0}^{S^2} \\sum\\limits_{j=0}^{B}
+        \\mathbb{1}_{ij}^{obj} \\Big[
+        (x_{ij} - \\hat{x}_{ij})² + (y_{ij} - \\hat{y}_{ij})² +
+        (\\sqrt{w_{ij}} - \\sqrt{\\hat{w}_{ij}})² + (\\sqrt{h_{ij}} - \\sqrt{\\hat{h}_{ij}})²
+        \\Big]
+
+    where :math:`S` is size of the output feature map (7 for an input size :math:`(448, 448)`),
+    :math:`B` is the number of anchor boxes per grid cell (default: 2),
+    :math:`\\mathbb{1}_{ij}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell and among the
+    anchor boxes of that cell, has the highest IoU with the j-th box else 0,
+    :math:`(x_{ij}, y_{ij}, w_{ij}, h_{ij})` are the coordinates of the ground truth assigned to
+    the j-th anchor box of the i-th grid cell,
+    and :math:`(\\hat{x}_{ij}, \\hat{y}_{ij}, \\hat{w}_{ij}, \\hat{h}_{ij})` are the coordinate predictions
+    for the j-th anchor box of the i-th grid cell.
+
+    .. math::
+        \\mathcal{L}_{objectness} = \\sum\\limits_{i=0}^{S^2} \\sum\\limits_{j=0}^{B}
+        \\Big[ \\mathbb{1}_{ij}^{obj} \\Big(C_{ij} - \\hat{C}_{ij} \\Big)^2
+        + \\lambda_{noobj} \\mathbb{1}_{ij}^{noobj} \\Big(C_{ij} - \\hat{C}_{ij} \\Big)^2
+        \\Big]
+
+    where :math:`\\lambda_{noobj}` is a positive coefficient (default: 0.5),
+    :math:`\\mathbb{1}_{ij}^{noobj} = 1 - \\mathbb{1}_{ij}^{obj}`,
+    :math:`C_{ij}` equals the Intersection Over Union between the j-th anchor box in the i-th grid cell and its
+    matched ground truth box if that box is matched with a ground truth else 0,
+    and :math:`\\hat{C}_{ij}` is the objectness score of the j-th anchor box in the i-th grid cell..
+
+    .. math::
+        \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}
+        \\mathbb{1}_{i}^{obj} \\sum\\limits_{c \\in classes}
+        (p_i(c) - \\hat{p}_i(c))^2
+
+    where :math:`\\mathbb{1}_{i}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell else 0,
+    :math:`p_i(c)` equals 1 if the assigned ground truth to the i-th cell is classified as class :math:`c`,
+    and :math:`\\hat{p}_i(c)` is the predicted probability of class :math:`c` in the i-th cell.
+
+    And the full loss is given by:
+
+    .. math::
+        \\mathcal{L}_{YOLOv1} = \\lambda_{coords} \\cdot \\mathcal{L}_{coords} +
+        \\mathcal{L}_{objectness} + \\mathcal{L}_{classification}
+
+    where :math:`\\lambda_{coords}` is a positive coefficient (default: 5).
 
     Args:
         pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
@@ -448,7 +501,26 @@ def yolov1(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
 
 def yolov2(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     """YOLOv2 model from
-    `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
+    `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_.
+
+    YOLOv2 improves upon YOLO by raising the number of boxes predicted by grid cell (default: 5), introducing
+    bounding box priors and predicting class scores for each anchor box in the grid cell.
+
+    For training, YOLOv2 uses the same multi-part loss as YOLO apart from its classification loss:
+
+    .. math::
+        \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}
+        \\mathbb{1}_{ij}^{obj} \\sum\\limits_{c \\in classes}
+        (p_i(c) - \\hat{p}_i(c))^2
+
+    where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),
+    :math:`B` is the number of anchor boxes per grid cell (default: 5),
+    :math:`\\mathbb{1}_{ij}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell and among the
+    anchor boxes of that cell, has the highest IoU with the j-th box else 0,
+    :math:`p_{ij}(c)` equals 1 if the assigned ground truth to the j-th anchor box of the i-th cell is classified
+    as class :math:`c`,
+    and :math:`\\hat{p}_{ij}(c)` is the predicted probability of class :math:`c` for the j-th anchor box
+    in the i-th cell.
 
     Args:
         pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
