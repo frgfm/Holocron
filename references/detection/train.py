@@ -162,11 +162,11 @@ def load_data(datadir):
     return dataset, dataset_test, train_sampler, test_sampler
 
 
-def plot_lr_finder(train_batch, model, data_loader, optimizer, criterion, device,
+def plot_lr_finder(train_batch, model, data_loader, optimizer, device,
                    start_lr=1e-7, end_lr=1, loss_margin=1e-2):
 
     lrs, losses = holocron.utils.lr_finder(train_batch, model, data_loader,
-                                           optimizer, criterion, device, start_lr=start_lr, end_lr=end_lr,
+                                           optimizer, None, device, start_lr=start_lr, end_lr=end_lr,
                                            stop_threshold=10, beta=0.95)
     # Plot Loss vs LR
     plt.plot(lrs[10:-5], losses[10:-5])
