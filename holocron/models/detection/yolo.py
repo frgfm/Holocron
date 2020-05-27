@@ -119,7 +119,8 @@ class _YOLO(nn.Module):
                 # Classification
                 clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
 
-        return dict(objectness_loss=(obj_loss + self.lambda_noobj * noobj_loss) / pred_boxes.shape[0],
+        return dict(obj_loss=obj_loss / pred_boxes.shape[0],
+                    noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
                     bbox_loss=self.lambda_coords * bbox_loss / pred_boxes.shape[0],
                     clf_loss=clf_loss / pred_boxes.shape[0])
 
