@@ -37,16 +37,17 @@ class Lamb(Optimizer):
         if self.scale_clip is None:
             self.scale_clip = (0, 10)
 
+    @torch.no_grad()
     def step(self, closure=None):
         """Performs a single optimization step.
 
         Arguments:
-            closure (callable, optional): A closure that reevaluates the model
-                and returns the loss.
+            closure (callable, optional): A closure that reevaluates the model and returns the loss.
         """
         loss = None
         if closure is not None:
-            loss = closure()
+            with torch.enable_grad():
+                loss = closure()
 
         for group in self.param_groups:
             for p in group['params']:

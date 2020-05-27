@@ -42,6 +42,7 @@ class RaLars(Optimizer):
         if self.scale_clip is None:
             self.scale_clip = (0, 10)
 
+    @torch.no_grad()
     def step(self, closure=None):
         """Performs a single optimization step.
 
@@ -50,7 +51,8 @@ class RaLars(Optimizer):
         """
         loss = None
         if closure is not None:
-            loss = closure()
+            with torch.enable_grad():
+                loss = closure()
 
         for group in self.param_groups:
 
