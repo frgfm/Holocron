@@ -8,7 +8,6 @@ Training script for object detection
 import math
 import datetime
 import os
-import sys
 import time
 from pathlib import Path
 from tqdm import tqdm
@@ -175,7 +174,6 @@ def plot_lr_finder(train_batch, model, data_loader, optimizer, device,
     plt.ylabel('Training loss')
     plt.grid(True, linestyle='--', axis='x')
     plt.show()
-    sys.exit()
 
 
 def plot_samples(images, targets):
