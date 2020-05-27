@@ -90,7 +90,7 @@ class _YOLO(nn.Module):
                 selection_o = pred_o.view(b, -1)[idx, not_matched]
                 # Update loss
                 objectness_loss[not_matched] += 0.5 * F.mse_loss(selection_o, torch.zeros_like(selection_o),
-                                                                 reduction='none')
+                                                                 reduction='none') / num_anchors
 
             # Update loss for boxes with an object
             if is_matched.shape[0] > 0:
