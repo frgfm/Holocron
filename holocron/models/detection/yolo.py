@@ -45,15 +45,14 @@ class _YOLO(nn.Module):
             dict: dictionary of losses
         """
 
-        b, h, w, a, num_classes = pred_scores.shape
+        b, h, w, _, num_classes = pred_scores.shape
         # Pred scores of YOLOv1 do not have the anchor dimension properly sized (only for broadcasting)
         num_anchors = pred_boxes.shape[3]
-        cell_loss = a == 1
         # Initialize losses
-        obj_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
-        noobj_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
-        bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
-        clf_loss = torch.zeros(w * h if cell_loss else w * h * num_anchors, device=pred_boxes.device)
+        obj_loss = torch.zeros(1, device=pred_boxes.device)
+        noobj_loss = torch.zeros(1, device=pred_boxes.device)
+        bbox_loss = torch.zeros(1, device=pred_boxes.device)
+        clf_loss = torch.zeros(1, device=pred_boxes.device)
 
         # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
         pred_xyxy = torch.zeros_like(pred_boxes)
@@ -88,14 +87,14 @@ class _YOLO(nn.Module):
             if not_matched.shape[0] > 0:
                 # SSE between objectness and IoU
                 selection_o = pred_o.view(b, -1)[idx, not_matched]
-                # Update loss
-                noobj_loss[not_matched] += selection_o ** 2
+                # Update loss (target = 0)
+                noobj_loss += selection_o.pow(2).sum()
 
             # Update loss for boxes with an object
             if is_matched.shape[0] > 0:
                 # Get prediction assignment
                 selection_o = pred_o.view(b, -1)[idx, is_matched]
-                pred_filter = cell_idxs if cell_loss else is_matched
+                pred_filter = cell_idxs if (pred_scores[3] == 1) else is_matched
                 selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, pred_filter].view(-1, num_classes)
                 selected_boxes = pred_boxes.view(b, -1, 4)[idx, is_matched].view(-1, 4)
                 # Convert GT --> xc, yc, w, h
@@ -113,18 +112,16 @@ class _YOLO(nn.Module):
 
                 # Localization
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, :2], gt_centers,
-                                                    reduction='none').sum(dim=-1)
-                bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
-                                                    reduction='none').sum(dim=-1)
+                bbox_loss += F.mse_loss(selected_boxes[:, :2], gt_centers, reduction='sum')
+                bbox_loss += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(), reduction='sum')
                 # Objectness
-                obj_loss[is_matched] += F.mse_loss(selection_o, selection_iou, reduction='none')
+                obj_loss += F.mse_loss(selection_o, selection_iou, reduction='sum')
                 # Classification
-                clf_loss[pred_filter] += F.mse_loss(selected_scores, gt_probs, reduction='none').sum(dim=-1)
+                clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
 
-        return dict(objectness_loss=(obj_loss + self.lambda_noobj * noobj_loss).sum() / pred_boxes.shape[0],
-                    bbox_loss=self.lambda_coords * bbox_loss.sum() / pred_boxes.shape[0],
-                    clf_loss=clf_loss.sum() / pred_boxes.shape[0])
+        return dict(objectness_loss=(obj_loss + self.lambda_noobj * noobj_loss) / pred_boxes.shape[0],
+                    bbox_loss=self.lambda_coords * bbox_loss / pred_boxes.shape[0],
+                    clf_loss=clf_loss / pred_boxes.shape[0])
 
     @staticmethod
     def post_process(b_coords, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
