@@ -30,8 +30,7 @@ default_cfgs = {
 
 
 class _YOLO(nn.Module):
-    @staticmethod
-    def _compute_losses(pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
+    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
@@ -51,7 +50,8 @@ class _YOLO(nn.Module):
         num_anchors = pred_boxes.shape[3]
         cell_loss = a == 1
         # Initialize losses
-        objectness_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
+        obj_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
+        noobj_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
         bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
         clf_loss = torch.zeros(w * h if cell_loss else w * h * num_anchors, device=pred_boxes.device)
 
@@ -89,8 +89,7 @@ class _YOLO(nn.Module):
                 # SSE between objectness and IoU
                 selection_o = pred_o.view(b, -1)[idx, not_matched]
                 # Update loss
-                objectness_loss[not_matched] += 0.5 * F.mse_loss(selection_o, torch.zeros_like(selection_o),
-                                                                 reduction='none') / num_anchors
+                noobj_loss[not_matched] += selection_o ** 2
 
             # Update loss for boxes with an object
             if is_matched.shape[0] > 0:
@@ -119,12 +118,12 @@ class _YOLO(nn.Module):
                 bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
                                                     reduction='none').sum(dim=-1)
                 # Objectness
-                objectness_loss[is_matched] += F.mse_loss(selection_o, selection_iou, reduction='none')
+                obj_loss[is_matched] += F.mse_loss(selection_o, selection_iou, reduction='none')
                 # Classification
                 clf_loss[pred_filter] += F.mse_loss(selected_scores, gt_probs, reduction='none').sum(dim=-1)
 
-        return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
-                    bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
+        return dict(objectness_loss=(obj_loss + self.lambda_noobj * noobj_loss).sum() / pred_boxes.shape[0],
+                    bbox_loss=self.lambda_coords * bbox_loss.sum() / pred_boxes.shape[0],
                     clf_loss=clf_loss.sum() / pred_boxes.shape[0])
 
     @staticmethod
@@ -179,7 +178,7 @@ class _YOLO(nn.Module):
 
 class YOLOv1(_YOLO):
 
-    def __init__(self, layout, num_classes=20, num_anchors=2):
+    def __init__(self, layout, num_classes=20, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.):
 
         super().__init__()
 
@@ -198,6 +197,9 @@ class YOLOv1(_YOLO):
             nn.Linear(4096, 7 ** 2 * (num_anchors * 5 + num_classes)))
         self.num_anchors = num_anchors
         self.num_classes = num_classes
+        # Loss coefficients
+        self.lambda_noobj = lambda_noobj
+        self.lambda_coords = lambda_coords
 
         init_module(self, 'leaky_relu')
 
@@ -282,7 +284,7 @@ class YOLOv1(_YOLO):
 
 class YOLOv2(_YOLO):
 
-    def __init__(self, layout, num_classes=20, anchors=None):
+    def __init__(self, layout, num_classes=20, anchors=None, lambda_noobj=0.5, lambda_coords=5.):
 
         super().__init__()
 
@@ -313,6 +315,10 @@ class YOLOv2(_YOLO):
 
         # Register losses
         self.register_buffer('anchors', anchors)
+
+        # Loss coefficients
+        self.lambda_noobj = lambda_noobj
+        self.lambda_coords = lambda_coords
 
         init_module(self, 'leaky_relu')
 
