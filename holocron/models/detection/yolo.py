@@ -94,7 +94,7 @@ class _YOLO(nn.Module):
             if is_matched.shape[0] > 0:
                 # Get prediction assignment
                 selection_o = pred_o.view(b, -1)[idx, is_matched]
-                pred_filter = cell_idxs if (pred_scores[3] == 1) else is_matched
+                pred_filter = cell_idxs if (pred_scores.shape[3] == 1) else is_matched
                 selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, pred_filter].view(-1, num_classes)
                 selected_boxes = pred_boxes.view(b, -1, 4)[idx, is_matched].view(-1, 4)
                 # Convert GT --> xc, yc, w, h
