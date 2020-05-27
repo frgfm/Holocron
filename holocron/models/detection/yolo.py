@@ -22,75 +22,110 @@ __all__ = ['YOLOv1', 'YOLOv2', 'yolov1', 'yolov2']
 
 
 default_cfgs = {
-    'yolov1': {'arch': 'YOLOv1', 'layout': dark_cfgs['darknet24']['layout'],
+    'yolov1': {'arch': 'YOLOv1', 'backbone': dark_cfgs['darknet24'],
                'url': None},
-    'yolov2': {'arch': 'YOLOv2', 'layout': dark_cfgs['darknet19']['layout'],
+    'yolov2': {'arch': 'YOLOv2', 'backbone': dark_cfgs['darknet19'],
                'url': None},
 }
 
 
 class _YOLO(nn.Module):
-
-    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
+    @staticmethod
+    def _compute_losses(pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
         Args:
-            pred_boxes (torch.Tensor[N, H * W, num_anchors, 4]): relative coordinates in format (x, y, w, h)
-            pred_o (torch.Tensor[N, H * W, num_anchors]): objectness scores
-            pred_scores (torch.Tensor[N, H * W, num_anchors, num_classes]): classification scores
-            gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes
+            pred_boxes (torch.Tensor[N, H, W, num_anchors, 4]): relative coordinates in format (xc, yc, w, h)
+            pred_o (torch.Tensor[N, H, W, num_anchors]): objectness scores
+            pred_scores (torch.Tensor[N, H, W, num_anchors, num_classes]): classification probabilities
+            gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes in format (xmin, ymin, xmax, ymax)
             gt_labels (list<torch.Tensor>): ground truth labels
 
         Returns:
             dict: dictionary of losses
         """
 
-        # Reset losses
-        objectness_loss = torch.zeros(1).to(pred_boxes.device)
-        bbox_loss = torch.zeros(1).to(pred_boxes.device)
-        clf_loss = torch.zeros(1).to(pred_boxes.device)
-        # Convert from x, y, w, h to xmin, ymin, xmax, ymax
-        pred_boxes[..., 2:] += pred_boxes[..., :2]
+        b, h, w, a, num_classes = pred_scores.shape
+        # Pred scores of YOLOv1 do not have the anchor dimension properly sized (only for broadcasting)
+        num_anchors = pred_boxes.shape[3]
+        cell_loss = a == 1
+        # Initialize losses
+        objectness_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
+        bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
+        clf_loss = torch.zeros(w * h if cell_loss else w * h * num_anchors, device=pred_boxes.device)
+
+        # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
+        pred_xyxy = torch.zeros_like(pred_boxes)
+        pred_wh = pred_boxes[..., 2:]
+        pred_xyxy[..., 2:] = pred_boxes[..., :2] + pred_wh / 2
+        pred_xyxy[..., :2] = pred_boxes[..., :2] - pred_wh / 2
+
         # B * cells * predictors * info
-        for idx in range(pred_boxes.shape[0]):
+        for idx in range(b):
 
-            # cells * predictors * num_gt
-            iou_mat = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[idx])
-            # Assign in each cell the best box predictors
-            # Compute max IoU for each predictor, take the highest predictor in each cell
-            cell_selection = iou_mat.view(pred_boxes.shape[1], -1).max(dim=1).values > 0
-            if torch.any(cell_selection):
-                # S * predictors * num_gt
-                iou_mat = iou_mat.view(pred_boxes.shape[1], self.num_anchors, -1)[cell_selection]
-                anchor_selection = iou_mat.max(dim=2).values.argmax(dim=1)
-                selection = [idx * self.num_anchors + anchor.item() for idx, anchor in enumerate(anchor_selection)]
-                # Predictor selection
-                selected_pred_boxes = pred_boxes[idx, cell_selection].view(-1, 4)[selection]
-                selected_o = pred_o[idx, cell_selection].view(-1)[selection]
-                selected_scores = pred_scores[idx, cell_selection].view(-1, self.num_classes)[selection]
-                # GT selection
-                max_iou = iou_mat.view(-1, gt_boxes[idx].shape[0])[selection].max(dim=1)
-                selected_gt_boxes = gt_boxes[idx][max_iou.indices]
-                select_gt_labels = gt_labels[idx][max_iou.indices]
+            # Match the anchor boxes
+            is_matched = torch.arange(0)
+            not_matched = torch.arange(h * w * num_anchors)
+            if gt_boxes[idx].shape[0] > 0:
+                # Locate the cell of each GT
+                gt_centers = (torch.stack((gt_boxes[idx][:, [0, 2]].sum(dim=-1) * w,
+                                           gt_boxes[idx][:, [1, 3]].sum(dim=-1) * h), dim=1) / 2).to(dtype=torch.long)
+                cell_idxs = gt_centers[:, 1] * w + gt_centers[:, 0]
+                # Assign the best anchor in each corresponding cell
+                iou_mat = box_iou(pred_xyxy[idx].view(-1, 4), gt_boxes[idx]).view(h * w, num_anchors, -1)
+                iou_max = iou_mat[cell_idxs, :, range(gt_boxes[idx].shape[0])].max(dim=1)
+                box_idxs = iou_max.indices
+                # Keep IoU for loss computation
+                selection_iou = iou_max.values
+                # Update anchor box matching
+                box_selection = torch.zeros((h * w, num_anchors), dtype=torch.bool)
+                box_selection[cell_idxs, box_idxs] = True
+                is_matched = torch.arange(h * w * num_anchors).view(-1, num_anchors)[cell_idxs, box_idxs]
+                not_matched = not_matched[box_selection.view(-1)]
 
-                # Objectness loss for cells where any object was detected
-                objectness_loss += F.mse_loss(selected_o, max_iou.values, reduction='sum')
-                # Regression loss
+            # Update losses for boxes without any object
+            if not_matched.shape[0] > 0:
+                # SSE between objectness and IoU
+                selection_o = pred_o.view(b, -1)[idx, not_matched]
+                # Update loss
+                objectness_loss[not_matched] += 0.5 * F.mse_loss(selection_o, torch.zeros_like(selection_o),
+                                                                 reduction='none')
+
+            # Update loss for boxes with an object
+            if is_matched.shape[0] > 0:
+                # Get prediction assignment
+                selection_o = pred_o.view(b, -1)[idx, is_matched]
+                pred_filter = cell_idxs if cell_loss else is_matched
+                selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, pred_filter].view(-1, num_classes)
+                selected_boxes = pred_boxes.view(b, -1, 4)[idx, is_matched].view(-1, 4)
+                # Convert GT --> xc, yc, w, h
+                gt_wh = gt_boxes[idx][:, 2:] - gt_boxes[idx][:, :2]
+                gt_centers = (gt_boxes[idx][:, 2:] + gt_boxes[idx][:, :2]) / 2
+                # Make xy relative to cell
+                gt_centers[:, 0] *= w
+                gt_centers[:, 1] *= h
+                gt_centers -= gt_centers.floor()
+                selected_boxes[:, 0] *= w
+                selected_boxes[:, 1] *= h
+                selected_boxes[:, :2] -= selected_boxes[:, :2].floor()
+                gt_probs = torch.zeros_like(selected_scores)
+                gt_probs[range(gt_labels[idx].shape[0]), gt_labels[idx]] = 1
+
+                # Localization
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                bbox_loss += F.mse_loss(selected_pred_boxes[..., :2], selected_gt_boxes[..., :2], reduction='sum')
-                bbox_loss += F.mse_loss(selected_pred_boxes[..., 2:].sqrt(), selected_gt_boxes[..., 2:].sqrt(),
-                                        reduction='sum')
-                # Classification loss
-                clf_loss += F.cross_entropy(selected_scores, select_gt_labels, reduction='sum')
+                bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, :2], gt_centers,
+                                                    reduction='none').sum(dim=-1)
+                bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
+                                                    reduction='none').sum(dim=-1)
+                # Objectness
+                objectness_loss[is_matched] += F.mse_loss(selection_o, selection_iou, reduction='none')
+                # Classification
+                clf_loss[pred_filter] += F.mse_loss(selected_scores, gt_probs, reduction='none').sum(dim=-1)
 
-            # Objectness loss for cells where no object was detected
-            empty_cell_o = pred_o[idx][~cell_selection].max(dim=1).values
-            objectness_loss += 0.5 * F.mse_loss(empty_cell_o, torch.zeros_like(empty_cell_o), reduction='sum')
-
-        return dict(objectness_loss=objectness_loss,
-                    bbox_loss=bbox_loss,
-                    clf_loss=clf_loss)
+        return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
+                    bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
+                    clf_loss=clf_loss.sum() / pred_boxes.shape[0])
 
     @staticmethod
     def post_process(b_coords, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
@@ -110,9 +145,9 @@ class _YOLO(nn.Module):
         detections = []
         for idx in range(b_coords.shape[0]):
 
-            coords = torch.zeros((0, 4), dtype=torch.float).to(device=b_o.device)
-            scores = torch.zeros(0, dtype=torch.float).to(device=b_o.device)
-            labels = torch.zeros(0, dtype=torch.long).to(device=b_o.device)
+            coords = torch.zeros((0, 4), dtype=torch.float, device=b_o.device)
+            scores = torch.zeros(0, dtype=torch.float, device=b_o.device)
+            labels = torch.zeros(0, dtype=torch.long, device=b_o.device)
 
             # Objectness filter
             if torch.any(b_o[idx] >= 0.5):
@@ -123,7 +158,9 @@ class _YOLO(nn.Module):
 
                 # NMS
                 # Switch to xmin, ymin, xmax, ymax coords
-                coords[..., -2:] += coords[..., :2]
+                wh = coords[..., 2:]
+                coords[..., 2:] = coords[..., :2] + wh / 2
+                coords[..., :2] -= wh / 2
                 coords = coords.clamp_(0, 1)
                 is_kept = nms(coords, scores, iou_threshold=rpn_nms_thresh)
                 coords = coords[is_kept]
@@ -168,7 +205,7 @@ class YOLOv1(_YOLO):
         """Formats convolutional layer output
 
         Args:
-            x (torch.Tensor[N, num_anchors * (5 + num_classes), H, W]): output tensor
+            x (torch.Tensor[N, num_anchors * (5 + num_classes) * H * W]): output tensor
             img_h (int): input image height
             img_w (int): input image width
 
@@ -178,30 +215,28 @@ class YOLOv1(_YOLO):
             torch.Tensor[N, H * W, num_anchors, num_classes]: classification scores
         """
 
-        b, c = x.shape
+        b, _ = x.shape
         h, w = 7, 7
         # B * (H * W * (num_anchors * 5 + num_classes)) --> B * H * W * (num_anchors * 5 + num_classes)
         x = x.view(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
-        b_scores = x[..., -self.num_classes:].view(b, h * w, -1)
+        b_scores = x[..., -self.num_classes:]
         # Repeat for anchors to keep compatibility across YOLO versions
-        b_scores = b_scores.unsqueeze(2).repeat_interleave(self.num_anchors, dim=2)
+        b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
         #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
         x = x[..., :self.num_anchors * 5].view(b, h, w, self.num_anchors, 5)
         # Cell offset
-        c_x = torch.arange(0, w, dtype=torch.float) * img_w / w
-        c_y = torch.arange(0, h, dtype=torch.float) * img_h / h
+        c_x = torch.arange(w, dtype=torch.float, device=x.device)
+        c_y = torch.arange(h, dtype=torch.float, device=x.device)
         # Box coordinates
-        b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)).view(b, -1, self.num_anchors)
-        b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)).view(b, -1, self.num_anchors)
-        # B * H * W * num_anchors * (5 + num_classes) --> B * (H * W) * num_anchors * (5 + num_classes)
-        # x = x.view(b, h * w, self.num_anchors, -1)
-        b_w = torch.sigmoid(x[..., 2]).view(b, -1, self.num_anchors)
-        b_h = torch.sigmoid(x[..., 3]).view(b, -1, self.num_anchors)
-        # B * (H * W) * num_anchors * 4
-        b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=3)
+        b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)) / w
+        b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)) / h
+        b_w = torch.sigmoid(x[..., 2])
+        b_h = torch.sigmoid(x[..., 3])
+        # B * H * W * num_anchors * 4
+        b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
-        b_o = torch.sigmoid(x[..., 4]).view(b, -1, self.num_anchors)
+        b_o = torch.sigmoid(x[..., 4])
 
         return b_coords, b_o, b_scores
 
@@ -219,6 +254,9 @@ class YOLOv1(_YOLO):
         if self.training and (gt_boxes is None or gt_labels is None):
             raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
 
+        if isinstance(x, (list, tuple)):
+            x = torch.stack(x, dim=0)
+
         img_h, img_w = x.shape[-2:]
         x = self.backbone(x)
         x = self.block4(x)
@@ -234,6 +272,8 @@ class YOLOv1(_YOLO):
             # B * (H * W * num_anchors)
             b_coords = b_coords.view(b_coords.shape[0], -1, 4)
             b_o = b_o.view(b_o.shape[0], -1)
+            # Repeat for each anchor box
+            b_scores = b_scores.repeat_interleave(self.num_anchors, dim=3)
             b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
@@ -289,30 +329,28 @@ class YOLOv2(_YOLO):
             img_w (int): input image width
 
         Returns:
-            torch.Tensor[N, H * W, num_anchors, 4]: relative coordinates in format (x, y, w, h)
-            torch.Tensor[N, H * W, num_anchors]: objectness scores
-            torch.Tensor[N, H * W, num_anchors, num_classes]: classification scores
+            torch.Tensor[N, H, W, num_anchors, 4]: relative coordinates in format (x, y, w, h)
+            torch.Tensor[N, H, W, num_anchors]: objectness scores
+            torch.Tensor[N, H, W, num_anchors, num_classes]: classification scores
         """
 
-        b, c, h, w = x.shape
+        b, _, h, w = x.shape
         # B * C * H * W --> B * H * W * num_anchors * (5 + num_classes)
         x = x.view(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
         # Cell offset
-        c_x = torch.arange(0, w, dtype=torch.float) * img_w / w
-        c_y = torch.arange(0, h, dtype=torch.float) * img_h / h
+        c_x = torch.arange(w, dtype=torch.float, device=x.device)
+        c_y = torch.arange(h, dtype=torch.float, device=x.device)
         # Box coordinates
-        b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)).view(b, -1, self.num_anchors)
-        b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)).view(b, -1, self.num_anchors)
-        # B * H * W * num_anchors * (5 + num_classes) --> B * (H * W) * num_anchors * (5 + num_classes)
-        x = x.view(b, h * w, self.num_anchors, -1)
-        b_w = img_w / w * (self.anchors[:, 0].view(1, 1, -1) * torch.exp(x[..., 2]))
-        b_h = img_h / h * (self.anchors[:, 1].view(1, 1, -1) * torch.exp(x[..., 3]))
-        # B * (H * W) * num_anchors * 4
-        b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=3)
+        b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)) / w
+        b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)) / h
+        b_w = self.anchors[:, 0].view(1, 1, 1, -1) / w * torch.exp(x[..., 2])
+        b_h = self.anchors[:, 1].view(1, 1, 1, -1) / h * torch.exp(x[..., 3])
+        # B * H * W * num_anchors * 4
+        b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
         b_o = torch.sigmoid(x[..., 4])
         # Classification scores
-        b_scores = x[..., 5:]
+        b_scores = F.softmax(x[..., 5:], dim=-1)
 
         return b_coords, b_o, b_scores
 
@@ -330,6 +368,9 @@ class YOLOv2(_YOLO):
         if self.training and (gt_boxes is None or gt_labels is None):
             raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
 
+        if isinstance(x, (list, tuple)):
+            x = torch.stack(x, dim=0)
+
         img_h, img_w = x.shape[-2:]
         x, passthrough = self.backbone(x)
         # Downsample the feature map by stacking adjacent features on the channel dimension
@@ -342,7 +383,7 @@ class YOLOv2(_YOLO):
 
         x = self.head(x)
 
-        # B * (H * W) * num_anchors
+        # B * H * W * num_anchors
         b_coords, b_o, b_scores = self._format_outputs(x, img_h, img_w)
 
         if self.training:
@@ -352,18 +393,31 @@ class YOLOv2(_YOLO):
             # B * (H * W * num_anchors)
             b_coords = b_coords.view(b_coords.shape[0], -1, 4)
             b_o = b_o.view(b_o.shape[0], -1)
-            b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
+            b_scores = b_scores.reshape(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
             return self.post_process(b_coords, b_o, b_scores)
 
 
-def _yolo(arch, pretrained, progress, **kwargs):
+def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
+
+    if pretrained:
+        pretrained_backbone = False
 
     # Retrieve the correct Darknet layout type
     yolo_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
     # Build the model
-    model = yolo_type(default_cfgs[arch]['layout'], **kwargs)
+    model = yolo_type(default_cfgs[arch]['backbone']['layout'], **kwargs)
+    # Load backbone pretrained parameters
+    if pretrained_backbone:
+        if default_cfgs[arch]['backbone']['url'] is None:
+            logging.warning(f"Invalid model URL for {arch}'s backbone, using default initialization.")
+        else:
+            state_dict = load_state_dict_from_url(default_cfgs[arch]['backbone']['url'],
+                                                  progress=progress)
+            state_dict = {k.replace('features.', ''): v
+                          for k, v in state_dict.items() if k.startswith('features')}
+            model.backbone.load_state_dict(state_dict)
     # Load pretrained parameters
     if pretrained:
         if default_cfgs[arch]['url'] is None:
@@ -376,31 +430,105 @@ def _yolo(arch, pretrained, progress, **kwargs):
     return model
 
 
-def yolov1(pretrained=False, progress=True, **kwargs):
+def yolov1(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     """YOLO model from
-    `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
+    `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_.
+
+    YOLO's particularity is to make predictions in a grid (same size as last feature map). For each grid cell,
+    the model predicts classification scores and a fixed number of boxes (default: 2). Each box in the cell gets
+    5 predictions: an objectness score, and 4 coordinates. The 4 coordinates are composed of: the 2-D coordinates of
+    the predicted box center (relative to the cell), and the width and height of the predicted box (relative to
+    the whole image).
+
+    For training, YOLO uses a multi-part loss whose components are computed by:
+
+    .. math::
+        \\mathcal{L}_{coords} = \\sum\\limits_{i=0}^{S^2} \\sum\\limits_{j=0}^{B}
+        \\mathbb{1}_{ij}^{obj} \\Big[
+        (x_{ij} - \\hat{x}_{ij})² + (y_{ij} - \\hat{y}_{ij})² +
+        (\\sqrt{w_{ij}} - \\sqrt{\\hat{w}_{ij}})² + (\\sqrt{h_{ij}} - \\sqrt{\\hat{h}_{ij}})²
+        \\Big]
+
+    where :math:`S` is size of the output feature map (7 for an input size :math:`(448, 448)`),
+    :math:`B` is the number of anchor boxes per grid cell (default: 2),
+    :math:`\\mathbb{1}_{ij}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell and among the
+    anchor boxes of that cell, has the highest IoU with the j-th box else 0,
+    :math:`(x_{ij}, y_{ij}, w_{ij}, h_{ij})` are the coordinates of the ground truth assigned to
+    the j-th anchor box of the i-th grid cell,
+    and :math:`(\\hat{x}_{ij}, \\hat{y}_{ij}, \\hat{w}_{ij}, \\hat{h}_{ij})` are the coordinate predictions
+    for the j-th anchor box of the i-th grid cell.
+
+    .. math::
+        \\mathcal{L}_{objectness} = \\sum\\limits_{i=0}^{S^2} \\sum\\limits_{j=0}^{B}
+        \\Big[ \\mathbb{1}_{ij}^{obj} \\Big(C_{ij} - \\hat{C}_{ij} \\Big)^2
+        + \\lambda_{noobj} \\mathbb{1}_{ij}^{noobj} \\Big(C_{ij} - \\hat{C}_{ij} \\Big)^2
+        \\Big]
+
+    where :math:`\\lambda_{noobj}` is a positive coefficient (default: 0.5),
+    :math:`\\mathbb{1}_{ij}^{noobj} = 1 - \\mathbb{1}_{ij}^{obj}`,
+    :math:`C_{ij}` equals the Intersection Over Union between the j-th anchor box in the i-th grid cell and its
+    matched ground truth box if that box is matched with a ground truth else 0,
+    and :math:`\\hat{C}_{ij}` is the objectness score of the j-th anchor box in the i-th grid cell..
+
+    .. math::
+        \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}
+        \\mathbb{1}_{i}^{obj} \\sum\\limits_{c \\in classes}
+        (p_i(c) - \\hat{p}_i(c))^2
+
+    where :math:`\\mathbb{1}_{i}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell else 0,
+    :math:`p_i(c)` equals 1 if the assigned ground truth to the i-th cell is classified as class :math:`c`,
+    and :math:`\\hat{p}_i(c)` is the predicted probability of class :math:`c` in the i-th cell.
+
+    And the full loss is given by:
+
+    .. math::
+        \\mathcal{L}_{YOLOv1} = \\lambda_{coords} \\cdot \\mathcal{L}_{coords} +
+        \\mathcal{L}_{objectness} + \\mathcal{L}_{classification}
+
+    where :math:`\\lambda_{coords}` is a positive coefficient (default: 5).
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
+        progress (bool, optional): If True, displays a progress bar of the download to stderr
+        pretrained_backbone (bool, optional): If True, backbone parameters will have been pretrained on Imagenette
 
     Returns:
         torch.nn.Module: detection module
     """
 
-    return _yolo('yolov1', pretrained, progress, **kwargs)
+    return _yolo('yolov1', pretrained, progress, pretrained_backbone, **kwargs)
 
 
-def yolov2(pretrained=False, progress=True, **kwargs):
+def yolov2(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     """YOLOv2 model from
-    `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
+    `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_.
+
+    YOLOv2 improves upon YOLO by raising the number of boxes predicted by grid cell (default: 5), introducing
+    bounding box priors and predicting class scores for each anchor box in the grid cell.
+
+    For training, YOLOv2 uses the same multi-part loss as YOLO apart from its classification loss:
+
+    .. math::
+        \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}
+        \\mathbb{1}_{ij}^{obj} \\sum\\limits_{c \\in classes}
+        (p_i(c) - \\hat{p}_i(c))^2
+
+    where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),
+    :math:`B` is the number of anchor boxes per grid cell (default: 5),
+    :math:`\\mathbb{1}_{ij}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell and among the
+    anchor boxes of that cell, has the highest IoU with the j-th box else 0,
+    :math:`p_{ij}(c)` equals 1 if the assigned ground truth to the j-th anchor box of the i-th cell is classified
+    as class :math:`c`,
+    and :math:`\\hat{p}_{ij}(c)` is the predicted probability of class :math:`c` for the j-th anchor box
+    in the i-th cell.
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
+        progress (bool, optional): If True, displays a progress bar of the download to stderr
+        pretrained_backbone (bool, optional): If True, backbone parameters will have been pretrained on Imagenette
 
     Returns:
         torch.nn.Module: detection module
     """
 
-    return _yolo('yolov2', pretrained, progress, **kwargs)
+    return _yolo('yolov2', pretrained, progress, pretrained_backbone, **kwargs)

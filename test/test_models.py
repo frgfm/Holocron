@@ -31,6 +31,8 @@ class Tester(unittest.TestCase):
         num_batches = 2
         x = torch.rand((num_batches, 3, size, size))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
+        # Check backbone pretrained
+        model = models.__dict__[name](pretrained_backbone=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
 
@@ -41,11 +43,17 @@ class Tester(unittest.TestCase):
             self.assertIsInstance(out[0].get('scores'), torch.Tensor)
             self.assertIsInstance(out[0].get('labels'), torch.Tensor)
 
+        # Check that list of Tensors does not change output
+        x_list = [torch.rand(3, size, size) for _ in range(num_batches)]
+        with torch.no_grad():
+            out_list = model(x_list)
+            self.assertEqual(len(out_list), len(out))
+
         # Training mode without target
         model = model.train()
         self.assertRaises(ValueError, model, x)
         # Generate targets
-        num_boxes = [2, 3]
+        num_boxes = [3, 4]
         gt_boxes = []
         for num in num_boxes:
             _boxes = torch.rand((num, 4), dtype=torch.float)
@@ -54,7 +62,10 @@ class Tester(unittest.TestCase):
             # Ensure some anchors will be assigned
             _boxes[0, :2] = 0
             _boxes[0, 2:] = 1
-        gt_boxes = [torch.rand((num, 4)) for num in num_boxes]
+            # Check cases where cell can get two assignments
+            _boxes[1, :2] = 0.2
+            _boxes[1, 2:] = 0.8
+            gt_boxes.append(_boxes)
         gt_labels = [(num_classes * torch.rand(num)).to(dtype=torch.long) for num in num_boxes]
 
         # Loss computation
@@ -62,6 +73,12 @@ class Tester(unittest.TestCase):
         self.assertIsInstance(loss, dict)
         for subloss in loss.values():
             self.assertIsInstance(subloss, torch.Tensor)
+            self.assertFalse(torch.isnan(subloss))
+
+        # Loss computation with no GT
+        gt_boxes = [torch.zeros((0, 4)) for _ in num_boxes]
+        gt_labels = [torch.zeros(0, dtype=torch.long) for _ in num_boxes]
+        loss = model(x, gt_boxes, gt_labels)
 
 
 for model_name in ['res2net', 'res2next']:
