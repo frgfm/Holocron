@@ -72,7 +72,7 @@ def train_one_epoch(model, optimizer, scheduler, data_loader, device, master_bar
         if isinstance(scheduler, torch.optim.lr_scheduler.OneCycleLR):
             scheduler.step()
 
-        master_bar.child.comment = '|'.join(f"{k}: {v.item():.4}" for k, v in loss_dict.items())
+        master_bar.child.comment = ' | '.join(f"{k}: {v.item():.4}" for k, v in loss_dict.items())
 
 
 def assign_iou(gt_boxes, pred_boxes, iou_threshold=0.5):
