@@ -86,8 +86,8 @@ class RaLars(Optimizer):
                 state['step'] += 1
 
                 # Decay the first and second moment running average coefficient
-                exp_avg.mul_(beta1).add_(1 - beta1, grad)
-                exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
+                exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
+                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, alpha=1 - beta2)
 
                 # Bias correction
                 bias_correction1 = 1 - beta1 ** state['step']
@@ -101,12 +101,12 @@ class RaLars(Optimizer):
                     # Variance rectification term
                     r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
                     # Adaptive momentum
-                    update.addcdiv_(r_t, exp_avg / bias_correction1,
-                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
+                    update.addcdiv_(exp_avg / bias_correction1,
+                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']), alpha=r_t)
                 else:
                     if self.force_adaptive_momentum:
                         # Adaptive momentum without variance rectification (Adam)
-                        update.addcdiv_(1, exp_avg / bias_correction1,
+                        update.addcdiv_(exp_avg / bias_correction1,
                                         (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']))
                     else:
                         # Unadapted momentum
@@ -114,7 +114,7 @@ class RaLars(Optimizer):
 
                 # Weight decay
                 if group['weight_decay'] != 0:
-                    update.add_(group['weight_decay'], p.data)
+                    update.add_(p.data, alpha=group['weight_decay'])
 
                 # LARS
                 p_norm = p.data.pow(2).sum().sqrt()
@@ -128,6 +128,6 @@ class RaLars(Optimizer):
 
                 state['local_lr'] = local_lr
 
-                p.data.add_(-group['lr'] * local_lr, update)
+                p.data.add_(update, alpha=-group['lr'] * local_lr)
 
         return loss
