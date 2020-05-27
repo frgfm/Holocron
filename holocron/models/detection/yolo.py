@@ -38,7 +38,7 @@ class _YOLO(nn.Module):
         Args:
             pred_boxes (torch.Tensor[N, H, W, num_anchors, 4]): relative coordinates in format (xc, yc, w, h)
             pred_o (torch.Tensor[N, H, W, num_anchors]): objectness scores
-            pred_scores (torch.Tensor[N, H, W, num_anchors, num_classes]): classification scores
+            pred_scores (torch.Tensor[N, H, W, num_anchors, num_classes]): classification probabilities
             gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes in format (xmin, ymin, xmax, ymax)
             gt_labels (list<torch.Tensor>): ground truth labels
 
@@ -105,6 +105,8 @@ class _YOLO(nn.Module):
                 selected_boxes[:, 0] *= w
                 selected_boxes[:, 1] *= h
                 selected_boxes[:, :2] -= selected_boxes[:, :2].floor()
+                gt_probs = torch.zeros_like(selected_scores)
+                gt_probs[range(gt_labels[idx].shape[0]), gt_labels[idx]] = 1
 
                 # Localization
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
@@ -115,7 +117,9 @@ class _YOLO(nn.Module):
                 # Objectness
                 objectness_loss[is_matched] += F.mse_loss(selection_o, selection_iou, reduction='none')
                 # Classification
-                clf_loss[is_matched] += F.cross_entropy(selected_scores, gt_labels[idx], reduction='none')
+                clf_loss[is_matched] += F.mse_loss(selected_scores, gt_probs, reduction='none').sum(dim=-1)
+
+                # clf_loss[is_matched] += F.cross_entropy(selected_scores, gt_labels[idx], reduction='none')
 
         return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
                     bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
@@ -216,7 +220,7 @@ class YOLOv1(_YOLO):
         # Classification scores
         b_scores = x[..., -self.num_classes:]
         # Repeat for anchors to keep compatibility across YOLO versions
-        b_scores = b_scores.unsqueeze(3).repeat_interleave(self.num_anchors, dim=3)
+        b_scores = F.softmax(b_scores.unsqueeze(3).repeat_interleave(self.num_anchors, dim=3), dim=-1)
         #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
         x = x[..., :self.num_anchors * 5].view(b, h, w, self.num_anchors, 5)
         # Cell offset
@@ -342,7 +346,7 @@ class YOLOv2(_YOLO):
         # Objectness
         b_o = torch.sigmoid(x[..., 4])
         # Classification scores
-        b_scores = x[..., 5:]
+        b_scores = F.softmax(x[..., 5:], dim=-1)
 
         return b_coords, b_o, b_scores
 
