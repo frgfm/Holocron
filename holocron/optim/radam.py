@@ -32,6 +32,7 @@ class RAdam(Optimizer):
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
         super(RAdam, self).__init__(params, defaults)
 
+    @torch.no_grad()
     def step(self, closure=None):
         """Performs a single optimization step.
 
@@ -40,7 +41,8 @@ class RAdam(Optimizer):
         """
         loss = None
         if closure is not None:
-            loss = closure()
+            with torch.enable_grad():
+                loss = closure()
 
         for group in self.param_groups:
 
