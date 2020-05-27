@@ -46,11 +46,14 @@ class _YOLO(nn.Module):
             dict: dictionary of losses
         """
 
-        b, h, w, num_anchors, num_classes = pred_scores.shape
+        b, h, w, a, num_classes = pred_scores.shape
+        # Pred scores of YOLOv1 do not have the anchor dimension properly sized (only for broadcasting)
+        num_anchors = pred_boxes.shape[3]
+        cell_loss = a == 1
         # Initialize losses
         objectness_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
         bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
-        clf_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
+        clf_loss = torch.zeros(w * h if cell_loss else w * h * num_anchors, device=pred_boxes.device)
 
         # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
         pred_xyxy = torch.zeros_like(pred_boxes)
@@ -93,7 +96,8 @@ class _YOLO(nn.Module):
             if is_matched.shape[0] > 0:
                 # Get prediction assignment
                 selection_o = pred_o.view(b, -1)[idx, is_matched]
-                selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, is_matched].view(-1, num_classes)
+                pred_filter = cell_idxs if cell_loss else is_matched
+                selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, pred_filter].view(-1, num_classes)
                 selected_boxes = pred_boxes.view(b, -1, 4)[idx, is_matched].view(-1, 4)
                 # Convert GT --> xc, yc, w, h
                 gt_wh = gt_boxes[idx][:, 2:] - gt_boxes[idx][:, :2]
@@ -117,9 +121,7 @@ class _YOLO(nn.Module):
                 # Objectness
                 objectness_loss[is_matched] += F.mse_loss(selection_o, selection_iou, reduction='none')
                 # Classification
-                clf_loss[is_matched] += F.mse_loss(selected_scores, gt_probs, reduction='none').sum(dim=-1)
-
-                # clf_loss[is_matched] += F.cross_entropy(selected_scores, gt_labels[idx], reduction='none')
+                clf_loss[pred_filter] += F.mse_loss(selected_scores, gt_probs, reduction='none').sum(dim=-1)
 
         return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
                     bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
@@ -220,7 +222,7 @@ class YOLOv1(_YOLO):
         # Classification scores
         b_scores = x[..., -self.num_classes:]
         # Repeat for anchors to keep compatibility across YOLO versions
-        b_scores = F.softmax(b_scores.unsqueeze(3).repeat_interleave(self.num_anchors, dim=3), dim=-1)
+        b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
         #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
         x = x[..., :self.num_anchors * 5].view(b, h, w, self.num_anchors, 5)
         # Cell offset
@@ -270,6 +272,8 @@ class YOLOv1(_YOLO):
             # B * (H * W * num_anchors)
             b_coords = b_coords.view(b_coords.shape[0], -1, 4)
             b_o = b_o.view(b_o.shape[0], -1)
+            # Repeat for each anchor box
+            b_scores = b_scores.repeat_interleave(self.num_anchors, dim=3)
             b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
