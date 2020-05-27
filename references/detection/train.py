@@ -61,7 +61,7 @@ def train_one_epoch(model, optimizer, scheduler, data_loader, device, master_bar
 
         x = [_x.to(device) for _x in x]
         target = [{k: v.to(device) for k, v in t.items()} for t in target]
-        loss_dict = model(x, target)
+        loss_dict = model(x, [t['boxes'] for t in target], [t['labels'] for t in target])
         batch_loss = sum(loss_dict.values())
 
         optimizer.zero_grad()
