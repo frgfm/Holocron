@@ -517,7 +517,7 @@ def yolov2(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     .. math::
         \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}
         \\mathbb{1}_{ij}^{obj} \\sum\\limits_{c \\in classes}
-        (p_i(c) - \\hat{p}_i(c))^2
+        (p_{ij}(c) - \\hat{p}_{ij}(c))^2
 
     where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),
     :math:`B` is the number of anchor boxes per grid cell (default: 5),
