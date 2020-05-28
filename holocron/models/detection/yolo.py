@@ -290,7 +290,7 @@ class YOLOv1(_YOLO):
 
 class YOLOv2(_YOLO):
     def __init__(self, layout, num_classes=20, anchors=None, lambda_noobj=0.5, lambda_coords=5.,
-                 backbone_norm_layer=FrozenBatchNorm2d):
+                 backbone_norm_layer=None):
 
         super().__init__()
 
