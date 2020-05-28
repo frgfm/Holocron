@@ -46,12 +46,20 @@ class DownLayer(nn.Sequential):
 
 
 class UpLayer(nn.Module):
-    def __init__(self, in_chan, out_chan, num_skips=1):
+    def __init__(self, in_chan, out_chan, num_skips=1, conv_transpose=False):
         super().__init__()
 
-        self.upconv = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
-        self.block = nn.Sequential(conv3x3((num_skips + 1) * in_chan // 2, out_chan), nn.ReLU(inplace=True),
-                                   conv3x3(out_chan, out_chan), nn.ReLU(inplace=True))
+        if conv_transpose:
+            self.upsample = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
+        else:
+            self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+
+        # Estimate the number of channels in the upsampled feature map
+        up_chan = in_chan // 2 if conv_transpose else in_chan
+        self.block = nn.Sequential(conv3x3(num_skips * in_chan // 2 + up_chan, out_chan),
+                                   nn.ReLU(inplace=True),
+                                   conv3x3(out_chan, out_chan),
+                                   nn.ReLU(inplace=True))
         self.num_skips = num_skips
 
     def forward(self, downfeats, upfeat):
@@ -61,7 +69,7 @@ class UpLayer(nn.Module):
         if len(downfeats) != self.num_skips:
             raise ValueError
         # Upsample expansive features
-        _upfeat = self.upconv(upfeat)
+        _upfeat = self.upsample(upfeat)
         # Crop contracting path features
         for idx, downfeat in enumerate(downfeats):
             delta_w = downfeat.shape[-1] - _upfeat.shape[-1]
