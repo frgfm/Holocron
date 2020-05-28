@@ -31,7 +31,6 @@ default_cfgs = {
 
 
 class DarkBlockV1(nn.Sequential):
-
     def __init__(self, planes):
 
         layers = []
@@ -74,7 +73,6 @@ class DarknetBodyV1(nn.Module):
 
 
 class DarknetV1(nn.Sequential):
-
     def __init__(self, layout, num_classes=10):
 
         super().__init__(OrderedDict([
@@ -86,7 +84,6 @@ class DarknetV1(nn.Sequential):
 
 
 class DarkBlockV2(nn.Sequential):
-
     def __init__(self, in_planes, out_planes, nb_compressions=0):
 
         layers = [conv3x3(in_planes, out_planes),
@@ -104,7 +101,6 @@ class DarkBlockV2(nn.Sequential):
 
 
 class DarknetBodyV2(nn.Module):
-
     def __init__(self, layout, passthrough=False):
 
         super().__init__()
@@ -141,7 +137,6 @@ class DarknetBodyV2(nn.Module):
 
 
 class DarknetV2(nn.Sequential):
-
     def __init__(self, layout, num_classes=10):
 
         super().__init__(OrderedDict([
@@ -153,14 +148,6 @@ class DarknetV2(nn.Sequential):
 
 
 class DarkBlockV3(nn.Module):
-    """Implements a residual block of Darknet as described in
-    `"YOLOv3: An Incremental Improvement" <https://pjreddie.com/media/files/papers/YOLOv3.pdf>`_
-
-    Args:
-        planes (int): number of input/output channels
-        mid_planes (int): number of intermediate channels
-    """
-
     def __init__(self, planes, mid_planes):
 
         super().__init__()
@@ -241,7 +228,6 @@ class DarknetBodyV3(nn.Module):
 
 
 class DarknetV3(nn.Sequential):
-
     def __init__(self, layout, num_classes=10):
 
         super().__init__(OrderedDict([
