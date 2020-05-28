@@ -65,7 +65,7 @@ class UNet(nn.Module):
         super().__init__()
 
         # Contracting path
-        _layout = [input_chan] + layout
+        _layout = [in_channels] + layout
         _pool = False
         for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
             self.add_module(f"down{num}", DownLayer(in_chan, out_chan, _pool))
