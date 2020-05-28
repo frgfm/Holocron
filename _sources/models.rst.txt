@@ -85,3 +85,7 @@ U-Net
 -----
 
 .. autofunction:: unet
+
+.. autofunction:: unetp
+
+.. autofunction:: unetpp
