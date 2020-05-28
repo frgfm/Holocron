@@ -114,7 +114,8 @@ for model_name, size in [('yolov1', 448), ('yolov2', 416)]:
 
     setattr(Tester, "test_" + model_name, do_test)
 
-for model_name, size, out_size in [('unet', 572, 388), ('unetp', 572, 388), ('unetpp', 572, 388)]:
+
+for model_name, size, out_size in [('unet', 572, 388), ('unetp', 572, 388), ('unetpp', 572, 388), ('unet3p', 320, 320)]:
     def do_test(self, model_name=model_name, size=size, out_size=out_size):
         self._test_segmentation_model(model_name, size, out_size)
 
