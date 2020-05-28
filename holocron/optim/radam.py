@@ -77,7 +77,7 @@ class RAdam(Optimizer):
 
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
-                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, alpha=1 - beta2)
+                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
 
                 # Bias corrections
                 bias_correction1 = 1 - beta1 ** state['step']
@@ -95,7 +95,7 @@ class RAdam(Optimizer):
                     r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
                     # Adaptive momentum
                     p.data.addcdiv_(exp_avg / bias_correction1,
-                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']), alpha=-group['lr'] * r_t)
+                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']), value=-group['lr'] * r_t)
                 else:
                     # Unadapted momentum
                     p.data.add_(exp_avg / bias_correction1, alpha=-group['lr'])

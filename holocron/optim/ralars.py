@@ -87,7 +87,7 @@ class RaLars(Optimizer):
 
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
-                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, alpha=1 - beta2)
+                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
 
                 # Bias correction
                 bias_correction1 = 1 - beta1 ** state['step']
@@ -102,7 +102,7 @@ class RaLars(Optimizer):
                     r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
                     # Adaptive momentum
                     update.addcdiv_(exp_avg / bias_correction1,
-                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']), alpha=r_t)
+                                    (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']), value=r_t)
                 else:
                     if self.force_adaptive_momentum:
                         # Adaptive momentum without variance rectification (Adam)
