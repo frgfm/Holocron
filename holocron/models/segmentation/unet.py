@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 
+from ...nn.init import init_module
 
 __all__ = ['UNet', 'unet', 'UNetp', 'unetp', 'UNetpp', 'unetpp']
 
@@ -111,6 +112,8 @@ class UNet(nn.Module):
         # Classifier
         self.classifier = conv1x1(64, num_classes)
 
+        init_module(self, 'relu')
+
     def forward(self, x):
 
         # Contracting path
@@ -158,6 +161,8 @@ class UNetp(nn.Module):
 
         # Classifier
         self.classifier = conv1x1(64, num_classes)
+
+        init_module(self, 'relu')
 
     def forward(self, x):
 
@@ -215,6 +220,8 @@ class UNetpp(nn.Module):
 
         # Classifier
         self.classifier = conv1x1(64, num_classes)
+
+        init_module(self, 'relu')
 
     def forward(self, x):
 
