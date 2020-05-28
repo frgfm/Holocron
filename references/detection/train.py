@@ -222,6 +222,10 @@ def main(args):
 
     print("Creating model")
     model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(classes))
+    # Backbone freezing
+    if args.freeze_backbone:
+        for p in model.backbone.parameters():
+            p.requires_grad_(False)
     model.to(device)
 
     if args.opt == 'adam':
@@ -310,6 +314,8 @@ def parse_args():
                         dest='weight_decay')
     parser.add_argument("--lr-finder", dest='lr_finder', action='store_true',
                         help="Should you run LR Finder")
+    parser.add_argument("--freeze-backbone", dest='freeze_backbone', action='store_true',
+                        help="Should the backbone be frozen")
     parser.add_argument('--output-dir', default='.', help='path where to save')
     parser.add_argument('--checkpoint', default='model', help='checkpoint name')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
