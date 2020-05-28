@@ -7,18 +7,14 @@ Training script for object detection
 
 import math
 import datetime
-import os
 import time
 from pathlib import Path
-from tqdm import tqdm
 from fastprogress import master_bar, progress_bar
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
 import torch
 import torch.utils.data
-from torch import nn
-import torchvision
 from torchvision import transforms
 from torchvision.datasets import VOCDetection
 from torchvision.ops.boxes import box_iou
@@ -179,7 +175,7 @@ def plot_lr_finder(train_batch, model, data_loader, optimizer, device,
 def plot_samples(images, targets):
     # Unnormalize image
     nb_samples = 4
-    fig, axes = plt.subplots(1, nb_samples, figsize=(20, 5))
+    _, axes = plt.subplots(1, nb_samples, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
         img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
