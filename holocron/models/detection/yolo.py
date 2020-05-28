@@ -30,7 +30,7 @@ default_cfgs = {
 
 
 class _YOLO(nn.Module):
-    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
+    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, ignore_high_iou=False):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
@@ -87,6 +87,9 @@ class _YOLO(nn.Module):
             if not_matched.shape[0] > 0:
                 # SSE between objectness and IoU
                 selection_o = pred_o.view(b, -1)[idx, not_matched]
+                if ignore_high_iou and gt_boxes[idx].shape[0] > 0:
+                    # Don't penalize anchor boxes with high IoU with GTs
+                    selection_o = selection_o[iou_mat.view(h * w * num_anchors)[not_matched].max(dim=1).values < 0.5]
                 # Update loss (target = 0)
                 noobj_loss += selection_o.pow(2).sum()
 
