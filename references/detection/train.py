@@ -18,6 +18,7 @@ import torch.utils.data
 from torchvision import transforms
 from torchvision.datasets import VOCDetection
 from torchvision.ops.boxes import box_iou
+from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.transforms import functional as F
 
 import holocron
@@ -221,7 +222,14 @@ def main(args):
         sampler=test_sampler, num_workers=args.workers, pin_memory=True)
 
     print("Creating model")
-    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(classes))
+    kwargs = {}
+    if args.freeze_backbone:
+        kwargs['norm_layer'] = FrozenBatchNorm2d
+    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(classes), **kwargs)
+    # Backbone freezing
+    if args.freeze_backbone:
+        for p in model.backbone.parameters():
+            p.requires_grad_(False)
     model.to(device)
 
     if args.opt == 'adam':
@@ -295,6 +303,8 @@ def parse_args():
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
     parser.add_argument('--model', default='darknet19', help='model')
+    parser.add_argument("--freeze-backbone", dest='freeze_backbone', action='store_true',
+                        help="Should the backbone be frozen")
     parser.add_argument('--device', default='cuda', help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
     parser.add_argument('--epochs', default=20, type=int, metavar='N',

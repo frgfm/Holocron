@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.ops.boxes import box_iou, nms
+from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.models.utils import load_state_dict_from_url
 from torchvision.models.resnet import conv1x1, conv3x3
 
@@ -187,9 +188,13 @@ class YOLOv1(_YOLO):
 
         self.block4 = nn.Sequential(
             conv3x3(1024, 1024),
+            nn.LeakyReLU(inplace=True),
             conv3x3(1024, 1024, stride=2),
+            nn.LeakyReLU(inplace=True),
             conv3x3(1024, 1024),
-            conv3x3(1024, 1024))
+            nn.LeakyReLU(inplace=True),
+            conv3x3(1024, 1024),
+            nn.LeakyReLU(inplace=True))
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
@@ -284,7 +289,8 @@ class YOLOv1(_YOLO):
 
 
 class YOLOv2(_YOLO):
-    def __init__(self, layout, num_classes=20, anchors=None, lambda_noobj=0.5, lambda_coords=5.):
+    def __init__(self, layout, num_classes=20, anchors=None, lambda_noobj=0.5, lambda_coords=5.,
+                 backbone_norm_layer=None):
 
         super().__init__()
 
@@ -293,7 +299,7 @@ class YOLOv2(_YOLO):
             anchors = torch.tensor([[1.08, 1.19], [3.42, 4.41], [6.63, 11.38], [9.42, 5.11], [16.62, 10.52]])
         self.num_classes = num_classes
 
-        self.backbone = DarknetBodyV2(layout, passthrough=True)
+        self.backbone = DarknetBodyV2(layout, True, backbone_norm_layer)
 
         self.reorg_layer = ConcatDownsample2d(scale_factor=2)
 
