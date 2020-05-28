@@ -299,6 +299,8 @@ def parse_args():
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
     parser.add_argument('--model', default='darknet19', help='model')
+    parser.add_argument("--freeze-backbone", dest='freeze_backbone', action='store_true',
+                        help="Should the backbone be frozen")
     parser.add_argument('--device', default='cuda', help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
     parser.add_argument('--epochs', default=20, type=int, metavar='N',
@@ -314,8 +316,6 @@ def parse_args():
                         dest='weight_decay')
     parser.add_argument("--lr-finder", dest='lr_finder', action='store_true',
                         help="Should you run LR Finder")
-    parser.add_argument("--freeze-backbone", dest='freeze_backbone', action='store_true',
-                        help="Should the backbone be frozen")
     parser.add_argument('--output-dir', default='.', help='path where to save')
     parser.add_argument('--checkpoint', default='model', help='checkpoint name')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
