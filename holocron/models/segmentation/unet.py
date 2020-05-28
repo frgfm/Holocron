@@ -37,7 +37,7 @@ def conv3x3(in_chan, out_chan, padding=0):
     return nn.Conv2d(in_chan, out_chan, 3, padding=padding)
 
 
-class DownLayer(nn.Sequential):
+class DownPath(nn.Sequential):
     def __init__(self, in_chan, out_chan, downsample=True):
         layers = [nn.MaxPool2d(2)] if downsample else []
         layers.extend([conv3x3(in_chan, out_chan), nn.ReLU(inplace=True),
@@ -45,7 +45,7 @@ class DownLayer(nn.Sequential):
         super().__init__(*layers)
 
 
-class UpLayer(nn.Module):
+class UpPath(nn.Module):
     def __init__(self, in_chan, out_chan, num_skips=1, conv_transpose=False):
         super().__init__()
 
@@ -94,13 +94,13 @@ class UNet(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
-            self.add_module(f"down{num}", DownLayer(in_chan, out_chan, _pool))
+            self.add_module(f"down{num}", DownPath(in_chan, out_chan, _pool))
             _pool = True
 
         # Expansive path
         _layout = layout[::-1]
         for num, in_chan, out_chan in zip(range(len(layout) - 1, 0, -1), _layout[:-1], _layout[1:]):
-            self.add_module(f"up{num}", UpLayer(in_chan, out_chan))
+            self.add_module(f"up{num}", UpPath(in_chan, out_chan))
 
         # Classifier
         self.classifier = conv1x1(64, num_classes)
@@ -140,7 +140,7 @@ class UNetp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
-            self.add_module(f"down{num}", DownLayer(in_chan, out_chan, _pool))
+            self.add_module(f"down{num}", DownPath(in_chan, out_chan, _pool))
             _pool = True
 
         # Expansive path
@@ -148,7 +148,7 @@ class UNetp(nn.Module):
         for row, in_chan, out_chan, cols in zip(range(len(layout) - 1, 0, -1), _layout[:-1], _layout[1:],
                                                 range(1, len(layout))):
             for col in range(1, cols + 1):
-                self.add_module(f"up{row}{col}", UpLayer(in_chan, out_chan))
+                self.add_module(f"up{row}{col}", UpPath(in_chan, out_chan))
 
         # Classifier
         self.classifier = conv1x1(64, num_classes)
@@ -197,7 +197,7 @@ class UNetpp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
-            self.add_module(f"down{num}", DownLayer(in_chan, out_chan, _pool))
+            self.add_module(f"down{num}", DownPath(in_chan, out_chan, _pool))
             _pool = True
 
         # Expansive path
@@ -205,7 +205,7 @@ class UNetpp(nn.Module):
         for row, in_chan, out_chan, cols in zip(range(len(layout) - 1, 0, -1), _layout[:-1], _layout[1:],
                                                 range(1, len(layout))):
             for col in range(1, cols + 1):
-                self.add_module(f"up{row}{col}", UpLayer(in_chan, out_chan, num_skips=col))
+                self.add_module(f"up{row}{col}", UpPath(in_chan, out_chan, num_skips=col))
 
         # Classifier
         self.classifier = conv1x1(64, num_classes)
