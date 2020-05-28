@@ -187,9 +187,13 @@ class YOLOv1(_YOLO):
 
         self.block4 = nn.Sequential(
             conv3x3(1024, 1024),
+            nn.LeakyReLU(inplace=True),
             conv3x3(1024, 1024, stride=2),
+            nn.LeakyReLU(inplace=True),
             conv3x3(1024, 1024),
-            conv3x3(1024, 1024))
+            nn.LeakyReLU(inplace=True),
+            conv3x3(1024, 1024),
+            nn.LeakyReLU(inplace=True))
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
