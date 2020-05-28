@@ -17,7 +17,7 @@ __all__ = ['UNet', 'unet']
 default_cfgs = {
     'unet': {'arch': 'UNet',
              'layout': [64, 128, 256, 512, 1024],
-             'url': ''}
+             'url': None}
 }
 
 
