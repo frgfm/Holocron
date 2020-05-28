@@ -70,7 +70,6 @@ class Tester(unittest.TestCase):
         output = model(input_t)
         loss = criterion(output, target)
         loss.backward()
-        print(name)
         optimizer.step()
 
         # Test
@@ -79,7 +78,6 @@ class Tester(unittest.TestCase):
 
     def _test_wrapper(self, name):
 
-        print(name)
         lr = 1e-4
         input_shape = (3, 224, 224)
         nb_batches = 4
