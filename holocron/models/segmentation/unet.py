@@ -28,25 +28,33 @@ default_cfgs = {
 
 
 def conv1x1(in_chan, out_chan):
-
     return nn.Conv2d(in_chan, out_chan, 1)
 
 
 def conv3x3(in_chan, out_chan, padding=0):
-
     return nn.Conv2d(in_chan, out_chan, 3, padding=padding)
 
 
+def conv_bn_act(in_chan, out_chan, kernel_size, padding=0, bn=False, act=True):
+    layers = [nn.Conv2d(in_chan, out_chan, kernel_size, padding=padding)]
+    if bn:
+        layers.append(nn.BatchNorm2d(out_chan))
+    if act:
+        layers.append(nn.ReLU(inplace=True))
+
+    return layers
+
+
 class DownPath(nn.Sequential):
-    def __init__(self, in_chan, out_chan, downsample=True):
+    def __init__(self, in_chan, out_chan, downsample=True, padding=0, bn=False):
         layers = [nn.MaxPool2d(2)] if downsample else []
-        layers.extend([conv3x3(in_chan, out_chan), nn.ReLU(inplace=True),
-                       conv3x3(out_chan, out_chan), nn.ReLU(inplace=True)])
+        layers.extend([*conv_bn_act(in_chan, out_chan, 3, padding, bn),
+                       *conv_bn_act(out_chan, out_chan, 3, padding, bn)])
         super().__init__(*layers)
 
 
 class UpPath(nn.Module):
-    def __init__(self, in_chan, out_chan, num_skips=1, conv_transpose=False):
+    def __init__(self, in_chan, out_chan, num_skips=1, conv_transpose=False, padding=0, bn=False):
         super().__init__()
 
         if conv_transpose:
@@ -56,10 +64,8 @@ class UpPath(nn.Module):
 
         # Estimate the number of channels in the upsampled feature map
         up_chan = in_chan // 2 if conv_transpose else in_chan
-        self.block = nn.Sequential(conv3x3(num_skips * in_chan // 2 + up_chan, out_chan),
-                                   nn.ReLU(inplace=True),
-                                   conv3x3(out_chan, out_chan),
-                                   nn.ReLU(inplace=True))
+        self.block = nn.Sequential(*conv_bn_act(num_skips * in_chan // 2 + up_chan, out_chan, 3, padding, bn),
+                                   *conv_bn_act(out_chan, out_chan, 3, padding, bn))
         self.num_skips = num_skips
 
     def forward(self, downfeats, upfeat):
