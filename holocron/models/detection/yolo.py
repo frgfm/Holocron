@@ -179,7 +179,6 @@ class _YOLO(nn.Module):
 
 
 class YOLOv1(_YOLO):
-
     def __init__(self, layout, num_classes=20, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.):
 
         super().__init__()
@@ -285,7 +284,6 @@ class YOLOv1(_YOLO):
 
 
 class YOLOv2(_YOLO):
-
     def __init__(self, layout, num_classes=20, anchors=None, lambda_noobj=0.5, lambda_coords=5.):
 
         super().__init__()
