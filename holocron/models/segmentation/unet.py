@@ -290,4 +290,4 @@ def unetpp(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: semantic segmentation model
     """
 
-    return _unet('unet2p', pretrained, progress, **kwargs)
+    return _unet('unetpp', pretrained, progress, **kwargs)
