@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolo &mdash; holocron 0.1.2a0+f2ff704-git documentation</title>
+  <title>holocron.models.detection.yolo &mdash; holocron 0.1.2a0+e52684d-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.2a0+f2ff704
+                0.1.2a0+e52684d
               </div>
             
           
@@ -237,8 +237,7 @@
 
 
 <span class="k">class</span> <span class="nc">_YOLO</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_compute_losses</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">,</span> <span class="n">pred_o</span><span class="p">,</span> <span class="n">pred_scores</span><span class="p">,</span> <span class="n">gt_boxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_compute_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">,</span> <span class="n">pred_o</span><span class="p">,</span> <span class="n">pred_scores</span><span class="p">,</span> <span class="n">gt_boxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">ignore_high_iou</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Computes the detector losses as described in `&quot;You Only Look Once: Unified, Real-Time Object Detection&quot;</span>
 <span class="sd">        &lt;https://pjreddie.com/media/files/papers/yolo_1.pdf&gt;`_</span>
 
@@ -253,14 +252,14 @@
 <span class="sd">            dict: dictionary of losses</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">num_classes</span> <span class="o">=</span> <span class="n">pred_scores</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">num_classes</span> <span class="o">=</span> <span class="n">pred_scores</span><span class="o">.</span><span class="n">shape</span>
         <span class="c1"># Pred scores of YOLOv1 do not have the anchor dimension properly sized (only for broadcasting)</span>
         <span class="n">num_anchors</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-        <span class="n">cell_loss</span> <span class="o">=</span> <span class="n">a</span> <span class="o">==</span> <span class="mi">1</span>
         <span class="c1"># Initialize losses</span>
-        <span class="n">objectness_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">h</span> <span class="o">*</span> <span class="n">num_anchors</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">bbox_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">h</span> <span class="o">*</span> <span class="n">num_anchors</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">clf_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">h</span> <span class="k">if</span> <span class="n">cell_loss</span> <span class="k">else</span> <span class="n">w</span> <span class="o">*</span> <span class="n">h</span> <span class="o">*</span> <span class="n">num_anchors</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">obj_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">noobj_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">bbox_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">clf_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="c1"># Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)</span>
         <span class="n">pred_xyxy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">)</span>
@@ -295,15 +294,17 @@
             <span class="k">if</span> <span class="n">not_matched</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># SSE between objectness and IoU</span>
                 <span class="n">selection_o</span> <span class="o">=</span> <span class="n">pred_o</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">not_matched</span><span class="p">]</span>
-                <span class="c1"># Update loss</span>
-                <span class="n">objectness_loss</span><span class="p">[</span><span class="n">not_matched</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selection_o</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">selection_o</span><span class="p">),</span>
-                                                                 <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ignore_high_iou</span> <span class="ow">and</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># Don&#39;t penalize anchor boxes with high IoU with GTs</span>
+                    <span class="n">selection_o</span> <span class="o">=</span> <span class="n">selection_o</span><span class="p">[</span><span class="n">iou_mat</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">num_anchors</span><span class="p">)[</span><span class="n">not_matched</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">]</span>
+                <span class="c1"># Update loss (target = 0)</span>
+                <span class="n">noobj_loss</span> <span class="o">+=</span> <span class="n">selection_o</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
             <span class="c1"># Update loss for boxes with an object</span>
             <span class="k">if</span> <span class="n">is_matched</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># Get prediction assignment</span>
                 <span class="n">selection_o</span> <span class="o">=</span> <span class="n">pred_o</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">is_matched</span><span class="p">]</span>
-                <span class="n">pred_filter</span> <span class="o">=</span> <span class="n">cell_idxs</span> <span class="k">if</span> <span class="n">cell_loss</span> <span class="k">else</span> <span class="n">is_matched</span>
+                <span class="n">pred_filter</span> <span class="o">=</span> <span class="n">cell_idxs</span> <span class="k">if</span> <span class="p">(</span><span class="n">pred_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">else</span> <span class="n">is_matched</span>
                 <span class="n">selected_scores</span> <span class="o">=</span> <span class="n">pred_scores</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">pred_filter</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
                 <span class="n">selected_boxes</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">is_matched</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
                 <span class="c1"># Convert GT --&gt; xc, yc, w, h</span>
@@ -321,18 +322,17 @@
 
                 <span class="c1"># Localization</span>
                 <span class="c1"># cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh</span>
-                <span class="n">bbox_loss</span><span class="p">[</span><span class="n">is_matched</span><span class="p">]</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selected_boxes</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">gt_centers</span><span class="p">,</span>
-                                                    <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">bbox_loss</span><span class="p">[</span><span class="n">is_matched</span><span class="p">]</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selected_boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(),</span> <span class="n">gt_wh</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(),</span>
-                                                    <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">bbox_loss</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selected_boxes</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">gt_centers</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+                <span class="n">bbox_loss</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selected_boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(),</span> <span class="n">gt_wh</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(),</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
                 <span class="c1"># Objectness</span>
-                <span class="n">objectness_loss</span><span class="p">[</span><span class="n">is_matched</span><span class="p">]</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selection_o</span><span class="p">,</span> <span class="n">selection_iou</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+                <span class="n">obj_loss</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selection_o</span><span class="p">,</span> <span class="n">selection_iou</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
                 <span class="c1"># Classification</span>
-                <span class="n">clf_loss</span><span class="p">[</span><span class="n">pred_filter</span><span class="p">]</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selected_scores</span><span class="p">,</span> <span class="n">gt_probs</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">clf_loss</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">selected_scores</span><span class="p">,</span> <span class="n">gt_probs</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">objectness_loss</span><span class="o">=</span><span class="n">objectness_loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                    <span class="n">bbox_loss</span><span class="o">=</span><span class="n">bbox_loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                    <span class="n">clf_loss</span><span class="o">=</span><span class="n">clf_loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">obj_loss</span><span class="o">=</span><span class="n">obj_loss</span> <span class="o">/</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">noobj_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_noobj</span> <span class="o">*</span> <span class="n">noobj_loss</span> <span class="o">/</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">bbox_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_coords</span> <span class="o">*</span> <span class="n">bbox_loss</span> <span class="o">/</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">clf_loss</span><span class="o">=</span><span class="n">clf_loss</span> <span class="o">/</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="n">rpn_nms_thresh</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
@@ -361,7 +361,8 @@
                 <span class="n">coords</span> <span class="o">=</span> <span class="n">b_coords</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">b_o</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">]</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">b_scores</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">b_o</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">labels</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">indices</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">values</span>
+                <span class="c1"># Multiply by the objectness</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="n">b_o</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">b_o</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">]</span>
 
                 <span class="c1"># NMS</span>
                 <span class="c1"># Switch to xmin, ymin, xmax, ymax coords</span>
@@ -386,7 +387,7 @@
 
 <span class="k">class</span> <span class="nc">YOLOv1</span><span class="p">(</span><span class="n">_YOLO</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">num_anchors</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">num_anchors</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lambda_noobj</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lambda_coords</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -405,6 +406,9 @@
             <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4096</span><span class="p">,</span> <span class="mi">7</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_anchors</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span> <span class="o">=</span> <span class="n">num_anchors</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="c1"># Loss coefficients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_noobj</span> <span class="o">=</span> <span class="n">lambda_noobj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_coords</span> <span class="o">=</span> <span class="n">lambda_coords</span>
 
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
 
@@ -489,7 +493,7 @@
 
 <span class="k">class</span> <span class="nc">YOLOv2</span><span class="p">(</span><span class="n">_YOLO</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">anchors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">anchors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lambda_noobj</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lambda_coords</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -520,6 +524,10 @@
 
         <span class="c1"># Register losses</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;anchors&#39;</span><span class="p">,</span> <span class="n">anchors</span><span class="p">)</span>
+
+        <span class="c1"># Loss coefficients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_noobj</span> <span class="o">=</span> <span class="n">lambda_noobj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_coords</span> <span class="o">=</span> <span class="n">lambda_coords</span>
 
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
 
@@ -718,7 +726,7 @@
 <span class="sd">    .. math::</span>
 <span class="sd">        \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}</span>
 <span class="sd">        \\mathbb{1}_{ij}^{obj} \\sum\\limits_{c \\in classes}</span>
-<span class="sd">        (p_i(c) - \\hat{p}_i(c))^2</span>
+<span class="sd">        (p_{ij}(c) - \\hat{p}_{ij}(c))^2</span>
 
 <span class="sd">    where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),</span>
 <span class="sd">    :math:`B` is the number of anchor boxes per grid cell (default: 5),</span>

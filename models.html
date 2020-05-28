@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models &mdash; holocron 0.1.2a0+f2ff704-git documentation</title>
+  <title>holocron.models &mdash; holocron 0.1.2a0+e52684d-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.2a0+f2ff704
+                0.1.2a0+e52684d
               </div>
             
           
@@ -467,7 +467,7 @@ bounding box priors and predicting class scores for each anchor box in the grid 
 <div class="math notranslate nohighlight">
 \[\mathcal{L}_{classification} = \sum\limits_{i=0}^{S^2}  \sum\limits_{j=0}^{B}
 \mathbb{1}_{ij}^{obj} \sum\limits_{c \in classes}
-(p_i(c) - \hat{p}_i(c))^2\]</div>
+(p_{ij}(c) - \hat{p}_{ij}(c))^2\]</div>
 <p>where <span class="math notranslate nohighlight">\(S\)</span> is size of the output feature map (13 for an input size <span class="math notranslate nohighlight">\((416, 416)\)</span>),
 <span class="math notranslate nohighlight">\(B\)</span> is the number of anchor boxes per grid cell (default: 5),
 <span class="math notranslate nohighlight">\(\mathbb{1}_{ij}^{obj}\)</span> equals to 1 if a GT center falls inside the i-th grid cell and among the
