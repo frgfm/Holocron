@@ -62,8 +62,26 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
 
 
 YOLO
--------
+----
 
 .. autofunction:: yolov1
 
 .. autofunction:: yolov2
+
+
+Semantic Segmentation
+=====================
+
+Semantic segmentation models expect a 4D image tensor as an input (N x C x H x W) and returns a classification score
+tensor of size (N x K x Ho x Wo).
+
+.. code:: python
+
+    import holocron.models as models
+    unet = models.unet(num_classes=10)
+
+
+U-Net
+-----
+
+.. autofunction:: unet

@@ -80,6 +80,19 @@ class Tester(unittest.TestCase):
         gt_labels = [torch.zeros(0, dtype=torch.long) for _ in num_boxes]
         loss = model(x, gt_boxes, gt_labels)
 
+    def _test_segmentation_model(self, name, size, out_size):
+
+        num_classes = 10
+        num_batches = 2
+        num_channels = 1
+        x = torch.rand((num_batches, num_channels, size, size))
+        model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
+        with torch.no_grad():
+            out = model(x)
+
+        self.assertIsInstance(out, torch.Tensor)
+        self.assertEqual(out.shape, (num_batches, num_classes, out_size, out_size))
+
 
 for model_name in ['res2net', 'res2next']:
     def do_test(self, model_name=model_name):
@@ -98,6 +111,12 @@ for model_name in ['darknet24', 'darknet19', 'darknet53']:
 for model_name, size in [('yolov1', 448), ('yolov2', 416)]:
     def do_test(self, model_name=model_name, size=size):
         self._test_detection_model(model_name, size)
+
+    setattr(Tester, "test_" + model_name, do_test)
+
+for model_name, size, out_size in [('unet', 572, 388)]:
+    def do_test(self, model_name=model_name, size=size, out_size=out_size):
+        self._test_segmentation_model(model_name, size, out_size)
 
     setattr(Tester, "test_" + model_name, do_test)
 
