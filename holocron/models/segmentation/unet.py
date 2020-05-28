@@ -43,24 +43,29 @@ class DownLayer(nn.Sequential):
 
 
 class UpLayer(nn.Module):
-    def __init__(self, in_chan, out_chan):
+    def __init__(self, in_chan, out_chan, num_skips=1):
         super().__init__()
 
-        self.upconv = nn.ConvTranspose2d(in_chan, out_chan, 2, stride=2)
-        self.block = nn.Sequential(conv3x3(in_chan, out_chan), nn.ReLU(inplace=True),
+        self.upconv = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
+        self.block = nn.Sequential(conv3x3((num_skips + 1) * in_chan // 2, out_chan), nn.ReLU(inplace=True),
                                    conv3x3(out_chan, out_chan), nn.ReLU(inplace=True))
+        self.num_skips = num_skips
 
-    def forward(self, downfeat, upfeat):
+    def forward(self, downfeats, upfeat):
+
+        if not isinstance(downfeats, list):
+            downfeats = [downfeats]
+        if len(downfeats) != self.num_skips:
+            raise ValueError
         # Upsample expansive features
-        upfeat = self.upconv(upfeat)
+        _upfeat = self.upconv(upfeat)
         # Crop contracting path features
-        delta_w = downfeat.shape[-1] - upfeat.shape[-1]
-        delta_h = downfeat.shape[-2] - upfeat.shape[-2]
-        downfeat = downfeat[..., delta_h // 2:-delta_h // 2, delta_w // 2:-delta_w // 2]
+        for idx, downfeat in enumerate(downfeats):
+            delta_w = downfeat.shape[-1] - _upfeat.shape[-1]
+            delta_h = downfeat.shape[-2] - _upfeat.shape[-2]
+            downfeats[idx] = downfeat[..., delta_h // 2:-delta_h // 2, delta_w // 2:-delta_w // 2]
         # Concatenate both feature maps and forward them
-        upfeat = self.block(torch.cat((downfeat, upfeat), dim=1))
-
-        return upfeat
+        return self.block(torch.cat((*downfeats, _upfeat), dim=1))
 
 
 class UNet(nn.Module):
