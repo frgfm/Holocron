@@ -32,8 +32,8 @@ def conv3x3(in_chan, out_chan, padding=0):
 
 
 class DownLayer(nn.Sequential):
-    def __init__(self, in_chan, out_chan, pool=True):
-        layers = [nn.MaxPool2d(2)] if pool else []
+    def __init__(self, in_chan, out_chan, downsample=True):
+        layers = [nn.MaxPool2d(2)] if downsample else []
         layers.extend([conv3x3(in_chan, out_chan), nn.ReLU(inplace=True),
                        conv3x3(out_chan, out_chan), nn.ReLU(inplace=True)])
         super().__init__(*layers)
@@ -47,7 +47,7 @@ class UpLayer(nn.Module):
         self.block = nn.Sequential(conv3x3(in_chan, out_chan), nn.ReLU(inplace=True),
                                    conv3x3(out_chan, out_chan), nn.ReLU(inplace=True))
 
-    def forward(self, upfeat, downfeat):
+    def forward(self, downfeat, upfeat):
         # Upsample expansive features
         upfeat = self.upconv(upfeat)
         # Crop contracting path features
@@ -89,10 +89,10 @@ class UNet(nn.Module):
         x = self.down5(x4)
 
         # Expansive path
-        x = self.up4(x, x4)
-        x = self.up3(x, x3)
-        x = self.up2(x, x2)
-        x = self.up1(x, x1)
+        x = self.up4(x4, x)
+        x = self.up3(x3, x)
+        x = self.up2(x2, x)
+        x = self.up1(x1, x)
 
         # Classifier
         x = self.classifier(x)
