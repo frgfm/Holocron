@@ -192,7 +192,8 @@ class DarkBlockV3(nn.Module):
 
 class DarknetBodyV3(nn.Module):
 
-    def _make_layer(self, num_blocks, in_planes, out_planes=None):
+    @staticmethod
+    def _make_layer(num_blocks, in_planes, out_planes=None):
 
         layers = [DarkBlockV3(in_planes, in_planes // 2) for _ in range(num_blocks)]
         if isinstance(out_planes, int):
