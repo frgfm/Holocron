@@ -20,7 +20,6 @@ import torch.utils.data
 from torch import nn
 import torchvision
 from torchvision import transforms
-from torchvision.transforms import functional as F
 
 import holocron
 
