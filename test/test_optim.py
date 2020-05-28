@@ -6,16 +6,6 @@ from torchvision.models import resnet18
 from holocron import optim
 
 
-def get_optimizers():
-    # Get all optimizers
-    return [k for k, v in optim.__dict__.items() if callable(v)]
-
-
-def get_wrappers():
-    # Get all optimizer wrappers
-    return [k for k, v in optim.wrapper.__dict__.items() if callable(v)]
-
-
 def _get_model(num_classes=50):
     return resnet18(num_classes=num_classes)
 
@@ -57,8 +47,11 @@ class Tester(unittest.TestCase):
 
         self._test_lr_scheduler('OneCycleScheduler', total_size=steps, cycle_momentum=False)
 
-    def _test_optimizer(self, name, lr=1e-4, input_shape=(3, 224, 224), nb_batches=4):
+    def _test_optimizer(self, name):
 
+        lr = 1e-4
+        input_shape = (3, 224, 224)
+        nb_batches = 4
         # Get model and optimizer
         model = _get_model()
         optimizer = optim.__dict__[name](model.parameters(), lr=lr)
@@ -77,14 +70,19 @@ class Tester(unittest.TestCase):
         output = model(input_t)
         loss = criterion(output, target)
         loss.backward()
+        print(name)
         optimizer.step()
 
         # Test
         self.assertIsNotNone(_p.grad)
         self.assertFalse(torch.equal(_p.data, p_val))
 
-    def _test_wrapper(self, name, lr=1e-4, input_shape=(3, 224, 224), nb_batches=4, **kwargs):
+    def _test_wrapper(self, name):
 
+        print(name)
+        lr = 1e-4
+        input_shape = (3, 224, 224)
+        nb_batches = 4
         # Get model, optimizer and criterion
         model = _get_model()
         # Pick an optimizer whose update is easy to verify
@@ -92,7 +90,7 @@ class Tester(unittest.TestCase):
         criterion = CrossEntropyLoss()
 
         # Wrap the optimizer
-        wrapper = optim.wrapper.__dict__[name](optimizer, **kwargs)
+        wrapper = optim.wrapper.__dict__[name](optimizer)
 
         # Check gradient reset
         wrapper.zero_grad()
@@ -119,15 +117,15 @@ class Tester(unittest.TestCase):
         self.assertFalse(torch.equal(_p.data, p_val - lr * _p.grad))
 
 
-for opt_name in get_optimizers():
-    def opt_test(self, fn_name=opt_name):
+for opt_name in ['Lars', 'Lamb', 'RAdam', 'RaLars']:
+    def opt_test(self, opt_name=opt_name):
         self._test_optimizer(opt_name)
 
     setattr(Tester, "test_" + opt_name, opt_test)
 
 
-for wrapper_name in get_wrappers():
-    def wrap_test(self, fn_name=wrapper_name):
+for wrapper_name in ['Lookahead', 'Scout']:
+    def wrap_test(self, wrapper_name=wrapper_name):
         self._test_wrapper(wrapper_name)
 
     setattr(Tester, "test_" + wrapper_name, wrap_test)
