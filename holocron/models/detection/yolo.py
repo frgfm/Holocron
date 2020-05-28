@@ -30,8 +30,7 @@ default_cfgs = {
 
 
 class _YOLO(nn.Module):
-    @staticmethod
-    def _compute_losses(pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels):
+    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, ignore_high_iou=False):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
@@ -46,14 +45,14 @@ class _YOLO(nn.Module):
             dict: dictionary of losses
         """
 
-        b, h, w, a, num_classes = pred_scores.shape
+        b, h, w, _, num_classes = pred_scores.shape
         # Pred scores of YOLOv1 do not have the anchor dimension properly sized (only for broadcasting)
         num_anchors = pred_boxes.shape[3]
-        cell_loss = a == 1
         # Initialize losses
-        objectness_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
-        bbox_loss = torch.zeros(w * h * num_anchors, device=pred_boxes.device)
-        clf_loss = torch.zeros(w * h if cell_loss else w * h * num_anchors, device=pred_boxes.device)
+        obj_loss = torch.zeros(1, device=pred_boxes.device)
+        noobj_loss = torch.zeros(1, device=pred_boxes.device)
+        bbox_loss = torch.zeros(1, device=pred_boxes.device)
+        clf_loss = torch.zeros(1, device=pred_boxes.device)
 
         # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
         pred_xyxy = torch.zeros_like(pred_boxes)
@@ -88,15 +87,17 @@ class _YOLO(nn.Module):
             if not_matched.shape[0] > 0:
                 # SSE between objectness and IoU
                 selection_o = pred_o.view(b, -1)[idx, not_matched]
-                # Update loss
-                objectness_loss[not_matched] += 0.5 * F.mse_loss(selection_o, torch.zeros_like(selection_o),
-                                                                 reduction='none')
+                if ignore_high_iou and gt_boxes[idx].shape[0] > 0:
+                    # Don't penalize anchor boxes with high IoU with GTs
+                    selection_o = selection_o[iou_mat.view(h * w * num_anchors)[not_matched].max(dim=1).values < 0.5]
+                # Update loss (target = 0)
+                noobj_loss += selection_o.pow(2).sum()
 
             # Update loss for boxes with an object
             if is_matched.shape[0] > 0:
                 # Get prediction assignment
                 selection_o = pred_o.view(b, -1)[idx, is_matched]
-                pred_filter = cell_idxs if cell_loss else is_matched
+                pred_filter = cell_idxs if (pred_scores.shape[3] == 1) else is_matched
                 selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, pred_filter].view(-1, num_classes)
                 selected_boxes = pred_boxes.view(b, -1, 4)[idx, is_matched].view(-1, 4)
                 # Convert GT --> xc, yc, w, h
@@ -114,18 +115,17 @@ class _YOLO(nn.Module):
 
                 # Localization
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, :2], gt_centers,
-                                                    reduction='none').sum(dim=-1)
-                bbox_loss[is_matched] += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(),
-                                                    reduction='none').sum(dim=-1)
+                bbox_loss += F.mse_loss(selected_boxes[:, :2], gt_centers, reduction='sum')
+                bbox_loss += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(), reduction='sum')
                 # Objectness
-                objectness_loss[is_matched] += F.mse_loss(selection_o, selection_iou, reduction='none')
+                obj_loss += F.mse_loss(selection_o, selection_iou, reduction='sum')
                 # Classification
-                clf_loss[pred_filter] += F.mse_loss(selected_scores, gt_probs, reduction='none').sum(dim=-1)
+                clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
 
-        return dict(objectness_loss=objectness_loss.sum() / pred_boxes.shape[0],
-                    bbox_loss=bbox_loss.sum() / pred_boxes.shape[0],
-                    clf_loss=clf_loss.sum() / pred_boxes.shape[0])
+        return dict(obj_loss=obj_loss / pred_boxes.shape[0],
+                    noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
+                    bbox_loss=self.lambda_coords * bbox_loss / pred_boxes.shape[0],
+                    clf_loss=clf_loss / pred_boxes.shape[0])
 
     @staticmethod
     def post_process(b_coords, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
@@ -154,7 +154,8 @@ class _YOLO(nn.Module):
                 coords = b_coords[idx, b_o[idx] >= 0.5]
                 scores = b_scores[idx, b_o[idx] >= 0.5].max(dim=-1)
                 labels = scores.indices
-                scores = scores.values
+                # Multiply by the objectness
+                scores = scores.values * b_o[idx, b_o[idx] >= 0.5]
 
                 # NMS
                 # Switch to xmin, ymin, xmax, ymax coords
@@ -179,7 +180,7 @@ class _YOLO(nn.Module):
 
 class YOLOv1(_YOLO):
 
-    def __init__(self, layout, num_classes=20, num_anchors=2):
+    def __init__(self, layout, num_classes=20, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.):
 
         super().__init__()
 
@@ -198,6 +199,9 @@ class YOLOv1(_YOLO):
             nn.Linear(4096, 7 ** 2 * (num_anchors * 5 + num_classes)))
         self.num_anchors = num_anchors
         self.num_classes = num_classes
+        # Loss coefficients
+        self.lambda_noobj = lambda_noobj
+        self.lambda_coords = lambda_coords
 
         init_module(self, 'leaky_relu')
 
@@ -282,7 +286,7 @@ class YOLOv1(_YOLO):
 
 class YOLOv2(_YOLO):
 
-    def __init__(self, layout, num_classes=20, anchors=None):
+    def __init__(self, layout, num_classes=20, anchors=None, lambda_noobj=0.5, lambda_coords=5.):
 
         super().__init__()
 
@@ -313,6 +317,10 @@ class YOLOv2(_YOLO):
 
         # Register losses
         self.register_buffer('anchors', anchors)
+
+        # Loss coefficients
+        self.lambda_noobj = lambda_noobj
+        self.lambda_coords = lambda_coords
 
         init_module(self, 'leaky_relu')
 
@@ -511,7 +519,7 @@ def yolov2(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     .. math::
         \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}
         \\mathbb{1}_{ij}^{obj} \\sum\\limits_{c \\in classes}
-        (p_i(c) - \\hat{p}_i(c))^2
+        (p_{ij}(c) - \\hat{p}_{ij}(c))^2
 
     where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),
     :math:`B` is the number of anchor boxes per grid cell (default: 5),
