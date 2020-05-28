@@ -11,7 +11,7 @@ import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 
 
-__all__ = ['UNet', 'unet', 'UNetp', 'unetp']
+__all__ = ['UNet', 'unet', 'UNetp', 'unetp', 'UNetpp', 'unetpp']
 
 
 default_cfgs = {
@@ -20,7 +20,10 @@ default_cfgs = {
              'url': None},
     'unetp': {'arch': 'UNetp',
               'layout': [64, 128, 256, 512, 1024],
-              'url': None}
+              'url': None},
+    'unetpp': {'arch': 'UNetpp',
+               'layout': [64, 128, 256, 512, 1024],
+               'url': None}
 }
 
 
@@ -171,6 +174,63 @@ class UNetp(nn.Module):
         return x
 
 
+class UNetpp(nn.Module):
+    """Implements a UNet++ architecture
+
+    Args:
+        layout (list<int>): number of channels after each contracting block
+        in_channels (int, optional): number of channels in the input tensor
+        num_classes (int, optional): number of output classes
+    """
+    def __init__(self, layout, in_channels=1, num_classes=10):
+        super().__init__()
+
+        # Contracting path
+        _layout = [in_channels] + layout
+        _pool = False
+        for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
+            self.add_module(f"down{num}", DownLayer(in_chan, out_chan, _pool))
+            _pool = True
+
+        # Expansive path
+        _layout = layout[::-1]
+        for row, in_chan, out_chan, cols in zip(range(len(layout) - 1, 0, -1), _layout[:-1], _layout[1:],
+                                                range(1, len(layout))):
+            for col in range(1, cols + 1):
+                self.add_module(f"up{row}{col}", UpLayer(in_chan, out_chan, num_skips=col))
+
+        # Classifier
+        self.classifier = conv1x1(64, num_classes)
+
+    def forward(self, x):
+
+        # Contracting path
+        x10 = self.down1(x)
+        x20 = self.down2(x10)
+        x30 = self.down3(x20)
+        x40 = self.down4(x30)
+        x = self.down5(x40)
+
+        # Nested Expansive path
+        x11 = self.up11(x10, x20)
+        x21 = self.up21(x20, x30)
+        x31 = self.up31(x30, x40)
+        x = self.up41(x40, x)
+
+        x12 = self.up12([x10, x11], x21)
+        x22 = self.up22([x20, x21], x31)
+        x = self.up32([x30, x31], x)
+
+        x13 = self.up13([x10, x11, x12], x22)
+        x = self.up23([x20, x21, x22], x)
+
+        x = self.up14([x10, x11, x12, x13], x)
+
+        # Classifier
+        x = self.classifier(x)
+        return x
+
+
 def _unet(arch, pretrained, progress, **kwargs):
     # Retrieve the correct Darknet layout type
     unet_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
@@ -216,3 +276,18 @@ def unetp(pretrained=False, progress=True, **kwargs):
     """
 
     return _unet('unetp', pretrained, progress, **kwargs)
+
+
+def unetpp(pretrained=False, progress=True, **kwargs):
+    """UNet++ from
+    `"UNet++: A Nested U-Net Architecture for Medical Image Segmentation" <https://arxiv.org/pdf/1807.10165.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: semantic segmentation model
+    """
+
+    return _unet('unet2p', pretrained, progress, **kwargs)
