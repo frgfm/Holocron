@@ -115,7 +115,8 @@ class OneCycleScheduler(_LRScheduler):
 
         super(OneCycleScheduler, self).__init__(optimizer, last_epoch)
 
-    def _format_param(self, name, optimizer, param):
+    @staticmethod
+    def _format_param(name, optimizer, param):
         """Return correctly formatted lr/momentum for each param group."""
         if isinstance(param, (list, tuple)):
             if len(param) != len(optimizer.param_groups):
