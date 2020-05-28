@@ -61,6 +61,13 @@ class UpLayer(nn.Module):
 
 
 class UNet(nn.Module):
+    """Implements a U-Net architecture
+
+    Args:
+        layout (list<int>): number of channels after each contracting block
+        in_channels (int, optional): number of channels in the input tensor
+        num_classes (int, optional): number of output classes
+    """
     def __init__(self, layout, in_channels=1, num_classes=10):
         super().__init__()
 
