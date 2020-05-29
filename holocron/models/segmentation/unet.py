@@ -216,8 +216,8 @@ class UNetpp(nn.Module):
 
         xs = []
         # Contracting path
-        for idx in range(len(self.encoders)):
-            xs.append([self.encoders[idx](xs[-1][0] if len(xs) > 0 else x)])
+        for encoder in self.encoders:
+            xs.append([encoder(xs[-1][0] if len(xs) > 0 else x)])
 
         # Nested expansive path
         for j in range(len(self.decoders)):
