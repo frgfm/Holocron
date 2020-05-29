@@ -155,13 +155,14 @@ class UNetp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool))
+            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan) for _ in range(len(layout) - idx - 1)]))
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, padding=1)
+                                                for _ in range(len(layout) - idx - 1)]))
 
         # Classifier
         self.classifier = conv1x1(layout[0], num_classes)
@@ -203,13 +204,13 @@ class UNetpp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool))
+            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips)
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips, padding=1)
                                                 for num_skips in range(1, len(layout) - idx)]))
 
         # Classifier
