@@ -78,7 +78,7 @@ class UpPath(nn.Module):
         if not isinstance(downfeats, list):
             downfeats = [downfeats]
         if len(downfeats) != self.num_skips:
-            raise ValueError
+            raise ValueError(f"Expected {self.num_skips} encoding feats, received {len(downfeats)}")
         # Upsample expansive features
         _upfeat = self.upsample(upfeat)
         # Crop contracting path features
@@ -102,36 +102,34 @@ class UNet(nn.Module):
         super().__init__()
 
         # Contracting path
+        self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
-        for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
-            self.add_module(f"down{num}", DownPath(in_chan, out_chan, _pool))
+        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
+            self.encoders.append(DownPath(in_chan, out_chan, _pool))
             _pool = True
 
         # Expansive path
-        _layout = layout[::-1]
-        for num, in_chan, out_chan in zip(range(len(layout) - 1, 0, -1), _layout[:-1], _layout[1:]):
-            self.add_module(f"up{num}", UpPath(in_chan, out_chan))
+        self.decoders = nn.ModuleList([])
+        for in_chan, out_chan in zip(layout[1:], layout[:-1]):
+            self.decoders.append(UpPath(in_chan, out_chan))
 
         # Classifier
-        self.classifier = conv1x1(64, num_classes)
+        self.classifier = conv1x1(layout[0], num_classes)
 
         init_module(self, 'relu')
 
     def forward(self, x):
 
+        xs = []
         # Contracting path
-        x1 = self.down1(x)
-        x2 = self.down2(x1)
-        x3 = self.down3(x2)
-        x4 = self.down4(x3)
-        x = self.down5(x4)
+        for encoder in self.encoders[:-1]:
+            xs.append(encoder(xs[-1] if len(xs) > 0 else x))
+        x = self.encoders[-1](xs[-1])
 
         # Expansive path
-        x = self.up4(x4, x)
-        x = self.up3(x3, x)
-        x = self.up2(x2, x)
-        x = self.up1(x1, x)
+        for idx in range(len(self.decoders) - 1, -1, -1):
+            x = self.decoders[idx](xs[idx], x)
 
         # Classifier
         x = self.classifier(x)
@@ -150,50 +148,37 @@ class UNetp(nn.Module):
         super().__init__()
 
         # Contracting path
+        self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
-        for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
-            self.add_module(f"down{num}", DownPath(in_chan, out_chan, _pool))
+        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
+            self.encoders.append(DownPath(in_chan, out_chan, _pool))
             _pool = True
 
         # Expansive path
-        _layout = layout[::-1]
-        for row, in_chan, out_chan, cols in zip(range(len(layout) - 1, 0, -1), _layout[:-1], _layout[1:],
-                                                range(1, len(layout))):
-            for col in range(1, cols + 1):
-                self.add_module(f"up{row}{col}", UpPath(in_chan, out_chan))
+        self.decoders = nn.ModuleList([])
+        for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan) for _ in range(len(layout) - idx - 1)]))
 
         # Classifier
-        self.classifier = conv1x1(64, num_classes)
+        self.classifier = conv1x1(layout[0], num_classes)
 
         init_module(self, 'relu')
 
     def forward(self, x):
 
+        xs = []
         # Contracting path
-        x1 = self.down1(x)
-        x2 = self.down2(x1)
-        x3 = self.down3(x2)
-        x4 = self.down4(x3)
-        x = self.down5(x4)
+        for encoder in self.encoders:
+            xs.append(encoder(xs[-1] if len(xs) > 0 else x))
 
-        # Nested Expansive path
-        x1 = self.up11(x1, x2)
-        x2 = self.up21(x2, x3)
-        x3 = self.up31(x3, x4)
-        x = self.up41(x4, x)
-
-        x1 = self.up12(x1, x2)
-        x2 = self.up22(x2, x3)
-        x = self.up32(x3, x)
-
-        x1 = self.up13(x1, x2)
-        x = self.up23(x2, x)
-
-        x = self.up14(x1, x)
+        # Nested expansive path
+        for j in range(len(self.decoders)):
+            for i in range(len(self.decoders) - j):
+                xs[i] = self.decoders[i][j](xs[i], xs[i + 1])
 
         # Classifier
-        x = self.classifier(x)
+        x = self.classifier(xs[0])
         return x
 
 
@@ -209,50 +194,38 @@ class UNetpp(nn.Module):
         super().__init__()
 
         # Contracting path
+        self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
-        for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
-            self.add_module(f"down{num}", DownPath(in_chan, out_chan, _pool))
+        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
+            self.encoders.append(DownPath(in_chan, out_chan, _pool))
             _pool = True
 
         # Expansive path
-        _layout = layout[::-1]
-        for row, in_chan, out_chan, cols in zip(range(len(layout) - 1, 0, -1), _layout[:-1], _layout[1:],
-                                                range(1, len(layout))):
-            for col in range(1, cols + 1):
-                self.add_module(f"up{row}{col}", UpPath(in_chan, out_chan, num_skips=col))
+        self.decoders = nn.ModuleList([])
+        for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips)
+                                                for num_skips in range(1, len(layout) - idx)]))
 
         # Classifier
-        self.classifier = conv1x1(64, num_classes)
+        self.classifier = conv1x1(layout[0], num_classes)
 
         init_module(self, 'relu')
 
     def forward(self, x):
 
+        xs = []
         # Contracting path
-        x10 = self.down1(x)
-        x20 = self.down2(x10)
-        x30 = self.down3(x20)
-        x40 = self.down4(x30)
-        x = self.down5(x40)
+        for idx in range(len(self.encoders)):
+            xs.append([self.encoders[idx](xs[-1][0] if len(xs) > 0 else x)])
 
-        # Nested Expansive path
-        x11 = self.up11(x10, x20)
-        x21 = self.up21(x20, x30)
-        x31 = self.up31(x30, x40)
-        x = self.up41(x40, x)
-
-        x12 = self.up12([x10, x11], x21)
-        x22 = self.up22([x20, x21], x31)
-        x = self.up32([x30, x31], x)
-
-        x13 = self.up13([x10, x11, x12], x22)
-        x = self.up23([x20, x21, x22], x)
-
-        x = self.up14([x10, x11, x12, x13], x)
+        # Nested expansive path
+        for j in range(len(self.decoders)):
+            for i in range(len(self.decoders) - j):
+                xs[i].append(self.decoders[i][j](xs[i], xs[i + 1][-1]))
 
         # Classifier
-        x = self.classifier(x)
+        x = self.classifier(xs[0][-1])
         return x
 
 
@@ -279,7 +252,8 @@ class FSAggreg(nn.Module):
     def forward(self, downfeats, feat, upfeats):
 
         if len(downfeats) != len(self.downsamples) or len(upfeats) != len(self.upsamples):
-            raise ValueError
+            raise ValueError(f"Expected {len(self.downsamples)} encoding & {len(self.upsamples)} decoding features, "
+                             f"received: {len(downfeats)} & {len(upfeats)}")
 
         # Concatenate full-scale features
         x = torch.cat((*[downsample(downfeat) for downsample, downfeat in zip(self.downsamples, downfeats)],
@@ -301,38 +275,38 @@ class UNet3p(nn.Module):
         super().__init__()
 
         # Contracting path
+        self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
-        for num, in_chan, out_chan in zip(range(1, len(_layout)), _layout[:-1], _layout[1:]):
-            self.add_module(f"down{num}", DownPath(in_chan, out_chan, _pool, 1, True))
+        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
+            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1, True))
             _pool = True
 
         # Expansive path
-        for row in range(len(layout) - 1, 0, -1):
-            self.add_module(f"up{row}", FSAggreg(layout[:row - 1], layout[row - 1], [320] * (4 - row) + layout[-1:]))
+        self.decoders = nn.ModuleList([])
+        for row in range(len(layout) - 1):
+            self.decoders.append(FSAggreg(layout[:row],
+                                          layout[row],
+                                          [len(layout) * layout[0]] * (len(layout) - 2 - row) + layout[-1:]))
 
         # Classifier
-        self.classifier = conv1x1(320, num_classes)
+        self.classifier = conv1x1(len(layout) * layout[0], num_classes)
 
         init_module(self, 'relu')
 
     def forward(self, x):
 
+        xs = []
         # Contracting path
-        x1 = self.down1(x)
-        x2 = self.down2(x1)
-        x3 = self.down3(x2)
-        x4 = self.down4(x3)
-        x5 = self.down5(x4)
+        for encoder in self.encoders:
+            xs.append(encoder(xs[-1] if len(xs) > 0 else x))
 
-        # Full-scale Expansive path
-        x4 = self.up4([x1, x2, x3], x4, [x5])
-        x3 = self.up3([x1, x2], x3, [x4, x5])
-        x2 = self.up2([x1], x2, [x3, x4, x5])
-        x1 = self.up1([], x1, [x2, x3, x4, x5])
+        # Full-scale expansive path
+        for idx in range(len(self.decoders) - 1, -1, -1):
+            xs[idx] = self.decoders[idx](xs[:idx], xs[idx], xs[idx + 1:])
 
         # Classifier
-        x = self.classifier(x1)
+        x = self.classifier(xs[0])
         return x
 
 
