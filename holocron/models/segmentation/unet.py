@@ -130,6 +130,8 @@ class UNet(nn.Module):
         # Expansive path
         for idx in range(len(self.decoders) - 1, -1, -1):
             x = self.decoders[idx](xs[idx], x)
+            # Release memory
+            del xs[idx]
 
         # Classifier
         x = self.classifier(x)
@@ -176,6 +178,8 @@ class UNetp(nn.Module):
         for j in range(len(self.decoders)):
             for i in range(len(self.decoders) - j):
                 xs[i] = self.decoders[i][j](xs[i], xs[i + 1])
+            # Release memory
+            del xs[len(self.decoders) - j]
 
         # Classifier
         x = self.classifier(xs[0])
@@ -223,6 +227,8 @@ class UNetpp(nn.Module):
         for j in range(len(self.decoders)):
             for i in range(len(self.decoders) - j):
                 xs[i].append(self.decoders[i][j](xs[i], xs[i + 1][-1]))
+            # Release memory
+            del xs[len(self.decoders) - j]
 
         # Classifier
         x = self.classifier(xs[0][-1])
