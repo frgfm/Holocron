@@ -83,10 +83,11 @@ class UpPath(nn.Module):
         _upfeat = self.upsample(upfeat)
         # Crop contracting path features
         for idx, downfeat in enumerate(downfeats):
-            if downfeat.shape[-2:] != upfeat.shape[-2:]:
-                delta_w = downfeat.shape[-1] - _upfeat.shape[-1]
-                delta_h = downfeat.shape[-2] - _upfeat.shape[-2]
-                downfeats[idx] = downfeat[..., delta_h // 2:-delta_h // 2, delta_w // 2:-delta_w // 2]
+            delta_w = downfeat.shape[-1] - _upfeat.shape[-1]
+            w_slice = slice(delta_w // 2, -delta_w // 2 if delta_w > 0 else downfeat.shape[-1])
+            delta_h = downfeat.shape[-2] - _upfeat.shape[-2]
+            h_slice = slice(delta_h // 2, -delta_h // 2 if delta_h > 0 else downfeat.shape[-2])
+            downfeats[idx] = downfeat[..., h_slice, w_slice]
         # Concatenate both feature maps and forward them
         return self.block(torch.cat((*downfeats, _upfeat), dim=1))
 
