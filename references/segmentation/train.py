@@ -75,7 +75,8 @@ def evaluate(model, data_loader, criterion, device, ignore_index=255):
             tmp_iou, num_seg = 0, 0
             for class_idx in torch.unique(target):
                 if class_idx != ignore_index:
-                    tmp_iou += (pred[target == class_idx] == class_idx).sum().item() / ((pred == class_idx) | (target == class_idx)).sum().item()
+                    inter = (pred[target == class_idx] == class_idx).sum().item()
+                    tmp_iou += inter / ((pred == class_idx) | (target == class_idx)).sum().item()
                     num_seg += 1
             mean_iou += tmp_iou / num_seg
 
