@@ -106,21 +106,17 @@ def concat_downsample2d(x, scale_factor):
         scale_factor (int): spatial scaling factor
 
     Returns:
-        torch.Tensor[N, 4C, H / 2, W / 2]: downsampled tensor
+        torch.Tensor[N, scale_factor ** 2 * C, H / scale_factor, W / scale_factor]: downsampled tensor
     """
 
     b, c, h, w = x.shape
 
     if (h % scale_factor != 0) or (w % scale_factor != 0):
         raise AssertionError("Spatial size of input tensor must be multiples of `scale_factor`")
-    new_h, new_w = h // scale_factor, w // scale_factor
 
     # N * C * H * W --> N * C * (H/scale_factor) * scale_factor * (W/scale_factor) * scale_factor
-    out = x.view(b, c, new_h, scale_factor, new_w, scale_factor)
-    # Move extra axes to last position to flatten them with channel dimension
-    out = out.permute(0, 2, 4, 1, 3, 5).flatten(3)
-    # Reorder all axes
-    out = out.permute(0, 3, 1, 2)
+    out = torch.cat([x[..., i::scale_factor, j::scale_factor]
+                     for i in range(scale_factor) for j in range(scale_factor)], dim=1)
 
     return out
 

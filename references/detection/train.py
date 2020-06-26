@@ -302,7 +302,7 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
-    parser.add_argument('--model', default='darknet19', help='model')
+    parser.add_argument('--model', default='yolov2', help='model')
     parser.add_argument("--freeze-backbone", dest='freeze_backbone', action='store_true',
                         help="Should the backbone be frozen")
     parser.add_argument('--device', default='cuda', help='device')
