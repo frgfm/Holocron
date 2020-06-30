@@ -101,8 +101,7 @@ def load_data(datadir):
     print("Loading training data")
     st = time.time()
     dataset = VOCSegmentation(datadir, image_set='train', download=True,
-                              transforms=Compose([
-                                                  RandomResize(min_size, max_size),
+                              transforms=Compose([RandomResize(min_size, max_size),
                                                   RandomHorizontalFlip(0.5),
                                                   RandomCrop(crop_size),
                                                   SampleTransform(transforms.ColorJitter(brightness=0.3,
@@ -173,16 +172,16 @@ def main(args):
     torch.backends.cudnn.benchmark = True
 
     dataset, dataset_test, train_sampler, test_sampler = load_data(args.data_path)
-    train_loader = torch.utils.data.DataLoader(dataset,
-        batch_size=args.batch_size, sampler=train_sampler, num_workers=args.workers, pin_memory=True)
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
+                                               sampler=train_sampler, num_workers=args.workers, pin_memory=True)
 
     if args.show_samples:
         x, target = next(iter(train_loader))
         plot_samples(x, target, ignore_index=255)
         return
 
-    val_loader = torch.utils.data.DataLoader(dataset_test,
-        batch_size=args.batch_size, sampler=test_sampler, num_workers=args.workers, pin_memory=True)
+    val_loader = torch.utils.data.DataLoader(dataset_test, batch_size=args.batch_size,
+                                             sampler=test_sampler, num_workers=args.workers, pin_memory=True)
 
     print("Creating model")
     kwargs = {}
