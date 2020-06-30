@@ -10,7 +10,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.ops.boxes import box_iou, nms
-from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.models.utils import load_state_dict_from_url
 from torchvision.models.resnet import conv1x1, conv3x3
 
