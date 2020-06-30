@@ -141,7 +141,7 @@ class Add2d(_NormConvNd):
 
 
 class SlimConv2d(nn.Module):
-    """Implements the adder module from `"SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
+    """Implements the convolution module from `"SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
     by Weights Flipping" <https://arxiv.org/pdf/2003.07469.pdf>`_.
 
     First, we compute channel-wise weights as follows:
