@@ -231,7 +231,7 @@ def main(args):
         best_loss = checkpoint['val_loss']
 
     if args.test_only:
-        val_loss, mean_iou = evaluate(model, val_loader, device=device)
+        val_loss, mean_iou = evaluate(model, val_loader, criterion, device=device)
         print(f"Validation loss: {val_loss:.4} | Mean IoU: {mean_iou:.2%}")
         return
 
