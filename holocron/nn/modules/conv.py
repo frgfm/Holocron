@@ -76,7 +76,7 @@ class NormConv2d(_NormConvNd):
 
     def forward(self, input):
         if self.padding_mode != 'zeros':
-            return F.norm_conv2d(pad(input, self._padding_repeated_twice, mode=self.padding_mode),
+            return F.norm_conv2d(pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
                                  self.weight, self.bias, self.stride, _pair(0),
                                  self.dilation, self.groups, self.eps)
         return F.norm_conv2d(input, self.weight, self.bias, self.stride, self.padding,
@@ -133,7 +133,7 @@ class Add2d(_NormConvNd):
 
     def forward(self, input):
         if self.padding_mode != 'zeros':
-            return F.add2d(pad(input, self._padding_repeated_twice, mode=self.padding_mode),
+            return F.add2d(pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
                            self.weight, self.bias, self.stride, _pair(0),
                            self.dilation, self.groups, self.normalize_slices, self.eps)
         return F.add2d(input, self.weight, self.bias, self.stride, self.padding,
@@ -141,7 +141,7 @@ class Add2d(_NormConvNd):
 
 
 class SlimConv2d(nn.Module):
-    """Implements the adder module from `"SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
+    """Implements the convolution module from `"SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
     by Weights Flipping" <https://arxiv.org/pdf/2003.07469.pdf>`_.
 
     First, we compute channel-wise weights as follows:
