@@ -205,7 +205,9 @@ def main(args):
         optimizer = Lookahead(holocron.optim.RAdam(model.parameters(), args.lr, betas=(0.95, 0.99), eps=1e-6,
                                                    weight_decay=args.weight_decay))
 
-    criterion = torch.nn.CrossEntropyLoss(ignore_index=255)
+    loss_weight = torch.ones(len(classes))
+    loss_weight[0] = 0.1
+    criterion = torch.nn.CrossEntropyLoss(weight=loss_weight, ignore_index=255).to(device)
 
     if args.lr_finder:
         plot_lr_finder(train_one_batch, model, train_loader, optimizer, criterion, device,
