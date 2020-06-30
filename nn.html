@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.2a0+880489c-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.2a0+6cacc3c-git documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.1.2a0+880489c
+                0.1.2a0+6cacc3c
               </div>
             
           
@@ -405,7 +405,7 @@ Default: 1e-14</p></li>
 <dl class="py class">
 <dt id="holocron.nn.SlimConv2d">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">SlimConv2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="o">=</span><span class="default_value">'zeros'</span></em>, <em class="sig-param"><span class="n">r</span><span class="o">=</span><span class="default_value">32</span></em>, <em class="sig-param"><span class="n">L</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/conv.html#SlimConv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.SlimConv2d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the adder module from <a class="reference external" href="https://arxiv.org/pdf/2003.07469.pdf">“SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
+<dd><p>Implements the convolution module from <a class="reference external" href="https://arxiv.org/pdf/2003.07469.pdf">“SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
 by Weights Flipping”</a>.</p>
 <p>First, we compute channel-wise weights as follows:</p>
 <div class="math notranslate nohighlight">
