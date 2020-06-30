@@ -11,18 +11,16 @@ import time
 from pathlib import Path
 from fastprogress import master_bar, progress_bar
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 
 import torch
 import torch.utils.data
 from torchvision import transforms
-from torchvision.datasets import VOSegmentation
-from torchvision.ops.boxes import box_iou
+from torchvision.datasets import VOCSegmentation
 from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.transforms import functional as F
 
 import holocron
-from transforms import (Compose, VOCTargetTransform, Resize, ImageTransform, CenterCrop, RandomResizedCrop,
+from transforms import (Compose, Resize, ImageTransform, CenterCrop, RandomResizedCrop,
                         RandomHorizontalFlip, convert_to_relative)
 
 
