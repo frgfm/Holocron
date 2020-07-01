@@ -4,7 +4,6 @@
 Extended version of Adam optimizer with Student-t mean estimation
 '''
 
-import math
 import torch
 from torch.optim.optimizer import Optimizer
 
