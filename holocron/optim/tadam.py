@@ -75,7 +75,8 @@ class TAdam(Optimizer):
 
                 state['step'] += 1
 
-                wt = (state['dof'] + state['d']) / (state['dof'] + ((grad - exp_avg) ** 2 / (exp_avg_sq + group['eps'])).sum())
+                wt = grad.sub(exp_avg).pow_(2).div_(exp_avg_sq.add(group['eps'])).sum()
+                wt.add_(state['dof']).pow_(-1).mul_(state['dof'] + state['d'])
 
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(state['W_t'] / (state['W_t'] + wt)).add_(grad, alpha=wt / (state['W_t'] + wt))
