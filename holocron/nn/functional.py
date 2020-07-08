@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 
 __all__ = ['mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
-           'norm_conv2d', 'add2d']
+           'norm_conv2d', 'add2d', 'dropblock2d']
 
 
 def mish(x):
@@ -322,3 +322,35 @@ def add2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, norma
     """
 
     return _xcorrNd(_addNd, x, weight, bias, stride, padding, dilation, groups, normalize_slices, eps)
+
+
+def dropblock2d(x, drop_prob, block_size, inplace=False):
+    """Implements the dropblock operation from `"DropBlock: A regularization method for convolutional networks"
+    <https://arxiv.org/pdf/1810.12890.pdf>`_
+
+    Args:
+        drop_prob (float): probability of dropping activation value
+        block_size (int): size of each block that is expended from the sampled mask
+        inplace (bool, optional): whether the operation should be done inplace
+    """
+
+    # Sample a mask for the centers of blocks that will be dropped
+    mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= drop_prob).to(dtype=torch.float32)
+
+    # Expand zero positions to block size
+    mask = 1 - F.max_pool2d(mask, kernel_size=(block_size, block_size),
+                            stride=(1, 1), padding=block_size // 2)
+
+    # Avoid NaNs
+    one_count = mask.sum()
+    if inplace:
+        x *= mask.unsqueeze(1)
+        if one_count > 0:
+            x *= mask.numel() / one_count
+        return x
+
+    out = x * mask.unsqueeze(1)
+    if one_count > 0:
+        out *= mask.numel() / one_count
+
+    return out
