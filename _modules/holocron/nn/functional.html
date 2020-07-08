@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.2a0+a901973-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.2a0+a786789-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.2a0+a901973
+                0.1.2a0+a786789
               </div>
             
           
@@ -120,6 +120,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-functions">Loss functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-wrappers">Loss wrappers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#convolution-layers">Convolution layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
@@ -127,6 +128,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#non-linear-activations">Non-linear activations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#loss-functions">Loss functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#convolutions">Convolutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
@@ -224,7 +226,7 @@
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mish&#39;</span><span class="p">,</span> <span class="s1">&#39;nl_relu&#39;</span><span class="p">,</span> <span class="s1">&#39;focal_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;multilabel_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ls_cross_entropy&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">]</span>
+           <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;dropblock2d&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="mish"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.mish">[docs]</a><span class="k">def</span> <span class="nf">mish</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -536,6 +538,38 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">_xcorrNd</span><span class="p">(</span><span class="n">_addNd</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">normalize_slices</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dropblock2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.dropblock2d">[docs]</a><span class="k">def</span> <span class="nf">dropblock2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">drop_prob</span><span class="p">,</span> <span class="n">block_size</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements the dropblock operation from `&quot;DropBlock: A regularization method for convolutional networks&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/1810.12890.pdf&gt;`_</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        drop_prob (float): probability of dropping activation value</span>
+<span class="sd">        block_size (int): size of each block that is expended from the sampled mask</span>
+<span class="sd">        inplace (bool, optional): whether the operation should be done inplace</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Sample a mask for the centers of blocks that will be dropped</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]),</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">drop_prob</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># Expand zero positions to block size</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="n">block_size</span><span class="p">,</span> <span class="n">block_size</span><span class="p">),</span>
+                            <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="n">block_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Avoid NaNs</span>
+    <span class="n">one_count</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">*=</span> <span class="n">mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">one_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">*=</span> <span class="n">mask</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">/</span> <span class="n">one_count</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">one_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">*=</span> <span class="n">mask</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">/</span> <span class="n">one_count</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
 </pre></div>
 
            </div>
