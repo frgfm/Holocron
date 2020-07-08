@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from holocron.nn import functional as F
 from holocron.nn.init import init_module
-from holocron.nn.modules import activation, conv, loss, downsample
+from holocron.nn.modules import activation, conv, loss, downsample, dropblock
 
 
 class Tester(unittest.TestCase):
@@ -244,6 +244,32 @@ class Tester(unittest.TestCase):
         with torch.no_grad():
             out = mod(x)
         self.assertEqual(out.shape, (2, 6, 19, 19))
+
+    def test_dropblock2d(self):
+
+        x = torch.rand(2, 8, 19, 19)
+
+        # Drop probability of 1
+        mod = dropblock.DropBlock2d(1., 1, inplace=False)
+
+        with torch.no_grad():
+            out = mod(x)
+        self.assertTrue(torch.equal(out, torch.zeros_like(x)))
+
+        # Drop probability of 0
+        mod = dropblock.DropBlock2d(0., 3, inplace=False)
+
+        with torch.no_grad():
+            out = mod(x)
+        self.assertTrue(torch.equal(out, x))
+        self.assertNotEqual(out.data_ptr, x.data_ptr)
+
+        # Check inplace
+        mod = dropblock.DropBlock2d(1., 3, inplace=True)
+
+        with torch.no_grad():
+            out = mod(x)
+        self.assertEqual(out.data_ptr, x.data_ptr)
 
 
 act_fns = ['mish', 'nl_relu']

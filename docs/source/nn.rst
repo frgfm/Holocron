@@ -36,6 +36,11 @@ Convolution layers
 
 .. autoclass:: SlimConv2d
 
+Regularization layers
+---------------------
+
+.. autoclass:: DropBlock2d
+
 
 Downsampling
 ------------

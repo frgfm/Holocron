@@ -27,11 +27,16 @@ Loss functions
 .. autofunction:: ls_cross_entropy
 
 Convolutions
---------------
+------------
 
 .. autofunction:: norm_conv2d
 
 .. autofunction:: add2d
+
+Regularization layers
+---------------------
+
+.. autofunction:: dropblock2d
 
 
 Downsampling
