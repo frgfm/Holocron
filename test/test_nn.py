@@ -272,7 +272,7 @@ class Tester(unittest.TestCase):
         self.assertEqual(out.data_ptr, x.data_ptr)
 
 
-act_fns = ['mish', 'nl_relu']
+act_fns = ['swish', 'mish', 'nl_relu']
 
 for fn_name in act_fns:
     def do_test(self, fn_name=fn_name):
@@ -281,7 +281,7 @@ for fn_name in act_fns:
 
     setattr(Tester, "test_" + fn_name, do_test)
 
-act_modules = ['Mish', 'NLReLU']
+act_modules = ['Swish', 'Mish', 'NLReLU']
 
 for mod_name in act_modules:
     def do_test(self, mod_name=mod_name):
