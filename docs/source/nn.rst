@@ -9,6 +9,8 @@ An addition to the :mod:`torch.nn` module of Pytorch to extend the range of neur
 Non-linear activations
 ----------------------
 
+.. autoclass:: Swish
+
 .. autoclass:: Mish
 
 .. autoclass:: NLReLU
