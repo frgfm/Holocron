@@ -6,11 +6,8 @@ Implementations of ResNet variations
 
 import sys
 import logging
-from math import ceil
-from collections import OrderedDict
-import torch
 import torch.nn as nn
-from holocron.nn import Swish, Mish, DropBlock2d, init
+from holocron.nn import init
 
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
