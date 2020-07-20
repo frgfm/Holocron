@@ -26,6 +26,24 @@ The output represents the classification scores for each output classes.
     darknet19 = models.darknet19(num_classes=10)
 
 
+ResNet
+-------
+
+.. autofunction:: resnet18
+
+.. autofunction:: resnet34
+
+.. autofunction:: resnet50
+
+.. autofunction:: resnet101
+
+.. autofunction:: resnet152
+
+.. autofunction:: resnext50_32x4d
+
+.. autofunction:: resnext101_32x8d
+
+
 Res2Net
 -------
 
