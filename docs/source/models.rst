@@ -49,6 +49,8 @@ ResNet
 
 .. autofunction:: rexnet1_5x
 
+.. autofunction:: rexnet2_0x
+
 .. autofunction:: rexnet2_2x
 
 
