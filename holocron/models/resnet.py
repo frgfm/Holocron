@@ -14,7 +14,7 @@ from holocron.nn import SiLU, init
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
            'resnext50_32x4d', 'resnext101_32x8d',
-           'SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x']
+           'SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_2x']
 
 
 default_cfgs = {
