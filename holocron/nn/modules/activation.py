@@ -4,10 +4,11 @@
 Activation modules
 '''
 
+import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['Swish', 'Mish', 'NLReLU']
+__all__ = ['SiLU', 'Mish', 'NLReLU']
 
 
 class _Activation(nn.Module):
@@ -23,21 +24,30 @@ class _Activation(nn.Module):
         return inplace_str
 
 
-class Swish(nn.Module):
-    """Implements the Swish activation module from `"Searching for Activation Functions"
-    <https://arxiv.org/pdf/1710.05941.pdf>`_
+class _SiLU(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x):
+        ctx.save_for_backward(x)
+        return F.silu(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        x = ctx.saved_tensors[0]
+        sig = torch.sigmoid(x)
+        return grad_output * sig * (1 + x * (1 - sig))
+
+
+class SiLU(nn.Module):
+    """Implements the SiLU activation from `"Gaussian Error Linear Units (GELUs)"
+    <https://arxiv.org/pdf/1606.08415.pdf>`_ (also known as Swish).
 
     This activation is computed as follows:
 
     .. math::
-        f(x) = x \\cdot \\sigma(\\beta \\cdot x)
+        f(x) = x \\cdot \\sigma(x)
     """
-    def __init__(self, beta=1):
-        super().__init__()
-        self.beta = beta
-
-    def forward(self, input):
-        return F.swish(input, self.beta)
+    def forward(self, x):
+        return _SiLU.apply(x)
 
 
 class Mish(nn.Module):

@@ -9,7 +9,7 @@ import logging
 from math import ceil
 from collections import OrderedDict
 import torch.nn as nn
-from holocron.nn import Swish, init
+from holocron.nn import SiLU, init
 
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
@@ -210,7 +210,7 @@ class ReXBlock(nn.Module):
         _layers = []
         if t != 1:
             dw_channels = in_channels * t
-            _layers.extend(_conv_sequence(in_channels, dw_channels, Swish(), norm_layer, drop_layer, kernel_size=1,
+            _layers.extend(_conv_sequence(in_channels, dw_channels, SiLU(), norm_layer, drop_layer, kernel_size=1,
                                           stride=1, bias=False))
         else:
             dw_channels = in_channels
@@ -242,7 +242,7 @@ class ReXNet(nn.Sequential):
         super().__init__()
 
         if act_layer is None:
-            act_layer = Swish()
+            act_layer = SiLU()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 

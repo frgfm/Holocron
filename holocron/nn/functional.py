@@ -9,12 +9,12 @@ import torch
 import torch.nn.functional as F
 
 
-__all__ = ['swish', 'mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
+__all__ = ['silu', 'mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
            'norm_conv2d', 'add2d', 'dropblock2d']
 
 
-def swish(x, beta=1):
-    """Implements the Swish activation function
+def silu(x):
+    """Implements the SiLU activation function
 
     Args:
         x (torch.Tensor): input tensor
@@ -22,7 +22,7 @@ def swish(x, beta=1):
         torch.Tensor[x.size()]: output tensor
     """
 
-    return x * torch.sigmoid(beta * x)
+    return x * torch.sigmoid(x)
 
 
 def mish(x):
