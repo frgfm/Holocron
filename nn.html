@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.2a0+6f0edcc-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.2a0+ce08e60-git documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.1.2a0+6f0edcc
+                0.1.2a0+ce08e60
               </div>
             
           
@@ -224,12 +224,12 @@
 <div class="section" id="non-linear-activations">
 <h2>Non-linear activations<a class="headerlink" href="#non-linear-activations" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="holocron.nn.Swish">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">Swish</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#Swish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Swish" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the Swish activation module from <a class="reference external" href="https://arxiv.org/pdf/1710.05941.pdf">“Searching for Activation Functions”</a></p>
+<dt id="holocron.nn.SiLU">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">SiLU</code><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#SiLU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.SiLU" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the SiLU activation from <a class="reference external" href="https://arxiv.org/pdf/1606.08415.pdf">“Gaussian Error Linear Units (GELUs)”</a> (also known as Swish).</p>
 <p>This activation is computed as follows:</p>
 <div class="math notranslate nohighlight">
-\[f(x) = x \cdot \sigma(\beta \cdot x)\]</div>
+\[f(x) = x \cdot \sigma(x)\]</div>
 </dd></dl>
 
 <dl class="py class">
