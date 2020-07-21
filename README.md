@@ -56,15 +56,16 @@ conda install -c frgfm pylocron
 
 ##### Main features
 
-- Activation: [Mish](https://arxiv.org/abs/1908.08681), [NLReLU](https://arxiv.org/abs/1908.03682)
+- Activation: [Swish](https://arxiv.org/abs/1710.05941), [Mish](https://arxiv.org/abs/1908.08681), [NLReLU](https://arxiv.org/abs/1908.03682)
 - Loss: [Focal Loss](https://arxiv.org/abs/1708.02002), MultiLabelCrossEntropy, [LabelSmoothingCrossEntropy](https://arxiv.org/pdf/1706.03762.pdf), [MixupLoss](https://arxiv.org/pdf/1710.09412.pdf)
 - Convolutions: [NormConv2d](https://arxiv.org/pdf/2005.05274v2.pdf), [Add2d](https://arxiv.org/pdf/1912.13200.pdf), [SlimConv2d](https://arxiv.org/pdf/2003.07469.pdf)
+- Regularization: [DropBlock](https://arxiv.org/abs/1810.12890)
 
 ### models
 
 ##### Main features
 
-- Classification: [Res2Net](https://arxiv.org/abs/1904.01169) (based on the great [implementation](https://github.com/gasvn/Res2Net) from gasvn), [darknet24](https://pjreddie.com/media/files/papers/yolo_1.pdf), [darknet19](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [darknet53](https://pjreddie.com/media/files/papers/YOLOv3.pdf).
+- Classification: [Res2Net](https://arxiv.org/abs/1904.01169) (based on the great [implementation](https://github.com/gasvn/Res2Net) from gasvn), [darknet24](https://pjreddie.com/media/files/papers/yolo_1.pdf), [darknet19](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [darknet53](https://pjreddie.com/media/files/papers/YOLOv3.pdf), [ResNet](https://arxiv.org/abs/1512.03385), [ResNeXt](https://arxiv.org/abs/1611.05431), [ReXNet](https://arxiv.org/abs/2007.00992).
 - Detection: [YOLOv1](https://pjreddie.com/media/files/papers/yolo_1.pdf), [YOLOv2](https://pjreddie.com/media/files/papers/YOLO9000.pdf)
 - Segmentation: [U-Net](https://arxiv.org/abs/1505.04597), [UNet++](https://arxiv.org/abs/1807.10165), [UNet3+](https://arxiv.org/abs/2004.08790)
 
