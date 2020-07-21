@@ -33,11 +33,13 @@ default_cfgs = {
     'resnext101_32x8d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 23, 3],
                          'url': None},
     'rexnet1_0x': {'width_mult': 1.0, 'depth_mult': 1.0,
-                   'url': None},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0_224-a120bf73.pth'},
     'rexnet1_3x': {'width_mult': 1.3, 'depth_mult': 1.0,
-                   'url': None},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3_224-191b60f1.pth'},
     'rexnet1_5x': {'width_mult': 1.5, 'depth_mult': 1.0,
-                   'url': None},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5_224-30ce6260.pth'},
+    'rexnet2_0x': {'width_mult': 2.0, 'depth_mult': 1.0,
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0_224-e5243878.pth'},
     'rexnet2_2x': {'width_mult': 2.2, 'depth_mult': 1.0,
                    'url': None},
 }
@@ -241,7 +243,7 @@ class ReXBlock(nn.Module):
 
 
 class ReXNet(nn.Sequential):
-    def __init__(self, width_mult=1.0, depth_mult=1.0, num_classes=10, in_channels=3, in_planes=16, final_planes=180,
+    def __init__(self, width_mult=1.0, depth_mult=1.0, num_classes=1000, in_channels=3, in_planes=16, final_planes=180,
                  use_se=True, se_ratio=12, dropout_ratio=0.2, bn_momentum=0.9,
                  act_layer=None, norm_layer=None, drop_layer=None):
         """Mostly adapted from https://github.com/clovaai/rexnet/blob/master/rexnetv1.py"""
