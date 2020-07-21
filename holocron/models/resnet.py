@@ -34,6 +34,12 @@ default_cfgs = {
                          'url': None},
     'rexnet1_0x': {'width_mult': 1.0, 'depth_mult': 1.0,
                    'url': None},
+    'rexnet1_3x': {'width_mult': 1.3, 'depth_mult': 1.0,
+                   'url': None},
+    'rexnet1_5x': {'width_mult': 1.5, 'depth_mult': 1.0,
+                   'url': None},
+    'rexnet2_2x': {'width_mult': 2.2, 'depth_mult': 1.0,
+                   'url': None},
 }
 
 
@@ -438,3 +444,51 @@ def rexnet1_0x(pretrained=False, progress=True, **kwargs):
     """
 
     return _rexnet('rexnet1_0x', pretrained, progress, **kwargs)
+
+
+def rexnet1_3x(pretrained=False, progress=True, **kwargs):
+    """ReXNet-1.3x from
+    `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
+    <https://arxiv.org/pdf/2007.00992.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _rexnet('rexnet1_3x', pretrained, progress, **kwargs)
+
+
+def rexnet1_5x(pretrained=False, progress=True, **kwargs):
+    """ReXNet-1.5x from
+    `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
+    <https://arxiv.org/pdf/2007.00992.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _rexnet('rexnet1_5x', pretrained, progress, **kwargs)
+
+
+def rexnet2_2x(pretrained=False, progress=True, **kwargs):
+    """ReXNet-2.2x from
+    `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
+    <https://arxiv.org/pdf/2007.00992.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _rexnet('rexnet2_2x', pretrained, progress, **kwargs)
