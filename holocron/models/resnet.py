@@ -6,13 +6,15 @@ Implementations of ResNet variations
 
 import sys
 import logging
+from math import ceil
 from collections import OrderedDict
 import torch.nn as nn
-from holocron.nn import init
+from holocron.nn import Swish, init
 
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-           'resnext50_32x4d', 'resnext101_32x8d']
+           'resnext50_32x4d', 'resnext101_32x8d',
+           'SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x']
 
 
 default_cfgs = {
@@ -30,6 +32,8 @@ default_cfgs = {
                         'url': None},
     'resnext101_32x8d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 23, 3],
                          'url': None},
+    'rexnet1_0x': {'width_mult': 1.0, 'depth_mult': 1.0,
+                   'url': None},
 }
 
 
@@ -108,7 +112,6 @@ class Bottleneck(_ResBlock):
 
 
 class ResNet(nn.Sequential):
-
     def __init__(self, block, num_blocks, planes, num_classes=10, in_channels=3, zero_init_residual=False,
                  groups=1, width_per_group=64, conv_layer=None, norm_layer=None, act_layer=None, drop_layer=None):
 
@@ -172,6 +175,113 @@ class ResNet(nn.Sequential):
         return nn.Sequential(*layers)
 
 
+class SEBlock(nn.Module):
+
+    def __init__(self, channels, se_ratio=12, act_layer=None, norm_layer=None, drop_layer=None):
+        super().__init__()
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.conv = nn.Sequential(
+            *_conv_sequence(channels, channels // se_ratio, act_layer, norm_layer, drop_layer, kernel_size=1,
+                            stride=1, bias=False),
+            *_conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer, kernel_size=1,
+                            stride=1, bias=False))
+
+    def forward(self, x):
+
+        y = self.pool(x)
+        y = self.conv(y)
+        return x * y
+
+
+class ReXBlock(nn.Module):
+    def __init__(self, in_channels, channels, t, stride, use_se=True, se_ratio=12,
+                 act_layer=None, norm_layer=None, drop_layer=None):
+        super().__init__()
+
+        if act_layer is None:
+            act_layer = nn.ReLU6()
+
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+
+        self.use_shortcut = stride == 1 and in_channels <= channels
+        self.in_channels = in_channels
+        self.out_channels = channels
+
+        _layers = []
+        if t != 1:
+            dw_channels = in_channels * t
+            _layers.extend(_conv_sequence(in_channels, dw_channels, Swish(), norm_layer, drop_layer, kernel_size=1,
+                                          stride=1, bias=False))
+        else:
+            dw_channels = in_channels
+
+        _layers.extend(_conv_sequence(dw_channels, dw_channels, None, norm_layer, drop_layer, kernel_size=3,
+                                      stride=1, padding=1, bias=False))
+
+        if use_se:
+            _layers.append(SEBlock(dw_channels, se_ratio, act_layer, norm_layer, drop_layer))
+
+        _layers.append(act_layer)
+        _layers.extend(_conv_sequence(dw_channels, channels, None, norm_layer, drop_layer, kernel_size=1,
+                                      stride=1, bias=False))
+        self.conv = nn.Sequential(*_layers)
+
+    def forward(self, x):
+        out = self.conv(x)
+        if self.use_shortcut:
+            out[:, :self.in_channels] += x
+
+        return out
+
+
+class ReXNet(nn.Sequential):
+    def __init__(self, width_mult=1.0, depth_mult=1.0, num_classes=10, in_channels=3, in_planes=16, final_planes=180,
+                 use_se=True, se_ratio=12, dropout_ratio=0.2, bn_momentum=0.9,
+                 act_layer=None, norm_layer=None, drop_layer=None):
+        """Mostly adapted from https://github.com/clovaai/rexnet/blob/master/rexnetv1.py"""
+        super().__init__()
+
+        if act_layer is None:
+            act_layer = Swish()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+
+        num_blocks = [1, 2, 2, 3, 3, 5]
+        strides = [1, 2, 2, 2, 1, 2]
+        num_blocks = [ceil(element * depth_mult) for element in num_blocks]
+        strides = sum([[element] + [1] * (num_blocks[idx] - 1) for idx, element in enumerate(strides)], [])
+        depth = sum(num_blocks)
+
+        stem_channel = 32 / width_mult if width_mult < 1.0 else 32
+        inplanes = in_planes / width_mult if width_mult < 1.0 else in_planes
+
+        # The following channel configuration is a simple instance to make each layer become an expand layer
+        chans = [int(round(width_mult * stem_channel))] + [int(round(width_mult * (inplanes + idx * final_planes / depth)))
+                                                           for idx in range(depth)]
+
+        ses = [False] * (num_blocks[0] + num_blocks[1]) + [use_se] * sum(num_blocks[2:])
+
+        _layers = _conv_sequence(in_channels, chans[0], act_layer, norm_layer, drop_layer,
+                                 kernel_size=3, stride=2, padding=1, bias=False)
+
+        t = 1
+        for block_idx, (in_c, c, s, se) in enumerate(zip(chans[:-1], chans[1:], strides, ses)):
+            _layers.append(ReXBlock(in_channels=in_c, channels=c, t=t, stride=s, use_se=se, se_ratio=se_ratio))
+            t = 6
+
+        pen_channels = int(width_mult * 1280)
+        _layers.extend(_conv_sequence(c, pen_channels, act_layer, norm_layer, drop_layer,
+                                      kernel_size=1, stride=1, padding=0, bias=False))
+
+        super().__init__(OrderedDict([
+            ('features', nn.Sequential(*_layers)),
+            ('pool', nn.AdaptiveAvgPool2d((1, 1))),
+            ('flatten', nn.Flatten(1)),
+            ('head', nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes)))
+            ]))
+
+
 def _resnet(arch, pretrained, progress, **kwargs):
 
     # Retrieve the correct block type
@@ -228,3 +338,35 @@ def resnext101_32x8d(pretrained=False, progress=True, **kwargs):
     kwargs['groups'] = 32
     kwargs['width_per_group'] = 8
     return _resnet('resnext101_32x8d', pretrained, progress, **kwargs)
+
+
+def _rexnet(arch, pretrained, progress, **kwargs):
+
+    # Build the model
+    model = ReXNet(default_cfgs[arch]['width_mult'], default_cfgs[arch]['depth_mult'], **kwargs)
+    # Load pretrained parameters
+    if pretrained:
+        if default_cfgs[arch]['url'] is None:
+            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
+        else:
+            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
+                                                  progress=progress)
+            model.load_state_dict(state_dict)
+
+    return model
+
+
+def rexnet1_0x(pretrained=False, progress=True, **kwargs):
+    """ReXNet-1.0x from
+    `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
+    <https://arxiv.org/pdf/2007.00992.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _rexnet('rexnet1_0x', pretrained, progress, **kwargs)
