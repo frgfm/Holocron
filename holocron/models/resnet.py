@@ -143,8 +143,7 @@ class ResNet(nn.Sequential):
             ('features', nn.Sequential(*_layers)),
             ('pool', nn.AdaptiveAvgPool2d((1, 1))),
             ('flatten', nn.Flatten(1)),
-            ('head', nn.Linear(in_planes, num_classes))]
-            ))
+            ('head', nn.Linear(in_planes, num_classes))]))
 
         # Init all layers
         init.init_module(self, nonlinearity='relu')
@@ -257,8 +256,8 @@ class ReXNet(nn.Sequential):
         inplanes = in_planes / width_mult if width_mult < 1.0 else in_planes
 
         # The following channel configuration is a simple instance to make each layer become an expand layer
-        chans = [int(round(width_mult * stem_channel))] + [int(round(width_mult * (inplanes + idx * final_planes / depth)))
-                                                           for idx in range(depth)]
+        chans = [int(round(width_mult * stem_channel))]
+        chans.extend([int(round(width_mult * (inplanes + idx * final_planes / depth))) for idx in range(depth)])
 
         ses = [False] * (num_blocks[0] + num_blocks[1]) + [use_se] * sum(num_blocks[2:])
 
@@ -278,8 +277,7 @@ class ReXNet(nn.Sequential):
             ('features', nn.Sequential(*_layers)),
             ('pool', nn.AdaptiveAvgPool2d((1, 1))),
             ('flatten', nn.Flatten(1)),
-            ('head', nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes)))
-            ]))
+            ('head', nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes)))]))
 
 
 def _resnet(arch, pretrained, progress, **kwargs):
