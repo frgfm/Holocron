@@ -35,15 +35,18 @@ python train.py imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epoch
 | 224       | 5      | imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epochs 5 --opt radam --sched onecycle --loss label_smoothing | 66.88%         | 1      |
 | 224       | 10     | imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epochs 10 --opt radam --sched onecycle --loss label_smoothing | 76.18%         | 1      |
 | 224       | 20     | imagenette2-320/ --model darknet19 --lr 5e-4 -b 32 -j 16 --epochs 20 --opt radam --sched onecycle --loss label_smoothing | 84.43%         | 1      |
+| 256       | 20     | imagenette2-320/ --model rexnet1_0x --lr 3e-4 -b 64 -j 8 --epochs 20 --opt tadam --sched onecycle --loss label_smoothing | 84.66%         | 1      |
 | 224       | 40     | imagenette2-320/ --model darknet19 --lr 5e-4 -b 32 -j 16 --epochs 40 --opt radam --sched onecycle --loss label_smoothing | 90.47%         | 1      |
 
 
 
 ## Model zoo
 
-| Model     | Accuracy@1 (Err) | Param # | MACs  | Interpolation | Image size |
-| --------- | ---------------- | ------- | ----- | ------------- | ---------- |
-| darknet53 | 87.62 (12.38)    | 40.60M  | 7.13G | bilinear      | 224        |
-| darknet19 | 90.47 (9.53)     | 19.83M  | 2.71G | bilinear      | 224        |
-| darnet24  | 85.48 (14.52)    | 22.40M  | 4.21G | bilinear      | 224        |
+| Model      | Accuracy@1 (Err) | Param # | MACs  | Interpolation | Image size |
+| ---------- | ---------------- | ------- | ----- | ------------- | ---------- |
+| darknet53  | 87.62 (12.38)    | 40.60M  | 7.13G | bilinear      | 224        |
+| darknet19  | 90.47 (9.53)     | 19.83M  | 2.71G | bilinear      | 224        |
+| darnet24   | 85.48 (14.52)    | 22.40M  | 4.21G | bilinear      | 224        |
+| resnet50   | 84.36 (15.64)    | 23.53M  |       | bilinear      | 256        |
+| rexnet1_0x | 84.66 (15.34)    | 3.53M   |       | bilinear      | 256        |
 
