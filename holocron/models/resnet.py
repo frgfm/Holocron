@@ -302,31 +302,91 @@ def _resnet(arch, pretrained, progress, **kwargs):
 
 
 def resnet18(pretrained=False, progress=True, **kwargs):
+    """ResNet-18 from
+    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
 
     return _resnet('resnet18', pretrained, progress, **kwargs)
 
 
 def resnet34(pretrained=False, progress=True, **kwargs):
+    """ResNet-34 from
+    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
 
     return _resnet('resnet34', pretrained, progress, **kwargs)
 
 
 def resnet50(pretrained=False, progress=True, **kwargs):
+    """ResNet-50 from
+    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
 
     return _resnet('resnet50', pretrained, progress, **kwargs)
 
 
 def resnet101(pretrained=False, progress=True, **kwargs):
+    """ResNet-101 from
+    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
 
     return _resnet('resnet101', pretrained, progress, **kwargs)
 
 
 def resnet152(pretrained=False, progress=True, **kwargs):
+    """ResNet-152 from
+    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
 
     return _resnet('resnet152', pretrained, progress, **kwargs)
 
 
 def resnext50_32x4d(pretrained=False, progress=True, **kwargs):
+    """ResNeXt-50 from
+    `"Aggregated Residual Transformations for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
 
     kwargs['groups'] = 32
     kwargs['width_per_group'] = 4
@@ -334,6 +394,16 @@ def resnext50_32x4d(pretrained=False, progress=True, **kwargs):
 
 
 def resnext101_32x8d(pretrained=False, progress=True, **kwargs):
+    """ResNeXt-101 from
+    `"Aggregated Residual Transformations for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
 
     kwargs['groups'] = 32
     kwargs['width_per_group'] = 8
