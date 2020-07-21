@@ -496,7 +496,6 @@ def rexnet2_0x(pretrained=False, progress=True, **kwargs):
     return _rexnet('rexnet2_0x', pretrained, progress, **kwargs)
 
 
-
 def rexnet2_2x(pretrained=False, progress=True, **kwargs):
     """ReXNet-2.2x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
