@@ -104,10 +104,8 @@ for model_name in ['darknet24', 'darknet19', 'darknet53',
                    'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                    'resnext50_32x4d', 'resnext101_32x8d',
                    'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']:
-    if model_name in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x']:
-        num_classes = 1000
-    else:
-        num_classes = 10
+    num_classes = 1000 if model_name in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x'] else 10
+
     def do_test(self, model_name=model_name, num_classes=num_classes):
         self._test_classification_model(model_name, num_classes)
 
