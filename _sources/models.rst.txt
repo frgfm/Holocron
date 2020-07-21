@@ -43,6 +43,8 @@ ResNet
 
 .. autofunction:: resnext101_32x8d
 
+.. autofunction:: rexnet1_0x
+
 
 Res2Net
 -------
