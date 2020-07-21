@@ -19,8 +19,8 @@ requirements:
     - python>=3.6
 
   run:
-    - pytorch >=1.2.0
-    - torchvision >=0.4.0
+    - pytorch >=1.5.1
+    - torchvision >=0.6.1
     - tqdm >=4.1.0
 
 test:
@@ -31,6 +31,7 @@ test:
     - holocron.nn
     - holocron.ops
     - holocron.optim
+    - holocron.utils
   requires:
     - python
 
