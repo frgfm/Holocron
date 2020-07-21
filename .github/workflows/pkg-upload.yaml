@@ -1,4 +1,4 @@
-name: pypi-publish
+name: pkg-upload
 
 on:
   release:
