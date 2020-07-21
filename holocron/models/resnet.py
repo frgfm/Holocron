@@ -270,7 +270,7 @@ class ReXNet(nn.Sequential):
             t = 6
 
         pen_channels = int(width_mult * 1280)
-        _layers.extend(_conv_sequence(c, pen_channels, act_layer, norm_layer, drop_layer,
+        _layers.extend(_conv_sequence(chans[-1], pen_channels, act_layer, norm_layer, drop_layer,
                                       kernel_size=1, stride=1, padding=0, bias=False))
 
         super().__init__(OrderedDict([
