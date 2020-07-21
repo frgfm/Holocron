@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['Mish', 'NLReLU', 'SiLU']
+__all__ = ['SiLU', 'Mish', 'NLReLU']
 
 
 class _Activation(nn.Module):
