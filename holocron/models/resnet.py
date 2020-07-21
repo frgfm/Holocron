@@ -38,7 +38,7 @@ default_cfgs = {
     'rexnet1_3x': {'width_mult': 1.3, 'depth_mult': 1.0,
                    'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-191b60f1.pth'},
     'rexnet1_5x': {'width_mult': 1.5, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-30ce6260.pth'},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-52c80862.pth'},
     'rexnet2_0x': {'width_mult': 2.0, 'depth_mult': 1.0,
                    'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-e5243878.pth'},
     'rexnet2_2x': {'width_mult': 2.2, 'depth_mult': 1.0,
