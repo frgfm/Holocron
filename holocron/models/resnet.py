@@ -265,7 +265,7 @@ class ReXNet(nn.Sequential):
                                  kernel_size=3, stride=2, padding=1, bias=False)
 
         t = 1
-        for block_idx, (in_c, c, s, se) in enumerate(zip(chans[:-1], chans[1:], strides, ses)):
+        for in_c, c, s, se in zip(chans[:-1], chans[1:], strides, ses):
             _layers.append(ReXBlock(in_channels=in_c, channels=c, t=t, stride=s, use_se=se, se_ratio=se_ratio))
             t = 6
 
