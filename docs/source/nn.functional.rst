@@ -11,7 +11,7 @@ holocron.nn.functional
 Non-linear activations
 ----------------------
 
-.. autofunction:: swish
+.. autofunction:: silu
 
 .. autofunction:: mish
 
