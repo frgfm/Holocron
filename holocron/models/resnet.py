@@ -180,10 +180,10 @@ class SEBlock(nn.Module):
         super().__init__()
         self.pool = nn.AdaptiveAvgPool2d(1)
         self.conv = nn.Sequential(
-            *_conv_sequence(channels, channels // se_ratio, act_layer, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=False),
-            *_conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer, kernel_size=1,
-                            stride=1, bias=False))
+            *_conv_sequence(channels, channels // se_ratio, act_layer, norm_layer, drop_layer,
+                            kernel_size=1, stride=1),
+            *_conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer,
+                            kernel_size=1, stride=1))
 
     def forward(self, x):
 
@@ -198,7 +198,7 @@ class ReXBlock(nn.Module):
         super().__init__()
 
         if act_layer is None:
-            act_layer = nn.ReLU6()
+            act_layer = nn.ReLU6(inplace=True)
 
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -216,7 +216,7 @@ class ReXBlock(nn.Module):
             dw_channels = in_channels
 
         _layers.extend(_conv_sequence(dw_channels, dw_channels, None, norm_layer, drop_layer, kernel_size=3,
-                                      stride=1, padding=1, bias=False))
+                                      stride=stride, padding=1, bias=False, groups=dw_channels))
 
         if use_se:
             _layers.append(SEBlock(dw_channels, se_ratio, act_layer, norm_layer, drop_layer))
