@@ -72,6 +72,6 @@ jobs:
           export BUILD_VERSION=$VERSION
           BUILD_VERSION=$VERSION python setup.py sdist
           mkdir conda-dist
-          conda-build ./conda/ -c pytorch --output-folder conda-dist
+          conda-build .conda/ -c pytorch --output-folder conda-dist
           ls -l conda-dist/noarch/*tar.bz2
           anaconda upload conda-dist/noarch/*tar.bz2 -u frgfm
