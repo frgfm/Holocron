@@ -14,7 +14,7 @@ from holocron.nn import SiLU, init
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
            'resnext50_32x4d', 'resnext101_32x8d',
-           'SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_2x']
+           'SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']
 
 
 default_cfgs = {
@@ -476,6 +476,23 @@ def rexnet1_5x(pretrained=False, progress=True, **kwargs):
     """
 
     return _rexnet('rexnet1_5x', pretrained, progress, **kwargs)
+
+
+def rexnet2_0x(pretrained=False, progress=True, **kwargs):
+    """ReXNet-2.0x from
+    `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
+    <https://arxiv.org/pdf/2007.00992.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _rexnet('rexnet2_0x', pretrained, progress, **kwargs)
+
 
 
 def rexnet2_2x(pretrained=False, progress=True, **kwargs):
