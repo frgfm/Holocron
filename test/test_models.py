@@ -14,9 +14,8 @@ class Tester(unittest.TestCase):
         out = model(x)
         self.assertEqual(out.shape[-1], 50)
 
-    def _test_classification_model(self, name):
+    def _test_classification_model(self, name, num_classes=10):
 
-        num_classes = 10
         x = torch.rand((2, 3, 224, 224))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
@@ -105,8 +104,10 @@ for model_name in ['darknet24', 'darknet19', 'darknet53',
                    'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                    'resnext50_32x4d', 'resnext101_32x8d',
                    'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']:
-    def do_test(self, model_name=model_name):
-        self._test_classification_model(model_name)
+    num_classes = 1000 if model_name in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x'] else 10
+
+    def do_test(self, model_name=model_name, num_classes=num_classes):
+        self._test_classification_model(model_name, num_classes)
 
     setattr(Tester, "test_" + model_name, do_test)
 

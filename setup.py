@@ -9,7 +9,7 @@ import os
 import subprocess
 from setuptools import setup, find_packages
 
-version = '0.1.2a0'
+version = '0.1.3a0'
 sha = 'Unknown'
 package_name = 'pylocron'
 
