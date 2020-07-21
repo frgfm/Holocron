@@ -104,7 +104,7 @@ for model_name in ['res2net', 'res2next']:
 for model_name in ['darknet24', 'darknet19', 'darknet53',
                    'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                    'resnext50_32x4d', 'resnext101_32x8d',
-                   'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_2x']:
+                   'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']:
     def do_test(self, model_name=model_name):
         self._test_classification_model(model_name)
 
