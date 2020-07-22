@@ -13,6 +13,8 @@ Non-linear activations
 
 .. autoclass:: Mish
 
+.. autoclass:: HardMish
+
 .. autoclass:: NLReLU
 
 Loss functions

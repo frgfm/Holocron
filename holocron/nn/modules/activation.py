@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['SiLU', 'Mish', 'NLReLU']
+__all__ = ['SiLU', 'Mish', 'HardMish', 'NLReLU']
 
 
 class _Activation(nn.Module):
@@ -61,6 +61,18 @@ class Mish(nn.Module):
     """
     def forward(self, input):
         return F.mish(input)
+
+
+class HardMish(nn.Module):
+    """Implements the Had Mish activation module from `"H-Mish" <https://github.com/digantamisra98/H-Mish>`_
+
+    This activation is computed as follows:
+
+    .. math::
+        f(x) = \\frac{x}{2} \\cdot \\min(2, \\max(0, x + 2))
+    """
+    def forward(self, input):
+        return F.hard_mish(input)
 
 
 class NLReLU(_Activation):

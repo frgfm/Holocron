@@ -15,6 +15,8 @@ Non-linear activations
 
 .. autofunction:: mish
 
+.. autofunction:: hard_mish
+
 .. autofunction:: nl_relu
 
 
