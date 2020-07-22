@@ -110,7 +110,8 @@ class Bottleneck(_ResBlock):
 
 class ResNet(nn.Sequential):
     def __init__(self, block, num_blocks, planes, num_classes=10, in_channels=3, zero_init_residual=False,
-                 groups=1, width_per_group=64, conv_layer=None, norm_layer=None, act_layer=None, drop_layer=None, **kwargs):
+                 groups=1, width_per_group=64, conv_layer=None,
+                 act_layer=None, norm_layer=None, drop_layer=None, **kwargs):
 
         if conv_layer is None:
             conv_layer = nn.Conv2d
