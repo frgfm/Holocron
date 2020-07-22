@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.3a0+14b97fa-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.3a0+275fd34-git documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.1.3a0+14b97fa
+                0.1.3a0+275fd34
               </div>
             
           
@@ -239,6 +239,15 @@
 <p>This activation is computed as follows:</p>
 <div class="math notranslate nohighlight">
 \[f(x) = x \cdot \tanh(ln(1 + e^x))\]</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.HardMish">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">HardMish</code><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#HardMish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.HardMish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the Had Mish activation module from <a class="reference external" href="https://github.com/digantamisra98/H-Mish">“H-Mish”</a></p>
+<p>This activation is computed as follows:</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{x}{2} \cdot \min(2, \max(0, x + 2))\]</div>
 </dd></dl>
 
 <dl class="py class">
