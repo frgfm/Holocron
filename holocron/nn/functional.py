@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 
 
-__all__ = ['silu', 'mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
+__all__ = ['silu', 'mish', 'hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
            'norm_conv2d', 'add2d', 'dropblock2d']
 
 
@@ -35,6 +35,18 @@ def mish(x):
     """
 
     return x * torch.tanh(F.softplus(x))
+
+
+def hard_mish(x):
+    """Implements the HardMish activation function
+
+    Args:
+        x (torch.Tensor): input tensor
+    Returns:
+        torch.Tensor[x.size()]: output tensor
+    """
+
+    return x / 2 * (2 - torch.relu(2 - torch.relu(x + 2)))
 
 
 def nl_relu(x, beta=1., inplace=False):
