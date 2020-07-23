@@ -24,7 +24,7 @@ default_cfgs = {
 
 
 class ScaleConv2d(nn.Module):
-    def __init__(self, scale, planes, kernel_size, stride=1, groups=1,
+    def __init__(self, scale, planes, kernel_size, stride=1, groups=1, downsample=False,
                  act_layer=None, norm_layer=None, drop_layer=None):
         super().__init__()
 
@@ -36,7 +36,7 @@ class ScaleConv2d(nn.Module):
                                                                  groups=groups, bias=False))
                                    for _ in range(max(1, scale - 1))])
 
-        if scale > 1 and stride > 1:
+        if downsample:
             self.downsample = nn.AvgPool2d(kernel_size=3, stride=stride, padding=1)
         else:
             self.downsample = None
@@ -78,11 +78,14 @@ class Bottle2neck(_ResBlock):
         if act_layer is None:
             act_layer = nn.ReLU(inplace=True)
 
+        # Check if ScaleConv2d needs to downsample the identity branch
+        _downsample = stride > 1 or downsample is not None
+
         width = int(math.floor(planes * (base_width / 64.))) * groups
         super().__init__(
             [*_conv_sequence(inplanes, width * scale, act_layer, norm_layer, drop_layer, kernel_size=1,
                              stride=1, bias=False),
-             ScaleConv2d(scale, width * scale, 3, stride, groups, act_layer, norm_layer, drop_layer),
+             ScaleConv2d(scale, width * scale, 3, stride, groups, _downsample, act_layer, norm_layer, drop_layer),
              *_conv_sequence(width * scale, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
                              stride=1, bias=False)],
             downsample, act_layer)
