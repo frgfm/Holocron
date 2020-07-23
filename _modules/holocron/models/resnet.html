@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.resnet &mdash; holocron 0.1.3a0+416e141-git documentation</title>
+  <title>holocron.models.resnet &mdash; holocron 0.1.3a0+141a6af-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.3a0+416e141
+                0.1.3a0+141a6af
               </div>
             
           
@@ -102,6 +102,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#res2net">Res2Net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#tridentnet">TridentNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
 </ul>
@@ -251,12 +252,18 @@
 <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">_conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">conv_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bn_channels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
-    <span class="n">conv_seq</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">conv_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">conv_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span>
+    <span class="k">if</span> <span class="n">bn_channels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">bn_channels</span> <span class="o">=</span> <span class="n">out_channels</span>
+
+    <span class="n">conv_seq</span> <span class="o">=</span> <span class="p">[</span><span class="n">conv_layer</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
 
     <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">norm_layer</span><span class="p">):</span>
-        <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_layer</span><span class="p">(</span><span class="n">out_channels</span><span class="p">))</span>
+        <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_layer</span><span class="p">(</span><span class="n">bn_channels</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">drop_layer</span><span class="p">):</span>
         <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drop_layer</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">act_layer</span><span class="p">):</span>
@@ -325,10 +332,22 @@
             <span class="n">downsample</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">)</span>
 
 
+<span class="k">class</span> <span class="nc">ChannelRepeat</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chan_repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chan_repeats</span> <span class="o">=</span> <span class="n">chan_repeats</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">repeats</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="c1"># Repeat the tensor along the channel dimension</span>
+        <span class="n">repeats</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan_repeats</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="o">*</span><span class="n">repeats</span><span class="p">)</span>
+
+
 <span class="k">class</span> <span class="nc">ResNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">num_blocks</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">zero_init_residual</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">width_per_group</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">conv_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                 <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">conv_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">conv_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span>
@@ -344,11 +363,16 @@
                                    <span class="n">kernel_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
                    <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
 
+        <span class="c1"># Optional tensor repetitions along channel axis (mainly for TridentNet)</span>
+        <span class="k">if</span> <span class="n">num_repeats</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ChannelRepeat</span><span class="p">(</span><span class="n">num_repeats</span><span class="p">))</span>
+
         <span class="c1"># Consecutive convolutional blocks</span>
         <span class="n">stride</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">for</span> <span class="n">_num_blocks</span><span class="p">,</span> <span class="n">_planes</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">,</span> <span class="n">planes</span><span class="p">):</span>
             <span class="n">_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_res_layer</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">_num_blocks</span><span class="p">,</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">_planes</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">width_per_group</span><span class="p">,</span>
-                                           <span class="n">act_layer</span><span class="o">=</span><span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="n">drop_layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+                                           <span class="n">act_layer</span><span class="o">=</span><span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="n">drop_layer</span><span class="p">,</span>
+                                           <span class="n">num_repeats</span><span class="o">=</span><span class="n">num_repeats</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="n">in_planes</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">expansion</span> <span class="o">*</span> <span class="n">_planes</span>
             <span class="n">stride</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -356,7 +380,7 @@
             <span class="p">(</span><span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_layers</span><span class="p">)),</span>
             <span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))),</span>
             <span class="p">(</span><span class="s1">&#39;flatten&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
-            <span class="p">(</span><span class="s1">&#39;head&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_planes</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">))]))</span>
+            <span class="p">(</span><span class="s1">&#39;head&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_repeats</span> <span class="o">*</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">))]))</span>
 
         <span class="c1"># Init all layers</span>
         <span class="n">init</span><span class="o">.</span><span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">)</span>
@@ -371,12 +395,13 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_res_layer</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">num_blocks</span><span class="p">,</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">width_per_group</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
-                   <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                   <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_repeats</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">downsample</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">stride</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">in_planes</span> <span class="o">!=</span> <span class="n">planes</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">expansion</span><span class="p">:</span>
-            <span class="n">downsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_conv_sequence</span><span class="p">(</span><span class="n">in_planes</span><span class="p">,</span> <span class="n">planes</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">expansion</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span>
-                                                       <span class="n">drop_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+            <span class="n">downsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_conv_sequence</span><span class="p">(</span><span class="n">num_repeats</span> <span class="o">*</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">num_repeats</span> <span class="o">*</span> <span class="n">planes</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">expansion</span><span class="p">,</span>
+                                                       <span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span>
+                                                       <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
         <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">block</span><span class="p">(</span><span class="n">in_planes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">downsample</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">width_per_group</span><span class="p">,</span>
                         <span class="n">act_layer</span><span class="o">=</span><span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="n">drop_layer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
 

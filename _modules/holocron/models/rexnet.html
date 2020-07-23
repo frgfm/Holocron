@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.rexnet &mdash; holocron 0.1.3a0+416e141-git documentation</title>
+  <title>holocron.models.rexnet &mdash; holocron 0.1.3a0+141a6af-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.3a0+416e141
+                0.1.3a0+141a6af
               </div>
             
           
@@ -102,6 +102,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#res2net">Res2Net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#tridentnet">TridentNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
 </ul>
@@ -228,6 +229,7 @@
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">torchvision.models.utils</span> <span class="kn">import</span> <span class="n">load_state_dict_from_url</span>
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">SiLU</span><span class="p">,</span> <span class="n">init</span>
+<span class="kn">from</span> <span class="nn">.resnet</span> <span class="kn">import</span> <span class="n">_conv_sequence</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SEBlock&#39;</span><span class="p">,</span> <span class="s1">&#39;ReXBlock&#39;</span><span class="p">,</span> <span class="s1">&#39;ReXNet&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet1_0x&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet1_3x&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet1_5x&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet2_0x&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet2_2x&#39;</span><span class="p">]</span>
@@ -245,20 +247,6 @@
     <span class="s1">&#39;rexnet2_2x&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;width_mult&#39;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span> <span class="s1">&#39;depth_mult&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
                    <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
 <span class="p">}</span>
-
-
-<span class="k">def</span> <span class="nf">_conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-
-    <span class="n">conv_seq</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
-
-    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">norm_layer</span><span class="p">):</span>
-        <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_layer</span><span class="p">(</span><span class="n">out_channels</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">drop_layer</span><span class="p">):</span>
-        <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drop_layer</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">act_layer</span><span class="p">):</span>
-        <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">act_layer</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">conv_seq</span>
 
 
 <span class="k">class</span> <span class="nc">SEBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>

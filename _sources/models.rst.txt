@@ -50,6 +50,12 @@ Res2Net
 .. autofunction:: res2net50_26w_4s
 
 
+TridentNet
+----------
+
+.. autofunction:: tridentnet50
+
+
 ReXNet
 -------
 
