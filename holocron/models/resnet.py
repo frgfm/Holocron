@@ -10,6 +10,7 @@ from collections import OrderedDict
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 from holocron.nn import init
+from .utils import conv_sequence
 
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
@@ -34,26 +35,6 @@ default_cfgs = {
     'resnet50d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 6, 3],
                   'url': None},
 }
-
-
-def _conv_sequence(in_channels, out_channels, act_layer=None, norm_layer=None, drop_layer=None,
-                   conv_layer=None, bn_channels=None, **kwargs):
-
-    if conv_layer is None:
-        conv_layer = nn.Conv2d
-    if bn_channels is None:
-        bn_channels = out_channels
-
-    conv_seq = [conv_layer(in_channels, out_channels, **kwargs)]
-
-    if callable(norm_layer):
-        conv_seq.append(norm_layer(bn_channels))
-    if callable(drop_layer):
-        conv_seq.append(drop_layer(p=0.1, block_size=3, inplace=True))
-    if callable(act_layer):
-        conv_seq.append(act_layer)
-
-    return conv_seq
 
 
 class _ResBlock(nn.Module):
@@ -91,9 +72,9 @@ class BasicBlock(_ResBlock):
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
                  dilation=1, act_layer=None, norm_layer=None, drop_layer=None):
         super().__init__(
-            [*_conv_sequence(inplanes, planes, act_layer, norm_layer, drop_layer, kernel_size=3, stride=stride,
+            [*conv_sequence(inplanes, planes, act_layer, norm_layer, drop_layer, kernel_size=3, stride=stride,
                              padding=dilation, groups=groups, bias=False, dilation=dilation),
-             *_conv_sequence(planes, planes, None, norm_layer, drop_layer, kernel_size=3, stride=1,
+             *conv_sequence(planes, planes, None, norm_layer, drop_layer, kernel_size=3, stride=1,
                              padding=dilation, groups=groups, bias=False, dilation=dilation)],
             downsample, act_layer)
 
@@ -107,11 +88,11 @@ class Bottleneck(_ResBlock):
 
         width = int(planes * (base_width / 64.)) * groups
         super().__init__(
-            [*_conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, kernel_size=1,
+            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, kernel_size=1,
                              stride=1, bias=False),
-             *_conv_sequence(width, width, act_layer, norm_layer, drop_layer, kernel_size=3, stride=stride,
+             *conv_sequence(width, width, act_layer, norm_layer, drop_layer, kernel_size=3, stride=stride,
                              padding=dilation, groups=groups, bias=False, dilation=dilation),
-             *_conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
+             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
                              stride=1, bias=False)],
             downsample, act_layer)
 
@@ -145,14 +126,14 @@ class ResNet(nn.Sequential):
         in_planes = 64
         # Deep stem from ResNet-C
         if deep_stem:
-            _layers = [*_conv_sequence(in_channels, in_planes // 2, act_layer, norm_layer, drop_layer,
+            _layers = [*conv_sequence(in_channels, in_planes // 2, act_layer, norm_layer, drop_layer,
                                        kernel_size=3, stride=2, padding=1, bias=False),
-                       *_conv_sequence(in_planes // 2, in_planes // 2, act_layer, norm_layer, drop_layer,
+                       *conv_sequence(in_planes // 2, in_planes // 2, act_layer, norm_layer, drop_layer,
                                        kernel_size=3, stride=1, padding=1, bias=False),
-                       *_conv_sequence(in_planes // 2, in_planes, act_layer, norm_layer, drop_layer,
+                       *conv_sequence(in_planes // 2, in_planes, act_layer, norm_layer, drop_layer,
                                        kernel_size=3, stride=1, padding=1, bias=False)]
         else:
-            _layers = _conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer,
+            _layers = conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer,
                                      kernel_size=7, stride=2, padding=3, bias=False)
         _layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
 
@@ -196,12 +177,12 @@ class ResNet(nn.Sequential):
             # Downsampling from ResNet-D
             if avg_downsample:
                 downsample = nn.Sequential(nn.AvgPool2d(stride, ceil_mode=True, count_include_pad=False),
-                                           *_conv_sequence(num_repeats * in_planes,
+                                           *conv_sequence(num_repeats * in_planes,
                                                            num_repeats * planes * block.expansion,
                                                            None, norm_layer, drop_layer,
                                                            kernel_size=1, stride=1, bias=False))
             else:
-                downsample = nn.Sequential(*_conv_sequence(num_repeats * in_planes,
+                downsample = nn.Sequential(*conv_sequence(num_repeats * in_planes,
                                                            num_repeats * planes * block.expansion,
                                                            None, norm_layer, drop_layer,
                                                            kernel_size=1, stride=stride, bias=False))
