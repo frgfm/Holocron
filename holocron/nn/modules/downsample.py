@@ -19,8 +19,7 @@ class ConcatDownsample2d(nn.Module):
     """
 
     def __init__(self, scale_factor):
-
-        super(ConcatDownsample2d, self).__init__()
+        super().__init__()
         self.scale_factor = scale_factor
 
     def forward(self, x):
