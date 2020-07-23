@@ -37,7 +37,7 @@ def mish(x):
     return x * torch.tanh(F.softplus(x))
 
 
-def hard_mish(x):
+def hard_mish(x, inplace=False):
     """Implements the HardMish activation function
 
     Args:
@@ -46,7 +46,10 @@ def hard_mish(x):
         torch.Tensor[x.size()]: output tensor
     """
 
-    return x / 2 * (2 - torch.relu(2 - torch.relu(x + 2)))
+    if inplace:
+        return x.mul_(0.5 * (x + 2).clamp(min=0, max=2))
+    else:
+        return 0.5 * x * (x + 2).clamp(min=0, max=2)
 
 
 def nl_relu(x, beta=1., inplace=False):
