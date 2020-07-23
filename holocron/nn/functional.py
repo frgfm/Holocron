@@ -142,10 +142,11 @@ def concat_downsample2d(x, scale_factor):
         raise AssertionError("Spatial size of input tensor must be multiples of `scale_factor`")
 
     # N * C * H * W --> N * C * (H/scale_factor) * scale_factor * (W/scale_factor) * scale_factor
-    out = torch.cat([x[..., i::scale_factor, j::scale_factor]
-                     for i in range(scale_factor) for j in range(scale_factor)], dim=1)
+    x = x.view(b, c, h // scale_factor, scale_factor, w // scale_factor, scale_factor)
+    x = x.permute(0, 3, 5, 1, 2, 4).contiguous()
+    x = x.view(b, c * scale_factor ** 2, h // scale_factor, w // scale_factor)
 
-    return out
+    return x
 
 
 def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'):
