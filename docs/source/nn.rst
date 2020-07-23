@@ -50,3 +50,5 @@ Downsampling
 ------------
 
 .. autoclass:: ConcatDownsample2d
+
+.. autoclass:: GlobalAvgPool2d
