@@ -1,0 +1,524 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>holocron.models.rexnet &mdash; holocron 0.1.3a0+416e141-git documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/my_theme.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> holocron
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.3a0+416e141
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installing.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../installing.html#via-python-package">Via Python Package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installing.html#via-conda">Via Conda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../installing.html#via-git">Via Git</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Package Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">holocron.models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../models.html#classification">Classification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#resnet">ResNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#res2net">Res2Net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../models.html#object-detection">Object Detection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#yolo">YOLO</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../models.html#semantic-segmentation">Semantic Segmentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#u-net">U-Net</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../nn.html">holocron.nn</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#non-linear-activations">Non-linear activations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-wrappers">Loss wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#convolution-layers">Convolution layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#regularization-layers">Regularization layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#non-linear-activations">Non-linear activations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#convolutions">Convolutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ops.html">holocron.ops</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../ops.html#boxes">Boxes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../optim.html">holocron.optim</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizers">Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils.html">holocron.utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../utils.html#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils.data.html">holocron.utils.data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">holocron</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>holocron.models.rexnet</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for holocron.models.rexnet</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Implementations of ReXNet variations</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torchvision.models.utils</span> <span class="kn">import</span> <span class="n">load_state_dict_from_url</span>
+<span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">SiLU</span><span class="p">,</span> <span class="n">init</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SEBlock&#39;</span><span class="p">,</span> <span class="s1">&#39;ReXBlock&#39;</span><span class="p">,</span> <span class="s1">&#39;ReXNet&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet1_0x&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet1_3x&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet1_5x&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet2_0x&#39;</span><span class="p">,</span> <span class="s1">&#39;rexnet2_2x&#39;</span><span class="p">]</span>
+
+
+<span class="n">default_cfgs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;rexnet1_0x&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;width_mult&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;depth_mult&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                   <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-a120bf73.pth&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;rexnet1_3x&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;width_mult&#39;</span><span class="p">:</span> <span class="mf">1.3</span><span class="p">,</span> <span class="s1">&#39;depth_mult&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                   <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-191b60f1.pth&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;rexnet1_5x&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;width_mult&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;depth_mult&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                   <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-52c80862.pth&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;rexnet2_0x&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;width_mult&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;depth_mult&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                   <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-e5243878.pth&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;rexnet2_2x&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;width_mult&#39;</span><span class="p">:</span> <span class="mf">2.2</span><span class="p">,</span> <span class="s1">&#39;depth_mult&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                   <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="n">conv_seq</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">norm_layer</span><span class="p">):</span>
+        <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_layer</span><span class="p">(</span><span class="n">out_channels</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">drop_layer</span><span class="p">):</span>
+        <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drop_layer</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">act_layer</span><span class="p">):</span>
+        <span class="n">conv_seq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">act_layer</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">conv_seq</span>
+
+
+<span class="k">class</span> <span class="nc">SEBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">se_ratio</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">_conv_sequence</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">channels</span> <span class="o">//</span> <span class="n">se_ratio</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span>
+                            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">_conv_sequence</span><span class="p">(</span><span class="n">channels</span> <span class="o">//</span> <span class="n">se_ratio</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">(),</span> <span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span>
+                            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
+
+
+<span class="k">class</span> <span class="nc">ReXBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">use_se</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">se_ratio</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+                 <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">act_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU6</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">norm_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_shortcut</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">in_channels</span> <span class="o">&lt;=</span> <span class="n">channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="n">channels</span>
+
+        <span class="n">_layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">dw_channels</span> <span class="o">=</span> <span class="n">in_channels</span> <span class="o">*</span> <span class="n">t</span>
+            <span class="n">_layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">dw_channels</span><span class="p">,</span> <span class="n">SiLU</span><span class="p">(),</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                          <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dw_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+
+        <span class="n">_layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_conv_sequence</span><span class="p">(</span><span class="n">dw_channels</span><span class="p">,</span> <span class="n">dw_channels</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                                      <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">dw_channels</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">use_se</span><span class="p">:</span>
+            <span class="n">_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SEBlock</span><span class="p">(</span><span class="n">dw_channels</span><span class="p">,</span> <span class="n">se_ratio</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">))</span>
+
+        <span class="n">_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">act_layer</span><span class="p">)</span>
+        <span class="n">_layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_conv_sequence</span><span class="p">(</span><span class="n">dw_channels</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                      <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_layers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_shortcut</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">]</span> <span class="o">+=</span> <span class="n">x</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">class</span> <span class="nc">ReXNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width_mult</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">depth_mult</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">in_planes</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">final_planes</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
+                 <span class="n">use_se</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">se_ratio</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">dropout_ratio</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">bn_momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+                 <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mostly adapted from https://github.com/clovaai/rexnet/blob/master/rexnetv1.py&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">act_layer</span> <span class="o">=</span> <span class="n">SiLU</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">norm_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span>
+
+        <span class="n">num_blocks</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+        <span class="n">strides</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">num_blocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">ceil</span><span class="p">(</span><span class="n">element</span> <span class="o">*</span> <span class="n">depth_mult</span><span class="p">)</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">num_blocks</span><span class="p">]</span>
+        <span class="n">strides</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([[</span><span class="n">element</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_blocks</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">strides</span><span class="p">)],</span> <span class="p">[])</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">)</span>
+
+        <span class="n">stem_channel</span> <span class="o">=</span> <span class="mi">32</span> <span class="o">/</span> <span class="n">width_mult</span> <span class="k">if</span> <span class="n">width_mult</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="mi">32</span>
+        <span class="n">inplanes</span> <span class="o">=</span> <span class="n">in_planes</span> <span class="o">/</span> <span class="n">width_mult</span> <span class="k">if</span> <span class="n">width_mult</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="n">in_planes</span>
+
+        <span class="c1"># The following channel configuration is a simple instance to make each layer become an expand layer</span>
+        <span class="n">chans</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">width_mult</span> <span class="o">*</span> <span class="n">stem_channel</span><span class="p">))]</span>
+        <span class="n">chans</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">width_mult</span> <span class="o">*</span> <span class="p">(</span><span class="n">inplanes</span> <span class="o">+</span> <span class="n">idx</span> <span class="o">*</span> <span class="n">final_planes</span> <span class="o">/</span> <span class="n">depth</span><span class="p">)))</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">)])</span>
+
+        <span class="n">ses</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_blocks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">num_blocks</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="p">[</span><span class="n">use_se</span><span class="p">]</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+
+        <span class="n">_layers</span> <span class="o">=</span> <span class="n">_conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">chans</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span>
+                                 <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">in_c</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">se</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">chans</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">chans</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">strides</span><span class="p">,</span> <span class="n">ses</span><span class="p">):</span>
+            <span class="n">_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ReXBlock</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">in_c</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">s</span><span class="p">,</span> <span class="n">use_se</span><span class="o">=</span><span class="n">se</span><span class="p">,</span> <span class="n">se_ratio</span><span class="o">=</span><span class="n">se_ratio</span><span class="p">))</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="mi">6</span>
+
+        <span class="n">pen_channels</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">width_mult</span> <span class="o">*</span> <span class="mi">1280</span><span class="p">)</span>
+        <span class="n">_layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_conv_sequence</span><span class="p">(</span><span class="n">chans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">pen_channels</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span>
+                                      <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_layers</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))),</span>
+            <span class="p">(</span><span class="s1">&#39;flatten&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;head&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout_ratio</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">pen_channels</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)))]))</span>
+
+
+<span class="k">def</span> <span class="nf">_rexnet</span><span class="p">(</span><span class="n">arch</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="c1"># Build the model</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ReXNet</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;width_mult&#39;</span><span class="p">],</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;depth_mult&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># Load pretrained parameters</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid model URL for </span><span class="si">{</span><span class="n">arch</span><span class="si">}</span><span class="s2">, using default initialization.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span>
+                                                  <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+
+
+<div class="viewcode-block" id="rexnet1_0x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet1_0x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_0x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ReXNet-1.0x from</span>
+<span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.nn.Module: classification model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s1">&#39;rexnet1_0x&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rexnet1_3x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet1_3x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_3x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ReXNet-1.3x from</span>
+<span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.nn.Module: classification model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s1">&#39;rexnet1_3x&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rexnet1_5x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet1_5x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_5x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ReXNet-1.5x from</span>
+<span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.nn.Module: classification model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s1">&#39;rexnet1_5x&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rexnet2_0x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet2_0x">[docs]</a><span class="k">def</span> <span class="nf">rexnet2_0x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ReXNet-2.0x from</span>
+<span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.nn.Module: classification model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s1">&#39;rexnet2_0x&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rexnet2_2x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet2_2x">[docs]</a><span class="k">def</span> <span class="nf">rexnet2_2x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ReXNet-2.2x from</span>
+<span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.nn.Module: classification model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s1">&#39;rexnet2_2x&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, François-Guillaume Fernandez
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-148140560-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+   
+
+</body>
+</html>

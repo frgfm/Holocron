@@ -43,6 +43,16 @@ ResNet
 
 .. autofunction:: resnext101_32x8d
 
+
+Res2Net
+-------
+
+.. autofunction:: res2net50_26w_4s
+
+
+ReXNet
+-------
+
 .. autofunction:: rexnet1_0x
 
 .. autofunction:: rexnet1_3x
@@ -53,18 +63,6 @@ ResNet
 
 .. autofunction:: rexnet2_2x
 
-
-Res2Net
--------
-
-.. autoclass:: Res2Net
-
-.. autofunction:: res2net
-
-Res2NeXt
---------
-
-.. autofunction:: res2next
 
 
 Darknet

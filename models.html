@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models &mdash; holocron 0.1.3a0+275fd34-git documentation</title>
+  <title>holocron.models &mdash; holocron 0.1.3a0+416e141-git documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.1.3a0+275fd34
+                0.1.3a0+416e141
               </div>
             
           
@@ -104,7 +104,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#res2net">Res2Net</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#res2next">Res2NeXt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#darknet">Darknet</a></li>
 </ul>
 </li>
@@ -232,7 +232,7 @@ keypoint detection and video classification.</p>
 <ul>
 <li><p><a class="reference internal" href="#resnet" id="id14">ResNet</a></p></li>
 <li><p><a class="reference internal" href="#res2net" id="id15">Res2Net</a></p></li>
-<li><p><a class="reference internal" href="#res2next" id="id16">Res2NeXt</a></p></li>
+<li><p><a class="reference internal" href="#rexnet" id="id16">ReXNet</a></p></li>
 <li><p><a class="reference internal" href="#darknet" id="id17">Darknet</a></p></li>
 </ul>
 </li>
@@ -405,9 +405,36 @@ The output represents the classification scores for each output classes.</p>
 </dl>
 </dd></dl>
 
+</div>
+<div class="section" id="res2net">
+<h3><a class="toc-backref" href="#id15">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt id="holocron.models.res2net50_26w_4s">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">res2net50_26w_4s</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/res2net.html#res2net50_26w_4s"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.res2net50_26w_4s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Res2Net-50 26wx4s from
+<a class="reference external" href="https://arxiv.org/pdf/1904.01169.pdf">“Res2Net: A New Multi-scale Backbone Architecture”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="rexnet">
+<h3><a class="toc-backref" href="#id16">ReXNet</a><a class="headerlink" href="#rexnet" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.rexnet1_0x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_0x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/resnet.html#rexnet1_0x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_0x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_0x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet1_0x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_0x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-1.0x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -428,7 +455,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.rexnet1_3x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_3x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/resnet.html#rexnet1_3x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_3x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_3x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet1_3x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_3x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-1.3x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -449,7 +476,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.rexnet1_5x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_5x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/resnet.html#rexnet1_5x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_5x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_5x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet1_5x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_5x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-1.5x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -470,7 +497,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.rexnet2_0x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet2_0x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/resnet.html#rexnet2_0x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet2_0x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet2_0x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet2_0x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet2_0x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-2.0x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -491,7 +518,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.rexnet2_2x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet2_2x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/resnet.html#rexnet2_2x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet2_2x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet2_2x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet2_2x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet2_2x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-2.2x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -506,81 +533,6 @@ The output represents the classification scores for each output classes.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
-<div class="section" id="res2net">
-<h3><a class="toc-backref" href="#id15">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this headline">¶</a></h3>
-<dl class="py class">
-<dt id="holocron.models.Res2Net">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">Res2Net</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">block</span></em>, <em class="sig-param"><span class="n">layers</span></em>, <em class="sig-param"><span class="n">num_classes</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">zero_init_residual</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">width_per_group</span><span class="o">=</span><span class="default_value">26</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">replace_stride_with_dilation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">norm_layer</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/res2net.html#Res2Net"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.Res2Net" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a Res2Net model as described in <a class="reference external" href="https://arxiv.org/pdf/1904.01169.pdf">https://arxiv.org/pdf/1904.01169.pdf</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>block</strong> (<em>torch.nn.Module</em>) – class constructor to be used for residual blocks</p></li>
-<li><p><strong>layers</strong> (<em>list&lt;python:int&gt;</em>) – layout of layers</p></li>
-<li><p><strong>num_classes</strong> (<em>python:int</em>) – number of output classes</p></li>
-<li><p><strong>zero_init_residual</strong> (<em>bool</em>) – whether the residual connections should be initialized at zero</p></li>
-<li><p><strong>groups</strong> (<em>python:int</em>) – number of convolution groups</p></li>
-<li><p><strong>width_per_group</strong> (<em>python:int</em>) – number of channels per group</p></li>
-<li><p><strong>scale</strong> (<em>python:int</em>) – scaling ratio within blocks</p></li>
-<li><p><strong>replace_stride_with_dilation</strong> (<em>list&lt;bool&gt;</em>) – whether stride should be traded for dilation</p></li>
-<li><p><strong>norm_layer</strong> (<em>torch.nn.Module</em>) – norm layer to be used</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="holocron.models.res2net">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">res2net</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">depth</span></em>, <em class="sig-param"><span class="n">num_classes</span></em>, <em class="sig-param"><span class="n">width_per_group</span><span class="o">=</span><span class="default_value">26</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/res2net.html#res2net"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.res2net" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instantiate a Res2Net model</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>depth</strong> (<em>python:int</em>) – depth of the model</p></li>
-<li><p><strong>num_classes</strong> (<em>python:int</em>) – number of output classes</p></li>
-<li><p><strong>scale</strong> (<em>python:int</em>) – number of branches for cascade convolutions</p></li>
-<li><p><strong>pretrained</strong> (<em>bool</em>) – whether the model should load pretrained weights (ImageNet training)</p></li>
-<li><p><strong>progress</strong> (<em>bool</em>) – whether a progress bar should be displayed while downloading pretrained weights</p></li>
-<li><p><strong>**kwargs</strong> – optional arguments of torchvision.models.resnet.ResNet</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>loaded Pytorch model</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>model (torch.nn.Module)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
-<div class="section" id="res2next">
-<h3><a class="toc-backref" href="#id16">Res2NeXt</a><a class="headerlink" href="#res2next" title="Permalink to this headline">¶</a></h3>
-<dl class="py function">
-<dt id="holocron.models.res2next">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">res2next</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">depth</span></em>, <em class="sig-param"><span class="n">num_classes</span></em>, <em class="sig-param"><span class="n">width_per_group</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/res2net.html#res2next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.res2next" title="Permalink to this definition">¶</a></dt>
-<dd><p>Instantiate a Res2NeXt model</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>depth</strong> (<em>python:int</em>) – depth of the model</p></li>
-<li><p><strong>num_classes</strong> (<em>python:int</em>) – number of output classes</p></li>
-<li><p><strong>scale</strong> (<em>python:int</em>) – number of branches for cascade convolutions</p></li>
-<li><p><strong>pretrained</strong> (<em>bool</em>) – whether the model should load pretrained weights (ImageNet training)</p></li>
-<li><p><strong>progress</strong> (<em>bool</em>) – whether a progress bar should be displayed while downloading pretrained weights</p></li>
-<li><p><strong>**kwargs</strong> – optional arguments of torchvision.models.resnet.ResNet</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>loaded Pytorch model</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>model (torch.nn.Module)</p>
 </dd>
 </dl>
 </dd></dl>
