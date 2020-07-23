@@ -1,5 +1,6 @@
 from .resnet import *
 from .res2net import *
+from .tridentnet import *
 from .rexnet import *
 from .darknet import *
 from .detection import *
