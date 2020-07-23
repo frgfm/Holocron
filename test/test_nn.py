@@ -291,7 +291,6 @@ class NNTester(unittest.TestCase):
         self.assertTrue(torch.equal(mod(x), ref(x).view(*x.shape[:2])))
 
 
-
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
 
 for fn_name in act_fns:

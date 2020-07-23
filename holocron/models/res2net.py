@@ -31,9 +31,9 @@ class ScaleConv2d(nn.Module):
         self.scale = scale
         self.width = planes // scale
         self.conv = nn.ModuleList([nn.Sequential(*conv_sequence(self.width, self.width,
-                                                                 act_layer, norm_layer, drop_layer,
-                                                                 kernel_size=3, stride=stride, padding=1,
-                                                                 groups=groups, bias=False))
+                                                                act_layer, norm_layer, drop_layer,
+                                                                kernel_size=3, stride=stride, padding=1,
+                                                                groups=groups, bias=False))
                                    for _ in range(max(1, scale - 1))])
 
         if downsample:
@@ -84,10 +84,10 @@ class Bottle2neck(_ResBlock):
         width = int(math.floor(planes * (base_width / 64.))) * groups
         super().__init__(
             [*conv_sequence(inplanes, width * scale, act_layer, norm_layer, drop_layer, kernel_size=1,
-                             stride=1, bias=False),
+                            stride=1, bias=False),
              ScaleConv2d(scale, width * scale, 3, stride, groups, _downsample, act_layer, norm_layer, drop_layer),
              *conv_sequence(width * scale, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
-                             stride=1, bias=False)],
+                            stride=1, bias=False)],
             downsample, act_layer)
 
 
