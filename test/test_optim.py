@@ -18,7 +18,7 @@ def _get_learnable_param(model):
     raise AssertionError("No learnable parameter found")
 
 
-class Tester(unittest.TestCase):
+class OptimTester(unittest.TestCase):
     def _test_lr_scheduler(self, name, lr=1e-4, ratio_preserved=True, **kwargs):
 
         # Get model and optimizer
@@ -119,14 +119,14 @@ for opt_name in ['Lars', 'Lamb', 'RAdam', 'RaLars', 'TAdam']:
     def opt_test(self, opt_name=opt_name):
         self._test_optimizer(opt_name)
 
-    setattr(Tester, "test_" + opt_name, opt_test)
+    setattr(OptimTester, "test_" + opt_name, opt_test)
 
 
 for wrapper_name in ['Lookahead', 'Scout']:
     def wrap_test(self, wrapper_name=wrapper_name):
         self._test_wrapper(wrapper_name)
 
-    setattr(Tester, "test_" + wrapper_name, wrap_test)
+    setattr(OptimTester, "test_" + wrapper_name, wrap_test)
 
 
 if __name__ == '__main__':

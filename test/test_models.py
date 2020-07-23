@@ -3,16 +3,7 @@ import torch
 from holocron import models
 
 
-class Tester(unittest.TestCase):
-
-    def _test_res2nets(self, name, input_shape):
-        # passing num_class equal to a number other than 1000 helps in making the test
-        # more enforcing in nature
-        model = models.__dict__[name](depth=50, num_classes=50, pretrained=True)
-        model.eval()
-        x = torch.rand(input_shape)
-        out = model(x)
-        self.assertEqual(out.shape[-1], 50)
+class ModelTester(unittest.TestCase):
 
     def _test_classification_model(self, name, num_classes=10):
 
@@ -93,30 +84,24 @@ class Tester(unittest.TestCase):
         self.assertEqual(out.shape, (num_batches, num_classes, out_size, out_size))
 
 
-for model_name in ['res2net', 'res2next']:
-    def do_test(self, model_name=model_name):
-        input_shape = (4, 3, 224, 224)
-        self._test_res2nets(model_name, input_shape)
-
-    setattr(Tester, "test_" + model_name, do_test)
-
 for model_name in ['darknet24', 'darknet19', 'darknet53',
                    'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                    'resnext50_32x4d', 'resnext101_32x8d',
+                   'res2net50_26w_4s',
                    'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']:
     num_classes = 1000 if model_name in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x'] else 10
 
     def do_test(self, model_name=model_name, num_classes=num_classes):
         self._test_classification_model(model_name, num_classes)
 
-    setattr(Tester, "test_" + model_name, do_test)
+    setattr(ModelTester, "test_" + model_name, do_test)
 
 
 for model_name, size in [('yolov1', 448), ('yolov2', 416)]:
     def do_test(self, model_name=model_name, size=size):
         self._test_detection_model(model_name, size)
 
-    setattr(Tester, "test_" + model_name, do_test)
+    setattr(ModelTester, "test_" + model_name, do_test)
 
 
 # Lower input size to avoid OOM with CI
@@ -124,7 +109,7 @@ for model_name, size, out_size in [('unet', 572, 388), ('unetp', 256, 256), ('un
     def do_test(self, model_name=model_name, size=size, out_size=out_size):
         self._test_segmentation_model(model_name, size, out_size)
 
-    setattr(Tester, "test_" + model_name, do_test)
+    setattr(ModelTester, "test_" + model_name, do_test)
 
 
 if __name__ == '__main__':
