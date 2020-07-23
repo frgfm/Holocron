@@ -186,6 +186,9 @@ class NNTester(unittest.TestCase):
         # Test module
         mod = downsample.ConcatDownsample2d(scale_factor)
         self.assertTrue(torch.equal(mod(x), out))
+        # Test JIT module
+        mod = downsample.ConcatDownsample2dJit(scale_factor)
+        self.assertTrue(torch.equal(mod(x), out))
 
     def test_init(self):
 
