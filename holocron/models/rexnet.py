@@ -11,6 +11,7 @@ from collections import OrderedDict
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 from holocron.nn import SiLU, init
+from .resnet import _conv_sequence
 
 
 __all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']
@@ -28,20 +29,6 @@ default_cfgs = {
     'rexnet2_2x': {'width_mult': 2.2, 'depth_mult': 1.0,
                    'url': None},
 }
-
-
-def _conv_sequence(in_channels, out_channels, act_layer=None, norm_layer=None, drop_layer=None, **kwargs):
-
-    conv_seq = [nn.Conv2d(in_channels, out_channels, **kwargs)]
-
-    if callable(norm_layer):
-        conv_seq.append(norm_layer(out_channels))
-    if callable(drop_layer):
-        conv_seq.append(drop_layer(p=0.1, block_size=3, inplace=True))
-    if callable(act_layer):
-        conv_seq.append(act_layer)
-
-    return conv_seq
 
 
 class SEBlock(nn.Module):

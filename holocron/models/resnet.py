@@ -34,12 +34,18 @@ default_cfgs = {
 }
 
 
-def _conv_sequence(in_channels, out_channels, act_layer=None, norm_layer=None, drop_layer=None, **kwargs):
+def _conv_sequence(in_channels, out_channels, act_layer=None, norm_layer=None, drop_layer=None,
+                   conv_layer=None, bn_channels=None, **kwargs):
 
-    conv_seq = [nn.Conv2d(in_channels, out_channels, **kwargs)]
+    if conv_layer is None:
+        conv_layer = nn.Conv2d
+    if bn_channels is None:
+        bn_channels = out_channels
+
+    conv_seq = [conv_layer(in_channels, out_channels, **kwargs)]
 
     if callable(norm_layer):
-        conv_seq.append(norm_layer(out_channels))
+        conv_seq.append(norm_layer(bn_channels))
     if callable(drop_layer):
         conv_seq.append(drop_layer(p=0.1, block_size=3, inplace=True))
     if callable(act_layer):
@@ -108,10 +114,22 @@ class Bottleneck(_ResBlock):
             downsample, act_layer)
 
 
+class ChannelRepeat(nn.Module):
+    def __init__(self, chan_repeats=1):
+        super().__init__()
+        self.chan_repeats = chan_repeats
+
+    def forward(self, x):
+        repeats = [1] * x.ndim
+        # Repeat the tensor along the channel dimension
+        repeats[1] = self.chan_repeats
+        return x.repeat(*repeats)
+
+
 class ResNet(nn.Sequential):
     def __init__(self, block, num_blocks, planes, num_classes=10, in_channels=3, zero_init_residual=False,
                  groups=1, width_per_group=64, conv_layer=None,
-                 act_layer=None, norm_layer=None, drop_layer=None, **kwargs):
+                 act_layer=None, norm_layer=None, drop_layer=None, num_repeats=1, **kwargs):
 
         if conv_layer is None:
             conv_layer = nn.Conv2d
@@ -127,11 +145,16 @@ class ResNet(nn.Sequential):
                                    kernel_size=7, stride=2, padding=3, bias=False),
                    nn.MaxPool2d(kernel_size=3, stride=2, padding=1)]
 
+        # Optional tensor repetitions along channel axis (mainly for TridentNet)
+        if num_repeats > 1:
+            _layers.append(ChannelRepeat(num_repeats))
+
         # Consecutive convolutional blocks
         stride = 1
         for _num_blocks, _planes in zip(num_blocks, planes):
             _layers.append(self._res_layer(block, _num_blocks, in_planes, _planes, stride, groups, width_per_group,
-                                           act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **kwargs))
+                                           act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer,
+                                           num_repeats=num_repeats, **kwargs))
             in_planes = block.expansion * _planes
             stride = 2
 
@@ -139,7 +162,7 @@ class ResNet(nn.Sequential):
             ('features', nn.Sequential(*_layers)),
             ('pool', nn.AdaptiveAvgPool2d((1, 1))),
             ('flatten', nn.Flatten(1)),
-            ('head', nn.Linear(in_planes, num_classes))]))
+            ('head', nn.Linear(num_repeats * in_planes, num_classes))]))
 
         # Init all layers
         init.init_module(self, nonlinearity='relu')
@@ -154,12 +177,13 @@ class ResNet(nn.Sequential):
 
     @staticmethod
     def _res_layer(block, num_blocks, in_planes, planes, stride=1, groups=1, width_per_group=64,
-                   norm_layer=None, act_layer=None, drop_layer=None, **kwargs):
+                   norm_layer=None, act_layer=None, drop_layer=None, num_repeats=1, **kwargs):
 
         downsample = None
         if stride != 1 or in_planes != planes * block.expansion:
-            downsample = nn.Sequential(*_conv_sequence(in_planes, planes * block.expansion, None, norm_layer,
-                                                       drop_layer, kernel_size=1, stride=stride, bias=False))
+            downsample = nn.Sequential(*_conv_sequence(num_repeats * in_planes, num_repeats * planes * block.expansion,
+                                                       None, norm_layer, drop_layer,
+                                                       kernel_size=1, stride=stride, bias=False))
         layers = [block(in_planes, planes, stride, downsample, groups, width_per_group,
                         act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **kwargs)]
 
