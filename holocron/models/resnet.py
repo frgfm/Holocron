@@ -144,9 +144,9 @@ class ResNet(nn.Sequential):
         # Consecutive convolutional blocks
         stride = 1
         for _num_blocks, _planes in zip(num_blocks, planes):
-            _layers.append(self._res_layer(block, _num_blocks, in_planes, _planes, stride, groups, width_per_group,
-                                           act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer,
-                                           avg_downsample=avg_downsample, num_repeats=num_repeats, **kwargs))
+            _layers.append(self._make_layer(block, _num_blocks, in_planes, _planes, stride, groups, width_per_group,
+                                            act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer,
+                                            avg_downsample=avg_downsample, num_repeats=num_repeats, **kwargs))
             in_planes = block.expansion * _planes
             stride = 2
 
@@ -168,7 +168,7 @@ class ResNet(nn.Sequential):
                     m.convs[1][1].weight.data.zero_()
 
     @staticmethod
-    def _res_layer(block, num_blocks, in_planes, planes, stride=1, groups=1, width_per_group=64,
+    def _make_layer(block, num_blocks, in_planes, planes, stride=1, groups=1, width_per_group=64,
                    norm_layer=None, act_layer=None, drop_layer=None, avg_downsample=False, num_repeats=1,
                    **kwargs):
 
