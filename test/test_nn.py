@@ -279,7 +279,7 @@ for fn_name in act_fns:
         input_shape = (32, 3, 224, 224)
         self._test_activation_function(fn_name, input_shape)
 
-    setattr(Tester, "test_" + fn_name, do_test)
+    setattr(NNTester, "test_" + fn_name, do_test)
 
 act_modules = ['SiLU', 'Mish', 'NLReLU']
 
@@ -288,7 +288,7 @@ for mod_name in act_modules:
         input_shape = (32, 3, 224, 224)
         self._test_activation_module(mod_name, input_shape)
 
-    setattr(Tester, "test_" + mod_name, do_test)
+    setattr(NNTester, "test_" + mod_name, do_test)
 
 
 loss_modules = [('FocalLoss', 'focal_loss'),
@@ -298,7 +298,7 @@ for (mod_name, fn_name) in loss_modules:
     def do_test(self, mod_name=mod_name, fn_name=fn_name):
         self._test_loss_module(mod_name, fn_name, multi_label=False)
 
-    setattr(Tester, "test_" + mod_name, do_test)
+    setattr(NNTester, "test_" + mod_name, do_test)
 
 
 loss_modules = [('MultiLabelCrossEntropy', 'multilabel_cross_entropy')]
@@ -307,7 +307,7 @@ for (mod_name, fn_name) in loss_modules:
     def do_test(self, mod_name=mod_name, fn_name=fn_name):
         self._test_loss_module(mod_name, fn_name, multi_label=True)
 
-    setattr(Tester, "test_" + mod_name, do_test)
+    setattr(NNTester, "test_" + mod_name, do_test)
 
 
 xcorr_modules = ['NormConv2d', 'Add2d']
@@ -316,7 +316,7 @@ for mod_name in xcorr_modules:
     def do_test(self, mod_name=mod_name):
         self._test_xcorr2d(mod_name)
 
-    setattr(Tester, "test_" + mod_name, do_test)
+    setattr(NNTester, "test_" + mod_name, do_test)
 
 
 if __name__ == '__main__':

@@ -94,14 +94,14 @@ for model_name in ['darknet24', 'darknet19', 'darknet53',
     def do_test(self, model_name=model_name, num_classes=num_classes):
         self._test_classification_model(model_name, num_classes)
 
-    setattr(Tester, "test_" + model_name, do_test)
+    setattr(ModelTester, "test_" + model_name, do_test)
 
 
 for model_name, size in [('yolov1', 448), ('yolov2', 416)]:
     def do_test(self, model_name=model_name, size=size):
         self._test_detection_model(model_name, size)
 
-    setattr(Tester, "test_" + model_name, do_test)
+    setattr(ModelTester, "test_" + model_name, do_test)
 
 
 # Lower input size to avoid OOM with CI
@@ -109,7 +109,7 @@ for model_name, size, out_size in [('unet', 572, 388), ('unetp', 256, 256), ('un
     def do_test(self, model_name=model_name, size=size, out_size=out_size):
         self._test_segmentation_model(model_name, size, out_size)
 
-    setattr(Tester, "test_" + model_name, do_test)
+    setattr(ModelTester, "test_" + model_name, do_test)
 
 
 if __name__ == '__main__':
