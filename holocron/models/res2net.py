@@ -7,7 +7,6 @@ based on https://github.com/rwightman/pytorch-image-models/blob/master/timm/mode
 
 import logging
 import math
-from functools import partial
 import torch
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
