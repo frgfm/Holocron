@@ -9,7 +9,8 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 from torchvision.models.utils import load_state_dict_from_url
-from .resnet import _ResBlock, _conv_sequence, ResNet
+from .resnet import _ResBlock, ResNet
+from .utils import conv_sequence
 
 
 __all__ = ['Tridentneck', 'tridentnet50']
@@ -67,14 +68,14 @@ class Tridentneck(_ResBlock):
         width = int(planes * (base_width / 64.)) * groups
         # Concatenate along the channel axis and enlarge BN to leverage parallelization
         super().__init__(
-            [*_conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, TridentConv2d, bn_channels=3 * width,
-                             kernel_size=1, stride=1, bias=False, dilation=1),
-             *_conv_sequence(width, width, act_layer, norm_layer, drop_layer, TridentConv2d, bn_channels=3 * width,
-                             kernel_size=3, stride=stride,
-                             padding=1, groups=groups, bias=False, dilation=3),
-             *_conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, TridentConv2d,
-                             bn_channels=3 * planes * self.expansion,
-                             kernel_size=1, stride=1, bias=False, dilation=1)],
+            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, TridentConv2d, bn_channels=3 * width,
+                            kernel_size=1, stride=1, bias=False, dilation=1),
+             *conv_sequence(width, width, act_layer, norm_layer, drop_layer, TridentConv2d, bn_channels=3 * width,
+                            kernel_size=3, stride=stride,
+                            padding=1, groups=groups, bias=False, dilation=3),
+             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, TridentConv2d,
+                            bn_channels=3 * planes * self.expansion,
+                            kernel_size=1, stride=1, bias=False, dilation=1)],
             downsample, act_layer)
 
 

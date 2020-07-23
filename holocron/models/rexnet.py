@@ -11,7 +11,7 @@ from collections import OrderedDict
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 from holocron.nn import SiLU, init
-from .resnet import _conv_sequence
+from .utils import conv_sequence
 
 
 __all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']
@@ -37,10 +37,10 @@ class SEBlock(nn.Module):
         super().__init__()
         self.pool = nn.AdaptiveAvgPool2d(1)
         self.conv = nn.Sequential(
-            *_conv_sequence(channels, channels // se_ratio, act_layer, norm_layer, drop_layer,
-                            kernel_size=1, stride=1),
-            *_conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer,
-                            kernel_size=1, stride=1))
+            *conv_sequence(channels, channels // se_ratio, act_layer, norm_layer, drop_layer,
+                           kernel_size=1, stride=1),
+            *conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer,
+                           kernel_size=1, stride=1))
 
     def forward(self, x):
 
@@ -67,20 +67,20 @@ class ReXBlock(nn.Module):
         _layers = []
         if t != 1:
             dw_channels = in_channels * t
-            _layers.extend(_conv_sequence(in_channels, dw_channels, SiLU(), norm_layer, drop_layer, kernel_size=1,
-                                          stride=1, bias=False))
+            _layers.extend(conv_sequence(in_channels, dw_channels, SiLU(), norm_layer, drop_layer, kernel_size=1,
+                                         stride=1, bias=False))
         else:
             dw_channels = in_channels
 
-        _layers.extend(_conv_sequence(dw_channels, dw_channels, None, norm_layer, drop_layer, kernel_size=3,
-                                      stride=stride, padding=1, bias=False, groups=dw_channels))
+        _layers.extend(conv_sequence(dw_channels, dw_channels, None, norm_layer, drop_layer, kernel_size=3,
+                                     stride=stride, padding=1, bias=False, groups=dw_channels))
 
         if use_se:
             _layers.append(SEBlock(dw_channels, se_ratio, act_layer, norm_layer, drop_layer))
 
         _layers.append(act_layer)
-        _layers.extend(_conv_sequence(dw_channels, channels, None, norm_layer, drop_layer, kernel_size=1,
-                                      stride=1, bias=False))
+        _layers.extend(conv_sequence(dw_channels, channels, None, norm_layer, drop_layer, kernel_size=1,
+                                     stride=1, bias=False))
         self.conv = nn.Sequential(*_layers)
 
     def forward(self, x):
@@ -118,8 +118,8 @@ class ReXNet(nn.Sequential):
 
         ses = [False] * (num_blocks[0] + num_blocks[1]) + [use_se] * sum(num_blocks[2:])
 
-        _layers = _conv_sequence(in_channels, chans[0], act_layer, norm_layer, drop_layer,
-                                 kernel_size=3, stride=2, padding=1, bias=False)
+        _layers = conv_sequence(in_channels, chans[0], act_layer, norm_layer, drop_layer,
+                                kernel_size=3, stride=2, padding=1, bias=False)
 
         t = 1
         for in_c, c, s, se in zip(chans[:-1], chans[1:], strides, ses):
@@ -127,8 +127,8 @@ class ReXNet(nn.Sequential):
             t = 6
 
         pen_channels = int(width_mult * 1280)
-        _layers.extend(_conv_sequence(chans[-1], pen_channels, act_layer, norm_layer, drop_layer,
-                                      kernel_size=1, stride=1, padding=0, bias=False))
+        _layers.extend(conv_sequence(chans[-1], pen_channels, act_layer, norm_layer, drop_layer,
+                                     kernel_size=1, stride=1, padding=0, bias=False))
 
         super().__init__(OrderedDict([
             ('features', nn.Sequential(*_layers)),

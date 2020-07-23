@@ -10,7 +10,8 @@ import math
 import torch
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
-from .resnet import _ResBlock, _conv_sequence, ResNet
+from .resnet import _ResBlock, ResNet
+from .utils import conv_sequence
 
 
 __all__ = ['Bottle2neck', 'res2net50_26w_4s']
@@ -29,10 +30,10 @@ class ScaleConv2d(nn.Module):
 
         self.scale = scale
         self.width = planes // scale
-        self.conv = nn.ModuleList([nn.Sequential(*_conv_sequence(self.width, self.width,
-                                                                 act_layer, norm_layer, drop_layer,
-                                                                 kernel_size=3, stride=stride, padding=1,
-                                                                 groups=groups, bias=False))
+        self.conv = nn.ModuleList([nn.Sequential(*conv_sequence(self.width, self.width,
+                                                                act_layer, norm_layer, drop_layer,
+                                                                kernel_size=3, stride=stride, padding=1,
+                                                                groups=groups, bias=False))
                                    for _ in range(max(1, scale - 1))])
 
         if downsample:
@@ -82,11 +83,11 @@ class Bottle2neck(_ResBlock):
 
         width = int(math.floor(planes * (base_width / 64.))) * groups
         super().__init__(
-            [*_conv_sequence(inplanes, width * scale, act_layer, norm_layer, drop_layer, kernel_size=1,
-                             stride=1, bias=False),
+            [*conv_sequence(inplanes, width * scale, act_layer, norm_layer, drop_layer, kernel_size=1,
+                            stride=1, bias=False),
              ScaleConv2d(scale, width * scale, 3, stride, groups, _downsample, act_layer, norm_layer, drop_layer),
-             *_conv_sequence(width * scale, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
-                             stride=1, bias=False)],
+             *conv_sequence(width * scale, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
+                            stride=1, bias=False)],
             downsample, act_layer)
 
 

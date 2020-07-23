@@ -186,6 +186,9 @@ class NNTester(unittest.TestCase):
         # Test module
         mod = downsample.ConcatDownsample2d(scale_factor)
         self.assertTrue(torch.equal(mod(x), out))
+        # Test JIT module
+        mod = downsample.ConcatDownsample2dJit(scale_factor)
+        self.assertTrue(torch.equal(mod(x), out))
 
     def test_init(self):
 
@@ -270,6 +273,22 @@ class NNTester(unittest.TestCase):
         with torch.no_grad():
             out = mod(x)
         self.assertEqual(out.data_ptr, x.data_ptr)
+
+    def test_globalavgpool2d(self):
+
+        x = torch.rand(2, 8, 19, 19)
+
+        # Check that ops are doing the same thing
+        ref = nn.AdaptiveAvgPool2d(1)
+        mod = downsample.GlobalAvgPool2d(flatten=False)
+        out = mod(x)
+        self.assertTrue(torch.equal(out, ref(x)))
+        self.assertNotEqual(out.data_ptr, x.data_ptr)
+
+        # Check that flatten works
+        x = torch.rand(2, 8, 19, 19)
+        mod = downsample.GlobalAvgPool2d(flatten=True)
+        self.assertTrue(torch.equal(mod(x), ref(x).view(*x.shape[:2])))
 
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']

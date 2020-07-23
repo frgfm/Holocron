@@ -63,7 +63,7 @@ class Mish(nn.Module):
         return F.mish(input)
 
 
-class HardMish(nn.Module):
+class HardMish(_Activation):
     """Implements the Had Mish activation module from `"H-Mish" <https://github.com/digantamisra98/H-Mish>`_
 
     This activation is computed as follows:
@@ -72,7 +72,7 @@ class HardMish(nn.Module):
         f(x) = \\frac{x}{2} \\cdot \\min(2, \\max(0, x + 2))
     """
     def forward(self, input):
-        return F.hard_mish(input)
+        return F.hard_mish(input, inplace=self.inplace)
 
 
 class NLReLU(_Activation):

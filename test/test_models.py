@@ -87,6 +87,7 @@ class ModelTester(unittest.TestCase):
 for model_name in ['darknet24', 'darknet19', 'darknet53',
                    'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                    'resnext50_32x4d', 'resnext101_32x8d',
+                   'resnet50d',
                    'res2net50_26w_4s',
                    'tridentnet50',
                    'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']:
