@@ -7,7 +7,7 @@ from holocron.nn.init import init_module
 from holocron.nn.modules import activation, conv, loss, downsample, dropblock
 
 
-class Tester(unittest.TestCase):
+class NNTester(unittest.TestCase):
     def _test_activation_function(self, name, input_shape):
         fn = F.__dict__[name]
 

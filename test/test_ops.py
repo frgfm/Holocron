@@ -14,7 +14,7 @@ def _get_boxes():
                          [100, 100, 200, 200]], dtype=torch.float32)
 
 
-class Tester(unittest.TestCase):
+class OpsTester(unittest.TestCase):
 
     def test_iou_penalty(self):
 
