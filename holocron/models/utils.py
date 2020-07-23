@@ -11,7 +11,7 @@ __all__ = ['conv_sequence']
 
 
 def conv_sequence(in_channels, out_channels, act_layer=None, norm_layer=None, drop_layer=None,
-                   conv_layer=None, bn_channels=None, **kwargs):
+                  conv_layer=None, bn_channels=None, **kwargs):
 
     if conv_layer is None:
         conv_layer = nn.Conv2d
