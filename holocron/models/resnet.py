@@ -13,7 +13,7 @@ from holocron.nn import init
 
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-           'resnext50_32x4d', 'resnext101_32x8d']
+           'resnext50_32x4d', 'resnext101_32x8d', 'resnet50d']
 
 
 default_cfgs = {
@@ -31,6 +31,8 @@ default_cfgs = {
                         'url': None},
     'resnext101_32x8d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 23, 3],
                          'url': None},
+    'resnet50d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 6, 3],
+                  'url': None},
 }
 
 
@@ -129,7 +131,8 @@ class ChannelRepeat(nn.Module):
 class ResNet(nn.Sequential):
     def __init__(self, block, num_blocks, planes, num_classes=10, in_channels=3, zero_init_residual=False,
                  groups=1, width_per_group=64, conv_layer=None,
-                 act_layer=None, norm_layer=None, drop_layer=None, num_repeats=1, **kwargs):
+                 act_layer=None, norm_layer=None, drop_layer=None, deep_stem=False, avg_downsample=False,
+                 num_repeats=1, **kwargs):
 
         if conv_layer is None:
             conv_layer = nn.Conv2d
@@ -140,10 +143,18 @@ class ResNet(nn.Sequential):
         self.dilation = 1
 
         in_planes = 64
-        # Stem
-        _layers = [*_conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer,
-                                   kernel_size=7, stride=2, padding=3, bias=False),
-                   nn.MaxPool2d(kernel_size=3, stride=2, padding=1)]
+        # Deep stem from ResNet-C
+        if deep_stem:
+            _layers = [*_conv_sequence(in_channels, in_planes // 2, act_layer, norm_layer, drop_layer,
+                                       kernel_size=3, stride=2, padding=1, bias=False),
+                       *_conv_sequence(in_planes // 2, in_planes // 2, act_layer, norm_layer, drop_layer,
+                                       kernel_size=3, stride=1, padding=1, bias=False),
+                       *_conv_sequence(in_planes // 2, in_planes, act_layer, norm_layer, drop_layer,
+                                       kernel_size=3, stride=1, padding=1, bias=False)]
+        else:
+            _layers = _conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer,
+                                     kernel_size=7, stride=2, padding=3, bias=False)
+        _layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
 
         # Optional tensor repetitions along channel axis (mainly for TridentNet)
         if num_repeats > 1:
@@ -154,7 +165,7 @@ class ResNet(nn.Sequential):
         for _num_blocks, _planes in zip(num_blocks, planes):
             _layers.append(self._res_layer(block, _num_blocks, in_planes, _planes, stride, groups, width_per_group,
                                            act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer,
-                                           num_repeats=num_repeats, **kwargs))
+                                           avg_downsample=avg_downsample, num_repeats=num_repeats, **kwargs))
             in_planes = block.expansion * _planes
             stride = 2
 
@@ -177,13 +188,23 @@ class ResNet(nn.Sequential):
 
     @staticmethod
     def _res_layer(block, num_blocks, in_planes, planes, stride=1, groups=1, width_per_group=64,
-                   norm_layer=None, act_layer=None, drop_layer=None, num_repeats=1, **kwargs):
+                   norm_layer=None, act_layer=None, drop_layer=None, avg_downsample=False, num_repeats=1,
+                   **kwargs):
 
         downsample = None
         if stride != 1 or in_planes != planes * block.expansion:
-            downsample = nn.Sequential(*_conv_sequence(num_repeats * in_planes, num_repeats * planes * block.expansion,
-                                                       None, norm_layer, drop_layer,
-                                                       kernel_size=1, stride=stride, bias=False))
+            # Downsampling from ResNet-D
+            if avg_downsample:
+                downsample = nn.Sequential(nn.AvgPool2d(stride, ceil_mode=True, count_include_pad=False),
+                                           *_conv_sequence(num_repeats * in_planes,
+                                                           num_repeats * planes * block.expansion,
+                                                           None, norm_layer, drop_layer,
+                                                           kernel_size=1, stride=1, bias=False))
+            else:
+                downsample = nn.Sequential(*_conv_sequence(num_repeats * in_planes,
+                                                           num_repeats * planes * block.expansion,
+                                                           None, norm_layer, drop_layer,
+                                                           kernel_size=1, stride=stride, bias=False))
         layers = [block(in_planes, planes, stride, downsample, groups, width_per_group,
                         act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **kwargs)]
 
@@ -256,6 +277,22 @@ def resnet50(pretrained=False, progress=True, **kwargs):
     """
 
     return _resnet('resnet50', pretrained, progress, **kwargs)
+
+
+def resnet50d(pretrained=False, progress=True, **kwargs):
+    """ResNet-50-D from
+    `"Bag of Tricks for Image Classification with Convolutional Neural Networks"
+    <https://arxiv.org/pdf/1812.01187.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _resnet('resnet50d', pretrained, progress, deep_stem=True, avg_downsample=True, **kwargs)
 
 
 def resnet101(pretrained=False, progress=True, **kwargs):
