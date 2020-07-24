@@ -90,6 +90,7 @@ for model_name in ['darknet24', 'darknet19', 'darknet53',
                    'resnet50d',
                    'res2net50_26w_4s',
                    'tridentnet50',
+                   'pyconvresnet50',
                    'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']:
     num_classes = 1000 if model_name in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x'] else 10
 
