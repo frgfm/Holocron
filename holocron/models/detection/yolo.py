@@ -120,7 +120,8 @@ class _YOLO(nn.Module):
                 # Objectness
                 obj_loss += F.mse_loss(selection_o, selection_iou, reduction='sum')
                 # Classification
-                clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
+                # clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
+                clf_loss += F.binary_cross_entropy(selected_scores, gt_probs, reduction='sum')
 
         return dict(obj_loss=obj_loss / pred_boxes.shape[0],
                     noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
@@ -292,6 +293,9 @@ class YOLOv1(_YOLO):
 
 
 class YOLOv2(_YOLO):
+
+    passthrough = None
+
     def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, lambda_noobj=0.5, lambda_coords=5.,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
 
@@ -308,6 +312,8 @@ class YOLOv2(_YOLO):
         self.num_classes = num_classes
 
         self.backbone = DarknetBodyV2(layout, True, in_channels, act_layer, norm_layer)
+        # Hook the penultimate block for passthrough
+        self.backbone[-3].register_forward_hook(self._fwd_hook)
 
         self.reorg_layer = ConcatDownsample2d(scale_factor=2)
 
@@ -333,6 +339,11 @@ class YOLOv2(_YOLO):
         self.lambda_coords = lambda_coords
 
         init_module(self, 'leaky_relu')
+
+    def _fwd_hook(self):
+        def _inner_hook(module, input, output):
+            self.passthrough = output
+        return _inner_hook
 
     @property
     def num_anchors(self):
@@ -390,9 +401,11 @@ class YOLOv2(_YOLO):
             x = torch.stack(x, dim=0)
 
         img_h, img_w = x.shape[-2:]
-        x, passthrough = self.backbone(x)
+        x = self.backbone(x)
         # Downsample the feature map by stacking adjacent features on the channel dimension
-        passthrough = self.reorg_layer(passthrough)
+        passthrough = self.reorg_layer(self.passthrough)
+        # Clear the hook
+        self.passthrough = None
 
         x = self.block5(x)
         # Stack the downsampled feature map on the channel dimension

@@ -94,7 +94,7 @@ class DarknetBodyV2(nn.Sequential):
 
     passthrough = None
 
-    def __init__(self, layout, passthrough=False, in_channels=3,
+    def __init__(self, layout, in_channels=3,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
 
         if act_layer is None:
@@ -117,15 +117,6 @@ class DarknetBodyV2(nn.Sequential):
             DarkBlockV2(layout[1][0], *layout[2], act_layer, norm_layer, drop_layer, conv_layer),
             nn.MaxPool2d(2),
             DarkBlockV2(layout[2][0], *layout[3], act_layer, norm_layer, drop_layer, conv_layer))
-
-        # Hook penultimate block
-        if passthrough:
-            self[-3].register_forward_hook(self._fwd_hook)
-
-    def _fwd_hook(self):
-        def _inner_hook(module, input, output):
-            self.passthrough = output
-        return _inner_hook
 
 
 class DarknetV2(nn.Sequential):
