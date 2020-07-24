@@ -4,6 +4,7 @@
 Implementation of PyConvResNet
 """
 
+import sys
 import logging
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
@@ -12,22 +13,28 @@ from .resnet import ResNet, _ResBlock
 from .utils import conv_sequence
 
 
-__all__ = ['PyBottleneck', 'pyconvresnet50']
+__all__ = ['PyBottleneck', 'pyconv_resnet50', 'pyconvhg_resnet50']
 
 
 default_cfgs = {
-    'pyconvresnet50': {'block': 'Bottleneck', 'num_blocks': [3, 4, 6, 3],
-                       'url': None},
+    'pyconv_resnet50': {'block': 'PyBottleneck', 'num_blocks': [3, 4, 6, 3], 'out_chans': [64, 128, 256, 512],
+                        'width_per_group': 64,
+                        'groups': [[1, 4, 8, 16], [1, 4, 8], [1, 4], [1]],
+                        'url': None},
+    'pyconvhg_resnet50': {'block': 'PyHGBottleneck', 'num_blocks': [3, 4, 6, 3], 'out_chans': [128, 256, 512, 1024],
+                          'width_per_group': 2,
+                          'groups': [[32, 32, 32, 32], [32, 64, 64], [32, 64], [32]],
+                          'url': None},
 }
 
 
 class PyBottleneck(_ResBlock):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1, base_width=64, dilation=1,
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=None, base_width=64, dilation=1,
                  act_layer=None, norm_layer=None, drop_layer=None, num_levels=2, **kwargs):
 
-        width = int(planes * (base_width / 64.)) * groups
+        width = int(planes * (base_width / 64.)) * min(groups)
 
         super().__init__(
             [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, kernel_size=1,
@@ -40,10 +47,19 @@ class PyBottleneck(_ResBlock):
             downsample, act_layer)
 
 
+class PyHGBottleneck(PyBottleneck):
+    expansion = 2
+
+
 def _pyconvresnet(arch, pretrained, progress, **kwargs):
+
+    # Retrieve the correct block type
+    block = sys.modules[__name__].__dict__[default_cfgs[arch]['block']]
     # Build the model
-    model = ResNet(PyBottleneck, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512], stem_pool=False,
-                   block_args=[dict(num_levels=levels) for levels in [4, 3, 2, 1]], **kwargs)
+    model = ResNet(block, default_cfgs[arch]['num_blocks'], default_cfgs[arch]['out_chans'], stem_pool=False,
+                   width_per_group=default_cfgs[arch]['width_per_group'],
+                   block_args=[dict(num_levels=len(group), groups=group)
+                               for group in default_cfgs[arch]['groups']], **kwargs)
     # Load pretrained parameters
     if pretrained:
         if default_cfgs[arch]['url'] is None:
@@ -56,7 +72,7 @@ def _pyconvresnet(arch, pretrained, progress, **kwargs):
     return model
 
 
-def pyconvresnet50(pretrained=False, progress=True, **kwargs):
+def pyconv_resnet50(pretrained=False, progress=True, **kwargs):
     """PyConvResNet-50 from `"Pyramidal Convolution: Rethinking Convolutional Neural Networks
     for Visual Recognition" <https://arxiv.org/pdf/2006.11538.pdf>`_
 
@@ -68,4 +84,19 @@ def pyconvresnet50(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    return _pyconvresnet('pyconvresnet50', pretrained, progress, **kwargs)
+    return _pyconvresnet('pyconv_resnet50', pretrained, progress, **kwargs)
+
+
+def pyconvhg_resnet50(pretrained=False, progress=True, **kwargs):
+    """PyConvHGResNet-50 from `"Pyramidal Convolution: Rethinking Convolutional Neural Networks
+    for Visual Recognition" <https://arxiv.org/pdf/2006.11538.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _pyconvresnet('pyconvhg_resnet50', pretrained, progress, **kwargs)
