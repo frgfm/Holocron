@@ -58,6 +58,12 @@ TridentNet
 .. autofunction:: tridentnet50
 
 
+PyConvResNet
+------------
+
+.. autofunction:: pyconvresnet50
+
+
 ReXNet
 -------
 
