@@ -11,7 +11,7 @@ import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 
 from ...nn.init import init_module
-from .utils import conv_sequence
+from ..utils import conv_sequence
 
 
 __all__ = ['UNet', 'unet', 'UNetp', 'unetp', 'UNetpp', 'unetpp', 'UNet3p', 'unet3p']
