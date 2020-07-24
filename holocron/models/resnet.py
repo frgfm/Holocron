@@ -152,7 +152,8 @@ class ResNet(nn.Sequential):
         for _num_blocks, _planes, _block_args in zip(num_blocks, planes, block_args):
             _layers.append(self._make_layer(block, _num_blocks, in_planes, _planes, stride, groups, width_per_group,
                                             act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer,
-                                            avg_downsample=avg_downsample, num_repeats=num_repeats, block_args=_block_args))
+                                            avg_downsample=avg_downsample, num_repeats=num_repeats,
+                                            block_args=_block_args))
             in_planes = block.expansion * _planes
             stride = 2
 
