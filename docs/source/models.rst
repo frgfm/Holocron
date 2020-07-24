@@ -61,7 +61,9 @@ TridentNet
 PyConvResNet
 ------------
 
-.. autofunction:: pyconvresnet50
+.. autofunction:: pyconv_resnet50
+
+.. autofunction:: pyconvhg_resnet50
 
 
 ReXNet
