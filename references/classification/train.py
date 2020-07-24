@@ -236,7 +236,7 @@ def parse_args():
     parser.add_argument('--img-size', default=224, type=int, help='image size')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
-    parser.add_argument('--sched', default='plateau', type=str, help='scheduler')
+    parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float,
                         metavar='W', help='weight decay',
