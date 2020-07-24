@@ -113,7 +113,7 @@ class ResNet(nn.Sequential):
     def __init__(self, block, num_blocks, planes, num_classes=10, in_channels=3, zero_init_residual=False,
                  groups=1, width_per_group=64, conv_layer=None,
                  act_layer=None, norm_layer=None, drop_layer=None, deep_stem=False, stem_pool=True,
-                 avg_downsample=False, num_repeats=1):
+                 avg_downsample=False, num_repeats=1, block_args=None):
 
         if conv_layer is None:
             conv_layer = nn.Conv2d
@@ -144,10 +144,15 @@ class ResNet(nn.Sequential):
 
         # Consecutive convolutional blocks
         stride = 1
-        for _num_blocks, _planes in zip(num_blocks, planes):
+        # Block args
+        if block_args is None:
+            block_args = {}
+        if not isinstance(block_args, list):
+            block_args = [block_args] * len(num_blocks)
+        for _num_blocks, _planes, _block_args in zip(num_blocks, planes, block_args):
             _layers.append(self._make_layer(block, _num_blocks, in_planes, _planes, stride, groups, width_per_group,
                                             act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer,
-                                            avg_downsample=avg_downsample, num_repeats=num_repeats, **kwargs))
+                                            avg_downsample=avg_downsample, num_repeats=num_repeats, block_args=_block_args))
             in_planes = block.expansion * _planes
             stride = 2
 
@@ -171,7 +176,7 @@ class ResNet(nn.Sequential):
     @staticmethod
     def _make_layer(block, num_blocks, in_planes, planes, stride=1, groups=1, width_per_group=64,
                     act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None,
-                    avg_downsample=False, num_repeats=1, **kwargs):
+                    avg_downsample=False, num_repeats=1, block_args=None):
 
         downsample = None
         if stride != 1 or in_planes != planes * block.expansion:
@@ -187,12 +192,14 @@ class ResNet(nn.Sequential):
                                                           num_repeats * planes * block.expansion,
                                                           None, norm_layer, drop_layer, conv_layer,
                                                           kernel_size=1, stride=stride, bias=False))
+        if block_args is None:
+            block_args = {}
         layers = [block(in_planes, planes, stride, downsample, groups, width_per_group,
-                        act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **kwargs)]
+                        act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **block_args)]
 
         for _ in range(num_blocks - 1):
             layers.append(block(block.expansion * planes, planes, 1, None, groups, width_per_group,
-                                act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **kwargs))
+                                act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **block_args))
 
         return nn.Sequential(*layers)
 
