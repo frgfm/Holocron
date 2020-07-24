@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.conv &mdash; holocron 0.1.3a0+2be2531-git documentation</title>
+  <title>holocron.nn.modules.conv &mdash; holocron 0.1.3a0+f2e1e8c-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.3a0+2be2531
+                0.1.3a0+f2e1e8c
               </div>
             
           
@@ -103,6 +103,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#res2net">Res2Net</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#tridentnet">TridentNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#pyconvresnet">PyConvResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#darknet">Darknet</a></li>
 </ul>
@@ -222,6 +223,7 @@
 <span class="sd">Convolutional modules</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
+<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">torch.nn.modules.conv</span> <span class="kn">import</span> <span class="n">_ConvNd</span>
@@ -229,7 +231,7 @@
 <span class="kn">from</span> <span class="nn">torch.nn.functional</span> <span class="kn">import</span> <span class="n">pad</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;NormConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;Add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;SlimConv2d&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;NormConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;Add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;SlimConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;PyConv2d&#39;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">_NormConvNd</span><span class="p">(</span><span class="n">_ConvNd</span><span class="p">):</span>
@@ -461,6 +463,53 @@
 
         <span class="c1"># Fuse</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">X_top</span><span class="p">,</span> <span class="n">X_bot</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PyConv2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.PyConv2d">[docs]</a><span class="k">class</span> <span class="nc">PyConv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements the convolution module from `&quot;Pyramidal Convolution: Rethinking Convolutional Neural Networks for</span>
+<span class="sd">    Visual Recognition&quot; &lt;https://arxiv.org/pdf/2006.11538.pdf&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_channels (int): Number of channels in the input image</span>
+<span class="sd">        out_channels (int): Number of channels produced by the convolution</span>
+<span class="sd">        kernel_size (int): Size of the convolving kernel</span>
+<span class="sd">        num_levels (int, optional): number of stacks in the pyramid</span>
+<span class="sd">        padding (int or tuple, optional): Zero-padding added to both sides of</span>
+<span class="sd">            the input. Default: 0</span>
+<span class="sd">        groups (list(int), optional): Number of blocked connections from input</span>
+<span class="sd">            channels to output channels. Default: 1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">num_levels</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">num_levels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">([</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+                                        <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exp2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">num_levels</span><span class="p">))</span>
+            <span class="n">reminder</span> <span class="o">=</span> <span class="n">num_levels</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">exp2</span>
+            <span class="n">out_chans</span> <span class="o">=</span> <span class="p">[</span><span class="n">out_channels</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="n">exp2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">reminder</span><span class="p">)</span> <span class="o">+</span> \
+                        <span class="p">[</span><span class="n">out_channels</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">exp2</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_levels</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">reminder</span><span class="p">)</span>
+
+            <span class="n">k_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">kernel_size</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_levels</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">groups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">idx</span><span class="p">),</span> <span class="n">out_chan</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_levels</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">out_chans</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_levels</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The argument `group` is expected to be a list of integer of size `num_levels`.&quot;</span><span class="p">)</span>
+            <span class="n">paddings</span> <span class="o">=</span> <span class="p">[</span><span class="n">padding</span> <span class="o">+</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_levels</span><span class="p">)]</span>
+
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">([</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                              <span class="k">for</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">out_chans</span><span class="p">,</span> <span class="n">k_sizes</span><span class="p">,</span> <span class="n">paddings</span><span class="p">,</span> <span class="n">groups</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span> <span class="o">=</span> <span class="n">num_levels</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">conv</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
