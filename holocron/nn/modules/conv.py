@@ -263,20 +263,28 @@ class PyConv2d(nn.ModuleList):
 
     def __init__(self, in_channels, out_channels, kernel_size, expansion=2, padding=0,
                  groups=1, **kwargs):
-        exp2 = int(math.log2(expansion))
-        reminder = expansion - 2 ** exp2
-        out_chans = [out_channels // 2 ** (exp2 + 1)] * (2 * reminder) + \
-                    [out_channels // 2 ** exp2] * (expansion - 2 * reminder)
 
-        k_sizes = [kernel_size + 2 * idx for idx in range(expansion)]
-        _groups = [groups] + [min(2 ** (2 + idx), out_chan)
-                              for idx, out_chan in zip(range(expansion - 1), out_chans[1:])]
-        paddings = [padding + idx for idx in range(expansion)]
+        if expansion == 1:
+            super().__init__([nn.Conv2d(in_channels, out_channels, kernel_size,
+                                        padding=padding, groups=groups, **kwargs)])
+        else:
+            exp2 = int(math.log2(expansion))
+            reminder = expansion - 2 ** exp2
+            out_chans = [out_channels // 2 ** (exp2 + 1)] * (2 * reminder) + \
+                        [out_channels // 2 ** exp2] * (expansion - 2 * reminder)
 
-        super().__init__([nn.Conv2d(in_channels, out_chan, k_size, padding=padding, groups=group, **kwargs)
-                          for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, _groups)])
+            k_sizes = [kernel_size + 2 * idx for idx in range(expansion)]
+            _groups = [groups] + [min(2 ** (2 + idx), out_chan)
+                                  for idx, out_chan in zip(range(expansion - 1), out_chans[1:])]
+            paddings = [padding + idx for idx in range(expansion)]
+
+            super().__init__([nn.Conv2d(in_channels, out_chan, k_size, padding=padding, groups=group, **kwargs)
+                              for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, _groups)])
         self.expansion = expansion
 
     def forward(self, x):
 
-        return torch.cat([conv(x) for conv in self], dim=1)
+        if self.expansion == 1:
+            return self[0].forward(x)
+        else:
+            return torch.cat([conv(x) for conv in self], dim=1)
