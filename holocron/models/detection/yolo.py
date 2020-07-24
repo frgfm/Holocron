@@ -11,8 +11,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.ops.boxes import box_iou, nms
 from torchvision.models.utils import load_state_dict_from_url
-from torchvision.models.resnet import conv1x1, conv3x3
 
+from ..utils import conv_sequence
 from ...nn import ConcatDownsample2d
 from ...nn.init import init_module
 from ..darknet import DarknetBodyV1, DarknetBodyV2, default_cfgs as dark_cfgs
@@ -179,21 +179,25 @@ class _YOLO(nn.Module):
 
 
 class YOLOv1(_YOLO):
-    def __init__(self, layout, num_classes=20, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.):
+    def __init__(self, layout, num_classes=20, in_channels=3, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
 
         super().__init__()
 
-        self.backbone = DarknetBodyV1(layout)
+        if act_layer is None:
+            act_layer = nn.LeakyReLU(0.1, inplace=True)
+
+        self.backbone = DarknetBodyV1(layout, in_channels, act_layer, norm_layer)
 
         self.block4 = nn.Sequential(
-            conv3x3(1024, 1024),
-            nn.LeakyReLU(inplace=True),
-            conv3x3(1024, 1024, stride=2),
-            nn.LeakyReLU(inplace=True),
-            conv3x3(1024, 1024),
-            nn.LeakyReLU(inplace=True),
-            conv3x3(1024, 1024),
-            nn.LeakyReLU(inplace=True))
+            *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1),
+            *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, stride=2),
+            *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1),
+            *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1))
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
@@ -288,35 +292,43 @@ class YOLOv1(_YOLO):
 
 
 class YOLOv2(_YOLO):
-    def __init__(self, layout, num_classes=20, anchors=None, lambda_noobj=0.5, lambda_coords=5.,
-                 backbone_norm_layer=None):
+
+    passthrough = None
+
+    def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, lambda_noobj=0.5, lambda_coords=5.,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
 
         super().__init__()
+
+        if act_layer is None:
+            act_layer = nn.LeakyReLU(0.1, inplace=True)
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
 
         # Priors computed using K-means
         if anchors is None:
             anchors = torch.tensor([[1.08, 1.19], [3.42, 4.41], [6.63, 11.38], [9.42, 5.11], [16.62, 10.52]])
         self.num_classes = num_classes
 
-        self.backbone = DarknetBodyV2(layout, True, backbone_norm_layer)
+        self.backbone = DarknetBodyV2(layout, in_channels, act_layer, norm_layer, drop_layer, conv_layer)
+        # Hook the penultimate block for passthrough
+        self.backbone[-3].register_forward_hook(self._fwd_hook)
 
         self.reorg_layer = ConcatDownsample2d(scale_factor=2)
 
         self.block5 = nn.Sequential(
-            conv3x3(layout[-1][0], layout[-1][0]),
-            nn.BatchNorm2d(layout[-1][0]),
-            nn.LeakyReLU(0.1, inplace=True),
-            conv3x3(layout[-1][0], layout[-1][0]),
-            nn.BatchNorm2d(layout[-1][0]),
-            nn.LeakyReLU(0.1, inplace=True))
+            *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1),
+            *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1))
 
         self.block6 = nn.Sequential(
-            conv3x3(layout[-1][0] + layout[-2][0] * 2 ** 2, layout[-1][0]),
-            nn.BatchNorm2d(layout[-1][0]),
-            nn.LeakyReLU(0.1, inplace=True))
+            *conv_sequence(layout[-1][0] + layout[-2][0] * 2 ** 2, layout[-1][0],
+                           act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1))
 
         # Each box has P_objectness, 4 coords, and score for each class
-        self.head = conv1x1(layout[-1][0], anchors.shape[0] * (5 + num_classes))
+        self.head = nn.Conv2d(layout[-1][0], anchors.shape[0] * (5 + num_classes), 1)
 
         # Register losses
         self.register_buffer('anchors', anchors)
@@ -326,6 +338,9 @@ class YOLOv2(_YOLO):
         self.lambda_coords = lambda_coords
 
         init_module(self, 'leaky_relu')
+
+    def _fwd_hook(self, module, input, output):
+        self.passthrough = output
 
     @property
     def num_anchors(self):
@@ -383,9 +398,11 @@ class YOLOv2(_YOLO):
             x = torch.stack(x, dim=0)
 
         img_h, img_w = x.shape[-2:]
-        x, passthrough = self.backbone(x)
+        x = self.backbone(x)
         # Downsample the feature map by stacking adjacent features on the channel dimension
-        passthrough = self.reorg_layer(passthrough)
+        passthrough = self.reorg_layer(self.passthrough)
+        # Clear the hook
+        self.passthrough = None
 
         x = self.block5(x)
         # Stack the downsampled feature map on the channel dimension
