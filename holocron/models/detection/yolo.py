@@ -120,8 +120,7 @@ class _YOLO(nn.Module):
                 # Objectness
                 obj_loss += F.mse_loss(selection_o, selection_iou, reduction='sum')
                 # Classification
-                # clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
-                clf_loss += F.binary_cross_entropy(selected_scores, gt_probs, reduction='sum')
+                clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
 
         return dict(obj_loss=obj_loss / pred_boxes.shape[0],
                     noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
