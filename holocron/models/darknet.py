@@ -116,8 +116,7 @@ class DarknetBodyV2(nn.Sequential):
             nn.MaxPool2d(2),
             DarkBlockV2(layout[1][0], *layout[2], act_layer, norm_layer, drop_layer, conv_layer),
             nn.MaxPool2d(2),
-            DarkBlockV2(layout[2][0], *layout[3], act_layer, norm_layer, drop_layer, conv_layer)
-            )
+            DarkBlockV2(layout[2][0], *layout[3], act_layer, norm_layer, drop_layer, conv_layer))
 
         # Hook penultimate block
         if passthrough:
@@ -127,14 +126,6 @@ class DarknetBodyV2(nn.Sequential):
         def _inner_hook(module, input, output):
             self.passthrough = output
         return _inner_hook
-
-    def forward(self, x):
-
-        out = super().forward(x)
-        if self.passthrough is None:
-            return out
-        else:
-            return out, self.passthrough
 
 
 class DarknetV2(nn.Sequential):
@@ -152,13 +143,12 @@ class DarknetV2(nn.Sequential):
 class DarkBlockV3(_ResBlock):
 
     def __init__(self, planes, mid_planes, act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
-
         super().__init__(
-                [*conv_sequence(planes, mid_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                                kernel_size=1, bias=False),
-                 *conv_sequence(mid_planes, planes, act_layer, norm_layer, drop_layer, conv_layer,
-                                kernel_size=3, padding=1, bias=False)],
-                None, act_layer)
+            [*conv_sequence(planes, mid_planes, act_layer, norm_layer, drop_layer, conv_layer,
+                            kernel_size=1, bias=False),
+             *conv_sequence(mid_planes, planes, act_layer, norm_layer, drop_layer, conv_layer,
+                            kernel_size=3, padding=1, bias=False)],
+            None, act_layer)
 
 
 class DarknetBodyV3(nn.Sequential):
