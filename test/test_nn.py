@@ -295,8 +295,8 @@ class NNTester(unittest.TestCase):
         x = torch.rand(2, 8, 19, 19)
 
         # Pyramidal Conv
-        for expansion in range(1, 5):
-            mod = conv.PyConv2d(8, 16, 3, expansion, padding=1)
+        for num_levels in range(1, 5):
+            mod = conv.PyConv2d(8, 16, 3, num_levels, padding=1)
 
             with torch.no_grad():
                 out = mod(x)
