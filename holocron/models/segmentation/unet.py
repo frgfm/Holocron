@@ -11,6 +11,7 @@ import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 
 from ...nn.init import init_module
+from .utils import conv_sequence
 
 
 __all__ = ['UNet', 'unet', 'UNetp', 'unetp', 'UNetpp', 'unetpp', 'UNet3p', 'unet3p']
@@ -32,34 +33,21 @@ default_cfgs = {
 }
 
 
-def conv1x1(in_chan, out_chan):
-    return nn.Conv2d(in_chan, out_chan, 1)
-
-
-def conv3x3(in_chan, out_chan, padding=0):
-    return nn.Conv2d(in_chan, out_chan, 3, padding=padding)
-
-
-def conv_bn_act(in_chan, out_chan, kernel_size, padding=0, bn=False, act=True):
-    layers = [nn.Conv2d(in_chan, out_chan, kernel_size, padding=padding)]
-    if bn:
-        layers.append(nn.BatchNorm2d(out_chan))
-    if act:
-        layers.append(nn.ReLU(inplace=True))
-
-    return layers
-
-
 class DownPath(nn.Sequential):
-    def __init__(self, in_chan, out_chan, downsample=True, padding=0, bn=False):
+    def __init__(self, in_chan, out_chan, downsample=True, padding=0,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+
         layers = [nn.MaxPool2d(2)] if downsample else []
-        layers.extend([*conv_bn_act(in_chan, out_chan, 3, padding, bn),
-                       *conv_bn_act(out_chan, out_chan, 3, padding, bn)])
+        layers.extend([*conv_sequence(in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+                                      kernel_size=3, padding=padding),
+                       *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+                                      kernel_size=3, padding=padding)])
         super().__init__(*layers)
 
 
 class UpPath(nn.Module):
-    def __init__(self, in_chan, out_chan, num_skips=1, conv_transpose=False, padding=0, bn=False):
+    def __init__(self, in_chan, out_chan, num_skips=1, conv_transpose=False, padding=0,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__()
 
         if conv_transpose:
@@ -69,8 +57,12 @@ class UpPath(nn.Module):
 
         # Estimate the number of channels in the upsampled feature map
         up_chan = in_chan // 2 if conv_transpose else in_chan
-        self.block = nn.Sequential(*conv_bn_act(num_skips * in_chan // 2 + up_chan, out_chan, 3, padding, bn),
-                                   *conv_bn_act(out_chan, out_chan, 3, padding, bn))
+        self.block = nn.Sequential(*conv_sequence(num_skips * in_chan // 2 + up_chan, out_chan,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=3, padding=padding),
+                                   *conv_sequence(out_chan, out_chan,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=3, padding=padding))
         self.num_skips = num_skips
 
     def forward(self, downfeats, upfeat):
@@ -100,24 +92,30 @@ class UNet(nn.Module):
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
     """
-    def __init__(self, layout, in_channels=1, num_classes=10):
+    def __init__(self, layout, in_channels=1, num_classes=10,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__()
+
+        if act_layer is None:
+            act_layer = nn.ReLU(inplace=True)
 
         # Contracting path
         self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool))
+            self.encoders.append(DownPath(in_chan, out_chan, _pool, 0,
+                                          act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan in zip(layout[1:], layout[:-1]):
-            self.decoders.append(UpPath(in_chan, out_chan))
+            self.decoders.append(UpPath(in_chan, out_chan, 1, False, 0,
+                                        act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
-        self.classifier = conv1x1(layout[0], num_classes)
+        self.classifier = nn.Conv2d(layout[0], num_classes, 1)
 
         init_module(self, 'relu')
 
@@ -148,25 +146,31 @@ class UNetp(nn.Module):
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
     """
-    def __init__(self, layout, in_channels=1, num_classes=10):
+    def __init__(self, layout, in_channels=1, num_classes=10,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__()
+
+        if act_layer is None:
+            act_layer = nn.ReLU(inplace=True)
 
         # Contracting path
         self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1))
+            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
+                                          act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, padding=1)
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, 1, False, 1,
+                                                       act_layer, norm_layer, drop_layer, conv_layer)
                                                 for _ in range(len(layout) - idx - 1)]))
 
         # Classifier
-        self.classifier = conv1x1(layout[0], num_classes)
+        self.classifier = nn.Conv2d(layout[0], num_classes, 1)
 
         init_module(self, 'relu')
 
@@ -197,25 +201,31 @@ class UNetpp(nn.Module):
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
     """
-    def __init__(self, layout, in_channels=1, num_classes=10):
+    def __init__(self, layout, in_channels=1, num_classes=10,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__()
+
+        if act_layer is None:
+            act_layer = nn.ReLU(inplace=True)
 
         # Contracting path
         self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1))
+            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
+                                          act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips, padding=1)
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips, False, 1,
+                                                       act_layer, norm_layer, drop_layer, conv_layer)
                                                 for num_skips in range(1, len(layout) - idx)]))
 
         # Classifier
-        self.classifier = conv1x1(layout[0], num_classes)
+        self.classifier = nn.Conv2d(layout[0], num_classes, 1)
 
         init_module(self, 'relu')
 
@@ -239,24 +249,29 @@ class UNetpp(nn.Module):
 
 
 class FSAggreg(nn.Module):
-    def __init__(self, e_chans, skip_chan, d_chans):
+    def __init__(self, e_chans, skip_chan, d_chans,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+
         super().__init__()
+
         # Check stem conv channels
         base_chan = e_chans[0] if len(e_chans) > 0 else skip_chan
         # Get UNet depth
         depth = len(e_chans) + 1 + len(d_chans)
         # Downsample = max pooling + conv for channel reduction
         self.downsamples = nn.ModuleList([nn.Sequential(nn.MaxPool2d(2 ** (len(e_chans) - idx)),
-                                                        conv3x3(e_chan, base_chan, 1))
+                                                        nn.Conv2d(e_chan, base_chan, 3, padding=1))
                                           for idx, e_chan in enumerate(e_chans)])
-        self.skip = conv3x3(skip_chan, base_chan, 1) if len(e_chans) > 0 else nn.Identity()
+        self.skip = nn.Conv2d(skip_chan, base_chan, 3, padding=1) if len(e_chans) > 0 else nn.Identity()
         # Upsample = bilinear interpolation + conv for channel reduction
         self.upsamples = nn.ModuleList([nn.Sequential(nn.Upsample(scale_factor=2 ** (idx + 1),
                                                                   mode='bilinear', align_corners=True),
-                                                      conv3x3(d_chan, base_chan, 1))
+                                                      nn.Conv2d(d_chan, base_chan, 3, padding=1))
                                         for idx, d_chan in enumerate(d_chans)])
 
-        self.block = nn.Sequential(*conv_bn_act(depth * base_chan, depth * base_chan, 3, 1, True))
+        self.block = nn.Sequential(*conv_sequence(depth * base_chan, depth * base_chan,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=3, padding=1))
 
     def forward(self, downfeats, feat, upfeats):
 
@@ -280,15 +295,22 @@ class UNet3p(nn.Module):
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
     """
-    def __init__(self, layout, in_channels=1, num_classes=10):
+    def __init__(self, layout, in_channels=1, num_classes=10,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__()
+
+        if act_layer is None:
+            act_layer = nn.nn.ReLU(inplace=True)
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
 
         # Contracting path
         self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1, True))
+            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
+                                          act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
@@ -296,10 +318,11 @@ class UNet3p(nn.Module):
         for row in range(len(layout) - 1):
             self.decoders.append(FSAggreg(layout[:row],
                                           layout[row],
-                                          [len(layout) * layout[0]] * (len(layout) - 2 - row) + layout[-1:]))
+                                          [len(layout) * layout[0]] * (len(layout) - 2 - row) + layout[-1:],
+                                          act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
-        self.classifier = conv1x1(len(layout) * layout[0], num_classes)
+        self.classifier = nn.Conv2d(len(layout) * layout[0], num_classes, 1)
 
         init_module(self, 'relu')
 
