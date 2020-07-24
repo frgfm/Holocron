@@ -114,7 +114,7 @@ def load_data(traindir, valdir, img_size=224, crop_pct=0.875):
 
 
 def plot_lr_finder(train_batch, model, data_loader, optimizer, criterion, device,
-                   start_lr=1e-7, end_lr=1, loss_margin=1e-2):
+                   start_lr=1e-7, end_lr=1):
 
     lrs, losses = holocron.utils.lr_finder(train_batch, model, data_loader,
                                            optimizer, criterion, device, start_lr=start_lr, end_lr=end_lr,
