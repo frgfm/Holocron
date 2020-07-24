@@ -166,11 +166,11 @@ class DarknetBodyV3(nn.Sequential):
                            kernel_size=3, padding=1, bias=False),
             *conv_sequence(32, 64, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=2, bias=False),
-            self._maker_layer(*layout[0], act_layer, norm_layer, drop_layer, conv_layer),
-            self._maker_layer(*layout[1], act_layer, norm_layer, drop_layer, conv_layer),
-            self._maker_layer(*layout[2], act_layer, norm_layer, drop_layer, conv_layer),
-            self._maker_layer(*layout[3], act_layer, norm_layer, drop_layer, conv_layer),
-            self._maker_layer(*layout[4], act_layer, norm_layer, drop_layer, conv_layer)
+            self._make_layer(*layout[0], act_layer, norm_layer, drop_layer, conv_layer),
+            self._make_layer(*layout[1], act_layer, norm_layer, drop_layer, conv_layer),
+            self._make_layer(*layout[2], act_layer, norm_layer, drop_layer, conv_layer),
+            self._make_layer(*layout[3], act_layer, norm_layer, drop_layer, conv_layer),
+            self._make_layer(*layout[4], act_layer, norm_layer, drop_layer, conv_layer)
         )
 
     @staticmethod
