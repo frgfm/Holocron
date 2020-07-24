@@ -170,8 +170,8 @@ class ResNet(nn.Sequential):
 
     @staticmethod
     def _make_layer(block, num_blocks, in_planes, planes, stride=1, groups=1, width_per_group=64,
-                    norm_layer=None, act_layer=None, drop_layer=None, avg_downsample=False, num_repeats=1,
-                    **kwargs):
+                    act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None,
+                    avg_downsample=False, num_repeats=1, **kwargs):
 
         downsample = None
         if stride != 1 or in_planes != planes * block.expansion:
@@ -180,12 +180,12 @@ class ResNet(nn.Sequential):
                 downsample = nn.Sequential(nn.AvgPool2d(stride, ceil_mode=True, count_include_pad=False),
                                            *conv_sequence(num_repeats * in_planes,
                                                           num_repeats * planes * block.expansion,
-                                                          None, norm_layer, drop_layer,
+                                                          None, norm_layer, drop_layer, conv_layer,
                                                           kernel_size=1, stride=1, bias=False))
             else:
                 downsample = nn.Sequential(*conv_sequence(num_repeats * in_planes,
                                                           num_repeats * planes * block.expansion,
-                                                          None, norm_layer, drop_layer,
+                                                          None, norm_layer, drop_layer, conv_layer,
                                                           kernel_size=1, stride=stride, bias=False))
         layers = [block(in_planes, planes, stride, downsample, groups, width_per_group,
                         act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **kwargs)]
