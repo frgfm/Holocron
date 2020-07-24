@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.3a0+141a6af-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.3a0+2be2531-git documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                0.1.3a0+141a6af
+                0.1.3a0+2be2531
               </div>
             
           
@@ -244,7 +244,7 @@
 
 <dl class="py class">
 <dt id="holocron.nn.HardMish">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">HardMish</code><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#HardMish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.HardMish" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">HardMish</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inplace</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#HardMish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.HardMish" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Had Mish activation module from <a class="reference external" href="https://github.com/digantamisra98/H-Mish">“H-Mish”</a></p>
 <p>This activation is computed as follows:</p>
 <div class="math notranslate nohighlight">
@@ -514,6 +514,17 @@ output. Default: <code class="docutils literal notranslate"><span class="pre">Tr
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>scale_factor</strong> (<em>python:int</em>) – spatial scaling factor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.GlobalAvgPool2d">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">GlobalAvgPool2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flatten</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#GlobalAvgPool2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.GlobalAvgPool2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fast implementation of global average pooling from <a class="reference external" href="https://arxiv.org/pdf/2003.13630.pdf">“TResNet: High Performance GPU-Dedicated Architecture”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>flatten</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether spatial dimensions should be squeezed</p>
 </dd>
 </dl>
 </dd></dl>

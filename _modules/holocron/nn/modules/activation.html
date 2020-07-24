@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.activation &mdash; holocron 0.1.3a0+141a6af-git documentation</title>
+  <title>holocron.nn.modules.activation &mdash; holocron 0.1.3a0+2be2531-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.3a0+141a6af
+                0.1.3a0+2be2531
               </div>
             
           
@@ -281,7 +281,7 @@
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">mish</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="HardMish"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.HardMish">[docs]</a><span class="k">class</span> <span class="nc">HardMish</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="HardMish"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.HardMish">[docs]</a><span class="k">class</span> <span class="nc">HardMish</span><span class="p">(</span><span class="n">_Activation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implements the Had Mish activation module from `&quot;H-Mish&quot; &lt;https://github.com/digantamisra98/H-Mish&gt;`_</span>
 
 <span class="sd">    This activation is computed as follows:</span>
@@ -290,7 +290,7 @@
 <span class="sd">        f(x) = \\frac{x}{2} \\cdot \\min(2, \\max(0, x + 2))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hard_mish</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hard_mish</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="NLReLU"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NLReLU">[docs]</a><span class="k">class</span> <span class="nc">NLReLU</span><span class="p">(</span><span class="n">_Activation</span><span class="p">):</span>

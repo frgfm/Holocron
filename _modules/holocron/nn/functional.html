@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.3a0+141a6af-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.3a0+2be2531-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.3a0+141a6af
+                0.1.3a0+2be2531
               </div>
             
           
@@ -255,7 +255,7 @@
     <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">softplus</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="hard_mish"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.hard_mish">[docs]</a><span class="k">def</span> <span class="nf">hard_mish</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="hard_mish"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.hard_mish">[docs]</a><span class="k">def</span> <span class="nf">hard_mish</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implements the HardMish activation function</span>
 
 <span class="sd">    Args:</span>
@@ -264,7 +264,10 @@
 <span class="sd">        torch.Tensor[x.size()]: output tensor</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">x</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)))</span></div>
+    <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="nl_relu"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.nl_relu">[docs]</a><span class="k">def</span> <span class="nf">nl_relu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -357,10 +360,11 @@
         <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;Spatial size of input tensor must be multiples of `scale_factor`&quot;</span><span class="p">)</span>
 
     <span class="c1"># N * C * H * W --&gt; N * C * (H/scale_factor) * scale_factor * (W/scale_factor) * scale_factor</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">::</span><span class="n">scale_factor</span><span class="p">,</span> <span class="n">j</span><span class="p">::</span><span class="n">scale_factor</span><span class="p">]</span>
-                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">w</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">scale_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">w</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">out</span></div>
+    <span class="k">return</span> <span class="n">x</span></div>
 
 
 <div class="viewcode-block" id="multilabel_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.multilabel_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">multilabel_cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
