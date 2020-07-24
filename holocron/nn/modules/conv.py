@@ -4,6 +4,7 @@
 Convolutional modules
 '''
 
+import math
 import torch
 import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd
@@ -11,7 +12,7 @@ from torch.nn.modules.utils import _pair
 from torch.nn.functional import pad
 from .. import functional as F
 
-__all__ = ['NormConv2d', 'Add2d', 'SlimConv2d']
+__all__ = ['NormConv2d', 'Add2d', 'SlimConv2d', 'PyConv2d']
 
 
 class _NormConvNd(_ConvNd):
@@ -243,3 +244,50 @@ class SlimConv2d(nn.Module):
 
         # Fuse
         return torch.cat((X_top, X_bot), dim=1)
+
+
+class PyConv2d(nn.ModuleList):
+    """Implements the convolution module from `"Pyramidal Convolution: Rethinking Convolutional Neural Networks for
+    Visual Recognition" <https://arxiv.org/pdf/2006.11538.pdf>`_.
+
+    Args:
+        in_channels (int): Number of channels in the input image
+        out_channels (int): Number of channels produced by the convolution
+        kernel_size (int): Size of the convolving kernel
+        num_levels (int, optional): number of stacks in the pyramid
+        padding (int or tuple, optional): Zero-padding added to both sides of
+            the input. Default: 0
+        groups (list(int), optional): Number of blocked connections from input
+            channels to output channels. Default: 1
+    """
+
+    def __init__(self, in_channels, out_channels, kernel_size, num_levels=2, padding=0,
+                 groups=None, **kwargs):
+
+        if num_levels == 1:
+            super().__init__([nn.Conv2d(in_channels, out_channels, kernel_size, padding=padding,
+                                        groups=groups[0] if isinstance(groups, list) else 1, **kwargs)])
+        else:
+            exp2 = int(math.log2(num_levels))
+            reminder = num_levels - 2 ** exp2
+            out_chans = [out_channels // 2 ** (exp2 + 1)] * (2 * reminder) + \
+                        [out_channels // 2 ** exp2] * (num_levels - 2 * reminder)
+
+            k_sizes = [kernel_size + 2 * idx for idx in range(num_levels)]
+            if groups is None:
+                groups = [1] + [min(2 ** (2 + idx), out_chan)
+                                for idx, out_chan in zip(range(num_levels - 1), out_chans[1:])]
+            elif not isinstance(groups, list) or len(groups) != num_levels:
+                raise ValueError("The argument `group` is expected to be a list of integer of size `num_levels`.")
+            paddings = [padding + idx for idx in range(num_levels)]
+
+            super().__init__([nn.Conv2d(in_channels, out_chan, k_size, padding=padding, groups=group, **kwargs)
+                              for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, groups)])
+        self.num_levels = num_levels
+
+    def forward(self, x):
+
+        if self.num_levels == 1:
+            return self[0].forward(x)
+        else:
+            return torch.cat([conv(x) for conv in self], dim=1)

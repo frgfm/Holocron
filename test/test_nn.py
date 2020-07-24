@@ -290,6 +290,18 @@ class NNTester(unittest.TestCase):
         mod = downsample.GlobalAvgPool2d(flatten=True)
         self.assertTrue(torch.equal(mod(x), ref(x).view(*x.shape[:2])))
 
+    def test_pyconv2d(self):
+
+        x = torch.rand(2, 8, 19, 19)
+
+        # Pyramidal Conv
+        for num_levels in range(1, 5):
+            mod = conv.PyConv2d(8, 16, 3, num_levels, padding=1)
+
+            with torch.no_grad():
+                out = mod(x)
+            self.assertEqual(out.shape, (2, 16, 19, 19))
+
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
 

@@ -69,13 +69,13 @@ class BasicBlock(_ResBlock):
 
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 dilation=1, act_layer=None, norm_layer=None, drop_layer=None):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1, base_width=64, dilation=1,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, **kwargs):
         super().__init__(
-            [*conv_sequence(inplanes, planes, act_layer, norm_layer, drop_layer, kernel_size=3, stride=stride,
-                            padding=dilation, groups=groups, bias=False, dilation=dilation),
-             *conv_sequence(planes, planes, None, norm_layer, drop_layer, kernel_size=3, stride=1,
-                            padding=dilation, groups=groups, bias=False, dilation=dilation)],
+            [*conv_sequence(inplanes, planes, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3,
+                            stride=stride, padding=dilation, groups=groups, bias=False, dilation=dilation, **kwargs),
+             *conv_sequence(planes, planes, None, norm_layer, drop_layer, conv_layer, kernel_size=3,
+                            stride=1, padding=dilation, groups=groups, bias=False, dilation=dilation, **kwargs)],
             downsample, act_layer)
 
 
@@ -83,17 +83,17 @@ class Bottleneck(_ResBlock):
 
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, act_layer=None, norm_layer=None, drop_layer=None):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1, base_width=64, dilation=1,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, **kwargs):
 
         width = int(planes * (base_width / 64.)) * groups
         super().__init__(
-            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=False),
-             *conv_sequence(width, width, act_layer, norm_layer, drop_layer, kernel_size=3, stride=stride,
-                            padding=dilation, groups=groups, bias=False, dilation=dilation),
-             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=False)],
+            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1,
+                            stride=1, bias=False, **kwargs),
+             *conv_sequence(width, width, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3,
+                            stride=stride, padding=dilation, groups=groups, bias=False, dilation=dilation, **kwargs),
+             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, conv_layer, kernel_size=1,
+                            stride=1, bias=False, **kwargs)],
             downsample, act_layer)
 
 
@@ -111,9 +111,9 @@ class ChannelRepeat(nn.Module):
 
 class ResNet(nn.Sequential):
     def __init__(self, block, num_blocks, planes, num_classes=10, in_channels=3, zero_init_residual=False,
-                 groups=1, width_per_group=64, conv_layer=None,
-                 act_layer=None, norm_layer=None, drop_layer=None, deep_stem=False, avg_downsample=False,
-                 num_repeats=1, **kwargs):
+                 width_per_group=64,
+                 conv_layer=None, act_layer=None, norm_layer=None, drop_layer=None, deep_stem=False, stem_pool=True,
+                 avg_downsample=False, num_repeats=1, block_args=None):
 
         if conv_layer is None:
             conv_layer = nn.Conv2d
@@ -126,16 +126,17 @@ class ResNet(nn.Sequential):
         in_planes = 64
         # Deep stem from ResNet-C
         if deep_stem:
-            _layers = [*conv_sequence(in_channels, in_planes // 2, act_layer, norm_layer, drop_layer,
+            _layers = [*conv_sequence(in_channels, in_planes // 2, act_layer, norm_layer, drop_layer, conv_layer,
                                       kernel_size=3, stride=2, padding=1, bias=False),
-                       *conv_sequence(in_planes // 2, in_planes // 2, act_layer, norm_layer, drop_layer,
+                       *conv_sequence(in_planes // 2, in_planes // 2, act_layer, norm_layer, drop_layer, conv_layer,
                                       kernel_size=3, stride=1, padding=1, bias=False),
-                       *conv_sequence(in_planes // 2, in_planes, act_layer, norm_layer, drop_layer,
+                       *conv_sequence(in_planes // 2, in_planes, act_layer, norm_layer, drop_layer, conv_layer,
                                       kernel_size=3, stride=1, padding=1, bias=False)]
         else:
-            _layers = conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer,
+            _layers = conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer, conv_layer,
                                     kernel_size=7, stride=2, padding=3, bias=False)
-        _layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
+        if stem_pool:
+            _layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
 
         # Optional tensor repetitions along channel axis (mainly for TridentNet)
         if num_repeats > 1:
@@ -143,10 +144,16 @@ class ResNet(nn.Sequential):
 
         # Consecutive convolutional blocks
         stride = 1
-        for _num_blocks, _planes in zip(num_blocks, planes):
-            _layers.append(self._make_layer(block, _num_blocks, in_planes, _planes, stride, groups, width_per_group,
+        # Block args
+        if block_args is None:
+            block_args = dict(groups=1)
+        if not isinstance(block_args, list):
+            block_args = [block_args] * len(num_blocks)
+        for _num_blocks, _planes, _block_args in zip(num_blocks, planes, block_args):
+            _layers.append(self._make_layer(block, _num_blocks, in_planes, _planes, stride, width_per_group,
                                             act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer,
-                                            avg_downsample=avg_downsample, num_repeats=num_repeats, **kwargs))
+                                            avg_downsample=avg_downsample, num_repeats=num_repeats,
+                                            block_args=_block_args))
             in_planes = block.expansion * _planes
             stride = 2
 
@@ -168,9 +175,9 @@ class ResNet(nn.Sequential):
                     m.convs[1][1].weight.data.zero_()
 
     @staticmethod
-    def _make_layer(block, num_blocks, in_planes, planes, stride=1, groups=1, width_per_group=64,
-                    norm_layer=None, act_layer=None, drop_layer=None, avg_downsample=False, num_repeats=1,
-                    **kwargs):
+    def _make_layer(block, num_blocks, in_planes, planes, stride=1, width_per_group=64,
+                    act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None,
+                    avg_downsample=False, num_repeats=1, block_args=None):
 
         downsample = None
         if stride != 1 or in_planes != planes * block.expansion:
@@ -179,19 +186,21 @@ class ResNet(nn.Sequential):
                 downsample = nn.Sequential(nn.AvgPool2d(stride, ceil_mode=True, count_include_pad=False),
                                            *conv_sequence(num_repeats * in_planes,
                                                           num_repeats * planes * block.expansion,
-                                                          None, norm_layer, drop_layer,
+                                                          None, norm_layer, drop_layer, conv_layer,
                                                           kernel_size=1, stride=1, bias=False))
             else:
                 downsample = nn.Sequential(*conv_sequence(num_repeats * in_planes,
                                                           num_repeats * planes * block.expansion,
-                                                          None, norm_layer, drop_layer,
+                                                          None, norm_layer, drop_layer, conv_layer,
                                                           kernel_size=1, stride=stride, bias=False))
-        layers = [block(in_planes, planes, stride, downsample, groups, width_per_group,
-                        act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **kwargs)]
+        if block_args is None:
+            block_args = {}
+        layers = [block(in_planes, planes, stride, downsample, base_width=width_per_group,
+                        act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **block_args)]
 
         for _ in range(num_blocks - 1):
-            layers.append(block(block.expansion * planes, planes, 1, None, groups, width_per_group,
-                                act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **kwargs))
+            layers.append(block(block.expansion * planes, planes, 1, None, base_width=width_per_group,
+                                act_layer=act_layer, norm_layer=norm_layer, drop_layer=drop_layer, **block_args))
 
         return nn.Sequential(*layers)
 
@@ -318,9 +327,9 @@ def resnext50_32x4d(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    kwargs['groups'] = 32
     kwargs['width_per_group'] = 4
-    return _resnet('resnext50_32x4d', pretrained, progress, **kwargs)
+    block_args = dict(groups=32)
+    return _resnet('resnext50_32x4d', pretrained, progress, block_args=block_args, **kwargs)
 
 
 def resnext101_32x8d(pretrained=False, progress=True, **kwargs):
@@ -335,6 +344,6 @@ def resnext101_32x8d(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    kwargs['groups'] = 32
     kwargs['width_per_group'] = 8
-    return _resnet('resnext101_32x8d', pretrained, progress, **kwargs)
+    block_args = dict(groups=32)
+    return _resnet('resnext101_32x8d', pretrained, progress, block_args=block_args, **kwargs)

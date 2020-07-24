@@ -94,7 +94,9 @@ class Bottle2neck(_ResBlock):
 def _res2net(arch, pretrained, progress, **kwargs):
     # Build the model
     model = ResNet(Bottle2neck, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512],
-                   width_per_group=default_cfgs[arch]['width_per_group'], scale=default_cfgs[arch]['scale'], **kwargs)
+                   width_per_group=default_cfgs[arch]['width_per_group'],
+                   block_args=dict(scale=default_cfgs[arch]['scale']),
+                   **kwargs)
     # Load pretrained parameters
     if pretrained:
         if default_cfgs[arch]['url'] is None:
