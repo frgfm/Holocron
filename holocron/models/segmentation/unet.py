@@ -300,7 +300,7 @@ class UNet3p(nn.Module):
         super().__init__()
 
         if act_layer is None:
-            act_layer = nn.nn.ReLU(inplace=True)
+            act_layer = nn.ReLU(inplace=True)
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
