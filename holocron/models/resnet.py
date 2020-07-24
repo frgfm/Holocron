@@ -112,8 +112,8 @@ class ChannelRepeat(nn.Module):
 class ResNet(nn.Sequential):
     def __init__(self, block, num_blocks, planes, num_classes=10, in_channels=3, zero_init_residual=False,
                  groups=1, width_per_group=64, conv_layer=None,
-                 act_layer=None, norm_layer=None, drop_layer=None, deep_stem=False, avg_downsample=False,
-                 num_repeats=1, **kwargs):
+                 act_layer=None, norm_layer=None, drop_layer=None, deep_stem=False, stem_pool=True,
+                 avg_downsample=False, num_repeats=1):
 
         if conv_layer is None:
             conv_layer = nn.Conv2d
@@ -135,7 +135,8 @@ class ResNet(nn.Sequential):
         else:
             _layers = conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer, conv_layer,
                                     kernel_size=7, stride=2, padding=3, bias=False)
-        _layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
+        if stem_pool:
+            _layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
 
         # Optional tensor repetitions along channel axis (mainly for TridentNet)
         if num_repeats > 1:
