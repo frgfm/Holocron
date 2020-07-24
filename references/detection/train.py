@@ -124,21 +124,23 @@ def evaluate(model, data_loader, device, iou_threshold=0.5):
     return loc_err, clf_err, det_err
 
 
-def load_data(datadir):
+def load_data(datadir, img_size=416, crop_pct=0.875):
     # Data loading code
     print("Loading data")
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
+    scale_size = int(math.floor(img_size / crop_pct))
+
     print("Loading training data")
     st = time.time()
     dataset = VOCDetection(datadir, image_set='train', download=True,
                            transforms=Compose([VOCTargetTransform(classes),
-                                              Resize(512), RandomResizedCrop(416), RandomHorizontalFlip(),
-                                              convert_to_relative,
-                                              ImageTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3,
-                                                                                    saturation=0.1, hue=0.02)),
-                                              ImageTransform(transforms.ToTensor()), ImageTransform(normalize)]))
+                                               RandomResizedCrop(img_size), RandomHorizontalFlip(),
+                                               convert_to_relative,
+                                               ImageTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3,
+                                                                                     saturation=0.1, hue=0.02)),
+                                               ImageTransform(transforms.ToTensor()), ImageTransform(normalize)]))
 
     print("Took", time.time() - st)
 
@@ -146,7 +148,7 @@ def load_data(datadir):
     st = time.time()
     dataset_test = VOCDetection(datadir, image_set='val', download=True,
                                 transforms=Compose([VOCTargetTransform(classes),
-                                                    Resize(416), CenterCrop(416),
+                                                    Resize(scale_size), CenterCrop(img_size),
                                                     convert_to_relative,
                                                     ImageTransform(transforms.ToTensor()), ImageTransform(normalize)]))
 
@@ -207,7 +209,7 @@ def main(args):
 
     torch.backends.cudnn.benchmark = True
 
-    dataset, dataset_test, train_sampler, test_sampler = load_data(args.data_path)
+    dataset, dataset_test, train_sampler, test_sampler = load_data(args.data_path, img_size=args.img_size)
     train_loader = torch.utils.data.DataLoader(
         dataset, batch_size=args.batch_size, collate_fn=collate_fn,
         sampler=train_sampler, num_workers=args.workers, pin_memory=True)
@@ -311,6 +313,7 @@ def parse_args():
                         help='number of total epochs to run')
     parser.add_argument('-j', '--workers', default=16, type=int, metavar='N',
                         help='number of data loading workers')
+    parser.add_argument('--img-size', default=416, type=int, help='image size')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
     parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
