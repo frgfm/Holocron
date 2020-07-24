@@ -311,7 +311,7 @@ class YOLOv2(_YOLO):
             anchors = torch.tensor([[1.08, 1.19], [3.42, 4.41], [6.63, 11.38], [9.42, 5.11], [16.62, 10.52]])
         self.num_classes = num_classes
 
-        self.backbone = DarknetBodyV2(layout, True, in_channels, act_layer, norm_layer)
+        self.backbone = DarknetBodyV2(layout, in_channels, act_layer, norm_layer, drop_layer, conv_layer)
         # Hook the penultimate block for passthrough
         self.backbone[-3].register_forward_hook(self._fwd_hook)
 
@@ -340,10 +340,8 @@ class YOLOv2(_YOLO):
 
         init_module(self, 'leaky_relu')
 
-    def _fwd_hook(self):
-        def _inner_hook(module, input, output):
-            self.passthrough = output
-        return _inner_hook
+    def _fwd_hook(self, module, input, output):
+        self.passthrough = output
 
     @property
     def num_anchors(self):
