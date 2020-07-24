@@ -257,16 +257,16 @@ class PyConv2d(nn.ModuleList):
         num_levels (int, optional): number of stacks in the pyramid
         padding (int or tuple, optional): Zero-padding added to both sides of
             the input. Default: 0
-        groups (int, optional): Number of blocked connections from input
+        groups (list(int), optional): Number of blocked connections from input
             channels to output channels. Default: 1
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, num_levels=2, padding=0,
-                 groups=1, **kwargs):
+                 groups=None, **kwargs):
 
         if num_levels == 1:
             super().__init__([nn.Conv2d(in_channels, out_channels, kernel_size,
-                                        padding=padding, groups=groups, **kwargs)])
+                                        padding=padding, groups=groups[0], **kwargs)])
         else:
             exp2 = int(math.log2(num_levels))
             reminder = num_levels - 2 ** exp2
@@ -274,12 +274,15 @@ class PyConv2d(nn.ModuleList):
                         [out_channels // 2 ** exp2] * (num_levels - 2 * reminder)
 
             k_sizes = [kernel_size + 2 * idx for idx in range(num_levels)]
-            _groups = [groups] + [min(2 ** (2 + idx), out_chan)
-                                  for idx, out_chan in zip(range(num_levels - 1), out_chans[1:])]
+            if groups is None:
+                groups = [1] + [min(2 ** (2 + idx), out_chan)
+                                 for idx, out_chan in zip(range(num_levels - 1), out_chans[1:])]
+            elif not isinstance(groups, list) or len(groups) != num_levels:
+                raise ValueError("The argument `group` is expected to be a list of integer of size `num_levels`.")
             paddings = [padding + idx for idx in range(num_levels)]
 
             super().__init__([nn.Conv2d(in_channels, out_chan, k_size, padding=padding, groups=group, **kwargs)
-                              for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, _groups)])
+                              for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, groups)])
         self.num_levels = num_levels
 
     def forward(self, x):
