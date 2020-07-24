@@ -69,13 +69,13 @@ class BasicBlock(_ResBlock):
 
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 dilation=1, act_layer=None, norm_layer=None, drop_layer=None):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1, dilation=1,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, **kwargs):
         super().__init__(
-            [*conv_sequence(inplanes, planes, act_layer, norm_layer, drop_layer, kernel_size=3, stride=stride,
-                            padding=dilation, groups=groups, bias=False, dilation=dilation),
-             *conv_sequence(planes, planes, None, norm_layer, drop_layer, kernel_size=3, stride=1,
-                            padding=dilation, groups=groups, bias=False, dilation=dilation)],
+            [*conv_sequence(inplanes, planes, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3,
+                            stride=stride, padding=dilation, groups=groups, bias=False, dilation=dilation, **kwargs),
+             *conv_sequence(planes, planes, None, norm_layer, drop_layer, conv_layer, kernel_size=3,
+                            stride=1, padding=dilation, groups=groups, bias=False, dilation=dilation, **kwargs)],
             downsample, act_layer)
 
 
@@ -83,17 +83,17 @@ class Bottleneck(_ResBlock):
 
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, act_layer=None, norm_layer=None, drop_layer=None):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1, base_width=64, dilation=1,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, **kwargs):
 
         width = int(planes * (base_width / 64.)) * groups
         super().__init__(
-            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=False),
-             *conv_sequence(width, width, act_layer, norm_layer, drop_layer, kernel_size=3, stride=stride,
-                            padding=dilation, groups=groups, bias=False, dilation=dilation),
-             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=False)],
+            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1,
+                            stride=1, bias=False, **kwargs),
+             *conv_sequence(width, width, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3,
+                            stride=stride, padding=dilation, groups=groups, bias=False, dilation=dilation, **kwargs),
+             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, conv_layer, kernel_size=1,
+                            stride=1, bias=False, **kwargs)],
             downsample, act_layer)
 
 
