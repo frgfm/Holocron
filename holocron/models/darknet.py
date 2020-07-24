@@ -125,7 +125,7 @@ class DarknetV2(nn.Sequential):
 
         super().__init__(OrderedDict([
             ('features', DarknetBodyV2(layout, False, in_channels, act_layer, norm_layer, drop_layer, conv_layer)),
-            ('classifier', conv1x1(layout[-1][0], num_classes)),
+            ('classifier', nn.Conv2d(layout[-1][0], num_classes, 1)),
             ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten()))]))
 
         init_module(self, 'leaky_relu')
