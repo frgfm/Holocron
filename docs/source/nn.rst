@@ -40,6 +40,8 @@ Convolution layers
 
 .. autoclass:: SlimConv2d
 
+.. autoclass:: PyConv2d
+
 Regularization layers
 ---------------------
 
