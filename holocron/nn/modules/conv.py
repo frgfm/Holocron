@@ -265,8 +265,8 @@ class PyConv2d(nn.ModuleList):
                  groups=None, **kwargs):
 
         if num_levels == 1:
-            super().__init__([nn.Conv2d(in_channels, out_channels, kernel_size,
-                                        padding=padding, groups=groups[0], **kwargs)])
+            super().__init__([nn.Conv2d(in_channels, out_channels, kernel_size, padding=padding,
+                                        groups=groups[0] if isinstance(groups, list) else 1, **kwargs)])
         else:
             exp2 = int(math.log2(num_levels))
             reminder = num_levels - 2 ** exp2
