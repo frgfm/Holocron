@@ -296,7 +296,7 @@ class NNTester(unittest.TestCase):
 
         # Pyramidal Conv
         for expansion in range(2, 5):
-            mod = conv.PyConv2d(8, 16, 3, expansion)
+            mod = conv.PyConv2d(8, 16, 3, expansion, padding=1)
 
             with torch.no_grad():
                 out = mod(x)
