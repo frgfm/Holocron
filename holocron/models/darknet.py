@@ -184,7 +184,7 @@ class DarknetV3(nn.Sequential):
         super().__init__(OrderedDict([
             ('features', DarknetBodyV3(layout, in_channels, act_layer, norm_layer, drop_layer, conv_layer)),
             ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
-            ('classifier', nn.Linear(layout[4][-1], num_classes))]))
+            ('classifier', nn.Linear(layout[-1][-2], num_classes))]))
 
         init_module(self, 'leaky_relu')
 
