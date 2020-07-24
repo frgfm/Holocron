@@ -126,14 +126,14 @@ class ResNet(nn.Sequential):
         in_planes = 64
         # Deep stem from ResNet-C
         if deep_stem:
-            _layers = [*conv_sequence(in_channels, in_planes // 2, act_layer, norm_layer, drop_layer,
+            _layers = [*conv_sequence(in_channels, in_planes // 2, act_layer, norm_layer, drop_layer, conv_layer,
                                       kernel_size=3, stride=2, padding=1, bias=False),
-                       *conv_sequence(in_planes // 2, in_planes // 2, act_layer, norm_layer, drop_layer,
+                       *conv_sequence(in_planes // 2, in_planes // 2, act_layer, norm_layer, drop_layer, conv_layer,
                                       kernel_size=3, stride=1, padding=1, bias=False),
-                       *conv_sequence(in_planes // 2, in_planes, act_layer, norm_layer, drop_layer,
+                       *conv_sequence(in_planes // 2, in_planes, act_layer, norm_layer, drop_layer, conv_layer,
                                       kernel_size=3, stride=1, padding=1, bias=False)]
         else:
-            _layers = conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer,
+            _layers = conv_sequence(in_channels, in_planes, act_layer, norm_layer, drop_layer, conv_layer,
                                     kernel_size=7, stride=2, padding=3, bias=False)
         _layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
 
