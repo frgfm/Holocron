@@ -127,7 +127,7 @@ def load_data(datadir):
 
 
 def plot_lr_finder(train_batch, model, data_loader, optimizer, criterion, device,
-                   start_lr=1e-7, end_lr=1, loss_margin=1e-2):
+                   start_lr=1e-7, end_lr=1):
 
     lrs, losses = holocron.utils.lr_finder(train_batch, model, data_loader,
                                            optimizer, criterion, device, start_lr=start_lr, end_lr=end_lr,
@@ -277,7 +277,7 @@ def parse_args():
                         help='number of data loading workers')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
-    parser.add_argument('--sched', default='plateau', type=str, help='scheduler')
+    parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float,
                         metavar='W', help='weight decay',
