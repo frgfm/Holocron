@@ -136,11 +136,15 @@ class DarkBlockV3(_ResBlock):
 
     def __init__(self, planes, mid_planes, act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__(
-            [*conv_sequence(planes, mid_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                            kernel_size=1, bias=False),
-             *conv_sequence(mid_planes, planes, act_layer, norm_layer, drop_layer, conv_layer,
-                            kernel_size=3, padding=1, bias=False)],
+            conv_sequence(planes, mid_planes, act_layer, norm_layer, drop_layer, conv_layer,
+                          kernel_size=1, bias=False) +
+            conv_sequence(mid_planes, planes, act_layer, norm_layer, drop_layer, conv_layer,
+                          kernel_size=3, padding=1, bias=False),
             None, act_layer)
+
+        # The backpropagation does not seem to appreciate inplace activation on the residual branch
+        if hasattr(self.conv[-1], 'inplace'):
+            self.conv[-1].inplace = False
 
 
 class DarknetBodyV3(nn.Sequential):
