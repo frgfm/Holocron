@@ -100,8 +100,8 @@ def load_data(datadir):
     st = time.time()
     dataset = VOCSegmentation(datadir, image_set='train', download=True,
                               transforms=Compose([RandomResize(min_size, max_size),
-                                                  RandomHorizontalFlip(0.5),
                                                   RandomCrop(crop_size),
+                                                  RandomHorizontalFlip(0.5),
                                                   SampleTransform(transforms.ColorJitter(brightness=0.3,
                                                                                          contrast=0.3,
                                                                                          saturation=0.1,
