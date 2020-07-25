@@ -191,13 +191,13 @@ class YOLOv1(_YOLO):
 
         self.block4 = nn.Sequential(
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1),
+                           kernel_size=3, padding=1, bias=False),
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, stride=2),
+                           kernel_size=3, padding=1, stride=2, bias=False),
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1),
+                           kernel_size=3, padding=1, bias=False),
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1))
+                           kernel_size=3, padding=1, bias=False))
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
@@ -318,14 +318,14 @@ class YOLOv2(_YOLO):
 
         self.block5 = nn.Sequential(
             *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1),
+                           kernel_size=3, padding=1, bias=False),
             *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1))
+                           kernel_size=3, padding=1, bias=False))
 
         self.block6 = nn.Sequential(
             *conv_sequence(layout[-1][0] + layout[-2][0] * 2 ** 2, layout[-1][0],
                            act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1))
+                           kernel_size=3, padding=1, bias=False))
 
         # Each box has P_objectness, 4 coords, and score for each class
         self.head = nn.Conv2d(layout[-1][0], anchors.shape[0] * (5 + num_classes), 1)
