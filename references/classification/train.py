@@ -78,35 +78,33 @@ def evaluate(model, criterion, data_loader, device):
     return val_loss, top1 / nb_imgs, top5 / nb_imgs
 
 
-def load_data(traindir, valdir, half=False):
+def load_data(traindir, valdir, img_size=224, crop_pct=0.875):
     # Data loading code
     print("Loading data")
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
+
+    scale_size = min(int(math.floor(img_size / crop_pct)), 320)
 
     print("Loading training data")
     st = time.time()
     dataset = torchvision.datasets.ImageFolder(
         traindir,
         transforms.Compose([
-            transforms.RandomResizedCrop(224),
+            transforms.RandomResizedCrop(img_size, scale=(0.3, 1.0)),
             transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02),
-            transforms.ToTensor(),
-            normalize,
-            # transforms.RandomErasing(p=0.9, value='random')
+            transforms.ToTensor(), normalize,
+            transforms.RandomErasing(p=0.9, value='random')
         ]))
     print("Took", time.time() - st)
 
     print("Loading validation data")
-    dataset_test = torchvision.datasets.ImageFolder(
-        valdir,
-        transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            normalize
-        ]))
+    eval_tf = []
+    if scale_size < 320:
+        eval_tf.append(transforms.Resize(scale_size))
+    eval_tf.extend([transforms.CenterCrop(img_size), transforms.ToTensor(), normalize])
+    dataset_test = torchvision.datasets.ImageFolder(valdir, transforms.Compose(eval_tf))
 
     print("Creating data loaders")
     train_sampler = torch.utils.data.RandomSampler(dataset)
@@ -116,7 +114,7 @@ def load_data(traindir, valdir, half=False):
 
 
 def plot_lr_finder(train_batch, model, data_loader, optimizer, criterion, device,
-                   start_lr=1e-7, end_lr=1, loss_margin=1e-2):
+                   start_lr=1e-7, end_lr=1):
 
     lrs, losses = holocron.utils.lr_finder(train_batch, model, data_loader,
                                            optimizer, criterion, device, start_lr=start_lr, end_lr=end_lr,
@@ -141,7 +139,7 @@ def main(args):
 
     train_dir = os.path.join(args.data_path, 'train')
     val_dir = os.path.join(args.data_path, 'val')
-    dataset, dataset_test, train_sampler, test_sampler = load_data(train_dir, val_dir)
+    dataset, dataset_test, train_sampler, test_sampler = load_data(train_dir, val_dir, img_size=args.img_size)
     train_loader = torch.utils.data.DataLoader(
         dataset, batch_size=args.batch_size,
         sampler=train_sampler, num_workers=args.workers, pin_memory=True)
@@ -235,9 +233,10 @@ def parse_args():
                         help='number of total epochs to run')
     parser.add_argument('-j', '--workers', default=16, type=int, metavar='N',
                         help='number of data loading workers')
+    parser.add_argument('--img-size', default=224, type=int, help='image size')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
-    parser.add_argument('--sched', default='plateau', type=str, help='scheduler')
+    parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float,
                         metavar='W', help='weight decay',
