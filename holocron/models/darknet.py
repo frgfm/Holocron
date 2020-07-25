@@ -20,7 +20,7 @@ __all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'darknet24', 'darknet19', 'dar
 
 default_cfgs = {
     'darknet24': {'arch': 'DarknetV1',
-                  'layout': [[128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024, 512, 1024]],
+                  'layout': [[128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024] * 2],
                   'url': None},
     'darknet19': {'arch': 'DarknetV2',
                   'layout': [(128, 1), (256, 1), (512, 2), (1024, 2)],
@@ -37,7 +37,8 @@ class DarkBlockV1(nn.Sequential):
         k1 = True
         for in_planes, out_planes in zip(planes[:-1], planes[1:]):
             _layers.extend(conv_sequence(in_planes, out_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                                         kernel_size=1 if k1 else 3, padding=0 if k1 else 1, bias=False))
+                                         kernel_size=3 if out_planes > in_planes else 1,
+                                         padding=1 if out_planes > in_planes else 0, bias=False))
             k1 = not k1
 
         super().__init__(*_layers)
@@ -52,7 +53,7 @@ class DarknetBodyV1(nn.Sequential):
 
         super().__init__(
             *conv_sequence(in_channels, 64, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=7, padding=3, stride=2),
+                           kernel_size=7, padding=3, stride=2, bias=False),
             nn.MaxPool2d(2),
             *conv_sequence(64, 192, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, stride=1, bias=False),
@@ -156,7 +157,7 @@ class DarknetBodyV3(nn.Sequential):
             *conv_sequence(in_channels, 32, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, bias=False),
             *conv_sequence(32, 64, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=2, bias=False),
+                           kernel_size=3, padding=2, stride=2, bias=False),
             self._make_layer(*layout[0], act_layer, norm_layer, drop_layer, conv_layer),
             self._make_layer(*layout[1], act_layer, norm_layer, drop_layer, conv_layer),
             self._make_layer(*layout[2], act_layer, norm_layer, drop_layer, conv_layer),
