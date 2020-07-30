@@ -158,14 +158,17 @@ def main(args):
         criterion = holocron.nn.LabelSmoothingCrossEntropy()
 
     if args.opt == 'adam':
-        optimizer = torch.optim.Adam(model.parameters(), args.lr, betas=(0.95, 0.99), eps=1e-6,
-                                     weight_decay=args.weight_decay)
+        optimizer = torch.optim.Adam([p for p in model.parameters() if p.requires_grad], args.lr,
+                                     betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
-        optimizer = holocron.optim.RAdam(model.parameters(), args.lr, betas=(0.95, 0.99), eps=1e-6,
-                                         weight_decay=args.weight_decay)
+        optimizer = holocron.optim.RAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+                                         betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'ranger':
-        optimizer = Lookahead(holocron.optim.RAdam(model.parameters(), args.lr, betas=(0.95, 0.99), eps=1e-6,
-                                                   weight_decay=args.weight_decay))
+        optimizer = Lookahead(holocron.optim.RAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+                                                   betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
+    elif args.opt == 'tadam':
+        optimizer = holocron.optim.TAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+                                         betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     if args.lr_finder:
         plot_lr_finder(train_one_batch, model, train_loader, optimizer, criterion, device,
