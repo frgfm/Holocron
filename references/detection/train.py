@@ -135,7 +135,8 @@ def load_data(datadir, img_size=416, crop_pct=0.875):
     st = time.time()
     dataset = VOCDetection(datadir, image_set='train', download=True,
                            transforms=Compose([VOCTargetTransform(classes),
-                                               RandomResizedCrop(img_size), RandomHorizontalFlip(),
+                                               RandomResizedCrop((img_size, img_size), scale=(0.3, 1.0)),
+                                               RandomHorizontalFlip(),
                                                convert_to_relative,
                                                ImageTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3,
                                                                                      saturation=0.1, hue=0.02)),
