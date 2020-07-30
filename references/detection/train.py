@@ -18,7 +18,6 @@ import torch.utils.data
 from torchvision import transforms
 from torchvision.datasets import VOCDetection
 from torchvision.ops.boxes import box_iou
-from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.transforms import functional as F
 
 import holocron
@@ -136,7 +135,8 @@ def load_data(datadir, img_size=416, crop_pct=0.875):
     st = time.time()
     dataset = VOCDetection(datadir, image_set='train', download=True,
                            transforms=Compose([VOCTargetTransform(classes),
-                                               RandomResizedCrop(img_size), RandomHorizontalFlip(),
+                                               RandomResizedCrop((img_size, img_size), scale=(0.3, 1.0)),
+                                               RandomHorizontalFlip(),
                                                convert_to_relative,
                                                ImageTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3,
                                                                                      saturation=0.1, hue=0.02)),
@@ -224,10 +224,7 @@ def main(args):
         sampler=test_sampler, num_workers=args.workers, pin_memory=True)
 
     print("Creating model")
-    kwargs = {}
-    if args.freeze_backbone:
-        kwargs['norm_layer'] = FrozenBatchNorm2d
-    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(classes), **kwargs)
+    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(classes), pretrained_backbone=True)
     # Backbone freezing
     if args.freeze_backbone:
         for p in model.backbone.parameters():
@@ -235,14 +232,17 @@ def main(args):
     model.to(device)
 
     if args.opt == 'adam':
-        optimizer = torch.optim.Adam(model.parameters(), args.lr, betas=(0.95, 0.99), eps=1e-6,
-                                     weight_decay=args.weight_decay)
+        optimizer = torch.optim.Adam([p for p in model.parameters() if p.requires_grad], args.lr,
+                                     betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
-        optimizer = holocron.optim.RAdam(model.parameters(), args.lr, betas=(0.95, 0.99), eps=1e-6,
-                                         weight_decay=args.weight_decay)
+        optimizer = holocron.optim.RAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+                                         betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'ranger':
-        optimizer = Lookahead(holocron.optim.RAdam(model.parameters(), args.lr, betas=(0.95, 0.99), eps=1e-6,
-                                                   weight_decay=args.weight_decay))
+        optimizer = Lookahead(holocron.optim.RAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+                                                   betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
+    elif args.opt == 'tadam':
+        optimizer = holocron.optim.TAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+                                         betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     if args.lr_finder:
         plot_lr_finder(train_one_batch, model, train_loader, optimizer, device,
@@ -300,7 +300,7 @@ def main(args):
 
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='PyTorch Classification Training',
+    parser = argparse.ArgumentParser(description='Holocron Detection Training',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
