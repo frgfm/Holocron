@@ -18,7 +18,6 @@ import torch.utils.data
 from torchvision import transforms
 from torchvision.datasets import VOCDetection
 from torchvision.ops.boxes import box_iou
-from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.transforms import functional as F
 
 import holocron
@@ -224,10 +223,7 @@ def main(args):
         sampler=test_sampler, num_workers=args.workers, pin_memory=True)
 
     print("Creating model")
-    kwargs = {}
-    if args.freeze_backbone:
-        kwargs['norm_layer'] = FrozenBatchNorm2d
-    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(classes), **kwargs)
+    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(classes), pretrained_backbone=True)
     # Backbone freezing
     if args.freeze_backbone:
         for p in model.backbone.parameters():
