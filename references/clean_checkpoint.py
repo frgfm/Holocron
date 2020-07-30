@@ -12,7 +12,7 @@ import torch
 def main(args):
 
     checkpoint = torch.load(args.checkpoint, map_location='cpu')['model']
-    torch.save(checkpoint, args.outfile)
+    torch.save(checkpoint, args.outfile, _use_new_zipfile_serialization=False)
 
     with open(args.outfile, 'rb') as f:
         sha_hash = hashlib.sha256(f.read()).hexdigest()
