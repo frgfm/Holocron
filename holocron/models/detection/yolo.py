@@ -180,14 +180,17 @@ class _YOLO(nn.Module):
 
 class YOLOv1(_YOLO):
     def __init__(self, layout, num_classes=20, in_channels=3, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
         super().__init__()
 
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
 
-        self.backbone = DarknetBodyV1(layout, in_channels, act_layer, norm_layer)
+        if backbone_norm_layer is None and norm_layer is not None:
+            backbone_norm_layer = norm_layer
+
+        self.backbone = DarknetBodyV1(layout, in_channels, act_layer, backbone_norm_layer)
 
         self.block4 = nn.Sequential(
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
@@ -296,7 +299,7 @@ class YOLOv2(_YOLO):
     passthrough = None
 
     def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, lambda_noobj=0.5, lambda_coords=5.,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
         super().__init__()
 
@@ -305,12 +308,15 @@ class YOLOv2(_YOLO):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
+        if backbone_norm_layer is None and norm_layer is not None:
+            backbone_norm_layer = norm_layer
+
         # Priors computed using K-means
         if anchors is None:
             anchors = torch.tensor([[1.08, 1.19], [3.42, 4.41], [6.63, 11.38], [9.42, 5.11], [16.62, 10.52]])
         self.num_classes = num_classes
 
-        self.backbone = DarknetBodyV2(layout, in_channels, act_layer, norm_layer, drop_layer, conv_layer)
+        self.backbone = DarknetBodyV2(layout, in_channels, act_layer, backbone_norm_layer, drop_layer, conv_layer)
         # Hook the penultimate block for passthrough
         self.backbone[-3].register_forward_hook(self._fwd_hook)
 
