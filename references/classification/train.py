@@ -225,7 +225,7 @@ def main(args):
 
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='PyTorch Classification Training',
+    parser = argparse.ArgumentParser(description='Holocron Classification Training',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
