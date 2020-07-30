@@ -21,7 +21,7 @@ __all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'darknet24', 'darknet19', 'dar
 default_cfgs = {
     'darknet24': {'arch': 'DarknetV1',
                   'layout': [[128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024] * 2],
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet24_224-dee0fa59.pth'},
+                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet24_224-1a340849.pth'},
     'darknet19': {'arch': 'DarknetV2',
                   'layout': [(128, 1), (256, 1), (512, 2), (1024, 2)],
                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet19_224-b8530818.pth'},
