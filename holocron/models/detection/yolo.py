@@ -309,8 +309,11 @@ class YOLOv2(_YOLO):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
-        if backbone_norm_layer is None and norm_layer is not None:
-            backbone_norm_layer = norm_layer
+        if backbone_norm_layer is None:
+            if norm_layer is None:
+                backbone_norm_layer = FrozenBatchNorm2d
+            else:
+                backbone_norm_layer = norm_layer
 
         # Priors computed using K-means
         if anchors is None:
@@ -435,9 +438,6 @@ class YOLOv2(_YOLO):
 
 
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
-
-    if pretrained_backbone and kwargs.get('backbone_norm_layer') is None:
-        kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
 
     if pretrained:
         pretrained_backbone = False
