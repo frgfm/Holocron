@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.ops.boxes import box_iou, nms
+from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.models.utils import load_state_dict_from_url
 
 from ..utils import conv_sequence
@@ -434,6 +435,9 @@ class YOLOv2(_YOLO):
 
 
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
+
+    if pretrained_backbone and kwargs.get('backbone_norm_layer') is None:
+        kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
 
     if pretrained:
         pretrained_backbone = False
