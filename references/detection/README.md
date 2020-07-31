@@ -40,7 +40,7 @@ Here, the recall being the ratio of correctly predicted ground truth predictions
 
 | Size (px) | Epochs | args                                                         | Loc@.5 | Clf@.5 | Det@.5 | # Runs |
 | --------- | ------ | ------------------------------------------------------------ | ------ | ------ | ------ | ------ |
-| 416       | 80     | VOC2012 --model yolov2 --lr 5e-5 -b 32 -j 16 --epochs 80 --opt radam --sched onecycle |        |        |        | 1      |
+| 416       | 40     | VOC2012 --model yolov2 --img-size 416 --lr 5e-4 -b 64 -j 16 --epochs 40 --opt tadam --freeze-backbone --sched onecycle | 83.09  | 52.82  | 92.02  | 1      |
 
 
 
@@ -48,5 +48,5 @@ Here, the recall being the ratio of correctly predicted ground truth predictions
 
 | Model  | Loc@.5 | Clf@.5 | Det@.5 | Param # | MACs | Interpolation | Image size |
 | ------ | ------ | ------ | ------ | ------- | ---- | ------------- | ---------- |
-| yolov2 |        |        |        | 67.14M  |      | bilinear      | 416        |
+| yolov2 | 83.09  | 52.82  | 92.02  | 50.65M  |      | bilinear      | 416        |
 
