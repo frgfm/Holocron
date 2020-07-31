@@ -302,6 +302,17 @@ class NNTester(unittest.TestCase):
                 out = mod(x)
             self.assertEqual(out.shape, (2, 16, 19, 19))
 
+    def test_frelu(self):
+
+        # Generate inputs
+        x = torch.rand(2, 8, 19, 19)
+
+        # Optional argument testing
+        with torch.no_grad():
+            out = activation.FReLU(8)(x)
+        self.assertEqual(out.size(), x.size())
+        self.assertFalse(torch.equal(out, x))
+
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
 

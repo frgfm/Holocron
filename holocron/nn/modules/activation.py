@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['SiLU', 'Mish', 'HardMish', 'NLReLU']
+__all__ = ['SiLU', 'Mish', 'HardMish', 'NLReLU', 'FReLU']
 
 
 class _Activation(nn.Module):
@@ -89,3 +89,29 @@ class NLReLU(_Activation):
     """
     def forward(self, input):
         return F.nl_relu(input, inplace=self.inplace)
+
+
+class FReLU(nn.Module):
+    """Implements the Funnel activation module from `"Funnel Activation for Visual Recognition"
+    <https://arxiv.org/pdf/2007.11824.pdf>`_
+
+    This activation is computed as follows:
+
+    .. math::
+        f(x) = max(\\mathbb{T}(x), x)
+    where the :math:`\\mathbb{T}` is the spatial contextual feature extraction. It is a convolution filter of size
+    `kernel_size`, same padding and groups equal to the number of input channels, followed by a batch normalization.
+
+    Args:
+        inplace (bool): should the operation be performed inplace
+    """
+    def __init__(self, in_channels, kernel_size=3):
+        super().__init__()
+        self.conv = nn.Conv2d(in_channels, in_channels, kernel_size, padding=kernel_size // 2, groups=in_channels)
+        self.bn = nn.BatchNorm2d(in_channels)
+
+    def forward(self, x):
+        out = self.conv(x)
+        out = self.bn(out)
+        x = torch.max(x, out)
+        return x

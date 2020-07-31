@@ -17,6 +17,8 @@ Non-linear activations
 
 .. autoclass:: NLReLU
 
+.. autoclass:: FReLU
+
 Loss functions
 --------------
 
