@@ -299,7 +299,8 @@ class YOLOv2(_YOLO):
 
     passthrough = None
 
-    def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, lambda_noobj=0.5, lambda_coords=5.,
+    def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, passthrough_ratio=8,
+                 lambda_noobj=0.5, lambda_coords=5.,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
         super().__init__()
@@ -324,7 +325,10 @@ class YOLOv2(_YOLO):
         # Hook the penultimate block for passthrough
         self.backbone[-3].register_forward_hook(self._fwd_hook)
 
-        self.reorg_layer = ConcatDownsample2d(scale_factor=2)
+        self.passthrough_layer = nn.Sequential(*conv_sequence(layout[-2][0], layout[-2][0] // passthrough_ratio,
+                                                              act_layer, norm_layer, drop_layer, conv_layer,
+                                                              kernel_size=1, bias=False),
+                                               ConcatDownsample2d(scale_factor=2))
 
         self.block5 = nn.Sequential(
             *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
@@ -333,7 +337,7 @@ class YOLOv2(_YOLO):
                            kernel_size=3, padding=1, bias=False))
 
         self.block6 = nn.Sequential(
-            *conv_sequence(layout[-1][0] + layout[-2][0] * 2 ** 2, layout[-1][0],
+            *conv_sequence(layout[-1][0] + layout[-2][0] // passthrough_ratio * 2 ** 2, layout[-1][0],
                            act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, bias=False))
 
@@ -410,7 +414,7 @@ class YOLOv2(_YOLO):
         img_h, img_w = x.shape[-2:]
         x = self.backbone(x)
         # Downsample the feature map by stacking adjacent features on the channel dimension
-        passthrough = self.reorg_layer(self.passthrough)
+        passthrough = self.passthrough_layer(self.passthrough)
         # Clear the hook
         self.passthrough = None
 
