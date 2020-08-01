@@ -260,6 +260,14 @@ class YOLOv1(_YOLO):
 
         return b_coords, b_o, b_scores
 
+    def _forward(self, x):
+
+        out = self.backbone(x)
+        out = self.block4(out)
+        out = self.classifier(out)
+
+        return out
+
     def forward(self, x, gt_boxes=None, gt_labels=None):
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
@@ -277,13 +285,10 @@ class YOLOv1(_YOLO):
         if isinstance(x, (list, tuple)):
             x = torch.stack(x, dim=0)
 
-        img_h, img_w = x.shape[-2:]
-        x = self.backbone(x)
-        x = self.block4(x)
-        x = self.classifier(x)
+        out = self._forward(x)
 
         # B * (H * W) * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(x, img_h, img_w)
+        b_coords, b_o, b_scores = self._format_outputs(x, *x.shape[-2:])
 
         if self.training:
             # Update losses
@@ -400,6 +405,23 @@ class YOLOv2(_YOLO):
 
         return b_coords, b_o, b_scores
 
+    def _forward(self, x):
+
+        out = self.backbone(x)
+        # Downsample the feature map by stacking adjacent features on the channel dimension
+        passthrough = self.passthrough_layer(self.passthrough)
+        # Clear the hook
+        self.passthrough = None
+
+        out = self.block5(out)
+        # Stack the downsampled feature map on the channel dimension
+        out = torch.cat((passthrough, out), 1)
+        out = self.block6(out)
+
+        out = self.head(out)
+
+        return out
+
     def forward(self, x, gt_boxes=None, gt_labels=None):
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
@@ -417,22 +439,10 @@ class YOLOv2(_YOLO):
         if isinstance(x, (list, tuple)):
             x = torch.stack(x, dim=0)
 
-        img_h, img_w = x.shape[-2:]
-        x = self.backbone(x)
-        # Downsample the feature map by stacking adjacent features on the channel dimension
-        passthrough = self.passthrough_layer(self.passthrough)
-        # Clear the hook
-        self.passthrough = None
-
-        x = self.block5(x)
-        # Stack the downsampled feature map on the channel dimension
-        x = torch.cat((passthrough, x), 1)
-        x = self.block6(x)
-
-        x = self.head(x)
+        out = self._forward(x)
 
         # B * H * W * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(x, img_h, img_w)
+        b_coords, b_o, b_scores = self._format_outputs(out, *x.shape[-2:])
 
         if self.training:
             # Update losses
