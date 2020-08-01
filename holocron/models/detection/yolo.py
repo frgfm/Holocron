@@ -36,7 +36,7 @@ class _YOLO(nn.Module):
         self.rpn_nms_thresh = rpn_nms_thresh
         self.box_score_thresh = box_score_thresh
 
-    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, ignore_high_iou=False):
+    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, img_h, img_w, ignore_high_iou=False):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
@@ -111,9 +111,13 @@ class _YOLO(nn.Module):
                 gt_centers[:, 0] *= w
                 gt_centers[:, 1] *= h
                 gt_centers -= gt_centers.floor()
+                gt_centers[:, 0] *= img_w // w
+                gt_centers[:, 1] *= img_h // h
                 selected_boxes[:, 0] *= w
                 selected_boxes[:, 1] *= h
                 selected_boxes[:, :2] -= selected_boxes[:, :2].floor()
+                selected_boxes[:, 0] *= img_w // w
+                selected_boxes[:, 1] *= img_h // h
                 gt_probs = torch.zeros_like(selected_scores)
                 gt_probs[range(gt_labels[idx].shape[0]), gt_labels[idx]] = 1
 
@@ -288,7 +292,7 @@ class YOLOv1(_YOLO):
 
         if self.training:
             # Update losses
-            return self._compute_losses(b_coords, b_o, b_scores, gt_boxes, gt_labels)
+            return self._compute_losses(b_coords, b_o, b_scores, gt_boxes, gt_labels, *x.shape[-2:])
         else:
             # B * (H * W * num_anchors)
             b_coords = b_coords.view(b_coords.shape[0], -1, 4)
@@ -440,7 +444,7 @@ class YOLOv2(_YOLO):
 
         if self.training:
             # Update losses
-            return self._compute_losses(b_coords, b_o, b_scores, gt_boxes, gt_labels)
+            return self._compute_losses(b_coords, b_o, b_scores, gt_boxes, gt_labels, *x.shape[-2:])
         else:
             # B * (H * W * num_anchors)
             b_coords = b_coords.view(b_coords.shape[0], -1, 4)
