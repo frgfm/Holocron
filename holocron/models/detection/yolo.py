@@ -219,13 +219,11 @@ class YOLOv1(_YOLO):
 
         init_module(self, 'leaky_relu')
 
-    def _format_outputs(self, x, img_h, img_w):
+    def _format_outputs(self, x):
         """Formats convolutional layer output
 
         Args:
             x (torch.Tensor[N, num_anchors * (5 + num_classes) * H * W]): output tensor
-            img_h (int): input image height
-            img_w (int): input image width
 
         Returns:
             torch.Tensor[N, H * W, num_anchors, 4]: relative coordinates in format (x, y, w, h)
@@ -286,7 +284,7 @@ class YOLOv1(_YOLO):
         out = self._forward(x)
 
         # B * (H * W) * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(out, *x.shape[-2:])
+        b_coords, b_o, b_scores = self._format_outputs(out)
 
         if self.training:
             # Update losses
@@ -369,13 +367,11 @@ class YOLOv2(_YOLO):
     def num_anchors(self):
         return self.anchors.shape[0]
 
-    def _format_outputs(self, x, img_h, img_w):
+    def _format_outputs(self, x):
         """Formats convolutional layer output
 
         Args:
             x (torch.Tensor[N, num_anchors * (5 + num_classes), H, W]): output tensor
-            img_h (int): input image height
-            img_w (int): input image width
 
         Returns:
             torch.Tensor[N, H, W, num_anchors, 4]: relative coordinates in format (x, y, w, h)
@@ -440,7 +436,7 @@ class YOLOv2(_YOLO):
         out = self._forward(x)
 
         # B * H * W * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(out, *x.shape[-2:])
+        b_coords, b_o, b_scores = self._format_outputs(out)
 
         if self.training:
             # Update losses
