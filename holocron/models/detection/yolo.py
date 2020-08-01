@@ -31,6 +31,11 @@ default_cfgs = {
 
 
 class _YOLO(nn.Module):
+    def __init__(self, rpn_nms_thresh=0.7, box_score_thresh=0.05):
+        super().__init__()
+        self.rpn_nms_thresh = rpn_nms_thresh
+        self.box_score_thresh = box_score_thresh
+
     def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, ignore_high_iou=False):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
@@ -56,10 +61,8 @@ class _YOLO(nn.Module):
         clf_loss = torch.zeros(1, device=pred_boxes.device)
 
         # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
-        pred_xyxy = torch.zeros_like(pred_boxes)
-        pred_wh = pred_boxes[..., 2:]
-        pred_xyxy[..., 2:] = pred_boxes[..., :2] + pred_wh / 2
-        pred_xyxy[..., :2] = pred_boxes[..., :2] - pred_wh / 2
+        wh = pred_boxes[..., 2:]
+        pred_xyxy = torch.cat((pred_boxes[..., :2] - wh / 2, pred_boxes[..., :2] + wh / 2), dim=-1)
 
         # B * cells * predictors * info
         for idx in range(b):
@@ -158,21 +161,20 @@ class _YOLO(nn.Module):
                 # Multiply by the objectness
                 scores = scores.values * b_o[idx, b_o[idx] >= 0.5]
 
-                # NMS
-                # Switch to xmin, ymin, xmax, ymax coords
-                wh = coords[..., 2:]
-                coords[..., 2:] = coords[..., :2] + wh / 2
-                coords[..., :2] -= wh / 2
-                coords = coords.clamp_(0, 1)
-                is_kept = nms(coords, scores, iou_threshold=rpn_nms_thresh)
-                coords = coords[is_kept]
-                scores = scores[is_kept]
-                labels = labels[is_kept]
-
                 # Confidence threshold
                 coords = coords[scores >= box_score_thresh]
                 labels = labels[scores >= box_score_thresh]
                 scores = scores[scores >= box_score_thresh]
+
+                # Switch to xmin, ymin, xmax, ymax coords
+                wh = coords[..., 2:]
+                coords = torch.cat((coords[..., :2] - wh / 2, coords[..., :2] + wh / 2), dim=1)
+                coords = coords.clamp_(0, 1)
+                # NMS
+                kept_idxs = nms(coords, scores, iou_threshold=rpn_nms_thresh)
+                coords = coords[kept_idxs]
+                scores = scores[kept_idxs]
+                labels = labels[kept_idxs]
 
             detections.append(dict(boxes=coords, scores=scores, labels=labels))
 
@@ -181,9 +183,10 @@ class _YOLO(nn.Module):
 
 class YOLOv1(_YOLO):
     def __init__(self, layout, num_classes=20, in_channels=3, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.,
+                 rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
-        super().__init__()
+        super().__init__(rpn_nms_thresh, box_score_thresh)
 
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
@@ -255,6 +258,14 @@ class YOLOv1(_YOLO):
 
         return b_coords, b_o, b_scores
 
+    def _forward(self, x):
+
+        out = self.backbone(x)
+        out = self.block4(out)
+        out = self.classifier(out)
+
+        return out
+
     def forward(self, x, gt_boxes=None, gt_labels=None):
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
@@ -272,13 +283,10 @@ class YOLOv1(_YOLO):
         if isinstance(x, (list, tuple)):
             x = torch.stack(x, dim=0)
 
-        img_h, img_w = x.shape[-2:]
-        x = self.backbone(x)
-        x = self.block4(x)
-        x = self.classifier(x)
+        out = self._forward(x)
 
         # B * (H * W) * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(x, img_h, img_w)
+        b_coords, b_o, b_scores = self._format_outputs(out, *x.shape[-2:])
 
         if self.training:
             # Update losses
@@ -292,7 +300,7 @@ class YOLOv1(_YOLO):
             b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
-            return self.post_process(b_coords, b_o, b_scores)
+            return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
 class YOLOv2(_YOLO):
@@ -300,10 +308,10 @@ class YOLOv2(_YOLO):
     passthrough = None
 
     def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, passthrough_ratio=8,
-                 lambda_noobj=0.5, lambda_coords=5.,
+                 lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
-        super().__init__()
+        super().__init__(rpn_nms_thresh, box_score_thresh)
 
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
@@ -318,7 +326,8 @@ class YOLOv2(_YOLO):
 
         # Priors computed using K-means
         if anchors is None:
-            anchors = torch.tensor([[1.08, 1.19], [3.42, 4.41], [6.63, 11.38], [9.42, 5.11], [16.62, 10.52]])
+            anchors = torch.tensor([[1.3221, 1.73145], [3.19275, 4.00944], [5.05587, 8.09892],
+                                    [9.47112, 4.84053], [11.2364, 10.0071]])
         self.num_classes = num_classes
 
         self.backbone = DarknetBodyV2(layout, in_channels, act_layer, backbone_norm_layer, drop_layer, conv_layer)
@@ -394,6 +403,23 @@ class YOLOv2(_YOLO):
 
         return b_coords, b_o, b_scores
 
+    def _forward(self, x):
+
+        out = self.backbone(x)
+        # Downsample the feature map by stacking adjacent features on the channel dimension
+        passthrough = self.passthrough_layer(self.passthrough)
+        # Clear the hook
+        self.passthrough = None
+
+        out = self.block5(out)
+        # Stack the downsampled feature map on the channel dimension
+        out = torch.cat((passthrough, out), 1)
+        out = self.block6(out)
+
+        out = self.head(out)
+
+        return out
+
     def forward(self, x, gt_boxes=None, gt_labels=None):
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
@@ -411,22 +437,10 @@ class YOLOv2(_YOLO):
         if isinstance(x, (list, tuple)):
             x = torch.stack(x, dim=0)
 
-        img_h, img_w = x.shape[-2:]
-        x = self.backbone(x)
-        # Downsample the feature map by stacking adjacent features on the channel dimension
-        passthrough = self.passthrough_layer(self.passthrough)
-        # Clear the hook
-        self.passthrough = None
-
-        x = self.block5(x)
-        # Stack the downsampled feature map on the channel dimension
-        x = torch.cat((passthrough, x), 1)
-        x = self.block6(x)
-
-        x = self.head(x)
+        out = self._forward(x)
 
         # B * H * W * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(x, img_h, img_w)
+        b_coords, b_o, b_scores = self._format_outputs(out, *x.shape[-2:])
 
         if self.training:
             # Update losses
@@ -438,7 +452,7 @@ class YOLOv2(_YOLO):
             b_scores = b_scores.reshape(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
-            return self.post_process(b_coords, b_o, b_scores)
+            return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
