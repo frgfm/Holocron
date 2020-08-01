@@ -163,21 +163,20 @@ class _YOLO(nn.Module):
                 # Multiply by the objectness
                 scores = scores.values * b_o[idx, b_o[idx] >= 0.5]
 
-                # NMS
-                # Switch to xmin, ymin, xmax, ymax coords
-                wh = coords[..., 2:]
-                coords[..., 2:] = coords[..., :2] + wh / 2
-                coords[..., :2] -= wh / 2
-                coords = coords.clamp_(0, 1)
-                is_kept = nms(coords, scores, iou_threshold=rpn_nms_thresh)
-                coords = coords[is_kept]
-                scores = scores[is_kept]
-                labels = labels[is_kept]
-
                 # Confidence threshold
                 coords = coords[scores >= box_score_thresh]
                 labels = labels[scores >= box_score_thresh]
                 scores = scores[scores >= box_score_thresh]
+
+                # Switch to xmin, ymin, xmax, ymax coords
+                wh = coords[..., 2:]
+                coords = torch.cat((coords[..., :2] - wh / 2, coords[..., :2] + wh / 2), dim=1)
+                coords = coords.clamp_(0, 1)
+                # NMS
+                kept_idxs = nms(coords, scores, iou_threshold=rpn_nms_thresh)
+                coords = coords[kept_idxs]
+                scores = scores[kept_idxs]
+                labels = labels[kept_idxs]
 
             detections.append(dict(boxes=coords, scores=scores, labels=labels))
 
