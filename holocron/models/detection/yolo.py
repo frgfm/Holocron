@@ -288,7 +288,7 @@ class YOLOv1(_YOLO):
         out = self._forward(x)
 
         # B * (H * W) * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(x, *x.shape[-2:])
+        b_coords, b_o, b_scores = self._format_outputs(out, *x.shape[-2:])
 
         if self.training:
             # Update losses
