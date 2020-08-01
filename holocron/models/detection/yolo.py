@@ -31,6 +31,11 @@ default_cfgs = {
 
 
 class _YOLO(nn.Module):
+    def __init__(self, rpn_nms_thresh=0.7, box_score_thresh=0.05):
+        super().__init__()
+        self.rpn_nms_thresh = rpn_nms_thresh
+        self.box_score_thresh = box_score_thresh
+
     def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, ignore_high_iou=False):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
@@ -181,9 +186,10 @@ class _YOLO(nn.Module):
 
 class YOLOv1(_YOLO):
     def __init__(self, layout, num_classes=20, in_channels=3, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.,
+                  rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
-        super().__init__()
+        super().__init__(rpn_nms_thresh, box_score_thresh)
 
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
@@ -292,7 +298,7 @@ class YOLOv1(_YOLO):
             b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
-            return self.post_process(b_coords, b_o, b_scores)
+            return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
 class YOLOv2(_YOLO):
@@ -300,10 +306,10 @@ class YOLOv2(_YOLO):
     passthrough = None
 
     def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, passthrough_ratio=8,
-                 lambda_noobj=0.5, lambda_coords=5.,
+                 lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
-        super().__init__()
+        super().__init__(rpn_nms_thresh, box_score_thresh)
 
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
@@ -438,7 +444,7 @@ class YOLOv2(_YOLO):
             b_scores = b_scores.reshape(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
-            return self.post_process(b_coords, b_o, b_scores)
+            return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
