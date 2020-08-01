@@ -185,7 +185,7 @@ class _YOLO(nn.Module):
 
 class YOLOv1(_YOLO):
     def __init__(self, layout, num_classes=20, in_channels=3, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.,
-                  rpn_nms_thresh=0.7, box_score_thresh=0.05,
+                 rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
         super().__init__(rpn_nms_thresh, box_score_thresh)
