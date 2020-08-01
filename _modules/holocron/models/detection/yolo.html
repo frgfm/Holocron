@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolo &mdash; holocron 0.1.3a0+01ed141-git documentation</title>
+  <title>holocron.models.detection.yolo &mdash; holocron 0.1.3a0+162f27d-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.3a0+01ed141
+                0.1.3a0+162f27d
               </div>
             
           
@@ -250,6 +250,11 @@
 
 
 <span class="k">class</span> <span class="nc">_YOLO</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rpn_nms_thresh</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span> <span class="o">=</span> <span class="n">rpn_nms_thresh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span> <span class="o">=</span> <span class="n">box_score_thresh</span>
+
     <span class="k">def</span> <span class="nf">_compute_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">,</span> <span class="n">pred_o</span><span class="p">,</span> <span class="n">pred_scores</span><span class="p">,</span> <span class="n">gt_boxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">ignore_high_iou</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Computes the detector losses as described in `&quot;You Only Look Once: Unified, Real-Time Object Detection&quot;</span>
 <span class="sd">        &lt;https://pjreddie.com/media/files/papers/yolo_1.pdf&gt;`_</span>
@@ -275,10 +280,8 @@
         <span class="n">clf_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="c1"># Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)</span>
-        <span class="n">pred_xyxy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">)</span>
-        <span class="n">pred_wh</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span>
-        <span class="n">pred_xyxy</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">pred_wh</span> <span class="o">/</span> <span class="mi">2</span>
-        <span class="n">pred_xyxy</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred_wh</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">wh</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span>
+        <span class="n">pred_xyxy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">wh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">wh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># B * cells * predictors * info</span>
         <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
@@ -377,21 +380,20 @@
                 <span class="c1"># Multiply by the objectness</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">values</span> <span class="o">*</span> <span class="n">b_o</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">b_o</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">]</span>
 
-                <span class="c1"># NMS</span>
-                <span class="c1"># Switch to xmin, ymin, xmax, ymax coords</span>
-                <span class="n">wh</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span>
-                <span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">wh</span> <span class="o">/</span> <span class="mi">2</span>
-                <span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">wh</span> <span class="o">/</span> <span class="mi">2</span>
-                <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="n">is_kept</span> <span class="o">=</span> <span class="n">nms</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="n">rpn_nms_thresh</span><span class="p">)</span>
-                <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">is_kept</span><span class="p">]</span>
-                <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">is_kept</span><span class="p">]</span>
-                <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">is_kept</span><span class="p">]</span>
-
                 <span class="c1"># Confidence threshold</span>
                 <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">scores</span> <span class="o">&gt;=</span> <span class="n">box_score_thresh</span><span class="p">]</span>
                 <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">scores</span> <span class="o">&gt;=</span> <span class="n">box_score_thresh</span><span class="p">]</span>
                 <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">scores</span> <span class="o">&gt;=</span> <span class="n">box_score_thresh</span><span class="p">]</span>
+
+                <span class="c1"># Switch to xmin, ymin, xmax, ymax coords</span>
+                <span class="n">wh</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">wh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">coords</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">wh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># NMS</span>
+                <span class="n">kept_idxs</span> <span class="o">=</span> <span class="n">nms</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="n">rpn_nms_thresh</span><span class="p">)</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">kept_idxs</span><span class="p">]</span>
+                <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">kept_idxs</span><span class="p">]</span>
+                <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">kept_idxs</span><span class="p">]</span>
 
             <span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxes</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">))</span>
 
@@ -400,9 +402,10 @@
 
 <span class="k">class</span> <span class="nc">YOLOv1</span><span class="p">(</span><span class="n">_YOLO</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">num_anchors</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lambda_noobj</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lambda_coords</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span>
+                 <span class="n">rpn_nms_thresh</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
                  <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backbone_norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">act_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -474,6 +477,14 @@
 
         <span class="k">return</span> <span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span>
 
+    <span class="k">def</span> <span class="nf">_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block4</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">gt_boxes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Perform detection on an image tensor and returns either the loss dictionary in training mode</span>
 <span class="sd">        or the list of detections in eval mode.</span>
@@ -491,13 +502,10 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># B * (H * W) * num_anchors</span>
-        <span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_outputs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">)</span>
+        <span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_outputs</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
             <span class="c1"># Update losses</span>
@@ -511,7 +519,7 @@
             <span class="n">b_scores</span> <span class="o">=</span> <span class="n">b_scores</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
 
             <span class="c1"># Stack detections into a list</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">YOLOv2</span><span class="p">(</span><span class="n">_YOLO</span><span class="p">):</span>
@@ -519,10 +527,10 @@
     <span class="n">passthrough</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">anchors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">passthrough_ratio</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-                 <span class="n">lambda_noobj</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lambda_coords</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span>
+                 <span class="n">lambda_noobj</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lambda_coords</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span> <span class="n">rpn_nms_thresh</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
                  <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backbone_norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">act_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -537,7 +545,8 @@
 
         <span class="c1"># Priors computed using K-means</span>
         <span class="k">if</span> <span class="n">anchors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">anchors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.08</span><span class="p">,</span> <span class="mf">1.19</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.42</span><span class="p">,</span> <span class="mf">4.41</span><span class="p">],</span> <span class="p">[</span><span class="mf">6.63</span><span class="p">,</span> <span class="mf">11.38</span><span class="p">],</span> <span class="p">[</span><span class="mf">9.42</span><span class="p">,</span> <span class="mf">5.11</span><span class="p">],</span> <span class="p">[</span><span class="mf">16.62</span><span class="p">,</span> <span class="mf">10.52</span><span class="p">]])</span>
+            <span class="n">anchors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.3221</span><span class="p">,</span> <span class="mf">1.73145</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.19275</span><span class="p">,</span> <span class="mf">4.00944</span><span class="p">],</span> <span class="p">[</span><span class="mf">5.05587</span><span class="p">,</span> <span class="mf">8.09892</span><span class="p">],</span>
+                                    <span class="p">[</span><span class="mf">9.47112</span><span class="p">,</span> <span class="mf">4.84053</span><span class="p">],</span> <span class="p">[</span><span class="mf">11.2364</span><span class="p">,</span> <span class="mf">10.0071</span><span class="p">]])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV2</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">backbone_norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
@@ -613,6 +622,23 @@
 
         <span class="k">return</span> <span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span>
 
+    <span class="k">def</span> <span class="nf">_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># Downsample the feature map by stacking adjacent features on the channel dimension</span>
+        <span class="n">passthrough</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">passthrough_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passthrough</span><span class="p">)</span>
+        <span class="c1"># Clear the hook</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passthrough</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block5</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="c1"># Stack the downsampled feature map on the channel dimension</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">passthrough</span><span class="p">,</span> <span class="n">out</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block6</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">gt_boxes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Perform detection on an image tensor and returns either the loss dictionary in training mode</span>
 <span class="sd">        or the list of detections in eval mode.</span>
@@ -630,22 +656,10 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="c1"># Downsample the feature map by stacking adjacent features on the channel dimension</span>
-        <span class="n">passthrough</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">passthrough_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passthrough</span><span class="p">)</span>
-        <span class="c1"># Clear the hook</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">passthrough</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block5</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="c1"># Stack the downsampled feature map on the channel dimension</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">passthrough</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block6</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># B * H * W * num_anchors</span>
-        <span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_outputs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">img_w</span><span class="p">)</span>
+        <span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_outputs</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
             <span class="c1"># Update losses</span>
@@ -657,7 +671,7 @@
             <span class="n">b_scores</span> <span class="o">=</span> <span class="n">b_scores</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
 
             <span class="c1"># Stack detections into a list</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_yolo</span><span class="p">(</span><span class="n">arch</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
