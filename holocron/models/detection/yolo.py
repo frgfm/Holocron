@@ -61,10 +61,8 @@ class _YOLO(nn.Module):
         clf_loss = torch.zeros(1, device=pred_boxes.device)
 
         # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
-        pred_xyxy = torch.zeros_like(pred_boxes)
-        pred_wh = pred_boxes[..., 2:]
-        pred_xyxy[..., 2:] = pred_boxes[..., :2] + pred_wh / 2
-        pred_xyxy[..., :2] = pred_boxes[..., :2] - pred_wh / 2
+        wh = pred_boxes[..., 2:]
+        pred_xyxy = torch.cat((pred_boxes[..., :2] - wh / 2, pred_boxes[..., :2] + wh / 2), dim=-1)
 
         # B * cells * predictors * info
         for idx in range(b):
