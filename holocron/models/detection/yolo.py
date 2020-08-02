@@ -214,6 +214,7 @@ class YOLOv1(_YOLO):
             nn.Flatten(),
             nn.Linear(1024 * 7 ** 2, 4096),
             nn.LeakyReLU(inplace=True),
+            nn.Dropout(0.5),
             nn.Linear(4096, 7 ** 2 * (num_anchors * 5 + num_classes)))
         self.num_anchors = num_anchors
         self.num_classes = num_classes
