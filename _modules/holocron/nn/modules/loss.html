@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.loss &mdash; holocron 0.1.3a0+162f27d-git documentation</title>
+  <title>holocron.nn.modules.loss &mdash; holocron 0.1.3a0+4b969d2-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.3a0+162f27d
+                0.1.3a0+4b969d2
               </div>
             
           
@@ -227,7 +227,7 @@
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;FocalLoss&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiLabelCrossEntropy&#39;</span><span class="p">,</span> <span class="s1">&#39;LabelSmoothingCrossEntropy&#39;</span><span class="p">,</span> <span class="s1">&#39;MixupLoss&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;FocalLoss&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiLabelCrossEntropy&#39;</span><span class="p">,</span> <span class="s1">&#39;LabelSmoothingCrossEntropy&#39;</span><span class="p">,</span> <span class="s1">&#39;MixupLoss&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassBalancedWrapper&#39;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">_Loss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -352,6 +352,41 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Mixup_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="ClassBalancedWrapper"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ClassBalancedWrapper">[docs]</a><span class="k">class</span> <span class="nc">ClassBalancedWrapper</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of the class-balanced loss as described in `&quot;Class-Balanced Loss Based on Effective Number</span>
+<span class="sd">    of Samples&quot; &lt;https://arxiv.org/pdf/1901.05555.pdf&gt;`_.</span>
+
+<span class="sd">    Given a loss function :math:`\\mathcal{L}`, the class-balanced loss is described by:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        CB(p, y) = \\frac{1 - \\beta}{1 - \\beta^{n_y}} \\mathcal{L}(p, y)</span>
+
+<span class="sd">    where :math:`p` is the predicted probability for class :math:`y`, :math:`n_y` is the number of training</span>
+<span class="sd">    samples for class :math:`y`, and :math:`\\beta` is exponential factor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        criterion (torch.nn.Module): loss module</span>
+<span class="sd">        num_samples (torch.Tensor[K]): number of samples for each class</span>
+<span class="sd">        beta (float, optional): rebalancing exponent</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.99</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="n">cb_weights</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">**</span> <span class="n">num_samples</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">weight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">cb_weights</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">weight</span> <span class="o">*=</span> <span class="n">cb_weights</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="si">}</span><span class="s2">, beta=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 </pre></div>
 
            </div>
