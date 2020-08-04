@@ -313,6 +313,26 @@ class NNTester(unittest.TestCase):
         self.assertEqual(out.size(), x.size())
         self.assertFalse(torch.equal(out, x))
 
+    def test_cb_loss(self):
+
+        num_batches = 2
+        num_classes = 4
+        x = torch.rand(num_batches, num_classes, 20, 20)
+        beta = 0.99
+        num_samples = 10 * torch.ones(num_classes, dtype=torch.long)
+
+        # Identical target
+        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+        base_criterion = loss.LabelSmoothingCrossEntropy()
+        base_loss = base_criterion(x, target).item()
+        criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
+
+        self.assertIsInstance(criterion.criterion, loss.LabelSmoothingCrossEntropy)
+
+        # Value tests
+        self.assertAlmostEqual(criterion(x, target).item(),
+                               (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
+
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
 
