@@ -328,8 +328,16 @@ class NNTester(unittest.TestCase):
         criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
 
         self.assertIsInstance(criterion.criterion, loss.LabelSmoothingCrossEntropy)
+        self.assertIsNotNone(criterion.criterion.weight)
 
         # Value tests
+        self.assertAlmostEqual(criterion(x, target).item(),
+                               (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
+        # With pre-existing weights
+        base_criterion = loss.LabelSmoothingCrossEntropy(weight=torch.ones(num_classes, dtype=torch.float32))
+        base_weights = base_criterion.weight.clone()
+        criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
+        self.assertFalse(torch.equal(base_weights, criterion.criterion.weight))
         self.assertAlmostEqual(criterion(x, target).item(),
                                (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
 
