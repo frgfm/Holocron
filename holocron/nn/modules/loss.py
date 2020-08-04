@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'MixupLoss']
+__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'MixupLoss', 'ClassBalancedWrapper']
 
 
 class _Loss(nn.Module):
@@ -133,3 +133,38 @@ class MixupLoss(_Loss):
 
     def __repr__(self):
         return f"Mixup_{self.criterion.__repr__()}"
+
+
+class ClassBalancedWrapper(nn.Module):
+    """Implementation of the class-balanced loss as described in `"Class-Balanced Loss Based on Effective Number
+    of Samples" <https://arxiv.org/pdf/1901.05555.pdf>`_.
+
+    Given a loss function :math:`\\mathcal{L}`, the class-balanced loss is described by:
+
+    .. math::
+        CB(p, y) = \\frac{1 - \\beta}{1 - \\beta^{n_y}} \\mathcal{L}(p, y)
+
+    where :math:`p` is the predicted probability for class :math:`y`, :math:`n_y` is the number of training
+    samples for class :math:`y`, and :math:`\\beta` is exponential factor.
+
+    Args:
+        criterion (torch.nn.Module): loss module
+        num_samples (torch.Tensor[K]): number of samples for each class
+        beta (float, optional): rebalancing exponent
+    """
+
+    def __init__(self, criterion, num_samples, beta=0.99):
+        super().__init__()
+        self.criterion = criterion
+        self.beta = beta
+        cb_weights = (1 - beta) / (1 - beta ** num_samples)
+        if self.criterion.weight is None:
+            self.criterion.weight = cb_weights
+        else:
+            self.criterion.weight *= cb_weights.to(device=self.criterion.weight.device)
+
+    def forward(self, x, target):
+        return self.criterion.forward(x, target)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(beta={self.beta})"
