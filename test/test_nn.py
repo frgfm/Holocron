@@ -313,6 +313,37 @@ class NNTester(unittest.TestCase):
         self.assertEqual(out.size(), x.size())
         self.assertFalse(torch.equal(out, x))
 
+    def test_cb_loss(self):
+
+        num_batches = 2
+        num_classes = 4
+        x = torch.rand(num_batches, num_classes, 20, 20)
+        beta = 0.99
+        num_samples = 10 * torch.ones(num_classes, dtype=torch.long)
+
+        # Identical target
+        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+        base_criterion = loss.LabelSmoothingCrossEntropy()
+        base_loss = base_criterion(x, target).item()
+        criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
+
+        self.assertIsInstance(criterion.criterion, loss.LabelSmoothingCrossEntropy)
+        self.assertIsNotNone(criterion.criterion.weight)
+
+        # Value tests
+        self.assertAlmostEqual(criterion(x, target).item(),
+                               (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
+        # With pre-existing weights
+        base_criterion = loss.LabelSmoothingCrossEntropy(weight=torch.ones(num_classes, dtype=torch.float32))
+        base_weights = base_criterion.weight.clone()
+        criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
+        self.assertFalse(torch.equal(base_weights, criterion.criterion.weight))
+        self.assertAlmostEqual(criterion(x, target).item(),
+                               (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
+
+        self.assertEqual(criterion.__repr__(),
+                         "ClassBalancedWrapper(LabelSmoothingCrossEntropy(eps=0.1, reduction='mean'), beta=0.99)")
+
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
 
