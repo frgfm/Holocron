@@ -99,6 +99,7 @@ class FReLU(nn.Module):
 
     .. math::
         f(x) = max(\\mathbb{T}(x), x)
+
     where the :math:`\\mathbb{T}` is the spatial contextual feature extraction. It is a convolution filter of size
     `kernel_size`, same padding and groups equal to the number of input channels, followed by a batch normalization.
 
