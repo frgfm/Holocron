@@ -341,6 +341,9 @@ class NNTester(unittest.TestCase):
         self.assertAlmostEqual(criterion(x, target).item(),
                                (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
 
+        self.assertEqual(criterion.__repr__(),
+                         "ClassBalancedWrapper(LabelSmoothingCrossEntropy(eps=0.1, reduction='mean'), beta=0.99)")
+
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
 
