@@ -167,4 +167,4 @@ class ClassBalancedWrapper(nn.Module):
         return self.criterion.forward(x, target)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(beta={self.beta})"
+        return f"{self.__class__.__name__}({self.criterion.__repr__()}, beta={self.beta})"
