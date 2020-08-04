@@ -222,7 +222,7 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt *= weight.view(1, -1)
+        logpt *= weight.view(1, -1, *([1] * (logpt.ndim - 2)))
 
     # Loss reduction
     if reduction == 'sum':
