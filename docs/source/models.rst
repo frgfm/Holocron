@@ -90,6 +90,8 @@ Darknet
 
 .. autofunction:: darknet53
 
+.. autofunction:: cspdarknet53
+
 
 Object Detection
 ================
