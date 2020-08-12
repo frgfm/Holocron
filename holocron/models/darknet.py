@@ -7,15 +7,17 @@ Implementation of DarkNet
 import sys
 import logging
 from collections import OrderedDict
+import torch
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 
 from ..nn.init import init_module
 from .utils import conv_sequence
 from .resnet import _ResBlock
+from holocron.nn import Mish
 
 
-__all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'darknet24', 'darknet19', 'darknet53']
+__all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'DarknetV4', 'darknet24', 'darknet19', 'darknet53', 'cspdarknet53']
 
 
 default_cfgs = {
@@ -28,6 +30,9 @@ default_cfgs = {
     'darknet53': {'arch': 'DarknetV3',
                   'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
                   'url': None},
+    'cspdarknet53': {'arch': 'DarknetV4',
+                     'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
+                     'url': None},
 }
 
 
@@ -202,6 +207,94 @@ class DarknetV3(nn.Sequential):
         init_module(self, 'leaky_relu')
 
 
+class CSPStage(nn.Module):
+
+    def __init__(self, in_channels, out_channels, num_blocks=1,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+        super().__init__()
+        self.base_layer = nn.Sequential(*conv_sequence(in_channels, out_channels,
+                                                       act_layer, norm_layer, drop_layer, conv_layer,
+                                                       kernel_size=3, padding=1, stride=2, bias=False))
+        compression = 2 if num_blocks > 1 else 1
+        self.part1 = nn.Sequential(*conv_sequence(out_channels, out_channels // compression,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=1, bias=False))
+        self.part2 = nn.Sequential(*conv_sequence(out_channels, out_channels // compression,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=1, bias=False),
+                                   *[ResBlock(out_channels // compression,
+                                                out_channels  // compression if num_blocks > 1 else in_channels,
+                                                act_layer, norm_layer, drop_layer, conv_layer)
+                                     for _ in range(num_blocks)],
+                                   *conv_sequence(out_channels // compression, out_channels // compression,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=1, bias=False))
+        self.transition = nn.Sequential(*conv_sequence(2 * out_channels // compression, out_channels,
+                                                       act_layer, norm_layer, drop_layer, conv_layer,
+                                                       kernel_size=1, bias=False))
+
+    def forward(self, x):
+        x = self.base_layer(x)
+        p1 = self.part1(x)
+        p2 = self.part2(x)
+
+        return self.transition(torch.cat([p1, p2], dim=1))
+
+
+class DarknetBodyV4(nn.Sequential):
+
+    def __init__(self, layout, in_channels=3, stem_channels=32, num_features=1,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+
+        super().__init__()
+
+        if act_layer is None:
+            act_layer = Mish()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+
+        in_chans = [stem_channels] + [l[0] for l in layout[:-1]]
+
+        super().__init__(OrderedDict([
+            ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=3, padding=1, bias=False))),
+            ('layers', nn.Sequential(*[CSPStage(_in_chans, out_chans, num_blocks,
+                                                act_layer, norm_layer, drop_layer, conv_layer)
+                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))
+            ])
+        )
+
+        self.num_features = num_features
+
+    def forward(self, x):
+
+        if self.num_features == 1:
+            return super().forward(x)
+        else:
+            x = self.stem(x)
+            features = []
+            for idx, stage in enumerate(self.layers):
+                x = stage(x)
+                if idx >= (len(self.layers) - self.num_features):
+                    features.append(x)
+
+            return features
+
+
+class DarknetV4(nn.Sequential):
+    def __init__(self, layout, num_classes=10, in_channels=3, stem_channels=32, num_features=1,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+
+        super().__init__(OrderedDict([
+            ('features', DarknetBodyV4(layout, in_channels, stem_channels, num_features,
+                                       act_layer, norm_layer, drop_layer, conv_layer)),
+            ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
+            ('classifier', nn.Linear(layout[-1][-1], num_classes))]))
+
+        init_module(self, 'leaky_relu')
+
+
 def _darknet(arch, pretrained, progress, **kwargs):
 
     # Retrieve the correct Darknet layout type
@@ -263,3 +356,18 @@ def darknet53(pretrained=False, progress=True, **kwargs):
     """
 
     return _darknet('darknet53', pretrained, progress, **kwargs)
+
+
+def cspdarknet53(pretrained=False, progress=True, **kwargs):
+    """CSP-Darknet-53 from
+    `"CSPNet: A New Backbone that can Enhance Learning Capability of CNN" <https://arxiv.org/pdf/1911.11929.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _darknet('cspdarknet53', pretrained, progress, **kwargs)
