@@ -22,9 +22,9 @@ def conv_sequence(in_channels, out_channels, act_layer=None, norm_layer=None, dr
 
     if callable(norm_layer):
         conv_seq.append(norm_layer(bn_channels))
-    if callable(drop_layer):
-        conv_seq.append(drop_layer(p=0.1, block_size=3, inplace=True))
     if callable(act_layer):
         conv_seq.append(act_layer)
+    if callable(drop_layer):
+        conv_seq.append(drop_layer(inplace=True))
 
     return conv_seq

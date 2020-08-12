@@ -363,7 +363,7 @@ def dropblock2d(x, drop_prob, block_size, inplace=False, training=True):
         training (bool, optional): whether the input should be processed in training mode
     """
 
-    if not training:
+    if not training or drop_prob == 0:
         return x
 
     # Sample a mask for the centers of blocks that will be dropped
