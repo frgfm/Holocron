@@ -84,7 +84,7 @@ class ModelTester(unittest.TestCase):
         self.assertEqual(out.shape, (num_batches, num_classes, out_size, out_size))
 
 
-for model_name in ['darknet24', 'darknet19', 'darknet53',
+for model_name in ['darknet24', 'darknet19', 'darknet53', 'cspdarknet53',
                    'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
                    'resnext50_32x4d', 'resnext101_32x8d',
                    'resnet50d',
