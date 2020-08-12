@@ -122,7 +122,7 @@ class DarknetBodyV2(nn.Sequential):
         if self.passthrough:
             x = self.stem(x)
             for idx, layer in enumerate(self.layers):
-                x = self.layer(x)
+                x = layer(x)
                 if idx == len(self.layers) - 2:
                     aux = x.clone()
 
