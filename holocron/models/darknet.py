@@ -43,7 +43,7 @@ class DarknetBodyV1(nn.Sequential):
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
 
-        in_chans = [stem_channels] + [l[-1] for l in layout[:-1]]
+        in_chans = [stem_channels] + [_layout[-1] for _layout in layout[:-1]]
 
         super().__init__(OrderedDict([
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
@@ -92,7 +92,7 @@ class DarknetBodyV2(nn.Sequential):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
-        in_chans = [stem_channels] + [l[0] for l in layout[:-1]]
+        in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
         super().__init__(OrderedDict([
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
@@ -169,7 +169,7 @@ class DarknetBodyV3(nn.Sequential):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
-        in_chans = [stem_channels] + [l[0] for l in layout[:-1]]
+        in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
         super().__init__(OrderedDict([
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
@@ -251,7 +251,7 @@ class DarknetBodyV4(nn.Sequential):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
-        in_chans = [stem_channels] + [l[0] for l in layout[:-1]]
+        in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
         super().__init__(OrderedDict([
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
