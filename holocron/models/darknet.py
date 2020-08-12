@@ -200,7 +200,7 @@ class DarknetV3(nn.Sequential):
             ('features', DarknetBodyV3(layout, in_channels, stem_channels,
                                        act_layer, norm_layer, drop_layer, conv_layer)),
             ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
-            ('classifier', nn.Linear(layout[-1][-2], num_classes))]))
+            ('classifier', nn.Linear(layout[-1][0], num_classes))]))
 
         init_module(self, 'leaky_relu')
 
@@ -287,7 +287,7 @@ class DarknetV4(nn.Sequential):
             ('features', DarknetBodyV4(layout, in_channels, stem_channels, num_features,
                                        act_layer, norm_layer, drop_layer, conv_layer)),
             ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
-            ('classifier', nn.Linear(layout[-1][-1], num_classes))]))
+            ('classifier', nn.Linear(layout[-1][0], num_classes))]))
 
         init_module(self, 'leaky_relu')
 
