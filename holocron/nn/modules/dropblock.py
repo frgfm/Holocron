@@ -16,12 +16,12 @@ class DropBlock2d(nn.Module):
     <https://arxiv.org/pdf/1810.12890.pdf>`_
 
     Args:
-        p (float): probability of dropping activation value
-        block_size (int): size of each block that is expended from the sampled mask
+        p (float, optional): probability of dropping activation value
+        block_size (int, optional): size of each block that is expended from the sampled mask
         inplace (bool, optional): whether the operation should be done inplace
     """
 
-    def __init__(self, p, block_size, inplace=False):
+    def __init__(self, p=0.1, block_size=7, inplace=False):
         super().__init__()
         self.p = p
         self.block_size = block_size
