@@ -81,8 +81,6 @@ class DarknetV1(nn.Sequential):
 
 class DarknetBodyV2(nn.Sequential):
 
-    passthrough = None
-
     def __init__(self, layout, in_channels=3, stem_channels=32, passthrough=False,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
 
@@ -102,6 +100,8 @@ class DarknetBodyV2(nn.Sequential):
                                                         act_layer, norm_layer, drop_layer, conv_layer)
                                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
         )
+
+        self.passthrough = passthrough
 
     @staticmethod
     def _make_layer(num_blocks, in_planes, out_planes,
