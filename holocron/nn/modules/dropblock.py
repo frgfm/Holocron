@@ -32,7 +32,7 @@ class DropBlock2d(nn.Module):
         return self.p / self.block_size ** 2
 
     def forward(self, x):
-        return F.dropblock2d(x, self.drop_prob, self.block_size, self.inplace)
+        return F.dropblock2d(x, self.drop_prob, self.block_size, self.inplace, self.training)
 
     def extra_repr(self):
         return f"p={self.p}, block_size={self.block_size}, inplace={self.inplace}"
