@@ -51,8 +51,7 @@ class DarknetBodyV1(nn.Sequential):
                                                   kernel_size=7, padding=3, stride=2, bias=False))),
             ('layers', nn.Sequential(*[self._make_layer([_in_chans] + planes,
                                                         act_layer, norm_layer, drop_layer, conv_layer)
-                                       for _in_chans, planes in zip(in_chans, layout)]))
-            ])
+                                       for _in_chans, planes in zip(in_chans, layout)]))])
         )
 
     @staticmethod
@@ -72,7 +71,8 @@ class DarknetV1(nn.Sequential):
     def __init__(self, layout, num_classes=10, in_channels=3, stem_channels=64,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__(OrderedDict([
-            ('features', DarknetBodyV1(layout, in_channels, stem_channels, act_layer, norm_layer, drop_layer, conv_layer)),
+            ('features', DarknetBodyV1(layout, in_channels, stem_channels,
+                                       act_layer, norm_layer, drop_layer, conv_layer)),
             ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
             ('classifier', nn.Linear(layout[2][-1], num_classes))]))
 
@@ -100,8 +100,7 @@ class DarknetBodyV2(nn.Sequential):
                                                   kernel_size=3, padding=1, bias=False))),
             ('layers', nn.Sequential(*[self._make_layer(num_blocks, _in_chans, out_chans,
                                                         act_layer, norm_layer, drop_layer, conv_layer)
-                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))
-            ])
+                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
         )
 
     @staticmethod
@@ -178,8 +177,7 @@ class DarknetBodyV3(nn.Sequential):
                                                   kernel_size=3, padding=1, bias=False))),
             ('layers', nn.Sequential(*[self._make_layer(num_blocks, _in_chans, out_chans,
                                                         act_layer, norm_layer, drop_layer, conv_layer)
-                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))
-            ])
+                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
         )
 
     @staticmethod
@@ -223,8 +221,8 @@ class CSPStage(nn.Module):
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=1, bias=False),
                                    *[ResBlock(out_channels // compression,
-                                                out_channels  // compression if num_blocks > 1 else in_channels,
-                                                act_layer, norm_layer, drop_layer, conv_layer)
+                                              out_channels // compression if num_blocks > 1 else in_channels,
+                                              act_layer, norm_layer, drop_layer, conv_layer)
                                      for _ in range(num_blocks)],
                                    *conv_sequence(out_channels // compression, out_channels // compression,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
@@ -261,8 +259,7 @@ class DarknetBodyV4(nn.Sequential):
                                                   kernel_size=3, padding=1, bias=False))),
             ('layers', nn.Sequential(*[CSPStage(_in_chans, out_chans, num_blocks,
                                                 act_layer, norm_layer, drop_layer, conv_layer)
-                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))
-            ])
+                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
         )
 
         self.num_features = num_features
