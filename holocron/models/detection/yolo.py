@@ -182,7 +182,7 @@ class _YOLO(nn.Module):
 
 
 class YOLOv1(_YOLO):
-    def __init__(self, layout, num_classes=20, in_channels=3, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.,
+    def __init__(self, layout, num_classes=20, in_channels=3, stem_channels=64, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.,
                  rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
@@ -194,7 +194,7 @@ class YOLOv1(_YOLO):
         if backbone_norm_layer is None and norm_layer is not None:
             backbone_norm_layer = norm_layer
 
-        self.backbone = DarknetBodyV1(layout, in_channels, act_layer, backbone_norm_layer)
+        self.backbone = DarknetBodyV1(layout, in_channels, stem_channels, act_layer, backbone_norm_layer)
 
         self.block4 = nn.Sequential(
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
@@ -304,9 +304,7 @@ class YOLOv1(_YOLO):
 
 class YOLOv2(_YOLO):
 
-    passthrough = None
-
-    def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, passthrough_ratio=8,
+    def __init__(self, layout, num_classes=20, in_channels=3, stem_chanels=32, anchors=None, passthrough_ratio=8,
                  lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
@@ -329,9 +327,8 @@ class YOLOv2(_YOLO):
                                     [9.47112, 4.84053], [11.2364, 10.0071]])
         self.num_classes = num_classes
 
-        self.backbone = DarknetBodyV2(layout, in_channels, act_layer, backbone_norm_layer, drop_layer, conv_layer)
-        # Hook the penultimate block for passthrough
-        self.backbone[-3].register_forward_hook(self._fwd_hook)
+        self.backbone = DarknetBodyV2(layout, in_channels, stem_chanels, True, act_layer,
+                                      backbone_norm_layer, drop_layer, conv_layer)
 
         self.block5 = nn.Sequential(
             *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
@@ -360,9 +357,6 @@ class YOLOv2(_YOLO):
         self.lambda_coords = lambda_coords
 
         init_module(self, 'leaky_relu')
-
-    def _fwd_hook(self, module, input, output):
-        self.passthrough = output
 
     @property
     def num_anchors(self):
@@ -402,11 +396,9 @@ class YOLOv2(_YOLO):
 
     def _forward(self, x):
 
-        out = self.backbone(x)
+        out, passthrough = self.backbone(x)
         # Downsample the feature map by stacking adjacent features on the channel dimension
-        passthrough = self.passthrough_layer(self.passthrough)
-        # Clear the hook
-        self.passthrough = None
+        passthrough = self.passthrough_layer(passthrough)
 
         out = self.block5(out)
         # Stack the downsampled feature map on the channel dimension
