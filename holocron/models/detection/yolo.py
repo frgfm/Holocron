@@ -440,6 +440,68 @@ class YOLOv2(_YOLO):
             return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
+class SPP(nn.Module):
+    """SPP layer from `"Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition"
+    <https://arxiv.org/pdf/1406.4729.pdf>`_.
+
+    Args:
+        kernel_sizes (list<int>): kernel sizes of each pooling
+    """
+
+    def __init__(self, kernel_sizes):
+        super().__init__()
+        self.maxpools = nn.ModuleList([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2)
+                                       for k_size in kernel_sizes])
+
+    def forward(self, x):
+        feats = [x]
+        for pool_layer in self.maxpools:
+            feats.append(pool_layer(x))
+        return torch.cat(feats, dim=1)
+
+
+class PAN(nn.Module):
+    """PAN layer from `"Path Aggregation Network for Instance Segmentation" <https://arxiv.org/pdf/1803.01534.pdf>`_.
+
+    Args:
+        in_channels (int): input channels
+        act_layer (torch.nn.Module, optional): activation layer to be used
+        norm_layer (callable, optional): normalization layer
+        drop_layer (callable, optional): regularization layer
+        conv_layer (callable, optional): convolutional layer
+    """
+    def __init__(self, in_channels, act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+        super().__init__()
+
+        self.conv1 = nn.Sequential(*conv_sequence(in_channels, in_channels // 2,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=1, bias=False))
+        self.up = nn.Upsample(scale_factor=2, mode='nearest')
+
+        self.conv2 = nn.Sequential(*conv_sequence(in_channels, in_channels // 2,
+                                                  act_layer, norm_layer, drop_layer, conv_layer,
+                                                  kernel_size=1, bias=False))
+
+        self.convs = nn.Sequential(
+            *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(in_channels // 2, in_channels, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(in_channels // 2, in_channels, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False))
+
+    def forward(self, x, up):
+        out = self.conv1(x)
+
+        out = torch.cat([self.conv2(up), self.up(out)], dim=1)
+
+        return self.convs(out)
+
+
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
 
     if pretrained:
