@@ -47,7 +47,7 @@ class _ResBlock(nn.Module):
         # Shortcut connection
         self.downsample = downsample
 
-        if isintance(act_layer, nn.Module):
+        if isinstance(act_layer, nn.Module):
             self.activation = act_layer
 
     def forward(self, x):
