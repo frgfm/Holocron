@@ -14,7 +14,7 @@ from torchvision.models.utils import load_state_dict_from_url
 from ..nn.init import init_module
 from .utils import conv_sequence
 from .resnet import _ResBlock
-from holocron.nn import Mish
+from holocron.nn import Mish, DropBlock2d
 
 
 __all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'DarknetV4', 'darknet24', 'darknet19', 'darknet53', 'cspdarknet53']
@@ -153,10 +153,19 @@ class ResBlock(_ResBlock):
             conv_sequence(mid_planes, planes, act_layer, norm_layer, drop_layer, conv_layer,
                           kernel_size=3, padding=1, bias=False),
             None, act_layer)
+        if drop_layer is not None:
+            self.dropblock = DropBlock2d(0.1, 7, inplace=True)
 
         # The backpropagation does not seem to appreciate inplace activation on the residual branch
         if hasattr(self.conv[-1], 'inplace'):
             self.conv[-1].inplace = False
+
+    def forward(self, x):
+        out = super().forward(x)
+        if hasattr(self, 'dropblock'):
+            out = self.dropblock(out)
+
+        return out
 
 
 class DarknetBodyV3(nn.Sequential):
@@ -250,6 +259,8 @@ class DarknetBodyV4(nn.Sequential):
             act_layer = Mish()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
+        if drop_layer is None:
+            drop_layer = DropBlock2d
 
         in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
