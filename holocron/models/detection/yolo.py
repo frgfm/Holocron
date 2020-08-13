@@ -314,12 +314,8 @@ class YOLOv2(_YOLO):
             act_layer = nn.LeakyReLU(0.1, inplace=True)
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-
         if backbone_norm_layer is None:
-            if norm_layer is None:
-                backbone_norm_layer = FrozenBatchNorm2d
-            else:
-                backbone_norm_layer = norm_layer
+            backbone_norm_layer = norm_layer
 
         # Priors computed using K-means
         if anchors is None:
@@ -575,5 +571,8 @@ def yolov2(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
     Returns:
         torch.nn.Module: detection module
     """
+
+    if pretrained_backbone:
+        kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
 
     return _yolo('yolov2', pretrained, progress, pretrained_backbone, **kwargs)
