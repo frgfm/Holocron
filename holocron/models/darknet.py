@@ -152,7 +152,7 @@ class ResBlock(_ResBlock):
                           kernel_size=1, bias=False) +
             conv_sequence(mid_planes, planes, act_layer, norm_layer, drop_layer, conv_layer,
                           kernel_size=3, padding=1, bias=False),
-            None, act_layer)
+            None, None)
         if drop_layer is not None:
             self.dropblock = DropBlock2d(0.1, 7, inplace=True)
 
