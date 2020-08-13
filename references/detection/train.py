@@ -328,6 +328,8 @@ def parse_args():
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                         help='start epoch')
+    parser.add_argument("--show-samples", dest='show_samples', action='store_true',
+                        help="Whether training samples should be displayed")
     parser.add_argument(
         "--test-only",
         dest="test_only",

@@ -42,14 +42,13 @@ class _ResBlock(nn.Module):
     def __init__(self, convs, downsample=None, act_layer=None):
         super().__init__()
 
-        if act_layer is None:
-            act_layer = nn.ReLU(inplace=True)
-
         # Main branch
         self.conv = nn.Sequential(*convs)
         # Shortcut connection
         self.downsample = downsample
-        self.activation = act_layer
+
+        if isinstance(act_layer, nn.Module):
+            self.activation = act_layer
 
     def forward(self, x):
         identity = x
@@ -60,7 +59,8 @@ class _ResBlock(nn.Module):
             identity = self.downsample(x)
 
         out += identity
-        out = self.activation(out)
+        if hasattr(self, 'activation'):
+            out = self.activation(out)
 
         return out
 

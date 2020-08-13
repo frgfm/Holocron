@@ -182,8 +182,8 @@ class _YOLO(nn.Module):
 
 
 class YOLOv1(_YOLO):
-    def __init__(self, layout, num_classes=20, in_channels=3, num_anchors=2, lambda_noobj=0.5, lambda_coords=5.,
-                 rpn_nms_thresh=0.7, box_score_thresh=0.05,
+    def __init__(self, layout, num_classes=20, in_channels=3, stem_channels=64, num_anchors=2,
+                 lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
         super().__init__(rpn_nms_thresh, box_score_thresh)
@@ -194,7 +194,7 @@ class YOLOv1(_YOLO):
         if backbone_norm_layer is None and norm_layer is not None:
             backbone_norm_layer = norm_layer
 
-        self.backbone = DarknetBodyV1(layout, in_channels, act_layer, backbone_norm_layer)
+        self.backbone = DarknetBodyV1(layout, in_channels, stem_channels, act_layer, backbone_norm_layer)
 
         self.block4 = nn.Sequential(
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
@@ -210,6 +210,7 @@ class YOLOv1(_YOLO):
             nn.Flatten(),
             nn.Linear(1024 * 7 ** 2, 4096),
             nn.LeakyReLU(inplace=True),
+            nn.Dropout(0.5),
             nn.Linear(4096, 7 ** 2 * (num_anchors * 5 + num_classes)))
         self.num_anchors = num_anchors
         self.num_classes = num_classes
@@ -219,13 +220,11 @@ class YOLOv1(_YOLO):
 
         init_module(self, 'leaky_relu')
 
-    def _format_outputs(self, x, img_h, img_w):
+    def _format_outputs(self, x):
         """Formats convolutional layer output
 
         Args:
             x (torch.Tensor[N, num_anchors * (5 + num_classes) * H * W]): output tensor
-            img_h (int): input image height
-            img_w (int): input image width
 
         Returns:
             torch.Tensor[N, H * W, num_anchors, 4]: relative coordinates in format (x, y, w, h)
@@ -286,7 +285,7 @@ class YOLOv1(_YOLO):
         out = self._forward(x)
 
         # B * (H * W) * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(out, *x.shape[-2:])
+        b_coords, b_o, b_scores = self._format_outputs(out)
 
         if self.training:
             # Update losses
@@ -305,9 +304,7 @@ class YOLOv1(_YOLO):
 
 class YOLOv2(_YOLO):
 
-    passthrough = None
-
-    def __init__(self, layout, num_classes=20, in_channels=3, anchors=None, passthrough_ratio=8,
+    def __init__(self, layout, num_classes=20, in_channels=3, stem_chanels=32, anchors=None, passthrough_ratio=8,
                  lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
 
@@ -330,20 +327,19 @@ class YOLOv2(_YOLO):
                                     [9.47112, 4.84053], [11.2364, 10.0071]])
         self.num_classes = num_classes
 
-        self.backbone = DarknetBodyV2(layout, in_channels, act_layer, backbone_norm_layer, drop_layer, conv_layer)
-        # Hook the penultimate block for passthrough
-        self.backbone[-3].register_forward_hook(self._fwd_hook)
-
-        self.passthrough_layer = nn.Sequential(*conv_sequence(layout[-2][0], layout[-2][0] // passthrough_ratio,
-                                                              act_layer, norm_layer, drop_layer, conv_layer,
-                                                              kernel_size=1, bias=False),
-                                               ConcatDownsample2d(scale_factor=2))
+        self.backbone = DarknetBodyV2(layout, in_channels, stem_chanels, True, act_layer,
+                                      backbone_norm_layer, drop_layer, conv_layer)
 
         self.block5 = nn.Sequential(
             *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, bias=False),
             *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, bias=False))
+
+        self.passthrough_layer = nn.Sequential(*conv_sequence(layout[-2][0], layout[-2][0] // passthrough_ratio,
+                                                              act_layer, norm_layer, drop_layer, conv_layer,
+                                                              kernel_size=1, bias=False),
+                                               ConcatDownsample2d(scale_factor=2))
 
         self.block6 = nn.Sequential(
             *conv_sequence(layout[-1][0] + layout[-2][0] // passthrough_ratio * 2 ** 2, layout[-1][0],
@@ -362,20 +358,15 @@ class YOLOv2(_YOLO):
 
         init_module(self, 'leaky_relu')
 
-    def _fwd_hook(self, module, input, output):
-        self.passthrough = output
-
     @property
     def num_anchors(self):
         return self.anchors.shape[0]
 
-    def _format_outputs(self, x, img_h, img_w):
+    def _format_outputs(self, x):
         """Formats convolutional layer output
 
         Args:
             x (torch.Tensor[N, num_anchors * (5 + num_classes), H, W]): output tensor
-            img_h (int): input image height
-            img_w (int): input image width
 
         Returns:
             torch.Tensor[N, H, W, num_anchors, 4]: relative coordinates in format (x, y, w, h)
@@ -405,11 +396,9 @@ class YOLOv2(_YOLO):
 
     def _forward(self, x):
 
-        out = self.backbone(x)
+        out, passthrough = self.backbone(x)
         # Downsample the feature map by stacking adjacent features on the channel dimension
-        passthrough = self.passthrough_layer(self.passthrough)
-        # Clear the hook
-        self.passthrough = None
+        passthrough = self.passthrough_layer(passthrough)
 
         out = self.block5(out)
         # Stack the downsampled feature map on the channel dimension
@@ -440,7 +429,7 @@ class YOLOv2(_YOLO):
         out = self._forward(x)
 
         # B * H * W * num_anchors
-        b_coords, b_o, b_scores = self._format_outputs(out, *x.shape[-2:])
+        b_coords, b_o, b_scores = self._format_outputs(out)
 
         if self.training:
             # Update losses

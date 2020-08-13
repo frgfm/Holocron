@@ -265,7 +265,14 @@ class NNTester(unittest.TestCase):
         with torch.no_grad():
             out = mod(x)
         self.assertTrue(torch.equal(out, x))
-        self.assertNotEqual(out.data_ptr, x.data_ptr)
+        self.assertEqual(out.data_ptr, x.data_ptr)
+
+        # Check inference mode
+        mod = dropblock.DropBlock2d(1., 3, inplace=False).eval()
+
+        with torch.no_grad():
+            out = mod(x)
+        self.assertTrue(torch.equal(out, x))
 
         # Check inplace
         mod = dropblock.DropBlock2d(1., 3, inplace=True)

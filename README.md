@@ -65,7 +65,7 @@ conda install -c frgfm pylocron
 
 ##### Main features
 
-- Classification: [Res2Net](https://arxiv.org/abs/1904.01169) (based on the great [implementation](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/res2net.py) from Ross Wightman), [darknet24](https://pjreddie.com/media/files/papers/yolo_1.pdf), [darknet19](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [darknet53](https://pjreddie.com/media/files/papers/YOLOv3.pdf), [ResNet](https://arxiv.org/abs/1512.03385), [ResNeXt](https://arxiv.org/abs/1611.05431), [TridentNet](https://arxiv.org/abs/1901.01892), [PyConvResNet](https://arxiv.org/abs/2006.11538), [ReXNet](https://arxiv.org/abs/2007.00992).
+- Classification: [Res2Net](https://arxiv.org/abs/1904.01169) (based on the great [implementation](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/res2net.py) from Ross Wightman), [Darknet-24](https://pjreddie.com/media/files/papers/yolo_1.pdf), [Darknet-19](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [Darknet-53](https://pjreddie.com/media/files/papers/YOLOv3.pdf), [CSPDarknet-53](<https://arxiv.org/abs/1911.11929>), [ResNet](https://arxiv.org/abs/1512.03385), [ResNeXt](https://arxiv.org/abs/1611.05431), [TridentNet](https://arxiv.org/abs/1901.01892), [PyConvResNet](https://arxiv.org/abs/2006.11538), [ReXNet](https://arxiv.org/abs/2007.00992).
 - Detection: [YOLOv1](https://pjreddie.com/media/files/papers/yolo_1.pdf), [YOLOv2](https://pjreddie.com/media/files/papers/YOLO9000.pdf)
 - Segmentation: [U-Net](https://arxiv.org/abs/1505.04597), [UNet++](https://arxiv.org/abs/1807.10165), [UNet3+](https://arxiv.org/abs/2004.08790)
 
@@ -81,15 +81,7 @@ conda install -c frgfm pylocron
 
 - Optimizer: [LARS](https://arxiv.org/abs/1708.03888), [Lamb](https://arxiv.org/abs/1904.00962), [RAdam](https://arxiv.org/abs/1908.03265), [TAdam](https://arxiv.org/pdf/2003.00179.pdf) and customized versions (RaLars)
 - Optimizer wrapper: [Lookahead](https://arxiv.org/abs/1907.08610), Scout (experimental)
-- Scheduler: [OneCycleScheduler](https://arxiv.org/abs/1803.09820)
-
-##### Usage
-
-You can use the `OneCycleScheduler` just like any other LR scheduler of pytorch. Please note that it is designed to take step at every iteration. Over the full training, the learning rate should look like:
-
-![onecycle](static/images/onecycle.png)
-
-Here two different parameter groups have been made to illustrate the effect of the scheduler. This implementation was made before PyTorch officially had an [implementation](https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.OneCycleLR). For better support, it is recommended to consider the PyTorch version.
+- Scheduler: [OneCycleScheduler](https://arxiv.org/abs/1803.09820) *(this implementation was made before PyTorch officially had an [implementation](https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.OneCycleLR), for better support it is advised to consider the official PyTorch version)*
 
 
 

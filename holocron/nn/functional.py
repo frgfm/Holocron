@@ -352,7 +352,7 @@ def add2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, norma
     return _xcorrNd(_addNd, x, weight, bias, stride, padding, dilation, groups, normalize_slices, eps)
 
 
-def dropblock2d(x, drop_prob, block_size, inplace=False):
+def dropblock2d(x, drop_prob, block_size, inplace=False, training=True):
     """Implements the dropblock operation from `"DropBlock: A regularization method for convolutional networks"
     <https://arxiv.org/pdf/1810.12890.pdf>`_
 
@@ -360,7 +360,11 @@ def dropblock2d(x, drop_prob, block_size, inplace=False):
         drop_prob (float): probability of dropping activation value
         block_size (int): size of each block that is expended from the sampled mask
         inplace (bool, optional): whether the operation should be done inplace
+        training (bool, optional): whether the input should be processed in training mode
     """
+
+    if not training or drop_prob == 0:
+        return x
 
     # Sample a mask for the centers of blocks that will be dropped
     mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= drop_prob).to(dtype=torch.float32)
