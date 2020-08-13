@@ -502,6 +502,40 @@ class PAN(nn.Module):
         return self.convs(out)
 
 
+class Neck(nn.Module):
+    def __init__(self, in_planes, act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+        super().__init__()
+
+        self.fpn = nn.Sequential(
+            *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(in_planes[0] // 2, in_planes[0], act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            SPP([5, 9, 13]),
+            *conv_sequence(4 * in_planes[0] // 2, in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(in_planes[0] // 2, in_planes[0], act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False)
+        )
+
+        self.pan1 = PAN(in_planes[1], act_layer, norm_layer, drop_layer, conv_layer)
+        self.pan2 = PAN(in_planes[2], act_layer, norm_layer, drop_layer, conv_layer)
+
+
+    def forward(self, feats):
+
+        out = self.fpn(feats[2])
+
+        aux1 = self.pan1(out, feats[1])
+        aux2 = self.pan2(aux1, feats[0])
+
+        return aux2, aux1, out
+
+
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
 
     if pretrained:
