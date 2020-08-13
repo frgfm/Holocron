@@ -89,9 +89,9 @@ conda install -c frgfm pylocron
 
 The project is currently under development, here are the objectives for the next releases:
 
-- [ ] Standardize models: standardize models by task.
+- [x] Standardize models: standardize models by task.
+- [x] Reference scripts: add reference training scripts
 - [ ] Speed benchmark: compare `holocron.nn` functions execution speed.
-- [ ] Reference scripts: add reference training scripts
 
 
 
