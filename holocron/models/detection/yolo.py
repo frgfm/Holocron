@@ -525,7 +525,6 @@ class Neck(nn.Module):
         self.pan1 = PAN(in_planes[1], act_layer, norm_layer, drop_layer, conv_layer)
         self.pan2 = PAN(in_planes[2], act_layer, norm_layer, drop_layer, conv_layer)
 
-
     def forward(self, feats):
 
         out = self.fpn(feats[2])
