@@ -154,6 +154,6 @@ def box_ciou(boxes1, boxes2):
 
     # Check
     _filter = (v != 0) & (iou != 0)
-    ciou_loss[_filter].addcdiv_(1, v[_filter] ** 2, 1 - iou[_filter] + v[_filter])
+    ciou_loss[_filter].addcdiv_(v[_filter] ** 2, 1 - iou[_filter] + v[_filter])
 
     return ciou_loss
