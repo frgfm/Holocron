@@ -244,7 +244,7 @@ class YoloLayer(nn.Module):
                  lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05):
         super().__init__()
         self.num_classes = num_classes
-        self.scaled_anchors = torch.tensor([[e / stride for e in anchor] for anchor in anchors], dtype=torch.float32)
+        self.register_buffer('scaled_anchors', torch.tensor([[e / stride for e in anchor] for anchor in anchors], dtype=torch.float32))
         self.stride = stride
 
         self.rpn_nms_thresh = rpn_nms_thresh
