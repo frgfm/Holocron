@@ -114,8 +114,12 @@ class YOLOv4(nn.Module):
         # self.head = Yolov4Head(output_ch, n_classes, inference)
         self.head = Yolov4Head(num_classes, anchors)
 
-    def forward(self, input):
-        out = self.backbone(input)
+    def forward(self, x, gt_boxes=None, gt_labels=None):
+
+        if not isinstance(x, torch.Tensor):
+            x = torch.stack(x, dim=0)
+
+        out = self.backbone(x)
 
         x20, x13, x6 = self.neck(out)
 
