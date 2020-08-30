@@ -328,7 +328,7 @@ class YoloLayer(nn.Module):
 
         return detections
 
-    def _build_targets(b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels):
+    def _build_targets(self, b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels):
 
         b, h, w, num_anchors, num_classes = b_scores.shape
 
@@ -395,8 +395,7 @@ class YoloLayer(nn.Module):
         return dict(obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum'),
                     noobj_loss=self.lambda_noobj * F.mse_loss(b_o[~obj_mask], target_o[~obj_mask], reduction='sum'),
                     bbox_loss=self.lambda_coords * (xy_loss + wh_loss),
-                    clf_loss=F.binary_cross_entropy_with_logits(b_scores[obj_mask], target_scores[obj_mask],
-                                                                reduction='sum'))
+                    clf_loss=F.binary_cross_entropy(b_scores[obj_mask], target_scores[obj_mask], reduction='sum'))
 
     def forward(self, output, gt_boxes=None, gt_labels=None):
 
