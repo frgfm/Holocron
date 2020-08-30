@@ -6,10 +6,63 @@ Bounding box operations
 
 import math
 import torch
-from torchvision.ops.boxes import box_iou
+from torchvision.ops.boxes import box_iou, box_area
 
 
-__all__ = ['box_diou', 'box_ciou']
+__all__ = ['box_giou', 'diou_loss', 'ciou_loss']
+
+
+def _box_iou(boxes1, boxes2):
+    # from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py
+    area1 = box_area(boxes1)
+    area2 = box_area(boxes2)
+
+    lt = torch.max(boxes1[:, None, :2], boxes2[:, :2])  # [N,M,2]
+    rb = torch.min(boxes1[:, None, 2:], boxes2[:, 2:])  # [N,M,2]
+
+    wh = (rb - lt).clamp(min=0)  # [N,M,2]
+    inter = wh[:, :, 0] * wh[:, :, 1]  # [N,M]
+
+    union = area1[:, None] + area2 - inter
+
+    iou = inter / union
+    return iou, union
+
+
+def box_giou(boxes1, boxes2):
+    """Computes the Generalized-IoU as described in `"Generalized Intersection over Union: A Metric and A Loss
+    for Bounding Box Regression" <https://arxiv.org/pdf/1902.09630.pdf>`_. This implementation was adapted
+    from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py
+
+    The generalized IoU is defined as follows:
+
+    .. math::
+        GIoU = IoU - \\frac{|C - A \\cup B|}{|C|}
+
+    where :math:`IoU` is the Intersection over Union,
+    :math:`A \\cup B` is the area of the boxes' union,
+    and :math:`C` is the area of the smallest enclosing box covering the two boxes.
+
+    Args:
+        boxes1 (torch.Tensor[M, 4]): bounding boxes
+        boxes2 (torch.Tensor[N, 4]): bounding boxes
+
+    Returns:
+        torch.Tensor[M, N]: Generalized-IoU
+    """
+    # degenerate boxes gives inf / nan results
+    # so do an early check
+    if torch.any(boxes1[:, 2:] < boxes1[:, :2]) or torch.any(boxes2[:, 2:] < boxes2[:, :2]):
+        raise AssertionError('Incorrect coordinate format')
+    iou, union = _box_iou(boxes1, boxes2)
+
+    lt = torch.min(boxes1[:, None, :2], boxes2[:, :2])
+    rb = torch.max(boxes1[:, None, 2:], boxes2[:, 2:])
+
+    wh = (rb - lt).clamp(min=0)  # [N,M,2]
+    area = wh[:, :, 0] * wh[:, :, 1]
+
+    return iou - (area - union) / area
 
 
 def iou_penalty(boxes1, boxes2):
@@ -50,7 +103,7 @@ def iou_penalty(boxes1, boxes2):
     return center_dist2 / c2
 
 
-def box_diou(boxes1, boxes2):
+def diou_loss(boxes1, boxes2):
     """Computes the Distance-IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
     Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_.
 
@@ -106,7 +159,7 @@ def aspect_ratio_consistency(boxes1, boxes2):
     return v
 
 
-def box_ciou(boxes1, boxes2):
+def ciou_loss(boxes1, boxes2):
     """Computes the Complete IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
     Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_.
 
