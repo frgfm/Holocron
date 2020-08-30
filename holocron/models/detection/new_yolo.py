@@ -15,6 +15,7 @@ from torchvision.models.utils import load_state_dict_from_url
 from ..utils import conv_sequence
 from ..darknet import DarknetBodyV4, default_cfgs as dark_cfgs
 from holocron.ops.boxes import ciou_loss
+from holocron.nn import Mish, DropBlock2d
 
 
 __all__ = ['YOLOv4', 'yolov4', 'SPP', 'PAN', 'Neck']
@@ -92,9 +93,11 @@ class YOLOv4(nn.Module):
             norm_layer = nn.BatchNorm2d
         if backbone_norm_layer is None:
             backbone_norm_layer = norm_layer
+        if drop_layer is None:
+            drop_layer = DropBlock2d
 
         # backbone
-        self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, act_layer,
+        self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, Mish(),
                                       backbone_norm_layer, drop_layer, conv_layer)
         # neck
         self.neck = Neck([1024, 512, 256], act_layer, norm_layer, drop_layer, conv_layer)
