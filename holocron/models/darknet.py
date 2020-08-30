@@ -14,7 +14,7 @@ from torchvision.models.utils import load_state_dict_from_url
 from ..nn.init import init_module
 from .utils import conv_sequence
 from .resnet import _ResBlock
-from holocron.nn import Mish, DropBlock2d
+from holocron.nn import Mish, DropBlock2d, GlobalAvgPool2d
 
 
 __all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'DarknetV4', 'darknet24', 'darknet19', 'darknet53', 'cspdarknet53']
@@ -73,7 +73,7 @@ class DarknetV1(nn.Sequential):
         super().__init__(OrderedDict([
             ('features', DarknetBodyV1(layout, in_channels, stem_channels,
                                        act_layer, norm_layer, drop_layer, conv_layer)),
-            ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
+            ('pool', GlobalAvgPool2d(flatten=True)),
             ('classifier', nn.Linear(layout[2][-1], num_classes))]))
 
         init_module(self, 'leaky_relu')
@@ -139,7 +139,7 @@ class DarknetV2(nn.Sequential):
             ('features', DarknetBodyV2(layout, in_channels, stem_channels, False,
                                        act_layer, norm_layer, drop_layer, conv_layer)),
             ('classifier', nn.Conv2d(layout[-1][0], num_classes, 1)),
-            ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten()))]))
+            ('pool', GlobalAvgPool2d(flatten=True))]))
 
         init_module(self, 'leaky_relu')
 
@@ -208,7 +208,7 @@ class DarknetV3(nn.Sequential):
         super().__init__(OrderedDict([
             ('features', DarknetBodyV3(layout, in_channels, stem_channels,
                                        act_layer, norm_layer, drop_layer, conv_layer)),
-            ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
+            ('pool', GlobalAvgPool2d(flatten=True)),
             ('classifier', nn.Linear(layout[-1][0], num_classes))]))
 
         init_module(self, 'leaky_relu')
@@ -297,7 +297,7 @@ class DarknetV4(nn.Sequential):
         super().__init__(OrderedDict([
             ('features', DarknetBodyV4(layout, in_channels, stem_channels, num_features,
                                        act_layer, norm_layer, drop_layer, conv_layer)),
-            ('global_pool', nn.Sequential(nn.AdaptiveAvgPool2d((1, 1)), nn.Flatten())),
+            ('pool', GlobalAvgPool2d(flatten=True)),
             ('classifier', nn.Linear(layout[-1][0], num_classes))]))
 
         init_module(self, 'leaky_relu')
