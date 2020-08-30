@@ -14,18 +14,20 @@ from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.models.utils import load_state_dict_from_url
 
 from ..utils import conv_sequence
-from ...nn import ConcatDownsample2d
-from ...nn.init import init_module
-from ..darknet import DarknetBodyV1, DarknetBodyV2, default_cfgs as dark_cfgs
+from ..darknet import DarknetBodyV1, DarknetBodyV2, DarknetBodyV4, default_cfgs as dark_cfgs
+from holocron.ops.boxes import ciou_loss
+from holocron.nn import ConcatDownsample2d, Mish, DropBlock2d, init
 
 
-__all__ = ['YOLOv1', 'YOLOv2', 'yolov1', 'yolov2']
+__all__ = ['YOLOv1', 'YOLOv2', 'YOLOv4', 'yolov1', 'yolov2', 'yolov4', 'SPP', 'PAN', 'Neck']
 
 
 default_cfgs = {
     'yolov1': {'arch': 'YOLOv1', 'backbone': dark_cfgs['darknet24'],
                'url': None},
     'yolov2': {'arch': 'YOLOv2', 'backbone': dark_cfgs['darknet19'],
+               'url': None},
+    'yolov4': {'arch': 'YOLOv4', 'backbone': dark_cfgs['cspdarknet53'],
                'url': None},
 }
 
@@ -452,11 +454,10 @@ class SAM(nn.Module):
         self.conv = nn.Conv2d(in_channels, 1, 1)
 
     def forward(self, x):
-
         return x * torch.sigmoid(self.conv(x))
 
 
-class SPP(nn.Module):
+class SPP(nn.ModuleList):
     """SPP layer from `"Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition"
     <https://arxiv.org/pdf/1406.4729.pdf>`_.
 
@@ -465,20 +466,18 @@ class SPP(nn.Module):
     """
 
     def __init__(self, kernel_sizes):
-        super().__init__()
-        self.maxpools = nn.ModuleList([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2)
-                                       for k_size in kernel_sizes])
+        super().__init__([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2)
+                          for k_size in kernel_sizes])
 
     def forward(self, x):
         feats = [x]
-        for pool_layer in self.maxpools:
+        for pool_layer in self:
             feats.append(pool_layer(x))
         return torch.cat(feats, dim=1)
 
 
 class PAN(nn.Module):
-    """PAN layer from `"Path Aggregation Network for Instance Segmentation" <https://arxiv.org/pdf/1803.01534.pdf>`_
-    modified in `"YOLOv4: Optimal Speed and Accuracy of Object Detection" <https://arxiv.org/pdf/2004.10934.pdf>`_.
+    """PAN layer from `"Path Aggregation Network for Instance Segmentation" <https://arxiv.org/pdf/1803.01534.pdf>`_.
 
     Args:
         in_channels (int): input channels
@@ -550,6 +549,295 @@ class Neck(nn.Module):
         aux2 = self.pan2(aux1, feats[0])
 
         return aux2, aux1, out
+
+
+class YoloLayer(nn.Module):
+    """Scale-specific part of YoloHead"""
+    def __init__(self, anchors=[], num_classes=80, stride=32, scale_xy=1, iou_thresh=0.213, eps=1e-16,
+                 lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05):
+        super().__init__()
+        self.num_classes = num_classes
+        self.register_buffer('scaled_anchors',
+                             torch.tensor([[e / stride for e in anchor] for anchor in anchors], dtype=torch.float32))
+        self.stride = stride
+
+        self.rpn_nms_thresh = rpn_nms_thresh
+        self.box_score_thresh = box_score_thresh
+        self.lambda_noobj = lambda_noobj
+        self.lambda_coords = lambda_coords
+
+        # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1150
+        self.scale_xy = scale_xy
+        # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1151
+        self.iou_thresh = iou_thresh
+
+        self.eps = eps
+
+    def _format_outputs(self, output):
+        b, _, h, w = output.shape
+
+        # B x (num_anchors * (5 + num_classes)) x H x W --> B x H x W x num_anchors x (5 + num_classes)
+        output = output.reshape(b, len(self.scaled_anchors), 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
+
+        # Box center
+        c_x = torch.arange(w, dtype=torch.float32, device=output.device).view(1, 1, -1, 1)
+        c_y = torch.arange(h, dtype=torch.float32, device=output.device).view(1, -1, 1, 1)
+
+        b_xy = self.scale_xy * torch.sigmoid(output[..., :2]) - 0.5 * (self.scale_xy - 1)
+        b_xy[..., 0] += c_x
+        b_xy[..., 1] += c_y
+
+        # Box dimension
+        b_wh = torch.exp(output[..., 2:4]) * self.scaled_anchors.view(1, 1, 1, -1, 2)
+
+        top_left = b_xy - 0.5 * b_wh
+        bot_right = top_left + b_wh
+        boxes = torch.cat((top_left, bot_right), dim=-1)
+        # Coords relative to whole image
+        boxes[..., [0, 2]] /= w
+        boxes[..., [1, 3]] /= h
+        boxes = boxes.clamp_(0, 1)
+
+        # Objectness
+        b_o = torch.sigmoid(output[..., 4])
+        # Classification scores
+        b_scores = torch.sigmoid(output[..., 5:])
+
+        return boxes, b_o, b_scores
+
+    @staticmethod
+    def post_process(boxes, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
+
+        detections = []
+        for idx in range(b_o.shape[0]):
+
+            coords = torch.zeros((0, 4), dtype=torch.float32, device=b_o.device)
+            scores = torch.zeros(0, dtype=torch.float32, device=b_o.device)
+            labels = torch.zeros(0, dtype=torch.long, device=b_o.device)
+
+            # Objectness filter
+            if torch.any(b_o[idx] >= 0.5):
+                coords = boxes[idx, b_o[idx] >= 0.5]
+                scores = b_scores[idx, b_o[idx] >= 0.5].max(dim=-1)
+                labels = scores.indices
+                # Multiply by the objectness
+                scores = scores.values * b_o[idx, b_o[idx] >= 0.5]
+
+                # Confidence threshold
+                coords = coords[scores >= box_score_thresh]
+                labels = labels[scores >= box_score_thresh]
+                scores = scores[scores >= box_score_thresh]
+                coords = coords.clamp_(0, 1)
+                # NMS
+                kept_idxs = nms(coords, scores, iou_threshold=rpn_nms_thresh)
+                coords = coords[kept_idxs]
+                scores = scores[kept_idxs]
+                labels = labels[kept_idxs]
+
+            detections.append(dict(boxes=coords, scores=scores, labels=labels))
+
+        return detections
+
+    def _build_targets(self, pred_boxes, b_o, b_scores, gt_boxes, gt_labels):
+
+        b, h, w, num_anchors, num_classes = b_scores.shape
+
+        # Target formatting
+        target_o = torch.zeros((b, h, w, num_anchors), device=b_o.device)
+        target_scores = torch.zeros((b, h, w, num_anchors, self.num_classes), device=b_o.device)
+        obj_mask = torch.zeros((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
+        noobj_mask = torch.ones((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
+
+        # GT coords --> left, top, width, height
+        _boxes = torch.cat(gt_boxes, dim=0)
+        gt_centers = _boxes[..., [0, 2, 1, 3]].view(-1, 2, 2).mean(dim=-1).to(dtype=torch.long)
+
+        target_selection = torch.tensor([_idx for _idx, _boxes in enumerate(gt_boxes) for _ in range(_boxes.shape[0])],
+                                        dtype=torch.long, device=b_o.device)
+        if target_selection.shape[0] > 0:
+
+            # Assign boxes
+            obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0]] = True
+            noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0]] = False
+
+            # B * cells * predictors * info
+            for idx in range(b):
+
+                if gt_boxes[idx].shape[0] > 0:
+
+                    # IoU with cells that enclose the GT centers
+                    gt_ious, gt_idxs = box_iou(pred_boxes[idx, obj_mask[idx]], gt_boxes[idx]).max(dim=1)
+
+                    # Remove boxes with IoU below threshold
+                    selection_mask = (gt_ious > 0).view(-1, 3)
+                    if torch.any(~selection_mask):
+                        _centers = gt_centers[target_selection == idx][gt_idxs[selection_mask]]
+                        obj_mask[idx, _centers[..., 1], _centers[..., 0], torch.where(~selection_mask)[1]] = False
+
+                    if torch.any(selection_mask):
+                        # Objectness target
+                        target_o[idx, obj_mask[idx]] = gt_ious[selection_mask.view(-1)]
+                        # Classification target
+                        target_scores[idx, obj_mask[idx], gt_idxs[selection_mask.view(-1)]] = 1
+
+        return target_o, target_scores, obj_mask, noobj_mask
+
+    def _compute_losses(self, pred_boxes, b_o, b_scores, gt_boxes, gt_labels, ignore_high_iou=False):
+
+        target_o, target_scores, obj_mask, noobj_mask = self._build_targets(pred_boxes, b_o, b_scores,
+                                                                            gt_boxes, gt_labels)
+
+        # Bbox regression
+        bbox_loss = torch.zeros(1, device=b_o.device)
+        for idx, _target_boxes in enumerate(gt_boxes):
+            if _target_boxes.shape[0] > 0:
+                bbox_loss += ciou_loss(pred_boxes[idx, obj_mask[idx]], _target_boxes).min(dim=1).values.sum()
+
+        return dict(obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum'),
+                    noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum(),
+                    bbox_loss=self.lambda_coords * bbox_loss,
+                    clf_loss=F.binary_cross_entropy(b_scores[obj_mask], target_scores[obj_mask], reduction='sum'))
+
+    def forward(self, output, gt_boxes=None, gt_labels=None):
+
+        if self.training and (gt_boxes is None or gt_labels is None):
+            raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
+
+        pred_boxes, b_o, b_scores = self._format_outputs(output)
+
+        if self.training:
+            return self._compute_losses(pred_boxes, b_o, b_scores, gt_boxes, gt_labels)
+        else:
+            # cf. https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/tool/yolo_layer.py#L117
+            return self.post_process(pred_boxes, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
+
+
+class Yolov4Head(nn.Module):
+    def __init__(self, num_classes=80, anchors=None,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+
+        # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1143
+        if anchors is None:
+            anchors = [[[12, 16], [19, 36], [40, 28]],
+                       [[36, 75], [76, 55], [72, 146]],
+                       [[142, 110], [192, 243], [459, 401]]]
+        if len(anchors) != 3:
+            raise AssertionError(f"The number of anchors is expected to be 3. received: {len(anchors)}")
+        self.anchors = anchors
+
+        super().__init__()
+
+        self.head1 = nn.Sequential(
+            *conv_sequence(128, 256, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(256, (5 + num_classes) * 3, act_layer, None, drop_layer, conv_layer,
+                           kernel_size=1, bias=True))
+
+        self.yolo1 = YoloLayer(self.anchors[0], num_classes=num_classes, stride=8, scale_xy=1.2)
+
+        self.pre_head2 = nn.Sequential(*conv_sequence(128, 256, act_layer, norm_layer, drop_layer, conv_layer,
+                                                      kernel_size=3, padding=1, stride=2, bias=False))
+        self.head2_1 = nn.Sequential(
+            *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False))
+        self.head2_2 = nn.Sequential(
+            *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(512, (5 + num_classes) * 3, act_layer, None, drop_layer, conv_layer,
+                           kernel_size=1, bias=True))
+
+        self.yolo2 = YoloLayer(self.anchors[1], num_classes=num_classes, stride=16, scale_xy=1.1)
+
+        self.pre_head3 = nn.Sequential(*conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
+                                                      kernel_size=3, padding=1, stride=2, bias=False))
+        self.head3 = nn.Sequential(
+            *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1, bias=False),
+            *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=1, bias=False),
+            *conv_sequence(1024, (5 + num_classes) * 3, act_layer, None, drop_layer, conv_layer,
+                           kernel_size=1, bias=True))
+
+        self.yolo3 = YoloLayer(self.anchors[2], num_classes=num_classes, stride=32, scale_xy=1.05)
+
+    def forward(self, feats, gt_boxes=None, gt_labels=None):
+        o1 = self.head1(feats[0])
+
+        h2 = self.pre_head2(feats[0])
+        h2 = torch.cat([h2, feats[1]], dim=1)
+        h2 = self.head2_1(h2)
+        o2 = self.head2_2(h2)
+
+        h3 = self.pre_head3(h2)
+        h3 = torch.cat([h3, feats[2]], dim=1)
+        o3 = self.head3(h3)
+
+        # YOLO output
+        y1 = self.yolo1(o1, gt_boxes, gt_labels)
+        y2 = self.yolo2(o2, gt_boxes, gt_labels)
+        y3 = self.yolo3(o3, gt_boxes, gt_labels)
+
+        if not self.training:
+
+            detections = [dict(boxes=torch.cat((det1['boxes'], det2['boxes'], det3['boxes']), dim=0),
+                               scores=torch.cat((det1['scores'], det2['scores'], det3['scores']), dim=0),
+                               labels=torch.cat((det1['labels'], det2['labels'], det3['labels']), dim=0))
+                          for det1, det2, det3 in zip(y1, y2, y3)]
+            return detections
+
+        else:
+
+            return {k: y1[k] + y2[k] + y3[k] for k in y1.keys()}
+
+
+class YOLOv4(nn.Module):
+    def __init__(self, layout, num_classes=80, in_channels=3, stem_channels=32, anchors=None,
+                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None, backbone_norm_layer=None):
+        super().__init__()
+
+        if act_layer is None:
+            act_layer = nn.LeakyReLU(0.1, inplace=True)
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        if backbone_norm_layer is None:
+            backbone_norm_layer = norm_layer
+        if drop_layer is None:
+            drop_layer = DropBlock2d
+
+        # backbone
+        self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, Mish(),
+                                      backbone_norm_layer, drop_layer, conv_layer)
+        # neck
+        self.neck = Neck([1024, 512, 256], act_layer, norm_layer, drop_layer, conv_layer)
+        # head
+        self.head = Yolov4Head(num_classes, anchors)
+
+    def forward(self, x, gt_boxes=None, gt_labels=None):
+
+        if not isinstance(x, torch.Tensor):
+            x = torch.stack(x, dim=0)
+
+        out = self.backbone(x)
+
+        x20, x13, x6 = self.neck(out)
+
+        return self.head((x20, x13, x6), gt_boxes, gt_labels)
 
 
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
@@ -688,3 +976,28 @@ def yolov2(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
         kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
 
     return _yolo('yolov2', pretrained, progress, pretrained_backbone, **kwargs)
+
+
+def yolov4(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
+    """YOLOv4 model from
+    `"YOLOv4: Optimal Speed and Accuracy of Object Detection" <https://arxiv.org/pdf/2004.10934.pdf>`_.
+
+    YOLOv4 is an improvement on YOLOv3 that includes many changes including: the usage of `DropBlock
+    <https://arxiv.org/pdf/1810.12890.pdf>`_ regularization, `Mish <https://arxiv.org/pdf/1908.08681.pdf>`_ activation,
+    `CSP <https://arxiv.org/pdf/2004.10934.pdf>`_ and `SAM <https://arxiv.org/pdf/1807.06521.pdf>`_ in the
+    backbone, `SPP <https://arxiv.org/pdf/1406.4729.pdf>`_ and `PAN <https://arxiv.org/pdf/1803.01534.pdf>`_ in the
+    neck.
+
+    Args:
+        pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
+        progress (bool, optional): If True, displays a progress bar of the download to stderr
+        pretrained_backbone (bool, optional): If True, backbone parameters will have been pretrained on Imagenette
+
+    Returns:
+        torch.nn.Module: detection module
+    """
+
+    if pretrained_backbone:
+        kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
+
+    return _yolo('yolov4', pretrained, progress, pretrained_backbone, **kwargs)
