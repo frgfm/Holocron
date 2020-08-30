@@ -116,7 +116,7 @@ class YOLOv4(nn.Module):
         return self.head((x20, x13, x6), gt_boxes, gt_labels)
 
 
-class SPP(nn.Module):
+class SPP(nn.ModuleList):
     """SPP layer from `"Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition"
     <https://arxiv.org/pdf/1406.4729.pdf>`_.
 
@@ -125,13 +125,12 @@ class SPP(nn.Module):
     """
 
     def __init__(self, kernel_sizes):
-        super().__init__()
-        self.maxpools = nn.ModuleList([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2)
-                                       for k_size in kernel_sizes])
+        super().__init__([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2)
+                          for k_size in kernel_sizes])
 
     def forward(self, x):
         feats = [x]
-        for pool_layer in self.maxpools:
+        for pool_layer in self:
             feats.append(pool_layer(x))
         return torch.cat(feats, dim=1)
 
