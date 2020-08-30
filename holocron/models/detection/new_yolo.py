@@ -123,7 +123,7 @@ class YOLOv4(nn.Module):
 
         x20, x13, x6 = self.neck(out)
 
-        return self.head((x20, x13, x6))
+        return self.head((x20, x13, x6), gt_boxes, gt_labels)
 
 
 class SPP(nn.Module):
@@ -474,7 +474,7 @@ class Yolov4Head(nn.Module):
 
         self.yolo3 = YoloLayer(self.anchors[2], num_classes=num_classes, stride=32, scale_xy=1.05)
 
-    def forward(self, feats):
+    def forward(self, feats, gt_boxes=None, gt_labels=None):
         o1 = self.head1(feats[0])
 
         h2 = self.pre_head2(feats[0])
@@ -486,11 +486,10 @@ class Yolov4Head(nn.Module):
         h3 = torch.cat([h3, feats[2]], dim=1)
         o3 = self.head3(h3)
 
-
         # YOLO output
-        y1 = self.yolo1(o1)
-        y2 = self.yolo2(o2)
-        y3 = self.yolo3(o3)
+        y1 = self.yolo1(o1, gt_boxes, gt_labels)
+        y2 = self.yolo2(o2, gt_boxes, gt_labels)
+        y3 = self.yolo3(o3, gt_boxes, gt_labels)
 
         if not self.training:
 
