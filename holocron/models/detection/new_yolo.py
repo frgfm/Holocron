@@ -263,29 +263,27 @@ class YoloLayer(nn.Module):
         b_xy = self.scale_xy * torch.sigmoid(output[..., :2]) - 0.5 * (self.scale_xy - 1)
         b_xy[..., 0] += c_x
         b_xy[..., 1] += c_y
-        # Normalize
-        b_xy[..., 0] /= w
-        b_xy[..., 1] /= h
 
         # Box dimension
         b_wh = torch.exp(output[..., 2:4]) * self.scaled_anchors.view(1, 1, 1, -1, 2)
-        # Normalize
-        b_wh[..., 0] /= w
-        b_wh[..., 1] /= h
+
+        top_left = b_xy - 0.5 * b_wh
+        bot_right = top_left + b_wh
+        boxes = torch.cat((top_left, bot_right), dim=-1)
+        # Coords relative to whole image
+        boxes[..., [0, 2]] /= w
+        boxes[..., [1, 3]] /= h
+        boxes = boxes.clamp_(0, 1)
 
         # Objectness
         b_o = torch.sigmoid(output[..., 4])
         # Classification scores
         b_scores = torch.sigmoid(output[..., 5:])
 
-        return b_xy, b_wh, b_o, b_scores
+        return boxes, b_o, b_scores
 
     @staticmethod
-    def post_process(b_xy, b_wh, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
-
-        top_left = b_xy - 0.5 * b_wh
-        bot_right = top_left + b_wh
-        boxes = torch.cat((top_left, bot_right), dim=-1)
+    def post_process(boxes, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
 
         detections = []
         for idx in range(b_o.shape[0]):
@@ -317,77 +315,64 @@ class YoloLayer(nn.Module):
 
         return detections
 
-    def _build_targets(self, b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels):
+    def _build_targets(self, pred_boxes, b_o, b_scores, gt_boxes, gt_labels):
 
         b, h, w, num_anchors, num_classes = b_scores.shape
 
         # Target formatting
-        target_xy = torch.zeros((b, h, w, num_anchors, 2), device=b_o.device)
-        target_wh = torch.zeros((b, h, w, num_anchors, 2), device=b_o.device)
         target_o = torch.zeros((b, h, w, num_anchors), device=b_o.device)
         target_scores = torch.zeros((b, h, w, num_anchors, self.num_classes), device=b_o.device)
         obj_mask = torch.zeros((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
+        noobj_mask = torch.ones((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
 
         # GT coords --> left, top, width, height
+        _boxes = torch.cat(gt_boxes, dim=0)
+        gt_centers = _boxes[..., [0, 2, 1, 3]].view(-1, 2, 2).mean(dim=-1).to(dtype=torch.long)
+
         target_selection = torch.tensor([_idx for _idx, _boxes in enumerate(gt_boxes) for _ in range(_boxes.shape[0])],
                                         dtype=torch.long, device=b_o.device)
         if target_selection.shape[0] > 0:
-            gt_boxes = torch.cat(gt_boxes, dim=0)
-            gt_boxes[..., [0, 2]] *= w
-            gt_boxes[..., [1, 3]] *= h
-            gt_xy = 0.5 * (gt_boxes[..., 2:] + gt_boxes[..., :2]) / self.stride
-            gt_idxs = gt_xy.to(dtype=torch.int16)
-            gt_wh = (gt_boxes[..., 2:] - gt_boxes[..., :2]) / self.stride
 
-            # Batched anchor selection
-            anchor_selection = box_iou(torch.cat((-gt_wh, gt_wh), dim=-1),
-                                       torch.cat((-self.scaled_anchors, self.scaled_anchors), dim=-1)).argmax(dim=1)
-
-            # Prediction coords --> left, top, right, bot
-            top_left = b_xy - 0.5 * b_wh
-            bot_right = top_left + b_wh
-            pred_boxes = torch.cat((top_left, bot_right), dim=-1)
+            # Assign boxes
+            obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0]] = True
+            noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0]] = False
 
             # B * cells * predictors * info
             for idx in range(b):
 
-                target_mask = target_selection == idx
-                if torch.any(target_mask):
+                if gt_boxes[idx].shape[0] > 0:
 
-                    # CIoU
-                    # gt_cious = ciou_loss(pred_boxes[idx].view(-1, 4), gt_boxes[target_mask]).max(dim=1).values
+                    # IoU with cells that enclose the GT centers
+                    gt_ious, gt_idxs = box_iou(pred_boxes[idx, obj_mask[idx]], gt_boxes[idx]).max(dim=1)
 
-                    gt_ious, gt_idxs = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[target_mask]).max(dim=1)
+                    # Remove boxes with IoU below threshold
+                    selection_mask = (gt_ious > 0).view(-1, 3)
+                    if torch.any(~selection_mask):
+                        _centers = gt_centers[target_selection == idx][gt_idxs[selection_mask]]
+                        obj_mask[idx, _centers[..., 1], _centers[..., 0], torch.where(~selection_mask)[1]] = False
 
-                    # Assign boxes
-                    _gt_mask = gt_ious > 0
-                    pred_mask = _gt_mask.view(b_o.shape[1:])
-                    obj_mask[idx, pred_mask] = True
-                    gt_ious, gt_idxs = gt_ious[_gt_mask], gt_idxs[_gt_mask]
-                    # Objectness target
-                    target_o[idx, pred_mask] = gt_ious
-                    # Boxes that are not matched --> 0
-                    target_xy[idx, pred_mask] = gt_xy[target_mask][gt_idxs] - gt_xy[target_mask][gt_idxs].floor()
-                    target_wh[idx, pred_mask] = torch.log(gt_wh[target_mask][gt_idxs] /
-                                                          self.scaled_anchors[anchor_selection[target_mask][gt_idxs]] +
-                                                          self.eps)
-                    # Classification target
-                    target_scores[idx, pred_mask, gt_labels[idx][gt_idxs]] = 1
+                    if torch.any(selection_mask):
+                        # Objectness target
+                        target_o[idx, obj_mask[idx]] = gt_ious[selection_mask.view(-1)]
+                        # Classification target
+                        target_scores[idx, obj_mask[idx], gt_idxs[selection_mask.view(-1)]] = 1
 
-        return target_xy, target_wh, target_o, target_scores, obj_mask
+        return target_o, target_scores, obj_mask, noobj_mask
 
-    def _compute_losses(self, b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels, ignore_high_iou=False):
+    def _compute_losses(self, pred_boxes, b_o, b_scores, gt_boxes, gt_labels, ignore_high_iou=False):
 
-        target_xy, target_wh, target_o, target_scores, obj_mask = self._build_targets(b_xy, b_wh, b_o, b_scores,
-                                                                                      gt_boxes, gt_labels)
+        target_o, target_scores, obj_mask, noobj_mask = self._build_targets(pred_boxes, b_o, b_scores,
+                                                                            gt_boxes, gt_labels)
 
-        # Replace with CIoU
-        xy_loss = F.mse_loss(b_xy[obj_mask], target_xy[obj_mask], reduction='sum')
-        wh_loss = F.mse_loss(b_wh[obj_mask], target_wh[obj_mask], reduction='sum')
+        # Bbox regression
+        bbox_loss = torch.zeros(1, device=b_o.device)
+        for idx, _target_boxes in enumerate(gt_boxes):
+            if _target_boxes.shape[0] > 0:
+                bbox_loss += ciou_loss(pred_boxes[idx, obj_mask[idx]], _target_boxes).min(dim=1).values.sum()
 
         return dict(obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum'),
-                    noobj_loss=self.lambda_noobj * F.mse_loss(b_o[~obj_mask], target_o[~obj_mask], reduction='sum'),
-                    bbox_loss=self.lambda_coords * (xy_loss + wh_loss),
+                    noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum(),
+                    bbox_loss=self.lambda_coords * bbox_loss,
                     clf_loss=F.binary_cross_entropy(b_scores[obj_mask], target_scores[obj_mask], reduction='sum'))
 
     def forward(self, output, gt_boxes=None, gt_labels=None):
@@ -395,13 +380,13 @@ class YoloLayer(nn.Module):
         if self.training and (gt_boxes is None or gt_labels is None):
             raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
 
-        b_xy, b_wh, b_o, b_scores = self._format_outputs(output)
+        pred_boxes, b_o, b_scores = self._format_outputs(output)
 
         if self.training:
-            return self._compute_losses(b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels)
+            return self._compute_losses(pred_boxes, b_o, b_scores, gt_boxes, gt_labels)
         else:
             # cf. https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/tool/yolo_layer.py#L117
-            return self.post_process(b_xy, b_wh, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
+            return self.post_process(pred_boxes, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
 class Yolov4Head(nn.Module):
