@@ -8,12 +8,13 @@ import sys
 import logging
 import torch
 import torch.nn as nn
-from torchvision.ops.boxes import nms
+import torch.nn.functional as F
+from torchvision.ops.boxes import nms, box_iou
 from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.models.utils import load_state_dict_from_url
 from ..utils import conv_sequence
 from ..darknet import DarknetBodyV4, default_cfgs as dark_cfgs
-from holocron.ops.boxes import box_ciou
+from holocron.ops.boxes import ciou_loss
 
 
 __all__ = ['YOLOv4', 'yolov4', 'SPP', 'PAN', 'Neck']
@@ -329,70 +330,73 @@ class YoloLayer(nn.Module):
 
     def _build_targets(b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels):
 
-        return
+        b, h, w, num_anchors, num_classes = b_scores.shape
+
+        # Target formatting
+        target_xy = torch.zeros((b, h, w, num_anchors, 2), device=b_o.device)
+        target_wh = torch.zeros((b, h, w, num_anchors, 2), device=b_o.device)
+        target_o = torch.zeros((b, h, w, num_anchors), device=b_o.device)
+        target_scores = torch.zeros((b, h, w, num_anchors, self.num_classes), device=b_o.device)
+        obj_mask = torch.zeros((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
+
+        # GT coords --> left, top, width, height
+        target_selection = torch.tensor([_idx for _idx, _boxes in enumerate(gt_boxes) for _ in range(_boxes.shape[0])],
+                                        dtype=torch.long, device=b_o.device)
+        if target_selection.shape[0] > 0:
+            gt_boxes = torch.cat(gt_boxes, dim=0)
+            gt_boxes[..., [0, 2]] *= w
+            gt_boxes[..., [1, 3]] *= h
+            gt_xy = 0.5 * (gt_boxes[..., 2:] + gt_boxes[..., :2]) / self.stride
+            gt_idxs = gt_xy.to(dtype=torch.int16)
+            gt_wh = (gt_boxes[..., 2:] - gt_boxes[..., :2]) / self.stride
+
+            # Batched anchor selection
+            anchor_selection = box_iou(torch.cat((torch.zeros_like(gt_wh), gt_wh), dim=-1),
+                                       torch.cat((torch.zeros_like(self.scaled_anchors), self.scaled_anchors), dim=-1)).argmax(dim=1)
+
+            # Prediction coords --> left, top, right, bot
+            top_left = b_xy - 0.5 * b_wh
+            bot_right = top_left + b_wh
+            pred_boxes = torch.cat((top_left, bot_right), dim=-1)
+
+            # B * cells * predictors * info
+            for idx in range(b):
+
+                target_mask = target_selection == idx
+                if torch.any(target_mask):
+
+                    # gt_ious, gt_idxs = box_ciou(pred_boxes[idx].view(-1, 4), gt_boxes[target_mask]).max(dim=1)
+                    gt_ious, gt_idxs = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[target_mask]).max(dim=1)
+
+                    # Assign boxes
+                    pred_mask = (gt_ious > 0).view(b_o.shape[1:])
+                    obj_mask[idx, pred_mask] = True
+                    gt_ious, gt_idxs = gt_ious[gt_ious > 0], gt_idxs[gt_ious > 0]
+                    # Objectness target
+                    target_o[idx, pred_mask] = gt_ious
+                    # Boxes that are not matched --> 0
+                    target_xy[idx, pred_mask] = gt_xy[target_mask][gt_idxs] - gt_xy[target_mask][gt_idxs].floor()
+                    target_wh[idx, pred_mask] = torch.log(gt_wh[target_mask][gt_idxs] /
+                                                          self.scaled_anchors[anchor_selection[target_mask][gt_idxs]] +
+                                                          self.eps)
+                    # Classification target
+                    target_scores[idx, pred_mask, gt_labels[idx][gt_idxs]] = 1
+
+        return target_xy, target_wh, target_o, target_scores, obj_mask
 
     def _compute_losses(self, b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels, ignore_high_iou=False):
 
-        b, h, w, num_anchors, num_classes = b_scores.shape
+        target_xy, target_wh, target_o, target_scores, obj_mask = self._build_targets(b_xy, b_wh, b_o, b_scores,
+                                                                                      gt_boxes, gt_labels)
 
-        # Prediction coords --> left, top, right, bot
-        top_left = b_xy - 0.5 * b_wh
-        bot_right = top_left + b_wh
-        boxes = torch.cat((top_left, bot_right), dim=-1)
+        xy_loss = F.mse_loss(b_xy[obj_mask], target_xy[obj_mask], reduction='sum')
+        wh_loss = F.mse_loss(b_wh[obj_mask], target_wh[obj_mask], reduction='sum')
 
-        # GT coords --> left, top, width, height
-        target_selection = torch.tensor([_idx for _idx, _boxes in gt_boxes for _ in range(_boxes.shape[0])],
-                                        dtype=torch.long, device=b_o.device)
-        gt_boxes = torch.cat(gt_boxes, dim=0)
-        gt_xy = 0.5 * (gt_boxes[..., 2:] + gt_boxes[..., :2]) / self.stride
-        gt_idxs = gt_wy.to(dtype=torch.int16)
-        gt_wh = (gt_boxes[..., 2:] - gt_boxes[:2]) / self.stride
-
-        # Target formatting
-        target_xy = gt_xy - gt_xy.floor()
-
-        # Initialize losses
-        obj_loss = torch.zeros(1, device=b_o.device)
-        noobj_loss = torch.zeros(1, device=b_o.device)
-        bbox_loss = torch.zeros(1, device=b_o.device)
-        clf_loss = torch.zeros(1, device=b_o.device)
-
-        # Batched anchor selection
-        anchor_selection = box_ciou(gt_wh, self.scaled_anchors.to(device=b_o.device)).argmax(dim=1)
-
-        # B * cells * predictors * info
-        for idx in range(b):
-
-            target_mask = target_selection == idx
-            # if gt_wh[idx].shape[0] > 0:
-            if torch.any(target_mask):
-                # Anchor selection
-                # FIXME: can be batched
-                # anchor_selection = box_ciou(gt_wh[idx], self.scaled_anchors.to(device=b_o.device)).argmax(dim=1)
-                anchor_selection[target_mask]
-
-                #
-                pred_ious = box_ciou(boxes[idx].view(-1, 4), gt_boxes[idx]).max(dim=1).values
-                ######################
-                pred_mask = (pred_ious > self.iou_thresh).view(b_o.shape)
-
-                # Format for YOLO loss
-
-                # target_xy[] =
-                target_xy[target_mask]
-                target_wh = torch.log(gt_wh[target_mask] / self.scaled_anchors[anchor_selection[target_mask]] + self.eps)
-
-
-
-
-
-
-
-
-        return dict(obj_loss=obj_loss / pred_boxes.shape[0],
-                    noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
-                    bbox_loss=self.lambda_coords * bbox_loss / pred_boxes.shape[0],
-                    clf_loss=clf_loss / pred_boxes.shape[0])
+        return dict(obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum'),
+                    noobj_loss=self.lambda_noobj * F.mse_loss(b_o[~obj_mask], target_o[~obj_mask], reduction='sum'),
+                    bbox_loss=self.lambda_coords * (xy_loss + wh_loss),
+                    clf_loss=F.binary_cross_entropy_with_logits(b_scores[obj_mask], target_scores[obj_mask],
+                                                                reduction='sum'))
 
     def forward(self, output, gt_boxes=None, gt_labels=None):
 
