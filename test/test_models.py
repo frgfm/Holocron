@@ -63,6 +63,7 @@ class ModelTester(unittest.TestCase):
         self.assertIsInstance(loss, dict)
         for subloss in loss.values():
             self.assertIsInstance(subloss, torch.Tensor)
+            self.assertTrue(subloss.requires_grad)
             self.assertFalse(torch.isnan(subloss))
 
         # Loss computation with no GT
