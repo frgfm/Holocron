@@ -557,7 +557,7 @@ class Neck(nn.Module):
 
 class YoloLayer(nn.Module):
     """Scale-specific part of YoloHead"""
-    def __init__(self, anchors=[], num_classes=80, stride=32, scale_xy=1, iou_thresh=0.213, eps=1e-16,
+    def __init__(self, anchors, num_classes=80, stride=32, scale_xy=1, iou_thresh=0.213, eps=1e-16,
                  lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05):
         super().__init__()
         self.num_classes = num_classes
@@ -644,7 +644,7 @@ class YoloLayer(nn.Module):
 
     def _build_targets(self, pred_boxes, b_o, b_scores, gt_boxes, gt_labels):
 
-        b, h, w, num_anchors, num_classes = b_scores.shape
+        b, h, w, num_anchors = b_o.shape
 
         # Target formatting
         target_o = torch.zeros((b, h, w, num_anchors), device=b_o.device)
