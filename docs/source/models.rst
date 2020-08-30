@@ -112,6 +112,8 @@ YOLO
 
 .. autofunction:: yolov2
 
+.. autofunction:: yolov4
+
 
 Semantic Segmentation
 =====================
