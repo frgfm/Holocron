@@ -340,9 +340,8 @@ class YoloLayer(nn.Module):
             gt_wh = (gt_boxes[..., 2:] - gt_boxes[..., :2]) / self.stride
 
             # Batched anchor selection
-            anchor_selection = box_iou(torch.cat((torch.zeros_like(gt_wh), gt_wh), dim=-1),
-                                       torch.cat((torch.zeros_like(self.scaled_anchors), self.scaled_anchors), dim=-1))
-            anchor_selection = anchor_selection.argmax(dim=1)
+            anchor_selection = box_iou(torch.cat((-gt_wh, gt_wh), dim=-1),
+                                       torch.cat((-self.scaled_anchors, self.scaled_anchors), dim=-1)).argmax(dim=1)
 
             # Prediction coords --> left, top, right, bot
             top_left = b_xy - 0.5 * b_wh
