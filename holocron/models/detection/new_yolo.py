@@ -343,7 +343,7 @@ class YoloLayer(nn.Module):
             # Batched anchor selection
             anchor_selection = box_iou(torch.cat((torch.zeros_like(gt_wh), gt_wh), dim=-1),
                                        torch.cat((torch.zeros_like(self.scaled_anchors), self.scaled_anchors), dim=-1))
-            anchor_selection = anchor_selectrion.argmax(dim=1)
+            anchor_selection = anchor_selection.argmax(dim=1)
 
             # Prediction coords --> left, top, right, bot
             top_left = b_xy - 0.5 * b_wh
