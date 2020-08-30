@@ -220,7 +220,8 @@ class YOLOv1(_YOLO):
         self.lambda_noobj = lambda_noobj
         self.lambda_coords = lambda_coords
 
-        init_module(self, 'leaky_relu')
+        init_module(self.block4, 'leaky_relu')
+        init_module(self.classifier, 'leaky_relu')
 
     def _format_outputs(self, x):
         """Formats convolutional layer output
@@ -354,7 +355,10 @@ class YOLOv2(_YOLO):
         self.lambda_noobj = lambda_noobj
         self.lambda_coords = lambda_coords
 
-        init_module(self, 'leaky_relu')
+        init_module(self.block5, 'leaky_relu')
+        init_module(self.passthrough_layer, 'leaky_relu')
+        init_module(self.block6, 'leaky_relu')
+        init_module(self.head, 'leaky_relu')
 
     @property
     def num_anchors(self):
@@ -827,6 +831,9 @@ class YOLOv4(nn.Module):
         self.neck = Neck([1024, 512, 256], act_layer, norm_layer, drop_layer, conv_layer)
         # head
         self.head = Yolov4Head(num_classes, anchors)
+
+        init_module(self.neck, 'leaky_relu')
+        init_module(self.head, 'leaky_relu')
 
     def forward(self, x, gt_boxes=None, gt_labels=None):
 
