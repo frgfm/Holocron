@@ -111,7 +111,6 @@ class YOLOv4(nn.Module):
         # neck
         self.neck = Neck([1024, 512, 256], act_layer, norm_layer, drop_layer, conv_layer)
         # head
-        # self.head = Yolov4Head(output_ch, n_classes, inference)
         self.head = Yolov4Head(num_classes, anchors)
 
     def forward(self, x, gt_boxes=None, gt_labels=None):
@@ -274,22 +273,20 @@ class YoloLayer(nn.Module):
         b_xy = self.scale_xy * torch.sigmoid(output[..., :2]) - 0.5 * (self.scale_xy - 1)
         b_xy[..., 0] += c_x
         b_xy[..., 1] += c_y
-        b_xy = b_xy.view(b, h * w, -1, 2)
         # Normalize
         b_xy[..., 0] /= w
         b_xy[..., 1] /= h
 
         # Box dimension
-        b_wh = torch.exp(output[..., 2:4]) * self.scaled_anchors.to(device=output.device).view(1, 1, 1, -1, 2)
-        b_wh = b_wh.view(b, h * w, -1, 2)
+        b_wh = torch.exp(output[..., 2:4]) * self.scaled_anchors.view(1, 1, 1, -1, 2)
         # Normalize
         b_wh[..., 0] /= w
         b_wh[..., 1] /= h
 
         # Objectness
-        b_o = torch.sigmoid(output[..., 4]).view(b, h * w, -1)
+        b_o = torch.sigmoid(output[..., 4])
         # Classification scores
-        b_scores = torch.sigmoid(output[..., 5:]).view(b, h * w, -1, self.num_classes)
+        b_scores = torch.sigmoid(output[..., 5:])
 
         return b_xy, b_wh, b_o, b_scores
 
