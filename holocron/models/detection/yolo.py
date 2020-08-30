@@ -16,7 +16,8 @@ from torchvision.models.utils import load_state_dict_from_url
 from ..utils import conv_sequence
 from ..darknet import DarknetBodyV1, DarknetBodyV2, DarknetBodyV4, default_cfgs as dark_cfgs
 from holocron.ops.boxes import ciou_loss
-from holocron.nn import ConcatDownsample2d, Mish, DropBlock2d, init
+from holocron.nn import ConcatDownsample2d, Mish, DropBlock2d
+from holocron.nn.init import init_module
 
 
 __all__ = ['YOLOv1', 'YOLOv2', 'YOLOv4', 'yolov1', 'yolov2', 'yolov4', 'SPP', 'PAN', 'Neck']
