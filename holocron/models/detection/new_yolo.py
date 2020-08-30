@@ -24,7 +24,6 @@ default_cfgs = {
 }
 
 
-
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
 
     if pretrained:
@@ -92,7 +91,6 @@ def yolov4(pretrained=False, progress=True, pretrained_backbone=True, **kwargs):
         kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
 
     return _yolo('yolov4', pretrained, progress, pretrained_backbone, **kwargs)
-
 
 
 class YOLOv4(nn.Module):
@@ -209,7 +207,6 @@ class Neck(nn.Module):
         self.pan1 = PAN(in_planes[1], act_layer, norm_layer, drop_layer, conv_layer)
         self.pan2 = PAN(in_planes[2], act_layer, norm_layer, drop_layer, conv_layer)
 
-
     def forward(self, feats):
 
         out = self.fpn(feats[2])
@@ -298,8 +295,6 @@ class YoloLayer(nn.Module):
         bot_right = top_left + b_wh
         boxes = torch.cat((top_left, bot_right), dim=-1)
 
-        probs = b_o.unsqueeze(-1) * b_scores
-
         detections = []
         for idx in range(b_o.shape[0]):
 
@@ -333,7 +328,6 @@ class YoloLayer(nn.Module):
     def _build_targets(b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels):
 
         return
-
 
     def _compute_losses(self, b_xy, b_wh, b_o, b_scores, gt_boxes, gt_labels, ignore_high_iou=False):
 
@@ -431,8 +425,7 @@ class Yolov4Head(nn.Module):
             *conv_sequence(128, 256, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, bias=False),
             *conv_sequence(256, (5 + num_classes) * 3, act_layer, None, drop_layer, conv_layer,
-                           kernel_size=1, bias=True)
-            )
+                           kernel_size=1, bias=True))
 
         self.yolo1 = YoloLayer(self.anchors[0], num_classes=num_classes, stride=8, scale_xy=1.2)
 
@@ -448,14 +441,12 @@ class Yolov4Head(nn.Module):
             *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, bias=False),
             *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False)
-            )
+                           kernel_size=1, bias=False))
         self.head2_2 = nn.Sequential(
             *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, bias=False),
             *conv_sequence(512, (5 + num_classes) * 3, act_layer, None, drop_layer, conv_layer,
-                           kernel_size=1, bias=True)
-            )
+                           kernel_size=1, bias=True))
 
         self.yolo2 = YoloLayer(self.anchors[1], num_classes=num_classes, stride=16, scale_xy=1.1)
 
@@ -475,8 +466,7 @@ class Yolov4Head(nn.Module):
             *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=1, bias=False),
             *conv_sequence(1024, (5 + num_classes) * 3, act_layer, None, drop_layer, conv_layer,
-                           kernel_size=1, bias=True)
-        )
+                           kernel_size=1, bias=True))
 
         self.yolo3 = YoloLayer(self.anchors[2], num_classes=num_classes, stride=32, scale_xy=1.05)
 
