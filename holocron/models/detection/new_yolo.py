@@ -355,13 +355,16 @@ class YoloLayer(nn.Module):
                 target_mask = target_selection == idx
                 if torch.any(target_mask):
 
-                    # gt_ious, gt_idxs = box_ciou(pred_boxes[idx].view(-1, 4), gt_boxes[target_mask]).max(dim=1)
+                    # CIoU
+                    # gt_cious = ciou_loss(pred_boxes[idx].view(-1, 4), gt_boxes[target_mask]).max(dim=1).values
+
                     gt_ious, gt_idxs = box_iou(pred_boxes[idx].view(-1, 4), gt_boxes[target_mask]).max(dim=1)
 
                     # Assign boxes
-                    pred_mask = (gt_ious > 0).view(b_o.shape[1:])
+                    _gt_mask = gt_ious > 0
+                    pred_mask = _gt_mask.view(b_o.shape[1:])
                     obj_mask[idx, pred_mask] = True
-                    gt_ious, gt_idxs = gt_ious[gt_ious > 0], gt_idxs[gt_ious > 0]
+                    gt_ious, gt_idxs = gt_ious[_gt_mask], gt_idxs[_gt_mask]
                     # Objectness target
                     target_o[idx, pred_mask] = gt_ious
                     # Boxes that are not matched --> 0
@@ -379,6 +382,7 @@ class YoloLayer(nn.Module):
         target_xy, target_wh, target_o, target_scores, obj_mask = self._build_targets(b_xy, b_wh, b_o, b_scores,
                                                                                       gt_boxes, gt_labels)
 
+        # Replace with CIoU
         xy_loss = F.mse_loss(b_xy[obj_mask], target_xy[obj_mask], reduction='sum')
         wh_loss = F.mse_loss(b_wh[obj_mask], target_wh[obj_mask], reduction='sum')
 
