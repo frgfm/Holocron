@@ -780,6 +780,14 @@ class Yolov4Head(nn.Module):
                            kernel_size=1, bias=True))
 
         self.yolo3 = YoloLayer(self.anchors[2], num_classes=num_classes, stride=32, scale_xy=1.05)
+        init_module(self, 'leaky_relu')
+        # Zero init
+        self.head1[-1].weight.data.zero_()
+        self.head1[-1].bias.data.zero_()
+        self.head2_2[-1].weight.data.zero_()
+        self.head2_2[-1].bias.data.zero_()
+        self.head3[-1].weight.data.zero_()
+        self.head3[-1].bias.data.zero_()
 
     def forward(self, feats, gt_boxes=None, gt_labels=None):
         o1 = self.head1(feats[0])
