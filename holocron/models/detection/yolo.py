@@ -664,8 +664,8 @@ class YoloLayer(nn.Module):
 
             # Anchors IoU
             gt_wh = _boxes[:, 2:] - _boxes[:, :2]
-            anchor_iou, anchor_idxs = box_iou(torch.cat((-gt_wh, gt_wh), dim=-1),
-                                              torch.cat((-self.anchors, self.anchors), dim=-1)).max(dim=1)
+            anchor_idxs = box_iou(torch.cat((-gt_wh, gt_wh), dim=-1),
+                                  torch.cat((-self.anchors, self.anchors), dim=-1)).argmax(dim=1)
 
             # Assign boxes
             obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = True
