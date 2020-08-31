@@ -581,7 +581,7 @@ class YoloLayer(nn.Module):
         b, _, h, w = output.shape
 
         # B x (num_anchors * (5 + num_classes)) x H x W --> B x H x W x num_anchors x (5 + num_classes)
-        output = output.reshape(b, len(self.scaled_anchors), 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
+        output = output.reshape(b, len(self.anchors), 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
 
         # Box center
         c_x = torch.arange(w, dtype=torch.float32, device=output.device).view(1, 1, -1, 1)
@@ -590,17 +590,15 @@ class YoloLayer(nn.Module):
         b_xy = self.scale_xy * torch.sigmoid(output[..., :2]) - 0.5 * (self.scale_xy - 1)
         b_xy[..., 0] += c_x
         b_xy[..., 1] += c_y
+        b_xy[..., 0] /= w
+        b_xy[..., 1] /= h
 
         # Box dimension
-        b_wh = torch.exp(output[..., 2:4]) * self.scaled_anchors.view(1, 1, 1, -1, 2)
+        b_wh = torch.exp(output[..., 2:4]) * self.anchors.view(1, 1, 1, -1, 2)
 
         top_left = b_xy - 0.5 * b_wh
         bot_right = top_left + b_wh
         boxes = torch.cat((top_left, bot_right), dim=-1)
-        # Coords relative to whole image
-        boxes[..., [0, 2]] /= w
-        boxes[..., [1, 3]] /= h
-        boxes = boxes.clamp_(0, 1)
 
         # Objectness
         b_o = torch.sigmoid(output[..., 4])
@@ -612,6 +610,7 @@ class YoloLayer(nn.Module):
     @staticmethod
     def post_process(boxes, b_o, b_scores, rpn_nms_thresh=0.7, box_score_thresh=0.05):
 
+        boxes = boxes.clamp_(0, 1)
         detections = []
         for idx in range(b_o.shape[0]):
 
