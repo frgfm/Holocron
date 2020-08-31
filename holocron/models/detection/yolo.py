@@ -563,7 +563,7 @@ class YoloLayer(nn.Module):
                  lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05):
         super().__init__()
         self.num_classes = num_classes
-        self.register_buffer('anchors', torch.tensor(anchors, dtype=torch.float32) / 608)
+        self.register_buffer('anchors', anchors)
 
         self.rpn_nms_thresh = rpn_nms_thresh
         self.box_score_thresh = box_score_thresh
