@@ -719,8 +719,8 @@ class Yolov4Head(nn.Module):
         # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1143
         if anchors is None:
             anchors = torch.tensor([[[12, 16], [19, 36], [40, 28]],
-                       [[36, 75], [76, 55], [72, 146]],
-                       [[142, 110], [192, 243], [459, 401]]], dtype=torch.float32) / 608
+                                   [[36, 75], [76, 55], [72, 146]],
+                                   [[142, 110], [192, 243], [459, 401]]], dtype=torch.float32) / 608
         elif not isinstance(anchors, torch.Tensor):
             anchors = torch.tensor(anchors, dtype=torch.float32)
 
