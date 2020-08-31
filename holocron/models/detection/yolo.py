@@ -559,7 +559,7 @@ class Neck(nn.Module):
 
 class YoloLayer(nn.Module):
     """Scale-specific part of YoloHead"""
-    def __init__(self, anchors, num_classes=80, scale_xy=1, iou_thresh=0.213, eps=1e-16,
+    def __init__(self, anchors, num_classes=80, scale_xy=1, iou_thresh=0.213,
                  lambda_noobj=0.5, lambda_coords=5., rpn_nms_thresh=0.7, box_score_thresh=0.05):
         super().__init__()
         self.num_classes = num_classes
@@ -575,7 +575,8 @@ class YoloLayer(nn.Module):
         # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1151
         self.iou_thresh = iou_thresh
 
-        self.eps = eps
+    def extra_repr(self):
+        return f"num_classes={self.num_classes}, scale_xy={self.scale_xy}"
 
     def _format_outputs(self, output):
         b, _, h, w = output.shape
