@@ -653,35 +653,32 @@ class YoloLayer(nn.Module):
 
         # GT coords --> left, top, width, height
         _boxes = torch.cat(gt_boxes, dim=0)
-        gt_centers = _boxes[..., [0, 2, 1, 3]].view(-1, 2, 2).mean(dim=-1).to(dtype=torch.long)
+        gt_centers = _boxes[..., [0, 2, 1, 3]].view(-1, 2, 2).mean(dim=-1)
+        gt_centers[:, 0] *= w
+        gt_centers[:, 1] *= h
+        gt_centers = gt_centers.to(dtype=torch.long)
 
         target_selection = torch.tensor([_idx for _idx, _boxes in enumerate(gt_boxes) for _ in range(_boxes.shape[0])],
                                         dtype=torch.long, device=b_o.device)
         if target_selection.shape[0] > 0:
 
-            # Assign boxes
-            obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0]] = True
-            noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0]] = False
+            # Anchors IoU
+            gt_wh = _boxes[:, 2:] - _boxes[:, :2]
+            anchor_iou, anchor_idxs = box_iou(torch.cat((-gt_wh, gt_wh), dim=-1),
+                                              torch.cat((-self.anchors, self.anchors), dim=-1)).max(dim=1)
 
+            # Assign boxes
+            obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = True
+            noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = False
             # B * cells * predictors * info
             for idx in range(b):
-
                 if gt_boxes[idx].shape[0] > 0:
-
                     # IoU with cells that enclose the GT centers
                     gt_ious, gt_idxs = box_iou(pred_boxes[idx, obj_mask[idx]], gt_boxes[idx]).max(dim=1)
-
-                    # Remove boxes with IoU below threshold
-                    selection_mask = (gt_ious > 0).view(-1, 3)
-                    if torch.any(~selection_mask):
-                        _centers = gt_centers[target_selection == idx][gt_idxs[selection_mask]]
-                        obj_mask[idx, _centers[..., 1], _centers[..., 0], torch.where(~selection_mask)[1]] = False
-
-                    if torch.any(selection_mask):
-                        # Objectness target
-                        target_o[idx, obj_mask[idx]] = gt_ious[selection_mask.view(-1)]
-                        # Classification target
-                        target_scores[idx, obj_mask[idx], gt_idxs[selection_mask.view(-1)]] = 1
+                    # Objectness target
+                    target_o[idx, obj_mask[idx]] = gt_ious
+                    # Classification target
+                    target_scores[idx, obj_mask[idx], gt_labels[idx][gt_idxs]] = 1.
 
         return target_o, target_scores, obj_mask, noobj_mask
 
