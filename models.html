@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models &mdash; holocron 0.1.3a0+e133e05-git documentation</title>
+  <title>holocron.models &mdash; holocron 0.1.3a0+5e54efa-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.3a0+e133e05
+                0.1.3a0+5e54efa
               </div>
             
           
@@ -811,6 +811,32 @@ anchor boxes of that cell, has the highest IoU with the j-th box else 0,
 as class <span class="math notranslate nohighlight">\(c\)</span>,
 and <span class="math notranslate nohighlight">\(\hat{p}_{ij}(c)\)</span> is the predicted probability of class <span class="math notranslate nohighlight">\(c\)</span> for the j-th anchor box
 in the i-th cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, displays a progress bar of the download to stderr</p></li>
+<li><p><strong>pretrained_backbone</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, backbone parameters will have been pretrained on Imagenette</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>detection module</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.yolov4">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">yolov4</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/detection/yolo.html#yolov4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.yolov4" title="Permalink to this definition">¶</a></dt>
+<dd><p>YOLOv4 model from
+<a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">“YOLOv4: Optimal Speed and Accuracy of Object Detection”</a>.</p>
+<p>YOLOv4 is an improvement on YOLOv3 that includes many changes including: the usage of <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">DropBlock</a> regularization, <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">Mish</a> activation,
+<a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">CSP</a> and <a class="reference external" href="https://arxiv.org/pdf/1807.06521.pdf">SAM</a> in the
+backbone, <a class="reference external" href="https://arxiv.org/pdf/1406.4729.pdf">SPP</a> and <a class="reference external" href="https://arxiv.org/pdf/1803.01534.pdf">PAN</a> in the
+neck.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

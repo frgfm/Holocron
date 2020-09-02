@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.resnet &mdash; holocron 0.1.3a0+e133e05-git documentation</title>
+  <title>holocron.models.resnet &mdash; holocron 0.1.3a0+5e54efa-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.3a0+e133e05
+                0.1.3a0+5e54efa
               </div>
             
           
@@ -225,7 +225,7 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">torchvision.models.utils</span> <span class="kn">import</span> <span class="n">load_state_dict_from_url</span>
-<span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">init</span>
+<span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">init</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span>
 
 
@@ -375,8 +375,7 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([</span>
             <span class="p">(</span><span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_layers</span><span class="p">)),</span>
-            <span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))),</span>
-            <span class="p">(</span><span class="s1">&#39;flatten&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
             <span class="p">(</span><span class="s1">&#39;head&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_repeats</span> <span class="o">*</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">))]))</span>
 
         <span class="c1"># Init all layers</span>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.ops.boxes &mdash; holocron 0.1.3a0+e133e05-git documentation</title>
+  <title>holocron.ops.boxes &mdash; holocron 0.1.3a0+5e54efa-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.3a0+e133e05
+                0.1.3a0+5e54efa
               </div>
             
           
@@ -222,10 +222,63 @@
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span>
+<span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span><span class="p">,</span> <span class="n">box_area</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;box_diou&#39;</span><span class="p">,</span> <span class="s1">&#39;box_ciou&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;box_giou&#39;</span><span class="p">,</span> <span class="s1">&#39;diou_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;ciou_loss&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_box_iou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
+    <span class="c1"># from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py</span>
+    <span class="n">area1</span> <span class="o">=</span> <span class="n">box_area</span><span class="p">(</span><span class="n">boxes1</span><span class="p">)</span>
+    <span class="n">area2</span> <span class="o">=</span> <span class="n">box_area</span><span class="p">(</span><span class="n">boxes2</span><span class="p">)</span>
+
+    <span class="n">lt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">boxes1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">boxes2</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># [N,M,2]</span>
+    <span class="n">rb</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">boxes1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">:],</span> <span class="n">boxes2</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:])</span>  <span class="c1"># [N,M,2]</span>
+
+    <span class="n">wh</span> <span class="o">=</span> <span class="p">(</span><span class="n">rb</span> <span class="o">-</span> <span class="n">lt</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># [N,M,2]</span>
+    <span class="n">inter</span> <span class="o">=</span> <span class="n">wh</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">wh</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># [N,M]</span>
+
+    <span class="n">union</span> <span class="o">=</span> <span class="n">area1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">area2</span> <span class="o">-</span> <span class="n">inter</span>
+
+    <span class="n">iou</span> <span class="o">=</span> <span class="n">inter</span> <span class="o">/</span> <span class="n">union</span>
+    <span class="k">return</span> <span class="n">iou</span><span class="p">,</span> <span class="n">union</span>
+
+
+<div class="viewcode-block" id="box_giou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_giou">[docs]</a><span class="k">def</span> <span class="nf">box_giou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the Generalized-IoU as described in `&quot;Generalized Intersection over Union: A Metric and A Loss</span>
+<span class="sd">    for Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1902.09630.pdf&gt;`_. This implementation was adapted</span>
+<span class="sd">    from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py</span>
+
+<span class="sd">    The generalized IoU is defined as follows:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        GIoU = IoU - \\frac{|C - A \\cup B|}{|C|}</span>
+
+<span class="sd">    where :math:`IoU` is the Intersection over Union,</span>
+<span class="sd">    :math:`A \\cup B` is the area of the boxes&#39; union,</span>
+<span class="sd">    and :math:`C` is the area of the smallest enclosing box covering the two boxes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
+<span class="sd">        boxes2 (torch.Tensor[N, 4]): bounding boxes</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor[M, N]: Generalized-IoU</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># degenerate boxes gives inf / nan results</span>
+    <span class="c1"># so do an early check</span>
+    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">boxes1</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">&lt;</span> <span class="n">boxes1</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">boxes2</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">&lt;</span> <span class="n">boxes2</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;Incorrect coordinate format&#39;</span><span class="p">)</span>
+    <span class="n">iou</span><span class="p">,</span> <span class="n">union</span> <span class="o">=</span> <span class="n">_box_iou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">)</span>
+
+    <span class="n">lt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">boxes1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">boxes2</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">rb</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">boxes1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">:],</span> <span class="n">boxes2</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:])</span>
+
+    <span class="n">wh</span> <span class="o">=</span> <span class="p">(</span><span class="n">rb</span> <span class="o">-</span> <span class="n">lt</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># [N,M,2]</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">wh</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">wh</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">iou</span> <span class="o">-</span> <span class="p">(</span><span class="n">area</span> <span class="o">-</span> <span class="n">union</span><span class="p">)</span> <span class="o">/</span> <span class="n">area</span></div>
 
 
 <span class="k">def</span> <span class="nf">iou_penalty</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
@@ -266,7 +319,7 @@
     <span class="k">return</span> <span class="n">center_dist2</span> <span class="o">/</span> <span class="n">c2</span>
 
 
-<div class="viewcode-block" id="box_diou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_diou">[docs]</a><span class="k">def</span> <span class="nf">box_diou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
+<div class="viewcode-block" id="diou_loss"><a class="viewcode-back" href="../../../ops.html#holocron.ops.diou_loss">[docs]</a><span class="k">def</span> <span class="nf">diou_loss</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Computes the Distance-IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
 <span class="sd">    Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1911.08287.pdf&gt;`_.</span>
 
@@ -322,7 +375,7 @@
     <span class="k">return</span> <span class="n">v</span>
 
 
-<div class="viewcode-block" id="box_ciou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_ciou">[docs]</a><span class="k">def</span> <span class="nf">box_ciou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
+<div class="viewcode-block" id="ciou_loss"><a class="viewcode-back" href="../../../ops.html#holocron.ops.ciou_loss">[docs]</a><span class="k">def</span> <span class="nf">ciou_loss</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Computes the Complete IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
 <span class="sd">    Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1911.08287.pdf&gt;`_.</span>
 
@@ -370,7 +423,7 @@
 
     <span class="c1"># Check</span>
     <span class="n">_filter</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iou</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">ciou_loss</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span><span class="o">.</span><span class="n">addcdiv_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">iou</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">])</span>
+    <span class="n">ciou_loss</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span><span class="o">.</span><span class="n">addcdiv_</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">iou</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">ciou_loss</span></div>
 </pre></div>
