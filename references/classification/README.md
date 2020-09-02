@@ -42,13 +42,14 @@ python train.py imagenette2-320/ --model darknet53 --lr 5e-3 -b 32 -j 16 --epoch
 
 ## Model zoo
 
-| Model      | Accuracy@1 (Err) | Param # | MACs  | Interpolation | Image size |
-| ---------- | ---------------- | ------- | ----- | ------------- | ---------- |
-| darknet53  | 91.52 (8.48)     | 40.60M  | 7.13G | bilinear      | 256        |
-| darknet19  | 90.47 (9.53)     | 19.83M  | 2.71G | bilinear      | 224        |
-| darnet24   | 87.69 (12.31)    | 22.40M  | 4.21G | bilinear      | 224        |
-| resnet50   | 84.36 (15.64)    | 23.53M  |       | bilinear      | 224        |
-| rexnet1_0x | 90.01 (9.99)     | 4.80M   | 0.42G | bilinear      | 224        |
-| rexnet1_3x | 90.32 (9.68)     | 7.56M   | 0.68G | bilinear      | 224        |
-| rexnet2_2x | 91.75 (8.25)     | 19.49M  | 1.88G | bilinear      | 224        |
+| Model        | Accuracy@1 (Err) | Param # | MACs  | Interpolation | Image size |
+| ------------ | ---------------- | ------- | ----- | ------------- | ---------- |
+| cspdarknet53 |                  | 26.63M  | 6.57G | bilinear      | 256        |
+| darknet53    | 91.46 (8.54)     | 40.60M  | 9.31G | bilinear      | 256        |
+| darknet19    | 91.11 (8.89)     | 19.83M  | 2.75G | bilinear      | 224        |
+| darnet24     | 88.25 (11.75)    | 22.40M  | 4.21G | bilinear      | 224        |
+| resnet50     | 84.36 (15.64)    | 23.53M  |       | bilinear      | 224        |
+| rexnet1_0x   | 90.01 (9.99)     | 4.80M   | 0.42G | bilinear      | 224        |
+| rexnet1_3x   | 90.32 (9.68)     | 7.56M   | 0.68G | bilinear      | 224        |
+| rexnet2_2x   | 91.75 (8.25)     | 19.49M  | 1.88G | bilinear      | 224        |
 

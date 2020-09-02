@@ -31,11 +31,11 @@ class OpsTester(unittest.TestCase):
         self.assertEqual(penalty[0, 3].item(), 100 ** 2 / 200 ** 2)
         self.assertEqual(penalty[0, 2].item(), penalty[2, 3].item())
 
-    def test_box_diou(self):
+    def test_diou_loss(self):
 
         boxes = _get_boxes()
 
-        diou = ops.boxes.box_diou(boxes, boxes)
+        diou = ops.boxes.diou_loss(boxes, boxes)
 
         # Check shape
         self.assertEqual(diou.shape, (boxes.shape[0], boxes.shape[0]))
@@ -46,6 +46,22 @@ class OpsTester(unittest.TestCase):
         self.assertEqual(diou[0, 1].item(), 1 - 0.25 + 25 ** 2 / 100 ** 2)
         self.assertEqual(diou[0, 3].item(), 1 + 100 ** 2 / 200 ** 2)
         self.assertEqual(diou[0, 2].item(), diou[2, 3].item())
+
+    def test_box_giou(self):
+
+        boxes = _get_boxes()
+
+        giou = ops.boxes.box_giou(boxes, boxes)
+
+        # Check shape
+        self.assertEqual(giou.shape, (boxes.shape[0], boxes.shape[0]))
+        # Unit tests
+        for idx in range(boxes.shape[0]):
+            self.assertEqual(giou[idx, idx].item(), 1.)
+
+        self.assertEqual(giou[0, 1].item(), 0.25)
+        self.assertEqual(giou[0, 3].item(), - (200 ** 2 - 2 * 100 ** 2) / 200 ** 2)
+        self.assertEqual(giou[0, 2].item(), giou[2, 3].item())
 
     def test_aspect_ratio(self):
 
@@ -61,11 +77,11 @@ class OpsTester(unittest.TestCase):
         self.assertTrue(torch.equal(ops.boxes.aspect_ratio_consistency(boxes, boxes),
                                     torch.zeros(boxes.shape[0], boxes.shape[0])))
 
-    def test_box_ciou(self):
+    def test_ciou_loss(self):
 
         boxes = _get_boxes()
 
-        ciou = ops.boxes.box_ciou(boxes, boxes)
+        ciou = ops.boxes.ciou_loss(boxes, boxes)
 
         # Check shape
         self.assertEqual(ciou.shape, (boxes.shape[0], boxes.shape[0]))

@@ -10,7 +10,7 @@ from math import ceil
 from collections import OrderedDict
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
-from holocron.nn import SiLU, init
+from holocron.nn import SiLU, init, GlobalAvgPool2d
 from .utils import conv_sequence
 
 
@@ -132,8 +132,7 @@ class ReXNet(nn.Sequential):
 
         super().__init__(OrderedDict([
             ('features', nn.Sequential(*_layers)),
-            ('pool', nn.AdaptiveAvgPool2d((1, 1))),
-            ('flatten', nn.Flatten(1)),
+            ('pool', GlobalAvgPool2d(flatten=True)),
             ('head', nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes)))]))
 
 

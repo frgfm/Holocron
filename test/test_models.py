@@ -63,6 +63,7 @@ class ModelTester(unittest.TestCase):
         self.assertIsInstance(loss, dict)
         for subloss in loss.values():
             self.assertIsInstance(subloss, torch.Tensor)
+            self.assertTrue(subloss.requires_grad)
             self.assertFalse(torch.isnan(subloss))
 
         # Loss computation with no GT
@@ -100,7 +101,7 @@ for model_name in ['darknet24', 'darknet19', 'darknet53', 'cspdarknet53',
     setattr(ModelTester, "test_" + model_name, do_test)
 
 
-for model_name, size in [('yolov1', 448), ('yolov2', 416)]:
+for model_name, size in [('yolov1', 448), ('yolov2', 416), ('yolov4', 608)]:
     def do_test(self, model_name=model_name, size=size):
         self._test_detection_model(model_name, size)
 

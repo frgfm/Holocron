@@ -9,7 +9,7 @@ import logging
 from collections import OrderedDict
 import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
-from holocron.nn import init
+from holocron.nn import init, GlobalAvgPool2d
 from .utils import conv_sequence
 
 
@@ -159,8 +159,7 @@ class ResNet(nn.Sequential):
 
         super().__init__(OrderedDict([
             ('features', nn.Sequential(*_layers)),
-            ('pool', nn.AdaptiveAvgPool2d((1, 1))),
-            ('flatten', nn.Flatten(1)),
+            ('pool', GlobalAvgPool2d(flatten=True)),
             ('head', nn.Linear(num_repeats * in_planes, num_classes))]))
 
         # Init all layers
