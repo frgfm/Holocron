@@ -91,7 +91,7 @@ class BlurPool2d(nn.Module):
     def __init__(self, channels, kernel_size=3, stride=2):
         super().__init__()
         self.channels = channels
-        if not kernel_size > 1:
+        if kernel_size <= 1:
             raise AssertionError
         self.kernel_size = kernel_size
         self.stride = stride
