@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.downsample &mdash; holocron 0.1.3a0+50e238c-git documentation</title>
+  <title>holocron.nn.modules.downsample &mdash; holocron 0.1.3a0+db752b6-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.3a0+50e238c
+                0.1.3a0+db752b6
               </div>
             
           
@@ -220,11 +220,12 @@
 <span class="sd">Downsampling modules</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ConcatDownsample2d&#39;</span><span class="p">,</span> <span class="s1">&#39;ConcatDownsample2dJit&#39;</span><span class="p">,</span> <span class="s1">&#39;GlobalAvgPool2d&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ConcatDownsample2d&#39;</span><span class="p">,</span> <span class="s1">&#39;ConcatDownsample2dJit&#39;</span><span class="p">,</span> <span class="s1">&#39;GlobalAvgPool2d&#39;</span><span class="p">,</span> <span class="s1">&#39;BlurPool2d&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="ConcatDownsample2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ConcatDownsample2d">[docs]</a><span class="k">class</span> <span class="nc">ConcatDownsample2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -282,6 +283,55 @@
     <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">inplace_str</span> <span class="o">=</span> <span class="s1">&#39;flatten=True&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
         <span class="k">return</span> <span class="n">inplace_str</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_padding</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">padding</span> <span class="o">=</span> <span class="p">((</span><span class="n">stride</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">dilation</span> <span class="o">*</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">padding</span>
+
+
+<div class="viewcode-block" id="BlurPool2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.BlurPool2d">[docs]</a><span class="k">class</span> <span class="nc">BlurPool2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ross Wightman&#39;s `implementation</span>
+<span class="sd">    &lt;https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/layers/blur_pool.py&gt;`_ of blur pooling</span>
+<span class="sd">    module as described in `&quot;Making Convolutional Networks Shift-Invariant Again&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/1904.11486.pdf&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        channels (int): Number of input channels</span>
+<span class="sd">        kernel_size (int, optional): binomial filter size for blurring. currently supports 3 (default) and 5.</span>
+<span class="sd">        stride (int, optional): downsampling filter stride</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: the transformed tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">channels</span>
+        <span class="k">if</span> <span class="n">kernel_size</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
+        <span class="n">pad_size</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_padding</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span> <span class="o">*</span> <span class="mi">4</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReflectionPad2d</span><span class="p">(</span><span class="n">pad_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">coeffs</span><span class="p">)</span>  <span class="c1"># for torchscript compat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># lazy init by device for DataParallel compat</span>
+
+    <span class="k">def</span> <span class="nf">_create_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">like</span><span class="p">):</span>
+        <span class="n">blur_filter</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeffs</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">like</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">like</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">blur_filter</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="c1"># override nn.Module _apply, reset filter cache if used</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_apply</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_tensor</span><span class="p">):</span>
+        <span class="n">blur_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">input_tensor</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_filter</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">),</span> <span class="n">blur_filter</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">input_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="si">}</span><span class="s2">, kernel_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="si">}</span><span class="s2">, stride=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="si">}</span><span class="s2">&quot;</span></div>
 </pre></div>
 
            </div>

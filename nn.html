@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.3a0+50e238c-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.3a0+db752b6-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.3a0+50e238c
+                0.1.3a0+db752b6
               </div>
             
           
@@ -581,6 +581,28 @@ channels to output channels. Default: 1</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>flatten</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether spatial dimensions should be squeezed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.BlurPool2d">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">BlurPool2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">channels</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#BlurPool2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.BlurPool2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ross Wightman’s <a class="reference external" href="https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/layers/blur_pool.py">implementation</a> of blur pooling
+module as described in <a class="reference external" href="https://arxiv.org/pdf/1904.11486.pdf">“Making Convolutional Networks Shift-Invariant Again”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channels</strong> (<em>python:int</em>) – Number of input channels</p></li>
+<li><p><strong>kernel_size</strong> (<em>python:int</em><em>, </em><em>optional</em>) – binomial filter size for blurring. currently supports 3 (default) and 5.</p></li>
+<li><p><strong>stride</strong> (<em>python:int</em><em>, </em><em>optional</em>) – downsampling filter stride</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the transformed tensor.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
 </dd></dl>
