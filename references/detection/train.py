@@ -19,6 +19,7 @@ from torchvision import transforms
 from torchvision.datasets import VOCDetection
 from torchvision.ops.boxes import box_iou
 from torchvision.transforms import functional as F
+from contiguous_params import ContiguousParams
 
 import holocron
 from transforms import (Compose, VOCTargetTransform, Resize, ImageTransform, CenterCrop, RandomResizedCrop,
@@ -231,17 +232,18 @@ def main(args):
             p.requires_grad_(False)
     model.to(device)
 
+    model_params = ContiguousParams([p for p in model.parameters() if p.requires_grad])
     if args.opt == 'adam':
-        optimizer = torch.optim.Adam([p for p in model.parameters() if p.requires_grad], args.lr,
+        optimizer = torch.optim.Adam(model_params.contiguous(), args.lr,
                                      betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
-        optimizer = holocron.optim.RAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+        optimizer = holocron.optim.RAdam(model_params.contiguous(), args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'ranger':
-        optimizer = Lookahead(holocron.optim.RAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+        optimizer = Lookahead(holocron.optim.RAdam(model_params.contiguous(), args.lr,
                                                    betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
     elif args.opt == 'tadam':
-        optimizer = holocron.optim.TAdam([p for p in model.parameters() if p.requires_grad], args.lr,
+        optimizer = holocron.optim.TAdam(model_params.contiguous(), args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     if args.lr_finder:
@@ -276,6 +278,8 @@ def main(args):
     mb = master_bar(range(args.start_epoch, args.epochs))
     for epoch in mb:
         train_one_epoch(model, optimizer, lr_scheduler, train_loader, device, mb)
+        # Check that the optimizer only applies valid ops.
+        model_params.assert_buffer_is_valid()
         loc_err, clf_err, det_err = evaluate(model, val_loader, device=device)
         mb.main_bar.comment = f"Epoch {args.start_epoch+epoch+1}/{args.start_epoch+args.epochs}"
         mb.write(f"Epoch {args.start_epoch+epoch+1}/{args.start_epoch+args.epochs} - "
