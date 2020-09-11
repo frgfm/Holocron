@@ -58,3 +58,5 @@ Downsampling
 .. autoclass:: ConcatDownsample2d
 
 .. autoclass:: GlobalAvgPool2d
+
+.. autoclass:: BlurPool2d
