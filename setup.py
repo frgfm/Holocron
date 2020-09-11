@@ -41,7 +41,8 @@ with open('README.md') as f:
 requirements = [
     'torch>=1.5.1',
     'torchvision>=0.6.1',
-    'tqdm>=4.1.0'
+    'tqdm>=4.1.0',
+    'numpy>=1.17.2'
 ]
 
 setup(
