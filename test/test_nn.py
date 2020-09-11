@@ -351,6 +351,24 @@ class NNTester(unittest.TestCase):
         self.assertEqual(criterion.__repr__(),
                          "ClassBalancedWrapper(LabelSmoothingCrossEntropy(eps=0.1, reduction='mean'), beta=0.99)")
 
+    def test_blurpool2d(self):
+
+        self.assertRaises(AssertionError, downsample.BlurPool2d, 1, 0)
+
+        # Generate inputs
+        num_batches = 2
+        num_chan = 8
+        x = torch.rand((num_batches, num_chan, 5, 5))
+        mod = downsample.BlurPool2d(num_chan, stride=2)
+
+        # Optional argument testing
+        with torch.no_grad():
+            out = mod(x)
+        self.assertEqual(out.size(), (num_batches, num_chan, 3, 3))
+
+        k = torch.tensor([[0.0625, 0.125 , 0.0625], [0.125 , 0.25  , 0.125 ], [0.0625, 0.125 , 0.0625]])
+        self.assertTrue(torch.equal(out[..., 1, 1], (x[..., 1:-1, 1:-1] * k[None, None, ...]).sum(dim=(2, 3))))
+
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
 
