@@ -212,7 +212,7 @@ def main(args):
 
     dataset, dataset_test, train_sampler, test_sampler = load_data(args.data_path, img_size=args.img_size)
     train_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=args.batch_size, collate_fn=collate_fn,
+        dataset, batch_size=args.batch_size, drop_last=True, collate_fn=collate_fn,
         sampler=train_sampler, num_workers=args.workers, pin_memory=True)
 
     if args.show_samples:
@@ -221,7 +221,7 @@ def main(args):
         return
 
     val_loader = torch.utils.data.DataLoader(
-        dataset_test, batch_size=args.batch_size, collate_fn=collate_fn,
+        dataset_test, batch_size=args.batch_size, drop_last=False, collate_fn=collate_fn,
         sampler=test_sampler, num_workers=args.workers, pin_memory=True)
 
     print("Creating model")

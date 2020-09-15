@@ -142,11 +142,11 @@ def main(args):
     val_dir = os.path.join(args.data_path, 'val')
     dataset, dataset_test, train_sampler, test_sampler = load_data(train_dir, val_dir, img_size=args.img_size)
     train_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=args.batch_size,
+        dataset, batch_size=args.batch_size, drop_last=True,
         sampler=train_sampler, num_workers=args.workers, pin_memory=True)
 
     val_loader = torch.utils.data.DataLoader(
-        dataset_test, batch_size=args.batch_size,
+        dataset_test, batch_size=args.batch_size, drop_last=False,
         sampler=test_sampler, num_workers=args.workers, pin_memory=True)
 
     print("Creating model")
