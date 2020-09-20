@@ -39,7 +39,7 @@ class _YOLO(nn.Module):
         self.rpn_nms_thresh = rpn_nms_thresh
         self.box_score_thresh = box_score_thresh
 
-    def _compute_losses(self, pred_boxes, pred_o, pred_scores, gt_boxes, gt_labels, ignore_high_iou=False):
+    def _compute_losses(self, pred_boxes, pred_o, pred_scores, target, ignore_high_iou=False):
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
 
@@ -47,12 +47,17 @@ class _YOLO(nn.Module):
             pred_boxes (torch.Tensor[N, H, W, num_anchors, 4]): relative coordinates in format (xc, yc, w, h)
             pred_o (torch.Tensor[N, H, W, num_anchors]): objectness scores
             pred_scores (torch.Tensor[N, H, W, num_anchors, num_classes]): classification probabilities
-            gt_boxes (list<torch.Tensor[-1, 4]>): ground truth boxes in format (xmin, ymin, xmax, ymax)
-            gt_labels (list<torch.Tensor>): ground truth labels
+            target (list<dict>, optional): list of targets
 
         Returns:
             dict: dictionary of losses
         """
+
+        gt_boxes = [t['boxes'] for t in target]
+        gt_labels = [t['labels'] for t in target]
+
+        if not all(torch.all(boxes >= 0) and torch.all(boxes <= 1) for boxes in gt_boxes):
+            raise ValueError("Ground truth boxes are expected to have values between 0 and 1.")
 
         b, h, w, _, num_classes = pred_scores.shape
         # Pred scores of YOLOv1 do not have the anchor dimension properly sized (only for broadcasting)
@@ -75,8 +80,8 @@ class _YOLO(nn.Module):
             not_matched = torch.arange(h * w * num_anchors)
             if gt_boxes[idx].shape[0] > 0:
                 # Locate the cell of each GT
-                gt_centers = (torch.stack((gt_boxes[idx][:, [0, 2]].sum(dim=-1) * w,
-                                           gt_boxes[idx][:, [1, 3]].sum(dim=-1) * h), dim=1) / 2).to(dtype=torch.long)
+                gt_centers = torch.stack((gt_boxes[idx][:, [0, 2]].mean(dim=-1) * w,
+                                          gt_boxes[idx][:, [1, 3]].mean(dim=-1) * h), dim=1).to(dtype=torch.long)
                 cell_idxs = gt_centers[:, 1] * w + gt_centers[:, 0]
                 # Assign the best anchor in each corresponding cell
                 iou_mat = box_iou(pred_xyxy[idx].view(-1, 4), gt_boxes[idx]).view(h * w, num_anchors, -1)
@@ -269,19 +274,18 @@ class YOLOv1(_YOLO):
 
         return out
 
-    def forward(self, x, gt_boxes=None, gt_labels=None):
+    def forward(self, x, target=None):
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
 
         Args:
             x (torch.Tensor[N, 3, H, W]): input image tensor
-            gt_boxes (list<torch.Tensor[-1, 4]>, optional): ground truth boxes relative coordinates
-            in format [xmin, ymin, xmax, ymax]
-            gt_labels (list<torch.Tensor[-1]>, optional): ground truth labels
+            target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[-1, 4]
+            and `labels` of type torch.Tensor[-1]
         """
 
-        if self.training and (gt_boxes is None or gt_labels is None):
-            raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
+        if self.training and target is None:
+            raise ValueError("`target` needs to be specified in training mode")
 
         if isinstance(x, (list, tuple)):
             x = torch.stack(x, dim=0)
@@ -293,7 +297,7 @@ class YOLOv1(_YOLO):
 
         if self.training:
             # Update losses
-            return self._compute_losses(b_coords, b_o, b_scores, gt_boxes, gt_labels)
+            return self._compute_losses(b_coords, b_o, b_scores, target)
         else:
             # B * (H * W * num_anchors)
             b_coords = b_coords.view(b_coords.shape[0], -1, 4)
@@ -412,19 +416,18 @@ class YOLOv2(_YOLO):
 
         return out
 
-    def forward(self, x, gt_boxes=None, gt_labels=None):
+    def forward(self, x, target=None):
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
 
         Args:
             x (torch.Tensor[N, 3, H, W]): input image tensor
-            gt_boxes (list<torch.Tensor[-1, 4]>, optional): ground truth boxes relative coordinates
-            in format [xmin, ymin, xmax, ymax]
-            gt_labels (list<torch.Tensor[-1]>, optional): ground truth labels
+            target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[-1, 4]
+            and `labels` of type torch.Tensor[-1]
         """
 
-        if self.training and (gt_boxes is None or gt_labels is None):
-            raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
+        if self.training and target is None:
+            raise ValueError("`target` needs to be specified in training mode")
 
         if isinstance(x, (list, tuple)):
             x = torch.stack(x, dim=0)
@@ -436,7 +439,7 @@ class YOLOv2(_YOLO):
 
         if self.training:
             # Update losses
-            return self._compute_losses(b_coords, b_o, b_scores, gt_boxes, gt_labels)
+            return self._compute_losses(b_coords, b_o, b_scores, target)
         else:
             # B * (H * W * num_anchors)
             b_coords = b_coords.view(b_coords.shape[0], -1, 4)
@@ -642,7 +645,7 @@ class YoloLayer(nn.Module):
 
         return detections
 
-    def _build_targets(self, pred_boxes, b_o, b_scores, gt_boxes, gt_labels):
+    def _build_targets(self, pred_boxes, b_o, b_scores, target):
 
         b, h, w, num_anchors = b_o.shape
 
@@ -651,6 +654,9 @@ class YoloLayer(nn.Module):
         target_scores = torch.zeros((b, h, w, num_anchors, self.num_classes), device=b_o.device)
         obj_mask = torch.zeros((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
         noobj_mask = torch.ones((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
+
+        gt_boxes = [t['boxes'] for t in target]
+        gt_labels = [t['labels'] for t in target]
 
         # GT coords --> left, top, width, height
         _boxes = torch.cat(gt_boxes, dim=0)
@@ -683,31 +689,38 @@ class YoloLayer(nn.Module):
 
         return target_o, target_scores, obj_mask, noobj_mask
 
-    def _compute_losses(self, pred_boxes, b_o, b_scores, gt_boxes, gt_labels, ignore_high_iou=False):
+    def _compute_losses(self, pred_boxes, b_o, b_scores, target, ignore_high_iou=False):
 
-        target_o, target_scores, obj_mask, noobj_mask = self._build_targets(pred_boxes, b_o, b_scores,
-                                                                            gt_boxes, gt_labels)
+        target_o, target_scores, obj_mask, noobj_mask = self._build_targets(pred_boxes, b_o, b_scores, target)
 
         # Bbox regression
         bbox_loss = torch.zeros(1, device=b_o.device)
-        for idx, _target_boxes in enumerate(gt_boxes):
-            if _target_boxes.shape[0] > 0 and torch.any(obj_mask[idx]):
-                bbox_loss += ciou_loss(pred_boxes[idx, obj_mask[idx]], _target_boxes).min(dim=1).values.sum()
+        for idx, _target in enumerate(target):
+            if _target['boxes'].shape[0] > 0 and torch.any(obj_mask[idx]):
+                bbox_loss += ciou_loss(pred_boxes[idx, obj_mask[idx]], _target['boxes']).min(dim=1).values.sum()
 
         return dict(obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum'),
                     noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum(),
                     bbox_loss=self.lambda_coords * bbox_loss,
                     clf_loss=F.binary_cross_entropy(b_scores[obj_mask], target_scores[obj_mask], reduction='sum'))
 
-    def forward(self, output, gt_boxes=None, gt_labels=None):
+    def forward(self, output, target=None):
+        """Perform detection on an image tensor and returns either the loss dictionary in training mode
+        or the list of detections in eval mode.
 
-        if self.training and (gt_boxes is None or gt_labels is None):
-            raise ValueError("`gt_boxes` and `gt_labels` need to be specified in training mode")
+        Args:
+            x (torch.Tensor[N, 3, H, W]): input image tensor
+            target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[-1, 4]
+            and `labels` of type torch.Tensor[-1]
+        """
+
+        if self.training and target is None:
+            raise ValueError("`target` needs to be specified in training mode")
 
         pred_boxes, b_o, b_scores = self._format_outputs(output)
 
         if self.training:
-            return self._compute_losses(pred_boxes, b_o, b_scores, gt_boxes, gt_labels)
+            return self._compute_losses(pred_boxes, b_o, b_scores, target)
         else:
             # cf. https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/tool/yolo_layer.py#L117
             return self.post_process(pred_boxes, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
@@ -787,7 +800,7 @@ class Yolov4Head(nn.Module):
         self.head3[-1].weight.data.zero_()
         self.head3[-1].bias.data.zero_()
 
-    def forward(self, feats, gt_boxes=None, gt_labels=None):
+    def forward(self, feats, target=None):
         o1 = self.head1(feats[0])
 
         h2 = self.pre_head2(feats[0])
@@ -800,9 +813,9 @@ class Yolov4Head(nn.Module):
         o3 = self.head3(h3)
 
         # YOLO output
-        y1 = self.yolo1(o1, gt_boxes, gt_labels)
-        y2 = self.yolo2(o2, gt_boxes, gt_labels)
-        y3 = self.yolo3(o3, gt_boxes, gt_labels)
+        y1 = self.yolo1(o1, target)
+        y2 = self.yolo2(o2, target)
+        y3 = self.yolo3(o3, target)
 
         if not self.training:
 
@@ -842,7 +855,7 @@ class YOLOv4(nn.Module):
         init_module(self.neck, 'leaky_relu')
         init_module(self.head, 'leaky_relu')
 
-    def forward(self, x, gt_boxes=None, gt_labels=None):
+    def forward(self, x, target=None):
 
         if not isinstance(x, torch.Tensor):
             x = torch.stack(x, dim=0)
@@ -851,7 +864,7 @@ class YOLOv4(nn.Module):
 
         x20, x13, x6 = self.neck(out)
 
-        return self.head((x20, x13, x6), gt_boxes, gt_labels)
+        return self.head((x20, x13, x6), target)
 
 
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):

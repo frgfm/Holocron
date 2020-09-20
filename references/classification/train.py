@@ -124,31 +124,19 @@ def parse_args():
     parser.add_argument('--device', default=None, type=int, help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
     parser.add_argument('--epochs', default=20, type=int, help='number of total epochs to run')
-    parser.add_argument('--sched', default='onecycle', type=str, help='Scheduler to be used')
     parser.add_argument('-j', '--workers', default=16, type=int, help='number of data loading workers')
     parser.add_argument('--img-size', default=224, type=int, help='image size')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
+    parser.add_argument('--sched', default='onecycle', type=str, help='Scheduler to be used')
     parser.add_argument('--lr', default=1e-3, type=float, help='initial learning rate')
-    parser.add_argument('--wd', '--weight-decay', default=0, type=float,
-                        metavar='W', help='weight decay',
-                        dest='weight_decay')
-    parser.add_argument("--lr-finder", dest='lr_finder', action='store_true',
-                        help="Should you run LR Finder")
+    parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
+    parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
     parser.add_argument('--output-file', default='./model.pth', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
-    parser.add_argument(
-        "--test-only",
-        dest="test_only",
-        help="Only test the model",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--pretrained",
-        dest="pretrained",
-        help="Use pre-trained models from the modelzoo",
-        action="store_true",
-    )
+    parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
+    parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
+                        action="store_true")
 
     args = parser.parse_args()
 

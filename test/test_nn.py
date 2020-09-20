@@ -35,7 +35,7 @@ class NNTester(unittest.TestCase):
         num_batches = 2
         num_classes = 4
         # 4 classes
-        x = torch.ones(num_batches, num_classes)
+        x = torch.ones(num_batches, num_classes, requires_grad=True)
         x[:, 0, ...] = 10
 
         # Identical target
@@ -51,7 +51,7 @@ class NNTester(unittest.TestCase):
                                        atol=1e-3))
 
         # Check that class rescaling works
-        x = torch.rand(num_batches, num_classes)
+        x = torch.rand(num_batches, num_classes, requires_grad=True)
         if multi_label:
             target = torch.rand(x.shape)
         else:
@@ -68,6 +68,9 @@ class NNTester(unittest.TestCase):
             ignore_index = torch.unique(target)[0].item()
         self.assertNotEqual(loss_fn(x, target).item(),
                             loss_fn(x, target, ignore_index=ignore_index).item())
+        # Check backprop
+        loss = loss_fn(x, target, ignore_index=0)
+        loss.backward()
 
         # Test reduction
         self.assertAlmostEqual(loss_fn(x, target, reduction='sum').item(),

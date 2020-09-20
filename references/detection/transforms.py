@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 '''
 Transformation for object detection
 '''
@@ -105,8 +103,8 @@ class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
     def __call__(self, image, target):
         if random.random() < self.p:
             height, width = image.size
-            image = F.hflip(img)
-            target['boxes'][:, [-4, -2]] = width - target['boxes'][:, [-4, -2]]
+            image = F.hflip(image)
+            target['boxes'][:, [0, 2]] = width - target['boxes'][:, [0, 2]]
             # Reorder them correctly
-            target['boxes'][:, -4:] = target['boxes'][:, [-2, -3, -4, -1]]
+            target['boxes'] = target['boxes'][:, [2, 1, 0, 3]]
         return image, target
