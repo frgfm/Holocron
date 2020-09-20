@@ -59,7 +59,7 @@ class ModelTester(unittest.TestCase):
         gt_labels = [(num_classes * torch.rand(num)).to(dtype=torch.long) for num in num_boxes]
 
         # Loss computation
-        loss = model(x, gt_boxes, gt_labels)
+        loss = model(x, [dict(boxes=boxes, labels=labels) for boxes, labels in zip(gt_boxes, gt_labels)])
         self.assertIsInstance(loss, dict)
         for subloss in loss.values():
             self.assertIsInstance(subloss, torch.Tensor)
@@ -69,7 +69,7 @@ class ModelTester(unittest.TestCase):
         # Loss computation with no GT
         gt_boxes = [torch.zeros((0, 4)) for _ in num_boxes]
         gt_labels = [torch.zeros(0, dtype=torch.long) for _ in num_boxes]
-        loss = model(x, gt_boxes, gt_labels)
+        loss = model(x, [dict(boxes=boxes, labels=labels) for boxes, labels in zip(gt_boxes, gt_labels)])
 
     def _test_segmentation_model(self, name, size, out_size):
 
