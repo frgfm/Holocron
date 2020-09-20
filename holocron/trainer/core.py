@@ -33,6 +33,7 @@ class Trainer:
         self.min_loss = math.inf
         self.gpu = gpu
         self._params = None
+        self.lr_recorder, self.loss_recorder = [], []
         self.set_device(gpu)
         self._reset_opt(self.optimizer.defaults['lr'])
 
@@ -121,7 +122,7 @@ class Trainer:
 
     @staticmethod
     def _eval_metrics_str(eval_metrics):
-        return ""
+        raise NotImplementedError
 
     def _reset_scheduler(self, lr, num_epochs, sched_type='onecycle'):
         if sched_type == 'onecycle':
@@ -129,7 +130,7 @@ class Trainer:
         elif sched_type == 'cosine':
             self.scheduler = CosineAnnealingLR(self.optimizer, num_epochs * len(self.train_loader), eta_min=lr / 25e4)
         else:
-            raise ValueError(f"The following scheduler type is not supported: {scheduler_type}")
+            raise ValueError(f"The following scheduler type is not supported: {sched_type}")
 
     def fit_n_epochs(self, num_epochs, lr, freeze_until=None, sched_type='onecycle'):
 
