@@ -47,23 +47,23 @@ def load_data(datadir, img_size=416, crop_pct=0.875):
     print("Loading training data")
     st = time.time()
     train_set = VOCDetection(datadir, image_set='train', download=True,
-                           transforms=Compose([VOCTargetTransform(VOC_CLASSES),
-                                               RandomResizedCrop((img_size, img_size), scale=(0.3, 1.0)),
-                                               RandomHorizontalFlip(),
-                                               convert_to_relative,
-                                               ImageTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3,
-                                                                                     saturation=0.1, hue=0.02)),
-                                               ImageTransform(transforms.ToTensor()), ImageTransform(normalize)]))
+                             transforms=Compose([VOCTargetTransform(VOC_CLASSES),
+                                                 RandomResizedCrop((img_size, img_size), scale=(0.3, 1.0)),
+                                                 RandomHorizontalFlip(),
+                                                 convert_to_relative,
+                                                 ImageTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3,
+                                                                                       saturation=0.1, hue=0.02)),
+                                                 ImageTransform(transforms.ToTensor()), ImageTransform(normalize)]))
 
     print("Took", time.time() - st)
 
     print("Loading validation data")
     st = time.time()
     val_set = VOCDetection(datadir, image_set='val', download=True,
-                                transforms=Compose([VOCTargetTransform(VOC_CLASSES),
-                                                    Resize(scale_size), CenterCrop(img_size),
-                                                    convert_to_relative,
-                                                    ImageTransform(transforms.ToTensor()), ImageTransform(normalize)]))
+                           transforms=Compose([VOCTargetTransform(VOC_CLASSES),
+                                               Resize(scale_size), CenterCrop(img_size),
+                                               convert_to_relative,
+                                               ImageTransform(transforms.ToTensor()), ImageTransform(normalize)]))
 
     print("Took", time.time() - st)
 
