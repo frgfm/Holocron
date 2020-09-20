@@ -8,7 +8,7 @@ from holocron.nn import GlobalAvgPool2d
 from holocron import trainer
 
 
-class MockDataset(torch.utils.data.Dataset):
+class MockClassificationDataset(torch.utils.data.Dataset):
     """Mock dataset generating a random sample and a fixed zero target"""
     def __init__(self, n):
         super().__init__()
@@ -16,6 +16,18 @@ class MockDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         return torch.rand((3, 32, 32)), 0
+
+    def __len__(self):
+        return self.n
+
+class MockSegDataset(torch.utils.data.Dataset):
+    """Mock dataset generating a random sample and a fixed zero target"""
+    def __init__(self, n):
+        super().__init__()
+        self.n = n
+
+    def __getitem__(self, idx):
+        return torch.rand((3, 32, 32)), torch.zeros((32, 32), dtype=torch.long)
 
     def __len__(self):
         return self.n
@@ -62,7 +74,7 @@ class CoreTester(unittest.TestCase):
         model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
                               GlobalAvgPool2d(flatten=True), nn.Linear(32, 5))
         model_w = model[-1].weight.data.clone()
-        train_loader = torch.utils.data.DataLoader(MockDataset(num_it * batch_size), batch_size=batch_size)
+        train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size), batch_size=batch_size)
         optimizer = torch.optim.Adam(model.parameters())
         criterion = torch.nn.CrossEntropyLoss()
 
@@ -89,6 +101,40 @@ class CoreTester(unittest.TestCase):
             # Perform the iterations
             learner.load(torch.load(tf.name, map_location='cpu'))
             self.assertRaises(ValueError, learner.fit_n_epochs, 1, 1e-3, sched_type='my_scheduler')
+            learner.fit_n_epochs(1, 1e-3)
+            # Check that params were updated
+            self.assertFalse(torch.equal(model[-1].weight.data, model_w))
+            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.fit_n_epochs(1, 1e-3, sched_type='cosine')
+            # Check that params were updated
+            self.assertFalse(torch.equal(model[-1].weight.data, model_w))
+
+    def test_segmentation_trainer(self):
+
+        num_it = 100
+        batch_size = 8
+        # Generate all dependencies
+        model = nn.Sequential(nn.Conv2d(3, 32, 3, padding=1), nn.ReLU(inplace=True), nn.Conv2d(32, 5, 3, padding=1))
+        model_w = model[-1].weight.data.clone()
+        train_loader = torch.utils.data.DataLoader(MockSegDataset(num_it * batch_size), batch_size=batch_size)
+        optimizer = torch.optim.Adam(model.parameters())
+        criterion = torch.nn.CrossEntropyLoss()
+
+        with NamedTemporaryFile() as tf:
+            learner = trainer.SegmentationTrainer(model, train_loader, train_loader, criterion, optimizer,
+                                                  output_file=tf.name)
+            learner.save(tf.name)
+            # Check setup
+            self.assertTrue(learner.check_setup(num_it=num_it))
+
+            # LR Find
+            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.lr_find(num_it=num_it)
+            learner.plot_recorder(block=False)
+
+            # Training
+            # Perform the iterations
+            learner.load(torch.load(tf.name, map_location='cpu'))
             learner.fit_n_epochs(1, 1e-3)
             # Check that params were updated
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
