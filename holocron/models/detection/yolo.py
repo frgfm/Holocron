@@ -800,7 +800,7 @@ class Yolov4Head(nn.Module):
         self.head3[-1].weight.data.zero_()
         self.head3[-1].bias.data.zero_()
 
-    def forward(self, feats, gt_boxes=None, gt_labels=None):
+    def forward(self, feats, target=None):
         o1 = self.head1(feats[0])
 
         h2 = self.pre_head2(feats[0])
@@ -813,9 +813,9 @@ class Yolov4Head(nn.Module):
         o3 = self.head3(h3)
 
         # YOLO output
-        y1 = self.yolo1(o1, gt_boxes, gt_labels)
-        y2 = self.yolo2(o2, gt_boxes, gt_labels)
-        y3 = self.yolo3(o3, gt_boxes, gt_labels)
+        y1 = self.yolo1(o1, target)
+        y2 = self.yolo2(o2, target)
+        y3 = self.yolo3(o3, target)
 
         if not self.training:
 
@@ -855,7 +855,7 @@ class YOLOv4(nn.Module):
         init_module(self.neck, 'leaky_relu')
         init_module(self.head, 'leaky_relu')
 
-    def forward(self, x, gt_boxes=None, gt_labels=None):
+    def forward(self, x, target=None):
 
         if not isinstance(x, torch.Tensor):
             x = torch.stack(x, dim=0)
@@ -864,7 +864,7 @@ class YOLOv4(nn.Module):
 
         x20, x13, x6 = self.neck(out)
 
-        return self.head((x20, x13, x6), gt_boxes, gt_labels)
+        return self.head((x20, x13, x6), target)
 
 
 def _yolo(arch, pretrained, progress, pretrained_backbone, **kwargs):
