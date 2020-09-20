@@ -45,7 +45,8 @@ class Trainer:
                 raise ValueError("Invalid device index")
             torch.cuda.set_device(gpu)
             self.model = self.model.cuda()
-            self.criterion = self.criterion.cuda()
+            if isinstance(self.criterion, torch.nn.Module):
+                self.criterion = self.criterion.cuda()
 
     def save(self, output_file):
         torch.save(dict(epoch=self.epoch, step=self.step, min_loss=self.min_loss,
@@ -212,10 +213,10 @@ class Trainer:
         plt.grid(True, linestyle='--', axis='x')
         plt.show(block=block)
 
-    def check_setup(self, lr=3e-4, num_it=100):
+    def check_setup(self, freeze_until=None, lr=3e-4, num_it=100):
         """Check whether you can overfit one batch"""
 
-        self.model = freeze_bn(self.model.train())
+        self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
         self._reset_opt(lr)
 
@@ -232,7 +233,7 @@ class Trainer:
 
             # Check that loss decreases
             if batch_loss.item() > prev_loss:
-                raise AssertionError("Unable to overfit one batch. Please investigate")
+                return False
             prev_loss = batch_loss.item()
 
         return True
