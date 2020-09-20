@@ -79,6 +79,8 @@ class CoreTester(unittest.TestCase):
 
             # LR Find
             learner.load(torch.load(tf.name, map_location='cpu'))
+
+            self.assertRaises(AssertionError, learner.plot_recorder, block=False)
             learner.lr_find(num_it=num_it)
             self.assertEqual(len(learner.lr_recorder), len(learner.loss_recorder))
             learner.plot_recorder(block=False)
@@ -86,7 +88,12 @@ class CoreTester(unittest.TestCase):
             # Training
             # Perform the iterations
             learner.load(torch.load(tf.name, map_location='cpu'))
-            learner.fit_n_epochs(1, 1e-3, None)
+            self.assertRaises(ValueError, learner.fit_n_epochs, 1, 1e-3, sched_type='my_scheduler')
+            learner.fit_n_epochs(1, 1e-3)
+            # Check that params were updated
+            self.assertFalse(torch.equal(model[-1].weight.data, model_w))
+            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.fit_n_epochs(1, 1e-3, sched_type='cosine')
             # Check that params were updated
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
 
