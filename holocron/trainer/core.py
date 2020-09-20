@@ -16,16 +16,14 @@ __all__ = ['Trainer', 'ClassificationTrainer']
 class Trainer:
 
     def __init__(self, model, train_loader, val_loader, criterion, optimizer,
-                 gpu_id=None, output_file=None):
+                 gpu=None, output_file='./checkpoint.pth'):
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.criterion = criterion
         self.optimizer = optimizer
 
-        # Output folder
-        if output_file is None:
-            output_file = './checkpoint.pth'
+        # Output file
         self.output_file = output_file
 
         # Initialize
@@ -33,16 +31,18 @@ class Trainer:
         self.start_epoch = 0
         self.epoch = 0
         self.min_loss = math.inf
-        self.gpu = gpu_id
+        self.gpu = gpu
         self._params = None
-        self.set_device(gpu_id)
+        self.set_device(gpu)
         self._reset_opt(self.optimizer.defaults['lr'])
 
-    def set_device(self, gpu_id):
-        if isinstance(gpu_id, int):
+    def set_device(self, gpu):
+        if isinstance(gpu, int):
             if not torch.cuda.is_available():
                 raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
-            torch.cuda.set_device(gpu_id)
+            if gpu >= torch.cuda.device_count():
+                raise ValueError(f"Invalid device index")
+            torch.cuda.set_device(gpu)
             self.model = self.model.cuda()
             self.criterion = self.criterion.cuda()
 
@@ -85,6 +85,8 @@ class Trainer:
     def to_cuda(self, x, target):
         """Move input and target to GPU"""
         if isinstance(self.gpu, int):
+            if self.gpu >= torch.cuda.device_count():
+                raise ValueError(f"Invalid device index")
             return self._to_cuda(x, target)
         else:
             return x, target
@@ -182,7 +184,7 @@ class Trainer:
             if batch_idx + 1 == num_it:
                 break
 
-    def plot_recorder(self, stop_div=True, stop_threshold=3, beta=0.95):
+    def plot_recorder(self, beta=0.95, block=True):
 
         if len(self.lr_recorder) != len(self.loss_recorder) or len(self.lr_recorder) == 0:
             raise AssertionError("Please run the `lr_find` method first")
@@ -199,7 +201,7 @@ class Trainer:
         plt.xlabel('Learning Rate')
         plt.ylabel('Training loss')
         plt.grid(True, linestyle='--', axis='x')
-        plt.show(block=True)
+        plt.show(block=block)
 
     def check_setup(self, lr=3e-4, num_it=100):
         """Check whether you can overfit one batch"""
