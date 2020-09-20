@@ -49,6 +49,7 @@ class UtilsTester(unittest.TestCase):
         # Check that the correct layers were frozen
         self.assertFalse(any(p.requires_grad for p in mod[0].parameters()))
         self.assertTrue(all(p.requires_grad for p in mod[2].parameters()))
+        self.assertRaises(ValueError, trainer.freeze_model, mod, 'wrong_layer')
 
 
 class CoreTester(unittest.TestCase):
@@ -65,6 +66,10 @@ class CoreTester(unittest.TestCase):
         optimizer = torch.optim.Adam(model.parameters())
         criterion = torch.nn.CrossEntropyLoss()
 
+        self.assertRaises(ValueError if torch.cuda.is_available() else AssertionError,
+                          trainer.ClassificationTrainer,
+                          model, train_loader, train_loader, criterion, optimizer, gpu=7)
+
         with NamedTemporaryFile() as tf:
             learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer,
                                                     output_file=tf.name)
@@ -76,6 +81,7 @@ class CoreTester(unittest.TestCase):
             learner.load(torch.load(tf.name, map_location='cpu'))
             learner.lr_find(num_it=num_it)
             self.assertEqual(len(learner.lr_recorder), len(learner.loss_recorder))
+            learner.plot_recorder(block=False)
 
             # Training
             # Perform the iterations
