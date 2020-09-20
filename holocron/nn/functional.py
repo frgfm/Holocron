@@ -91,8 +91,9 @@ def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamm
     # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
     logpt = logpt.transpose(1, 0).flatten(1).gather(0, target.view(1, -1)).squeeze()
     # Ignore index (set loss contribution to 0)
-    if ignore_index >= 0:
-        logpt[target.view(-1) == ignore_index] = 0
+    valid_idxs = torch.ones(target.view(-1).shape[0], dtype=torch.bool, device=x.device)
+    if ignore_index >= 0 and ignore_index < x.shape[1]:
+        valid_idxs[target.view(-1) == ignore_index] = False
 
     # Get P(class)
     pt = logpt.exp()
@@ -110,12 +111,9 @@ def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamm
 
     # Loss reduction
     if reduction == 'sum':
-        loss = loss.sum()
+        loss = loss[valid_idxs].sum()
     elif reduction == 'mean':
-        # Ignore contribution to the loss if target is `ignore_index`
-        if ignore_index >= 0:
-            loss = loss[target.view(-1) != ignore_index]
-        loss = loss.mean()
+        loss = loss[valid_idxs].mean()
     else:
         # if no reduction, reshape tensor like target
         loss = loss.view(*target.shape)
