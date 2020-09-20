@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile
 import torch
 import torch.nn as nn
 from holocron.nn import GlobalAvgPool2d
+from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from holocron import trainer
 
 
@@ -32,6 +33,25 @@ class MockSegDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return self.n
+
+
+class MockDetDataset(torch.utils.data.Dataset):
+    """Mock dataset generating a random sample and a fixed zero target"""
+    def __init__(self, n):
+        super().__init__()
+        self.n = n
+
+    def __getitem__(self, idx):
+        boxes = torch.tensor([[0, 0, 1, 1]], dtype=torch.float32)
+        return torch.rand((3, 416, 416)), dict(boxes=boxes, labels=torch.zeros(1, dtype=torch.long))
+
+    def __len__(self):
+        return self.n
+
+
+def collate_fn(batch):
+    imgs, target = zip(*batch)
+    return imgs, target
 
 
 class UtilsTester(unittest.TestCase):
@@ -146,6 +166,41 @@ class CoreTester(unittest.TestCase):
             learner.fit_n_epochs(1, 1e-3, sched_type='cosine')
             # Check that params were updated
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
+
+    def test_detection_trainer(self):
+
+        num_it = 10
+        batch_size = 2
+        # Generate all dependencies
+        model = fasterrcnn_resnet50_fpn(pretrained_backbone=True, num_classes=10)
+        train_loader = torch.utils.data.DataLoader(MockDetDataset(num_it * batch_size),
+                                                   batch_size=batch_size, collate_fn=collate_fn)
+        optimizer = torch.optim.Adam(model.parameters())
+
+        with NamedTemporaryFile() as tf:
+            learner = trainer.DetectionTrainer(model, train_loader, train_loader, None, optimizer,
+                                               output_file=tf.name, gpu=0 if torch.cuda.is_available() else None)
+            learner.save(tf.name)
+            checkpoint = torch.load(tf.name, map_location='cpu')
+            model_w = learner.model.roi_heads.box_predictor.cls_score.weight.data.clone()
+            # Check setup
+            self.assertTrue(learner.check_setup('backbone', num_it=num_it))
+
+            # LR Find
+            learner.load(checkpoint)
+            learner.lr_find('backbone', num_it=num_it)
+            learner.plot_recorder(block=False)
+
+            # Training
+            # Perform the iterations
+            learner.load(checkpoint)
+            learner.fit_n_epochs(1, 1e-5, 'backbone')
+            # Check that params were updated
+            self.assertFalse(torch.equal(learner.model.roi_heads.box_predictor.cls_score.weight.data, model_w))
+            learner.load(checkpoint)
+            learner.fit_n_epochs(1, 1e-5, 'backbone', sched_type='cosine')
+            # Check that params were updated
+            self.assertFalse(torch.equal(learner.model.roi_heads.box_predictor.cls_score.weight.data, model_w))
 
 
 if __name__ == '__main__':
