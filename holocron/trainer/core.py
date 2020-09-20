@@ -2,7 +2,6 @@ import math
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import torch
-import torch.nn as nn
 from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, MultiplicativeLR
 from fastprogress import master_bar, progress_bar
 
@@ -118,6 +117,7 @@ class Trainer:
     def evaluate(self):
         raise NotImplementedError
 
+    @staticmethod
     def _eval_metrics_str(eval_metrics):
         return ""
 
@@ -138,7 +138,7 @@ class Trainer:
         self._reset_scheduler(lr, num_epochs, sched_type)
 
         mb = master_bar(range(num_epochs))
-        for epoch_idx in mb:
+        for _ in mb:
 
             self._fit_epoch(freeze_until, mb)
             # Check whether ops invalidated the buffer
@@ -146,8 +146,8 @@ class Trainer:
             eval_metrics = self.evaluate()
 
             # master bar
-            mb.main_bar.comment = f"Epoch {self.start_epoch + self.epoch}/{self.start_epoch+num_epochs}"
-            mb.write(f"Epoch {self.start_epoch + self.epoch}/{self.start_epoch+num_epochs} - "
+            mb.main_bar.comment = f"Epoch {self.start_epoch + self.epoch}/{self.start_epoch + num_epochs}"
+            mb.write(f"Epoch {self.start_epoch + self.epoch}/{self.start_epoch + num_epochs} - "
                      f"{self._eval_metrics_str(eval_metrics)}")
 
             if eval_metrics['val_loss'] < self.min_loss:
@@ -200,14 +200,6 @@ class Trainer:
         plt.ylabel('Training loss')
         plt.grid(True, linestyle='--', axis='x')
         plt.show(block=True)
-
-    def show_worst_preds(self, n=4):
-        # Loop on training data, order decreasing loss
-        return NotImplementedError
-
-    def half(self):
-        """Switch to FP16"""
-        return NotImplementedError
 
     def check_setup(self, lr=3e-4, num_it=100):
         """Check whether you can overfit one batch"""
