@@ -3,6 +3,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import torch
 from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, MultiplicativeLR
+from torchvision.ops.boxes import box_iou
 from fastprogress import master_bar, progress_bar
 
 from contiguous_params import ContiguousParams
@@ -10,7 +11,7 @@ from contiguous_params import ContiguousParams
 from .utils import freeze_bn, freeze_model
 
 
-__all__ = ['Trainer', 'ClassificationTrainer', 'SegmentationTrainer']
+__all__ = ['Trainer', 'ClassificationTrainer', 'SegmentationTrainer', 'DetectionTrainer']
 
 
 class Trainer:
@@ -304,3 +305,86 @@ class SegmentationTrainer(Trainer):
     @staticmethod
     def _eval_metrics_str(eval_metrics):
         return f"Validation loss: {eval_metrics['val_loss']:.4} (Mean IoU: {eval_metrics['mean_iou']:.2%})"
+
+
+def assign_iou(gt_boxes, pred_boxes, iou_threshold=0.5):
+    """Assigns boxes by IoU"""
+    iou = box_iou(gt_boxes, pred_boxes)
+    iou = iou.max(dim=1)
+    gt_kept = iou.values >= iou_threshold
+    assign_unique = torch.unique(iou.indices[gt_kept])
+    # Filter
+    if iou.indices[gt_kept].shape[0] == assign_unique.shape[0]:
+        return torch.arange(gt_boxes.shape[0])[gt_kept], iou.indices[gt_kept]
+    else:
+        gt_indices, pred_indices = [], []
+        for pred_idx in assign_unique:
+            selection = iou.values[gt_kept][iou.indices[gt_kept] == pred_idx].argmax()
+            gt_indices.append(torch.arange(gt_boxes.shape[0])[gt_kept][selection].item())
+            pred_indices.append(iou.indices[gt_kept][selection].item())
+        return gt_indices, pred_indices
+
+
+class DetectionTrainer(Trainer):
+
+    @staticmethod
+    def _to_cuda(x, target):
+        """Move input and target to GPU"""
+        x = [_x.cuda(non_blocking=True) for _x in x]
+        target = [{k: v.cuda(non_blocking=True) for k, v in t.items()} for t in target]
+        return x, target
+
+    def _backprop_step(self, loss, grad_clip=.1):
+        # Clean gradients
+        self.optimizer.zero_grad()
+        # Backpropate the loss
+        loss.backward()
+        # Safeguard for Gradient explosion
+        if isinstance(grad_clip, float):
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
+        # Update the params
+        self.optimizer.step()
+
+    def _get_loss(self, x, target):
+        # Forward & loss computation
+        loss_dict = self.model(x, target)
+        return sum(loss_dict.values())
+
+    @staticmethod
+    def _eval_metrics_str(eval_metrics):
+        return (f"Loc error: {eval_metrics['loc_err']:.2%} | Clf error: {eval_metrics['clf_err']:.2%} | "
+                f"Det error: {eval_metrics['det_err']:.2%}")
+
+    @torch.no_grad()
+    def evaluate(self, iou_threshold=0.5):
+        self.model.eval()
+
+        loc_assigns = 0
+        correct, clf_error, loc_fn, loc_fp, num_samples = 0, 0, 0, 0, 0
+
+        for x, target in self.val_loader:
+            x, target = self.to_cuda(x, target)
+            detections = self.model(x)
+
+            for dets, t in zip(detections, target):
+                if t['boxes'].shape[0] > 0 and dets['boxes'].shape[0] > 0:
+                    gt_indices, pred_indices = assign_iou(t['boxes'], dets['boxes'], iou_threshold)
+                    loc_assigns += len(gt_indices)
+                    _correct = (t['labels'][gt_indices] == dets['labels'][pred_indices]).sum().item()
+                else:
+                    gt_indices, pred_indices = [], []
+                    _correct = 0
+                correct += _correct
+                clf_error += len(gt_indices) - _correct
+                loc_fn += t['boxes'].shape[0] - len(gt_indices)
+                loc_fp += dets['boxes'].shape[0] - len(pred_indices)
+            num_samples += sum(t['boxes'].shape[0] for t in target)
+
+        nb_preds = num_samples - loc_fn + loc_fp
+        # Localization
+        loc_err = 1 - 2 * loc_assigns / (nb_preds + num_samples) if nb_preds + num_samples > 0 else 1.
+        # Classification
+        clf_err = 1 - correct / loc_assigns if loc_assigns > 0 else 1.
+        # End-to-end
+        det_err = 1 - 2 * correct / (nb_preds + num_samples) if nb_preds + num_samples > 0 else 1.
+        return dict(loc_err=loc_err, clf_err=clf_err, det_err=det_err, val_loss=loc_err)
