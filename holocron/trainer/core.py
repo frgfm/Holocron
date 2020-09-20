@@ -8,6 +8,8 @@ from fastprogress import master_bar, progress_bar
 
 from contiguous_params import ContiguousParams
 
+from .utils import freeze_bn, freeze_model
+
 
 __all__ = ['Trainer', 'ClassificationTrainer']
 
@@ -15,13 +17,16 @@ __all__ = ['Trainer', 'ClassificationTrainer']
 class Trainer:
 
     def __init__(self, model, train_loader, val_loader, criterion, optimizer,
-                 gpu_id=0, output_file=None):
+                 gpu_id=None, output_file=None):
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.criterion = criterion
         self.optimizer = optimizer
+
         # Output folder
+        if output_file is None:
+            output_file = './checkpoint.pth'
         self.output_file = output_file
 
         # Initialize
@@ -29,14 +34,25 @@ class Trainer:
         self.start_epoch = 0
         self.epoch = 0
         self.min_loss = math.inf
+        self.gpu = gpu_id
+        self._params = None
         self.set_device(gpu_id)
+        self._reset_opt(self.optimizer.defaults['lr'])
 
     def set_device(self, gpu_id):
-        if not torch.cuda.is_available():
-            raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
-        torch.cuda.set_device(gpu_id)
-        self.model = self.model.cuda()
-        self.criterion = self.criterion.cuda()
+        if isinstance(gpu_id, int):
+            if not torch.cuda.is_available():
+                raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
+            torch.cuda.set_device(gpu_id)
+            self.model = self.model.cuda()
+            self.criterion = self.criterion.cuda()
+
+    def save(self, output_file):
+        torch.save(dict(epoch=self.epoch, step=self.step, min_loss=self.min_loss,
+                        optimizer=self.optimizer.state_dict(),
+                        model=self.model.state_dict()),
+                   output_file,
+                   _use_new_zipfile_serialization=False)
 
     def load(self, state):
         """Resume from a trainer state"""
@@ -45,7 +61,6 @@ class Trainer:
         self.step = state['step']
         self.min_loss = state['min_loss']
         self.optimizer.load_state_dict(state['optimizer'])
-        self.scheduler.load_state_dict(state['scheduler'])
         self.model.load_state_dict(state['model'])
 
     def _fit_epoch(self, freeze_until, mb):
@@ -68,8 +83,15 @@ class Trainer:
             self.step += 1
         self.epoch += 1
 
+    def to_cuda(self, x, target):
+        """Move input and target to GPU"""
+        if isinstance(self.gpu, int):
+            return self._to_cuda(x, target)
+        else:
+            return x, target
+
     @staticmethod
-    def to_cuda(x, target):
+    def _to_cuda(x, target):
         """Move input and target to GPU"""
         raise NotImplementedError
 
@@ -81,12 +103,16 @@ class Trainer:
         """Forward tensor and compute the loss"""
         raise NotImplementedError
 
-    def _reset_opt(self, params, lr):
+    def _set_params(self):
+        self._params = ContiguousParams([p for p in self.model.parameters() if p.requires_grad])
+
+    def _reset_opt(self, lr):
         """Reset the target params of the optimizer"""
         self.optimizer.defaults['lr'] = lr
         self.optimizer.state = defaultdict(dict)
         self.optimizer.param_groups = []
-        self.optimizer.add_param_group(dict(params=params))
+        self._set_params()
+        self.optimizer.add_param_group(dict(params=self._params.contiguous()))
 
     @torch.no_grad()
     def evaluate(self):
@@ -96,19 +122,18 @@ class Trainer:
         return ""
 
     def _reset_scheduler(self, lr, num_epochs, sched_type='onecycle'):
-        if sched_type == 'onecycle';
+        if sched_type == 'onecycle':
             self.scheduler = OneCycleLR(self.optimizer, lr, num_epochs * len(self.train_loader))
         elif sched_type == 'cosine':
             self.scheduler = CosineAnnealingLR(self.optimizer, num_epochs * len(self.train_loader), eta_min=lr / 25e4)
         else:
             raise ValueError(f"The following scheduler type is not supported: {scheduler_type}")
 
-    def fit_n_epochs(self, num_epochs, lr, freeze_until, sched_type='onecycle'):
+    def fit_n_epochs(self, num_epochs, lr, freeze_until=None, sched_type='onecycle'):
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
-        params = ContiguousParams([p for p in self.model.parameters() if p.requires_grad])
-        self._reset_opt(params.contiguous(), lr)
+        self._reset_opt(lr)
         # Scheduler
         self._reset_scheduler(lr, num_epochs, sched_type)
 
@@ -117,7 +142,7 @@ class Trainer:
 
             self._fit_epoch(freeze_until, mb)
             # Check whether ops invalidated the buffer
-            params.assert_buffer_is_valid()
+            self._params.assert_buffer_is_valid()
             eval_metrics = self.evaluate()
 
             # master bar
@@ -131,19 +156,11 @@ class Trainer:
                 self.min_loss = eval_metrics['val_loss']
                 self.save(self.output_file)
 
-    def save(self, output_file):
-        torch.save(dict(epoch=self.epoch, step=self.step, min_loss=self.min_loss,
-                        optimizer=self.optimizer.state_dict(), scheduler=self.scheduler.state_dict(),
-                        model=self.model.state_dict()),
-                   output_file,
-                   _use_new_zipfile_serialization=False)
-
-    def lr_find(self, freeze_until, start_lr=1e-7, end_lr=1, num_it=100):
+    def lr_find(self, freeze_until=None, start_lr=1e-7, end_lr=1, num_it=100):
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
-        params = ContiguousParams([p for p in self.model.parameters() if p.requires_grad])
-        self._reset_opt(params.contiguous(), start_lr)
+        self._reset_opt(start_lr)
         gamma = (end_lr / start_lr) ** (1 / (num_it - 1))
         scheduler = MultiplicativeLR(self.optimizer, lambda step: gamma)
 
@@ -197,12 +214,12 @@ class Trainer:
 
         self.model = freeze_bn(self.model.train())
         # Update param groups & LR
-        params = ContiguousParams([p for p in self.model.parameters() if p.requires_grad])
-        self._reset_opt(params.contiguous(), lr)
+        self._reset_opt(lr)
 
         prev_loss = math.inf
 
-        x, target = self.to_cuda(next(iter(self.train_loader)))
+        x, target = next(iter(self.train_loader))
+        x, target = self.to_cuda(x, target)
 
         for _ in range(num_it):
             # Forward
@@ -221,7 +238,7 @@ class Trainer:
 class ClassificationTrainer(Trainer):
 
     @staticmethod
-    def to_cuda(x, target):
+    def _to_cuda(x, target):
         """Move input and target to GPU"""
         x = x.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
@@ -250,7 +267,10 @@ class ClassificationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            val_loss += self._get_loss(x, target).item()
+            # Forward
+            out = self.model(x)
+            # Loss computation
+            val_loss += self.criterion(out, target).item()
 
             pred = out.topk(5, dim=1)[1]
             correct = pred.eq(target.view(-1, 1).expand_as(pred))
