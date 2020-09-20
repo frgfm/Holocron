@@ -167,7 +167,7 @@ def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
     logpt = F.log_softmax(x, dim=1)
 
     # Ignore index (set loss contribution to 0)
-    valid_idxs = torch.ones(logpt.shape[1], dtype=torch.bool)
+    valid_idxs = torch.ones(logpt.shape[1], dtype=torch.bool, device=x.device)
     if ignore_index >= 0 and ignore_index < x.shape[1]:
         valid_idxs[ignore_index] = False
 
@@ -215,7 +215,7 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
     logpt = F.log_softmax(x, dim=1)
 
     # Ignore index (set loss contribution to 0)
-    valid_idxs = torch.ones(logpt.shape[1], dtype=torch.bool)
+    valid_idxs = torch.ones(logpt.shape[1], dtype=torch.bool, device=x.device)
     if ignore_index >= 0 and ignore_index < x.shape[1]:
         valid_idxs[ignore_index] = False
 
