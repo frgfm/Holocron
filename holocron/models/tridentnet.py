@@ -43,12 +43,9 @@ class TridentConv2d(nn.Conv2d):
 
         out = []
         # Use shared weight to apply the convolution
-        for _x, dilation in zip(torch.chunk(x, self.num_branches, 1), dilations):
-            out.append(F.conv2d(_x, self.weight, self.bias, self.stride,
-                                tuple(dilation * p for p in self.padding),
-                                (dilation,) * len(self.dilation), self.groups))
-
-        out = torch.cat(out, 1)
+        out = torch.cat([F.conv2d(_x, self.weight, self.bias, self.stride, tuple(dilation * p for p in self.padding),
+                                  (dilation,) * len(self.dilation), self.groups)
+                         for _x, dilation in zip(torch.chunk(x, self.num_branches, 1), dilations)], 1)
 
         return out
 
