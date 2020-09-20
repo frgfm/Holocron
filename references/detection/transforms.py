@@ -14,8 +14,8 @@ class VOCTargetTransform:
 
     def __call__(self, image, target):
         # Format boxes properly
-        boxes = torch.tensor([[int(obj['bndbox']['xmin']), int(obj['bndbox']['ymin']),
-                               int(obj['bndbox']['xmax']), int(obj['bndbox']['ymax'])]
+        boxes = torch.tensor([[obj['bndbox']['xmin'], obj['bndbox']['ymin'],
+                               obj['bndbox']['xmax'], obj['bndbox']['ymax']]
                               for obj in target['annotation']['object']], dtype=torch.float32)
         # Encode class labels
         labels = torch.tensor([self.class_map[obj['name']] for obj in target['annotation']['object']], dtype=torch.long)
@@ -104,7 +104,7 @@ class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
         if random.random() < self.p:
             height, width = image.size
             image = F.hflip(image)
-            target['boxes'][:, [-4, -2]] = width - target['boxes'][:, [-4, -2]]
+            target['boxes'][:, [0, 2]] = width - target['boxes'][:, [0, 2]]
             # Reorder them correctly
-            target['boxes'][:, -4:] = target['boxes'][:, [-2, -3, -4, -1]]
+            target['boxes'] = target['boxes'][:, [2, 1, 0, 3]]
         return image, target
