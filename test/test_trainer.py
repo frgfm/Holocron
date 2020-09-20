@@ -88,11 +88,12 @@ class CoreTester(unittest.TestCase):
             learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer,
                                                     output_file=tf.name)
             learner.save(tf.name)
+            checkpoint = torch.load(tf.name, map_location='cpu')
             # Check setup
             self.assertTrue(learner.check_setup(num_it=num_it))
 
             # LR Find
-            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.load(checkpoint)
 
             self.assertRaises(AssertionError, learner.plot_recorder, block=False)
             learner.lr_find(num_it=num_it)
@@ -101,12 +102,12 @@ class CoreTester(unittest.TestCase):
 
             # Training
             # Perform the iterations
-            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.load(checkpoint)
             self.assertRaises(ValueError, learner.fit_n_epochs, 1, 1e-3, sched_type='my_scheduler')
             learner.fit_n_epochs(1, 1e-3)
             # Check that params were updated
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
-            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.load(checkpoint)
             learner.fit_n_epochs(1, 1e-3, sched_type='cosine')
             # Check that params were updated
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
@@ -126,21 +127,22 @@ class CoreTester(unittest.TestCase):
             learner = trainer.SegmentationTrainer(model, train_loader, train_loader, criterion, optimizer,
                                                   output_file=tf.name)
             learner.save(tf.name)
+            checkpoint = torch.load(tf.name, map_location='cpu')
             # Check setup
             self.assertTrue(learner.check_setup(num_it=num_it))
 
             # LR Find
-            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.load(checkpoint)
             learner.lr_find(num_it=num_it)
             learner.plot_recorder(block=False)
 
             # Training
             # Perform the iterations
-            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.load(checkpoint)
             learner.fit_n_epochs(1, 1e-3)
             # Check that params were updated
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
-            learner.load(torch.load(tf.name, map_location='cpu'))
+            learner.load(checkpoint)
             learner.fit_n_epochs(1, 1e-3, sched_type='cosine')
             # Check that params were updated
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
