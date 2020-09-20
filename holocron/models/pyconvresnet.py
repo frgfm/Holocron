@@ -6,7 +6,6 @@ Implementation of PyConvResNet
 
 import sys
 import logging
-import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 from holocron.nn import PyConv2d
 from .resnet import ResNet, _ResBlock

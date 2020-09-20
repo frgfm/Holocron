@@ -135,6 +135,9 @@ class ReXNet(nn.Sequential):
             ('pool', GlobalAvgPool2d(flatten=True)),
             ('head', nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes)))]))
 
+        # Init all layers
+        init.init_module(self, nonlinearity='relu')
+
 
 def _rexnet(arch, pretrained, progress, **kwargs):
 

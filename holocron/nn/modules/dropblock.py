@@ -4,7 +4,6 @@
 Regularization modules
 '''
 
-import torch
 import torch.nn as nn
 from .. import functional as F
 
