@@ -13,6 +13,8 @@ Image classification
 
 .. autoclass:: ClassificationTrainer
 
+.. autoclass:: SegmentationTrainer
+
 
 Miscellaneous
 -------------
