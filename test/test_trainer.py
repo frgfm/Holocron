@@ -20,6 +20,7 @@ class MockClassificationDataset(torch.utils.data.Dataset):
     def __len__(self):
         return self.n
 
+
 class MockSegDataset(torch.utils.data.Dataset):
     """Mock dataset generating a random sample and a fixed zero target"""
     def __init__(self, n):
@@ -74,7 +75,8 @@ class CoreTester(unittest.TestCase):
         model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
                               GlobalAvgPool2d(flatten=True), nn.Linear(32, 5))
         model_w = model[-1].weight.data.clone()
-        train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size), batch_size=batch_size)
+        train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size),
+                                                   batch_size=batch_size)
         optimizer = torch.optim.Adam(model.parameters())
         criterion = torch.nn.CrossEntropyLoss()
 
