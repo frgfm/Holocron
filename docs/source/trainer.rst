@@ -15,6 +15,8 @@ Image classification
 
 .. autoclass:: SegmentationTrainer
 
+.. autoclass:: DetectionTrainer
+
 
 Miscellaneous
 -------------
