@@ -42,8 +42,8 @@ class MockDetDataset(torch.utils.data.Dataset):
         self.n = n
 
     def __getitem__(self, idx):
-        boxes = torch.tensor([[0, 0, 1, 1]], dtype=torch.float32)
-        return torch.rand((3, 416, 416)), dict(boxes=boxes, labels=torch.zeros(1, dtype=torch.long))
+        boxes = torch.tensor([[0, 0, 1, 1], [0.25, 0.25, 0.75, 0.75]], dtype=torch.float32)
+        return torch.rand((3, 416, 416)), dict(boxes=boxes, labels=torch.zeros(2, dtype=torch.long))
 
     def __len__(self):
         return self.n
@@ -194,11 +194,11 @@ class CoreTester(unittest.TestCase):
             # Training
             # Perform the iterations
             learner.load(checkpoint)
-            learner.fit_n_epochs(1, 1e-5, 'backbone')
+            learner.fit_n_epochs(1, 5e-4, 'backbone')
             # Check that params were updated
             self.assertFalse(torch.equal(learner.model.roi_heads.box_predictor.cls_score.weight.data, model_w))
             learner.load(checkpoint)
-            learner.fit_n_epochs(1, 1e-5, 'backbone', sched_type='cosine')
+            learner.fit_n_epochs(1, 5e-4, 'backbone', sched_type='cosine')
             # Check that params were updated
             self.assertFalse(torch.equal(learner.model.roi_heads.box_predictor.cls_score.weight.data, model_w))
 
