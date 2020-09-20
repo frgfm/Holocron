@@ -95,15 +95,23 @@ class Trainer:
     @staticmethod
     def _to_cuda(x, target):
         """Move input and target to GPU"""
-        raise NotImplementedError
+        x = x.cuda(non_blocking=True)
+        target = target.cuda(non_blocking=True)
+        return x, target
 
     def _backprop_step(self, loss):
-        """Compute error gradients & perform the optimizer step"""
-        raise NotImplementedError
+        # Clean gradients
+        self.optimizer.zero_grad()
+        # Backpropate the loss
+        loss.backward()
+        # Update the params
+        self.optimizer.step()
 
     def _get_loss(self, x, target):
-        """Forward tensor and compute the loss"""
-        raise NotImplementedError
+        # Forward
+        out = self.model(x)
+        # Loss computation
+        return self.criterion(out, target)
 
     def _set_params(self):
         self._params = ContiguousParams([p for p in self.model.parameters() if p.requires_grad])
@@ -231,27 +239,6 @@ class Trainer:
 
 
 class ClassificationTrainer(Trainer):
-
-    @staticmethod
-    def _to_cuda(x, target):
-        """Move input and target to GPU"""
-        x = x.cuda(non_blocking=True)
-        target = target.cuda(non_blocking=True)
-        return x, target
-
-    def _backprop_step(self, loss):
-        # Clean gradients
-        self.optimizer.zero_grad()
-        # Backpropate the loss
-        loss.backward()
-        # Update the params
-        self.optimizer.step()
-
-    def _get_loss(self, x, target):
-        # Forward
-        out = self.model(x)
-        # Loss computation
-        return self.criterion(out, target)
 
     @torch.no_grad()
     def evaluate(self):
