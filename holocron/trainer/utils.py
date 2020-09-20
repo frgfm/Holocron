@@ -1,11 +1,10 @@
-from torch.nn import Module
 from torch.nn.modules.batchnorm import _BatchNorm
 
 
 __all__ = ['freeze_bn', 'freeze_model']
 
 
-def freeze_bn(mod: Module) -> Module:
+def freeze_bn(mod):
     """Prevents parameter and stats from updating in Batchnorm layers that are frozen
 
     Args:
@@ -25,7 +24,7 @@ def freeze_bn(mod: Module) -> Module:
     return mod
 
 
-def freeze_model(model: Module, last_frozen_layer: bool=None, frozen_bn_stat_update: bool=False) -> Module:
+def freeze_model(model, last_frozen_layer=None, frozen_bn_stat_update=False):
     """Freeze a specific range of model layers
 
     Args:
