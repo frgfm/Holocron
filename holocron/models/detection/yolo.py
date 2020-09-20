@@ -54,6 +54,9 @@ class _YOLO(nn.Module):
             dict: dictionary of losses
         """
 
+        if not all(torch.all(boxes >= 0) and torch.all(boxes <= 1) for boxes in gt_boxes):
+            raise ValueError("Ground truth boxes are expected to have values between 0 and 1.")
+
         b, h, w, _, num_classes = pred_scores.shape
         # Pred scores of YOLOv1 do not have the anchor dimension properly sized (only for broadcasting)
         num_anchors = pred_boxes.shape[3]
@@ -75,8 +78,8 @@ class _YOLO(nn.Module):
             not_matched = torch.arange(h * w * num_anchors)
             if gt_boxes[idx].shape[0] > 0:
                 # Locate the cell of each GT
-                gt_centers = (torch.stack((gt_boxes[idx][:, [0, 2]].sum(dim=-1) * w,
-                                           gt_boxes[idx][:, [1, 3]].sum(dim=-1) * h), dim=1) / 2).to(dtype=torch.long)
+                gt_centers = torch.stack((gt_boxes[idx][:, [0, 2]].mean(dim=-1) * w,
+                                          gt_boxes[idx][:, [1, 3]].mean(dim=-1) * h), dim=1).to(dtype=torch.long)
                 cell_idxs = gt_centers[:, 1] * w + gt_centers[:, 0]
                 # Assign the best anchor in each corresponding cell
                 iou_mat = box_iou(pred_xyxy[idx].view(-1, 4), gt_boxes[idx]).view(h * w, num_anchors, -1)
