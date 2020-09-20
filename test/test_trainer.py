@@ -74,7 +74,6 @@ class CoreTester(unittest.TestCase):
         # Generate all dependencies
         model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
                               GlobalAvgPool2d(flatten=True), nn.Linear(32, 5))
-        model_w = model[-1].weight.data.clone()
         train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size),
                                                    batch_size=batch_size)
         optimizer = torch.optim.Adam(model.parameters())
@@ -86,9 +85,10 @@ class CoreTester(unittest.TestCase):
 
         with NamedTemporaryFile() as tf:
             learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer,
-                                                    output_file=tf.name)
+                                                    output_file=tf.name, gpu=0 if torch.cuda.is_available() else None)
             learner.save(tf.name)
             checkpoint = torch.load(tf.name, map_location='cpu')
+            model_w = learner.model[-1].weight.data.clone()
             # Check setup
             self.assertTrue(learner.check_setup(num_it=num_it))
 
@@ -118,16 +118,16 @@ class CoreTester(unittest.TestCase):
         batch_size = 8
         # Generate all dependencies
         model = nn.Sequential(nn.Conv2d(3, 32, 3, padding=1), nn.ReLU(inplace=True), nn.Conv2d(32, 5, 3, padding=1))
-        model_w = model[-1].weight.data.clone()
         train_loader = torch.utils.data.DataLoader(MockSegDataset(num_it * batch_size), batch_size=batch_size)
         optimizer = torch.optim.Adam(model.parameters())
         criterion = torch.nn.CrossEntropyLoss()
 
         with NamedTemporaryFile() as tf:
             learner = trainer.SegmentationTrainer(model, train_loader, train_loader, criterion, optimizer,
-                                                  output_file=tf.name)
+                                                  output_file=tf.name, gpu=0 if torch.cuda.is_available() else None)
             learner.save(tf.name)
             checkpoint = torch.load(tf.name, map_location='cpu')
+            model_w = learner.model[-1].weight.data.clone()
             # Check setup
             self.assertTrue(learner.check_setup(num_it=num_it))
 
