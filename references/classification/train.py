@@ -130,25 +130,13 @@ def parse_args():
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
     parser.add_argument('--sched', default='onecycle', type=str, help='Scheduler to be used')
     parser.add_argument('--lr', default=1e-3, type=float, help='initial learning rate')
-    parser.add_argument('--wd', '--weight-decay', default=0, type=float,
-                        metavar='W', help='weight decay',
-                        dest='weight_decay')
-    parser.add_argument("--lr-finder", dest='lr_finder', action='store_true',
-                        help="Should you run LR Finder")
+    parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
+    parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
     parser.add_argument('--output-file', default='./model.pth', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
-    parser.add_argument(
-        "--test-only",
-        dest="test_only",
-        help="Only test the model",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--pretrained",
-        dest="pretrained",
-        help="Use pre-trained models from the modelzoo",
-        action="store_true",
-    )
+    parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
+    parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
+                        action="store_true")
 
     args = parser.parse_args()
 
