@@ -14,8 +14,8 @@ class VOCTargetTransform:
 
     def __call__(self, image, target):
         # Format boxes properly
-        boxes = torch.tensor([[obj['bndbox']['xmin'], obj['bndbox']['ymin'],
-                               obj['bndbox']['xmax'], obj['bndbox']['ymax']]
+        boxes = torch.tensor([[int(obj['bndbox']['xmin']), int(obj['bndbox']['ymin']),
+                               int(obj['bndbox']['xmax']), int(obj['bndbox']['ymax'])]
                               for obj in target['annotation']['object']], dtype=torch.float32)
         # Encode class labels
         labels = torch.tensor([self.class_map[obj['name']] for obj in target['annotation']['object']], dtype=torch.long)
