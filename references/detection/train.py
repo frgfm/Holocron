@@ -91,7 +91,7 @@ def plot_samples(images, targets):
             rect = Rectangle((xmin, ymin), xmax - xmin, ymax - ymin,
                              linewidth=2, edgecolor='lime', facecolor='none')
             axes[idx].add_patch(rect)
-            axes[idx].text(xmin, ymin, classes[label.item()], color='lime', fontsize=12)
+            axes[idx].text(xmin, ymin, VOC_CLASSES[label.item()], color='lime', fontsize=12)
 
     plt.show()
 
