@@ -10,7 +10,7 @@ from contiguous_params import ContiguousParams
 from .utils import freeze_bn, freeze_model
 
 
-__all__ = ['Trainer', 'ClassificationTrainer']
+__all__ = ['Trainer', 'ClassificationTrainer', 'SegmentationTrainer']
 
 
 class Trainer:
@@ -268,3 +268,38 @@ class ClassificationTrainer(Trainer):
     def _eval_metrics_str(eval_metrics):
         return (f"Validation loss: {eval_metrics['val_loss']:.4} "
                 f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})")
+
+
+class SegmentationTrainer(Trainer):
+
+    @torch.no_grad()
+    def evaluate(self, ignore_index=255):
+
+        self.model.eval()
+
+        val_loss, mean_iou = 0, 0
+        for x, target in self.val_loader:
+            x, target = self.to_cuda(x, target)
+
+            # Forward
+            out = self.model(x)
+            # Loss computation
+            val_loss += self.criterion(out, target).item()
+
+            pred = out.argmax(dim=1)
+            tmp_iou, num_seg = 0, 0
+            for class_idx in torch.unique(target):
+                if class_idx != ignore_index:
+                    inter = (pred[target == class_idx] == class_idx).sum().item()
+                    tmp_iou += inter / ((pred == class_idx) | (target == class_idx)).sum().item()
+                    num_seg += 1
+            mean_iou += tmp_iou / num_seg
+
+        val_loss /= len(self.val_loader)
+        mean_iou /= len(self.val_loader)
+
+        return dict(val_loss=val_loss, mean_iou=mean_iou)
+
+    @staticmethod
+    def _eval_metrics_str(eval_metrics):
+        return f"Validation loss: {eval_metrics['val_loss']:.4} (Mean IoU: {eval_metrics['mean_iou']:.2%})"
