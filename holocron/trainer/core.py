@@ -41,7 +41,7 @@ class Trainer:
             if not torch.cuda.is_available():
                 raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
             if gpu >= torch.cuda.device_count():
-                raise ValueError(f"Invalid device index")
+                raise ValueError("Invalid device index")
             torch.cuda.set_device(gpu)
             self.model = self.model.cuda()
             self.criterion = self.criterion.cuda()
@@ -86,7 +86,7 @@ class Trainer:
         """Move input and target to GPU"""
         if isinstance(self.gpu, int):
             if self.gpu >= torch.cuda.device_count():
-                raise ValueError(f"Invalid device index")
+                raise ValueError("Invalid device index")
             return self._to_cuda(x, target)
         else:
             return x, target
