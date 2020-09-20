@@ -42,7 +42,10 @@ requirements = [
     'torch>=1.5.1',
     'torchvision>=0.6.1',
     'tqdm>=4.1.0',
-    'numpy>=1.17.2'
+    'numpy>=1.17.2',
+    'fastprogress>=1.0.0',
+    'matplotlib>=3.0.0',
+    'contiguous_params@git+https://github.com/philjd/contiguous_pytorch_params.git#egg=contiguous_params',
 ]
 
 setup(

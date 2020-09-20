@@ -10,7 +10,7 @@ class MockDataset(torch.utils.data.Dataset):
         self.n = n
 
     def __getitem__(self, idx):
-        return torch.rand(32), torch.zeros(1, dtype=torch.long)
+        return torch.rand(32), 0
 
     def __len__(self):
         return self.n
@@ -21,7 +21,7 @@ def train_one_batch(model, x, target, optimizer, criterion, device):
 
     x, target = x.to(device), target.to(device)
     output = model(x)
-    batch_loss = criterion(output, target.view(-1))
+    batch_loss = criterion(output, target)
 
     optimizer.zero_grad()
     batch_loss.backward()

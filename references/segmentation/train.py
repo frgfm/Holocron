@@ -171,7 +171,7 @@ def main(args):
     torch.backends.cudnn.benchmark = True
 
     dataset, dataset_test, train_sampler, test_sampler = load_data(args.data_path)
-    train_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, drop_last=True,
                                                sampler=train_sampler, num_workers=args.workers, pin_memory=True)
 
     if args.show_samples:
@@ -179,7 +179,7 @@ def main(args):
         plot_samples(x, target, ignore_index=255)
         return
 
-    val_loader = torch.utils.data.DataLoader(dataset_test, batch_size=args.batch_size,
+    val_loader = torch.utils.data.DataLoader(dataset_test, batch_size=args.batch_size, drop_last=False,
                                              sampler=test_sampler, num_workers=args.workers, pin_memory=True)
 
     print("Creating model")
