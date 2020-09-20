@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; holocron 0.1.3a0+db752b6-git documentation</title>
+  <title>Index &mdash; holocron 0.1.3a0+cfd0ef3-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.3a0+db752b6
+                0.1.3a0+cfd0ef3
               </div>
             
           
@@ -141,6 +141,11 @@
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="trainer.html#image-classification">Image classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trainer.html#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">holocron.utils</a><ul>
@@ -267,6 +272,8 @@
 </li>
       <li><a href="nn.html#holocron.nn.ClassBalancedWrapper">ClassBalancedWrapper (class in holocron.nn)</a>
 </li>
+      <li><a href="trainer.html#holocron.trainer.ClassificationTrainer">ClassificationTrainer (class in holocron.trainer)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="nn.functional.html#holocron.nn.functional.concat_downsample2d">concat_downsample2d() (in module holocron.nn.functional)</a>
@@ -303,9 +310,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="nn.functional.html#holocron.nn.functional.focal_loss">focal_loss() (in module holocron.nn.functional)</a>
 </li>
+      <li><a href="nn.html#holocron.nn.FocalLoss">FocalLoss (class in holocron.nn)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="nn.html#holocron.nn.FocalLoss">FocalLoss (class in holocron.nn)</a>
+      <li><a href="trainer.html#holocron.trainer.freeze_bn">freeze_bn() (in module holocron.trainer)</a>
+</li>
+      <li><a href="trainer.html#holocron.trainer.freeze_model">freeze_model() (in module holocron.trainer)</a>
 </li>
       <li><a href="nn.html#holocron.nn.FReLU">FReLU (class in holocron.nn)</a>
 </li>
@@ -334,13 +345,20 @@
         <li><a href="index.html#module-holocron">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     holocron.optim
 
       <ul>
         <li><a href="optim.html#module-holocron.optim">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    holocron.trainer
+
+      <ul>
+        <li><a href="trainer.html#module-holocron.trainer">module</a>
 </li>
       </ul></li>
       <li>
@@ -391,6 +409,8 @@
         <li><a href="index.html#module-holocron">holocron</a>
 </li>
         <li><a href="optim.html#module-holocron.optim">holocron.optim</a>
+</li>
+        <li><a href="trainer.html#module-holocron.trainer">holocron.trainer</a>
 </li>
         <li><a href="utils.html#module-holocron.utils">holocron.utils</a>
 </li>

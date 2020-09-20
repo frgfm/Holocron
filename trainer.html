@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Python Module Index &mdash; holocron 0.1.3a0+cfd0ef3-git documentation</title>
+  <title>holocron.trainer &mdash; holocron 0.1.3a0+cfd0ef3-git documentation</title>
   
 
   
@@ -38,9 +38,8 @@
   <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
- 
-
-
+    <link rel="next" title="holocron.utils" href="utils.html" />
+    <link rel="prev" title="holocron.optim" href="optim.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -98,7 +97,7 @@
 </li>
 </ul>
 <p class="caption"><span class="caption-text">Package Documentation</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="models.html#resnet">ResNet</a></li>
@@ -146,9 +145,9 @@
 <li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="trainer.html#image-classification">Image classification</a></li>
-<li class="toctree-l2"><a class="reference internal" href="trainer.html#miscellaneous">Miscellaneous</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#image-classification">Image classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">holocron.utils</a><ul>
@@ -204,10 +203,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Python Module Index</li>
+      <li>holocron.trainer</li>
     
     
       <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/trainer.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -219,45 +222,74 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
+  <div class="section" id="module-holocron.trainer">
+<span id="holocron-trainer"></span><h1>holocron.trainer<a class="headerlink" href="#module-holocron.trainer" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="#module-holocron.trainer" title="holocron.trainer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.trainer</span></code></a> provides some basic objects for training purposes.</p>
+<div class="section" id="image-classification">
+<h2>Image classification<a class="headerlink" href="#image-classification" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="holocron.trainer.ClassificationTrainer">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">ClassificationTrainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">train_loader</span></em>, <em class="sig-param"><span class="n">val_loader</span></em>, <em class="sig-param"><span class="n">criterion</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="o">=</span><span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#ClassificationTrainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.ClassificationTrainer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
-   <h1>Python Module Index</h1>
+</div>
+<div class="section" id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="holocron.trainer.freeze_bn">
+<code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">freeze_bn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mod</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/utils.html#freeze_bn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.freeze_bn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prevents parameter and stats from updating in Batchnorm layers that are frozen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mod</strong> (<em>torch.nn.Module</em>) – model to train</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
 
-   <div class="modindex-jumpbox">
-   <a href="#cap-h"><strong>h</strong></a>
-   </div>
+<dl class="py function">
+<dt id="holocron.trainer.freeze_model">
+<code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">freeze_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">last_frozen_layer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frozen_bn_stat_update</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/utils.html#freeze_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.freeze_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Freeze a specific range of model layers</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – model to train</p></li>
+<li><p><strong>last_frozen_layer</strong> (<em>str</em><em>, </em><em>optional</em>) – last layer to freeze. Assumes layers have been registered in forward order</p></li>
+<li><p><strong>frozen_bn_stat_update</strong> (<em>bool</em><em>, </em><em>optional</em>) – force stats update in BN layers that are frozen</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
 
-   <table class="indextable modindextable">
-     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
-     <tr class="cap" id="cap-h"><td></td><td>
-       <strong>h</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <a href="index.html#module-holocron"><code class="xref">holocron</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="optim.html#module-holocron.optim"><code class="xref">holocron.optim</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="trainer.html#module-holocron.trainer"><code class="xref">holocron.trainer</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="utils.html#module-holocron.utils"><code class="xref">holocron.utils</code></a></td><td>
-       <em></em></td></tr>
-   </table>
+</div>
+</div>
 
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="utils.html" class="btn btn-neutral float-right" title="holocron.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="optim.html" class="btn btn-neutral float-left" title="holocron.optim" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
