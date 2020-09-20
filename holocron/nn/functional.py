@@ -167,8 +167,9 @@ def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
     logpt = F.log_softmax(x, dim=1)
 
     # Ignore index (set loss contribution to 0)
+    valid_idxs = torch.ones(logpt.shape[1], dtype=torch.bool)
     if ignore_index >= 0 and ignore_index < x.shape[1]:
-        logpt[:, ignore_index] = 0
+        valid_idxs[ignore_index] = False
 
     # Weight
     if weight is not None:
@@ -182,9 +183,9 @@ def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
 
     # Loss reduction
     if reduction == 'sum':
-        loss = loss.sum()
+        loss = loss[:, valid_idxs].sum()
     else:
-        loss = loss.sum(dim=1)
+        loss = loss[:, valid_idxs].sum(dim=1)
         if reduction == 'mean':
             loss = loss.mean()
 
@@ -214,8 +215,9 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
     logpt = F.log_softmax(x, dim=1)
 
     # Ignore index (set loss contribution to 0)
+    valid_idxs = torch.ones(logpt.shape[1], dtype=torch.bool)
     if ignore_index >= 0 and ignore_index < x.shape[1]:
-        logpt[:, ignore_index] = 0
+        valid_idxs[ignore_index] = False
 
     # Weight
     if weight is not None:
@@ -226,9 +228,9 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
 
     # Loss reduction
     if reduction == 'sum':
-        loss = -logpt.sum()
+        loss = -logpt[:, valid_idxs].sum()
     else:
-        loss = -logpt.sum(dim=1)
+        loss = -logpt[:, valid_idxs].sum(dim=1)
         if reduction == 'mean':
             loss = loss.mean()
 
