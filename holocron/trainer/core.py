@@ -39,6 +39,11 @@ class Trainer:
         self._reset_opt(self.optimizer.defaults['lr'])
 
     def set_device(self, gpu):
+        """Move tensor objects to the target GPU
+
+        Args:
+            gpu (int): index of the target GPU device
+        """
         if isinstance(gpu, int):
             if not torch.cuda.is_available():
                 raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
@@ -50,6 +55,11 @@ class Trainer:
                 self.criterion = self.criterion.cuda()
 
     def save(self, output_file):
+        """Save a trainer checkpoint
+
+        Args:
+            output_file (str): destination file path
+        """
         torch.save(dict(epoch=self.epoch, step=self.step, min_loss=self.min_loss,
                         optimizer=self.optimizer.state_dict(),
                         model=self.model.state_dict()),
@@ -57,7 +67,11 @@ class Trainer:
                    _use_new_zipfile_serialization=False)
 
     def load(self, state):
-        """Resume from a trainer state"""
+        """Resume from a trainer state
+
+        Args:
+            state (dict): checkpoint dictionary
+        """
         self.start_epoch = state['epoch']
         self.epoch = self.start_epoch
         self.step = state['step']
@@ -66,7 +80,12 @@ class Trainer:
         self.model.load_state_dict(state['model'])
 
     def _fit_epoch(self, freeze_until, mb):
-        """Fit a single epoch"""
+        """Fit a single epoch
+
+        Args:
+            freeze_until (str): last layer to freeze
+            mb (fastprogress.master_bar): primary progress bar
+        """
         self.model = freeze_bn(self.model.train())
 
         pb = progress_bar(self.train_loader, parent=mb)
@@ -143,6 +162,14 @@ class Trainer:
             raise ValueError(f"The following scheduler type is not supported: {sched_type}")
 
     def fit_n_epochs(self, num_epochs, lr, freeze_until=None, sched_type='onecycle'):
+        """Train the model for a given number of epochs
+
+        Args:
+            num_epochs (int): number of epochs to train
+            lr (float): learning rate to be used by the scheduler
+            freeze_until (str, optional): last layer to freeze
+            sched_type (str, optional): type of scheduler to use
+        """
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
@@ -170,6 +197,14 @@ class Trainer:
                 self.save(self.output_file)
 
     def lr_find(self, freeze_until=None, start_lr=1e-7, end_lr=1, num_it=100):
+        """Gridsearch the optimal learning rate for the training
+
+        Args:
+           freeze_until (str, optional): last layer to freeze
+           start_lr (float, optional): initial learning rate
+           end_lr (float, optional): final learning rate
+           num_it (int, optional): number of iterations to perform
+        """
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
@@ -196,6 +231,12 @@ class Trainer:
                 break
 
     def plot_recorder(self, beta=0.95, block=True):
+        """Display the results of the LR grid search
+
+        Args:
+            beta (float, optional): smoothing factor
+            block (bool, optional): whether the plot should block execution
+        """
 
         if len(self.lr_recorder) != len(self.loss_recorder) or len(self.lr_recorder) == 0:
             raise AssertionError("Please run the `lr_find` method first")
@@ -215,7 +256,13 @@ class Trainer:
         plt.show(block=block)
 
     def check_setup(self, freeze_until=None, lr=3e-4, num_it=100):
-        """Check whether you can overfit one batch"""
+        """Check whether you can overfit one batch
+
+        Args:
+            freeze_until (str, optional): last layer to freeze
+            lr (float, optional): learning rate to be used for training
+            num_it (int, optional): number of iterations to perform
+        """
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
@@ -241,9 +288,25 @@ class Trainer:
 
 
 class ClassificationTrainer(Trainer):
+    """Image classification trainer class
+
+    Args:
+        model (torch.nn.Module): model to train
+        train_loader (torch.utils.data.DataLoader): training loader
+        val_loader (torch.utils.data.DataLoader): validation loader
+        criterion (torch.nn.Module): loss criterion
+        optimizer (torch.optim.Optimizer): parameter optimizer
+        gpu (int, optional): index of the GPU to use
+        output_file (str, optional): path where checkpoints will be saved
+    """
 
     @torch.no_grad()
     def evaluate(self):
+        """Evaluate the model on the validation set
+
+        Returns:
+            dict: evaluation metrics
+        """
 
         self.model.eval()
 
@@ -273,9 +336,28 @@ class ClassificationTrainer(Trainer):
 
 
 class SegmentationTrainer(Trainer):
+    """Semantic segmentation trainer class
+
+    Args:
+        model (torch.nn.Module): model to train
+        train_loader (torch.utils.data.DataLoader): training loader
+        val_loader (torch.utils.data.DataLoader): validation loader
+        criterion (torch.nn.Module): loss criterion
+        optimizer (torch.optim.Optimizer): parameter optimizer
+        gpu (int, optional): index of the GPU to use
+        output_file (str, optional): path where checkpoints will be saved
+    """
 
     @torch.no_grad()
     def evaluate(self, ignore_index=255):
+        """Evaluate the model on the validation set
+
+        Args:
+            ignore_index (int, optional): index of the class to ignore in evaluation
+
+        Returns:
+            dict: evaluation metrics
+        """
 
         self.model.eval()
 
@@ -326,6 +408,17 @@ def assign_iou(gt_boxes, pred_boxes, iou_threshold=0.5):
 
 
 class DetectionTrainer(Trainer):
+    """Object detection trainer class
+
+    Args:
+        model (torch.nn.Module): model to train
+        train_loader (torch.utils.data.DataLoader): training loader
+        val_loader (torch.utils.data.DataLoader): validation loader
+        criterion (None): loss criterion
+        optimizer (torch.optim.Optimizer): parameter optimizer
+        gpu (int, optional): index of the GPU to use
+        output_file (str, optional): path where checkpoints will be saved
+    """
 
     @staticmethod
     def _to_cuda(x, target):
@@ -357,6 +450,14 @@ class DetectionTrainer(Trainer):
 
     @torch.no_grad()
     def evaluate(self, iou_threshold=0.5):
+        """Evaluate the model on the validation set
+
+        Args:
+            iou_threshold (float, optional): IoU threshold for pair assignment
+
+        Returns:
+            dict: evaluation metrics
+        """
         self.model.eval()
 
         loc_assigns = 0

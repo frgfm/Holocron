@@ -138,16 +138,19 @@ def main(args):
                                args.device, args.output_file)
 
     if args.resume:
+        print(f"Resuming {args.resume}")
         checkpoint = torch.load(args.resume, map_location='cpu')
         trainer.load(checkpoint)
 
     if args.test_only:
+        print("Running evaluation")
         eval_metrics = trainer.evaluate()
         print(f"Loc error: {eval_metrics['loc_err']:.2%} | Clf error: {eval_metrics['clf_err']:.2%} | "
               f"Det error: {eval_metrics['det_err']:.2%}")
         return
 
     if args.lr_finder:
+        print("Looking for optimal LR")
         trainer.lr_find(args.freeze_until)
         trainer.plot_recorder()
         return

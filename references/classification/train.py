@@ -93,16 +93,19 @@ def main(args):
     trainer = ClassificationTrainer(model, train_loader, val_loader, criterion, optimizer,
                                     args.device, args.output_file)
     if args.resume:
+        print(f"Resuming {args.resume}")
         checkpoint = torch.load(args.resume, map_location='cpu')
         trainer.load(checkpoint)
 
     if args.test_only:
+        print("Running evaluation")
         eval_metrics = trainer.evaluate()
         print(f"Validation loss: {eval_metrics['val_loss']:.4} "
               f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})")
         return
 
     if args.lr_finder:
+        print("Looking for optimal LR")
         trainer.lr_find(args.freeze_until)
         trainer.plot_recorder()
         return

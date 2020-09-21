@@ -96,6 +96,10 @@ def convert_to_relative(image, target):
     target['boxes'][:, [0, 2]] /= image.size[0]
     target['boxes'][:, [1, 3]] /= image.size[1]
 
+    # Clip
+    target['boxes'][:, [0, 2]] = target['boxes'][:, [0, 2]].clamp_(0, 1)
+    target['boxes'][:, [1, 3]] = target['boxes'][:, [1, 3]].clamp_(0, 1)
+
     return image, target
 
 
