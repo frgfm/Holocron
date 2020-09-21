@@ -19,8 +19,7 @@ from torch.utils.data import RandomSampler, SequentialSampler
 
 import holocron
 from holocron.trainer import SegmentationTrainer
-from transforms import (Compose, Resize, ImageTransform, CenterCrop, RandomResizedCrop,
-                        RandomHorizontalFlip, convert_to_relative)
+from transforms import Compose, RandomResize, RandomCrop, RandomHorizontalFlip, SampleTransform, ToTensor
 
 
 VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
@@ -30,7 +29,6 @@ VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', '
 
 def load_data(datadir):
     # Data loading code
-    print("Loading data")
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
