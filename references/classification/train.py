@@ -21,7 +21,6 @@ from holocron.trainer import ClassificationTrainer
 
 def load_data(traindir, valdir, img_size=224, crop_pct=0.875):
     # Data loading code
-    print("Loading data")
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
