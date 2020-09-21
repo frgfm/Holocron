@@ -44,7 +44,7 @@ class ImageTransform(object):
 
 class CenterCrop(transforms.CenterCrop):
     def __call__(self, image, target):
-        image = F.center_crop(img, self.size)
+        image = F.center_crop(image, self.size)
         x = int(image.size[0] / 2 - self.size[0] / 2)
         y = int(image.size[1] / 2 - self.size[1] / 2)
         # Crop
