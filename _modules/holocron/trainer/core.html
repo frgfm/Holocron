@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer.core &mdash; holocron 0.1.3a0+cae7c3d-git documentation</title>
+  <title>holocron.trainer.core &mdash; holocron 0.1.3a0+3d4cd00-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.3a0+cae7c3d
+                0.1.3a0+3d4cd00
               </div>
             
           
@@ -235,7 +235,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trainer&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;SegmentationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;DetectionTrainer&#39;</span><span class="p">]</span>
 
 
-<span class="k">class</span> <span class="nc">Trainer</span><span class="p">:</span>
+<div class="viewcode-block" id="Trainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer">[docs]</a><span class="k">class</span> <span class="nc">Trainer</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">val_loader</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span>
                  <span class="n">gpu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s1">&#39;./checkpoint.pth&#39;</span><span class="p">):</span>
@@ -259,7 +259,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">gpu</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">set_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpu</span><span class="p">):</span>
+<div class="viewcode-block" id="Trainer.set_device"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.set_device">[docs]</a>    <span class="k">def</span> <span class="nf">set_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpu</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Move tensor objects to the target GPU</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gpu (int): index of the target GPU device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gpu</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;PyTorch cannot access your GPU. Please investigate!&quot;</span><span class="p">)</span>
@@ -268,26 +273,40 @@
             <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">gpu</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+<div class="viewcode-block" id="Trainer.save"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save a trainer checkpoint</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_file (str): destination file path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="n">min_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span><span class="p">,</span>
                         <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
                         <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()),</span>
                    <span class="n">output_file</span><span class="p">,</span>
-                   <span class="n">_use_new_zipfile_serialization</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                   <span class="n">_use_new_zipfile_serialization</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Resume from a trainer state&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Trainer.load"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Resume from a trainer state</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            state (dict): checkpoint dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;step&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;min_loss&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span></div>
 
     <span class="k">def</span> <span class="nf">_fit_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freeze_until</span><span class="p">,</span> <span class="n">mb</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Fit a single epoch&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Fit a single epoch</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            freeze_until (str): last layer to freeze</span>
+<span class="sd">            mb (fastprogress.master_bar): primary progress bar</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_bn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">())</span>
 
         <span class="n">pb</span> <span class="o">=</span> <span class="n">progress_bar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">mb</span><span class="p">)</span>
@@ -306,14 +325,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
 
-    <span class="k">def</span> <span class="nf">to_cuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+<div class="viewcode-block" id="Trainer.to_cuda"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.to_cuda">[docs]</a>    <span class="k">def</span> <span class="nf">to_cuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpu</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu</span> <span class="o">&gt;=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid device index&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span>
+            <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
@@ -363,7 +382,15 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The following scheduler type is not supported: </span><span class="si">{</span><span class="n">sched_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">fit_n_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_epochs</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">freeze_until</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sched_type</span><span class="o">=</span><span class="s1">&#39;onecycle&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Trainer.fit_n_epochs"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.fit_n_epochs">[docs]</a>    <span class="k">def</span> <span class="nf">fit_n_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_epochs</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">freeze_until</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sched_type</span><span class="o">=</span><span class="s1">&#39;onecycle&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Train the model for a given number of epochs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num_epochs (int): number of epochs to train</span>
+<span class="sd">            lr (float): learning rate to be used by the scheduler</span>
+<span class="sd">            freeze_until (str, optional): last layer to freeze</span>
+<span class="sd">            sched_type (str, optional): type of scheduler to use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
@@ -388,9 +415,17 @@
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation loss decreased </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> --&gt; &quot;</span>
                       <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2">: saving state...&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span> <span class="o">=</span> <span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">lr_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freeze_until</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_lr</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span> <span class="n">end_lr</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_it</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<div class="viewcode-block" id="Trainer.lr_find"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.lr_find">[docs]</a>    <span class="k">def</span> <span class="nf">lr_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freeze_until</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_lr</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span> <span class="n">end_lr</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_it</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gridsearch the optimal learning rate for the training</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">           freeze_until (str, optional): last layer to freeze</span>
+<span class="sd">           start_lr (float, optional): initial learning rate</span>
+<span class="sd">           end_lr (float, optional): final learning rate</span>
+<span class="sd">           num_it (int, optional): number of iterations to perform</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
@@ -414,9 +449,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
             <span class="c1"># Stop after the number of iterations</span>
             <span class="k">if</span> <span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">num_it</span><span class="p">:</span>
-                <span class="k">break</span>
+                <span class="k">break</span></div>
 
-    <span class="k">def</span> <span class="nf">plot_recorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Trainer.plot_recorder"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.plot_recorder">[docs]</a>    <span class="k">def</span> <span class="nf">plot_recorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Display the results of the LR grid search</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            beta (float, optional): smoothing factor</span>
+<span class="sd">            block (bool, optional): whether the plot should block execution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;Please run the `lr_find` method first&quot;</span><span class="p">)</span>
@@ -433,10 +474,16 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Learning Rate&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Training loss&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">check_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freeze_until</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">num_it</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check whether you can overfit one batch&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Trainer.check_setup"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.check_setup">[docs]</a>    <span class="k">def</span> <span class="nf">check_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freeze_until</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span> <span class="n">num_it</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check whether you can overfit one batch</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            freeze_until (str, optional): last layer to freeze</span>
+<span class="sd">            lr (float, optional): learning rate to be used for training</span>
+<span class="sd">            num_it (int, optional): number of iterations to perform</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
@@ -458,13 +505,29 @@
                 <span class="k">return</span> <span class="kc">False</span>
             <span class="n">prev_loss</span> <span class="o">=</span> <span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">True</span></div></div>
 
 
 <div class="viewcode-block" id="ClassificationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer">[docs]</a><span class="k">class</span> <span class="nc">ClassificationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Image classification trainer class</span>
 
-    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="sd">    Args:</span>
+<span class="sd">        model (torch.nn.Module): model to train</span>
+<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
+<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
+<span class="sd">        criterion (torch.nn.Module): loss criterion</span>
+<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
+<span class="sd">        gpu (int, optional): index of the GPU to use</span>
+<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: evaluation metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
@@ -485,7 +548,7 @@
 
         <span class="n">val_loss</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">acc1</span><span class="o">=</span><span class="n">top1</span> <span class="o">/</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">acc5</span><span class="o">=</span><span class="n">top5</span> <span class="o">/</span> <span class="n">num_samples</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">acc1</span><span class="o">=</span><span class="n">top1</span> <span class="o">/</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">acc5</span><span class="o">=</span><span class="n">top5</span> <span class="o">/</span> <span class="n">num_samples</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">):</span>
@@ -494,9 +557,28 @@
 
 
 <div class="viewcode-block" id="SegmentationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.SegmentationTrainer">[docs]</a><span class="k">class</span> <span class="nc">SegmentationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Semantic segmentation trainer class</span>
 
-    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="sd">    Args:</span>
+<span class="sd">        model (torch.nn.Module): model to train</span>
+<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
+<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
+<span class="sd">        criterion (torch.nn.Module): loss criterion</span>
+<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
+<span class="sd">        gpu (int, optional): index of the GPU to use</span>
+<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SegmentationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.SegmentationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="mi">255</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ignore_index (int, optional): index of the class to ignore in evaluation</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: evaluation metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
@@ -521,7 +603,7 @@
         <span class="n">val_loss</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">)</span>
         <span class="n">mean_iou</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">mean_iou</span><span class="o">=</span><span class="n">mean_iou</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">mean_iou</span><span class="o">=</span><span class="n">mean_iou</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">):</span>
@@ -547,6 +629,17 @@
 
 
 <div class="viewcode-block" id="DetectionTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer">[docs]</a><span class="k">class</span> <span class="nc">DetectionTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Object detection trainer class</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (torch.nn.Module): model to train</span>
+<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
+<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
+<span class="sd">        criterion (None): loss criterion</span>
+<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
+<span class="sd">        gpu (int, optional): index of the GPU to use</span>
+<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
@@ -576,8 +669,16 @@
         <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loc error: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;loc_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2"> | Clf error: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;clf_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2"> | &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;Det error: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;det_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<div class="viewcode-block" id="DetectionTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            iou_threshold (float, optional): IoU threshold for pair assignment</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: evaluation metrics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="n">loc_assigns</span> <span class="o">=</span> <span class="mi">0</span>
@@ -608,7 +709,7 @@
         <span class="n">clf_err</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">correct</span> <span class="o">/</span> <span class="n">loc_assigns</span> <span class="k">if</span> <span class="n">loc_assigns</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.</span>
         <span class="c1"># End-to-end</span>
         <span class="n">det_err</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">correct</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_preds</span> <span class="o">+</span> <span class="n">num_samples</span><span class="p">)</span> <span class="k">if</span> <span class="n">nb_preds</span> <span class="o">+</span> <span class="n">num_samples</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loc_err</span><span class="o">=</span><span class="n">loc_err</span><span class="p">,</span> <span class="n">clf_err</span><span class="o">=</span><span class="n">clf_err</span><span class="p">,</span> <span class="n">det_err</span><span class="o">=</span><span class="n">det_err</span><span class="p">,</span> <span class="n">val_loss</span><span class="o">=</span><span class="n">loc_err</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loc_err</span><span class="o">=</span><span class="n">loc_err</span><span class="p">,</span> <span class="n">clf_err</span><span class="o">=</span><span class="n">clf_err</span><span class="p">,</span> <span class="n">det_err</span><span class="o">=</span><span class="n">det_err</span><span class="p">,</span> <span class="n">val_loss</span><span class="o">=</span><span class="n">loc_err</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>
