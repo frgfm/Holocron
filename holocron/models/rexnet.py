@@ -35,10 +35,10 @@ class SEBlock(nn.Module):
 
     def __init__(self, channels, se_ratio=12, act_layer=None, norm_layer=None, drop_layer=None):
         super().__init__()
-        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.pool = GlobalAvgPool2d(flatten=False)
         self.conv = nn.Sequential(
             *conv_sequence(channels, channels // se_ratio, act_layer, norm_layer, drop_layer,
-                           kernel_size=1, stride=1),
+                           kernel_size=1, stride=1, bias=True),
             *conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer,
                            kernel_size=1, stride=1))
 
