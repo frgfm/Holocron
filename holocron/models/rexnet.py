@@ -19,13 +19,13 @@ __all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1
 
 default_cfgs = {
     'rexnet1_0x': {'width_mult': 1.0, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-a120bf73.pth'},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth'},
     'rexnet1_3x': {'width_mult': 1.3, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-191b60f1.pth'},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth'},
     'rexnet1_5x': {'width_mult': 1.5, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-52c80862.pth'},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth'},
     'rexnet2_0x': {'width_mult': 2.0, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-e5243878.pth'},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth'},
     'rexnet2_2x': {'width_mult': 2.2, 'depth_mult': 1.0,
                    'url': None},
 }
@@ -35,10 +35,10 @@ class SEBlock(nn.Module):
 
     def __init__(self, channels, se_ratio=12, act_layer=None, norm_layer=None, drop_layer=None):
         super().__init__()
-        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.pool = GlobalAvgPool2d(flatten=False)
         self.conv = nn.Sequential(
             *conv_sequence(channels, channels // se_ratio, act_layer, norm_layer, drop_layer,
-                           kernel_size=1, stride=1),
+                           kernel_size=1, stride=1, bias=False),
             *conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer,
                            kernel_size=1, stride=1))
 

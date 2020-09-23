@@ -33,7 +33,7 @@ default_cfgs = {
     'resnext101_32x8d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 23, 3],
                          'url': None},
     'resnet50d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 6, 3],
-                  'url': None},
+                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50d_224-499c0b54.pth'},
 }
 
 

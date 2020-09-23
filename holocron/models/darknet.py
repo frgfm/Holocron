@@ -17,7 +17,8 @@ from .resnet import _ResBlock
 from holocron.nn import Mish, DropBlock2d, GlobalAvgPool2d
 
 
-__all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'DarknetV4', 'darknet24', 'darknet19', 'darknet53', 'cspdarknet53']
+__all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'DarknetV4', 'darknet24', 'darknet19', 'darknet53', 'cspdarknet53',
+           'cspdarknet53_mish']
 
 
 default_cfgs = {
@@ -32,7 +33,10 @@ default_cfgs = {
                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth'},
     'cspdarknet53': {'arch': 'DarknetV4',
                      'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-                     'url': None},
+                     'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/cspdarknet53_256-3ef96818.pth'},
+    'cspdarknet53_mish': {'arch': 'DarknetV4',
+                          'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
+                          'url': None},
 }
 
 
@@ -219,33 +223,29 @@ class CSPStage(nn.Module):
     def __init__(self, in_channels, out_channels, num_blocks=1,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__()
+        compression = 2 if num_blocks > 1 else 1
         self.base_layer = nn.Sequential(*conv_sequence(in_channels, out_channels,
                                                        act_layer, norm_layer, drop_layer, conv_layer,
-                                                       kernel_size=3, padding=1, stride=2, bias=False))
-        compression = 2 if num_blocks > 1 else 1
-        self.part1 = nn.Sequential(*conv_sequence(out_channels, out_channels // compression,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=1, bias=False))
-        self.part2 = nn.Sequential(*conv_sequence(out_channels, out_channels // compression,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=1, bias=False),
-                                   *[ResBlock(out_channels // compression,
-                                              out_channels // compression if num_blocks > 1 else in_channels,
-                                              act_layer, norm_layer, drop_layer, conv_layer)
-                                     for _ in range(num_blocks)],
-                                   *conv_sequence(out_channels // compression, out_channels // compression,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=1, bias=False))
+                                                       kernel_size=3, padding=1, stride=2, bias=False),
+                                        # Share the conv
+                                        *conv_sequence(out_channels, 2 * out_channels // compression,
+                                                       act_layer, norm_layer, drop_layer, conv_layer,
+                                                       kernel_size=1, bias=False))
+        self.main = nn.Sequential(*[ResBlock(out_channels // compression,
+                                             out_channels // compression if num_blocks > 1 else in_channels,
+                                             act_layer, norm_layer, drop_layer, conv_layer)
+                                    for _ in range(num_blocks)],
+                                  *conv_sequence(out_channels // compression, out_channels // compression,
+                                                 act_layer, norm_layer, drop_layer, conv_layer,
+                                                 kernel_size=1, bias=False))
         self.transition = nn.Sequential(*conv_sequence(2 * out_channels // compression, out_channels,
                                                        act_layer, norm_layer, drop_layer, conv_layer,
                                                        kernel_size=1, bias=False))
 
     def forward(self, x):
         x = self.base_layer(x)
-        p1 = self.part1(x)
-        p2 = self.part2(x)
-
-        return self.transition(torch.cat([p1, p2], dim=1))
+        x1, x2 = x.chunk(2, dim=1)
+        return self.transition(torch.cat([x1, self.main(x2)], dim=1))
 
 
 class DarknetBodyV4(nn.Sequential):
@@ -256,11 +256,9 @@ class DarknetBodyV4(nn.Sequential):
         super().__init__()
 
         if act_layer is None:
-            act_layer = Mish()
+            act_layer = nn.LeakyReLU(inplace=True)
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-        if drop_layer is None:
-            drop_layer = DropBlock2d
 
         in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
@@ -268,7 +266,7 @@ class DarknetBodyV4(nn.Sequential):
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=3, padding=1, bias=False))),
-            ('layers', nn.Sequential(*[CSPStage(_in_chans, out_chans, num_blocks,
+            ('stages', nn.Sequential(*[CSPStage(_in_chans, out_chans, num_blocks,
                                                 act_layer, norm_layer, drop_layer, conv_layer)
                                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
         )
@@ -282,9 +280,9 @@ class DarknetBodyV4(nn.Sequential):
         else:
             x = self.stem(x)
             features = []
-            for idx, stage in enumerate(self.layers):
+            for idx, stage in enumerate(self.stages):
                 x = stage(x)
-                if idx >= (len(self.layers) - self.num_features):
+                if idx >= (len(self.stages) - self.num_features):
                     features.append(x)
 
             return features
@@ -379,3 +377,22 @@ def cspdarknet53(pretrained=False, progress=True, **kwargs):
     """
 
     return _darknet('cspdarknet53', pretrained, progress, **kwargs)
+
+
+def cspdarknet53_mish(pretrained=False, progress=True, **kwargs):
+    """Modified version of CSP-Darknet-53 from
+    `"CSPNet: A New Backbone that can Enhance Learning Capability of CNN" <https://arxiv.org/pdf/1911.11929.pdf>`_
+    with Mish as activation layer and DropBlock as regularization layer.
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    kwargs['act_layer'] = Mish()
+    kwargs['drop_layer'] = DropBlock2d
+
+    return _darknet('cspdarknet53_mish', pretrained, progress, **kwargs)
