@@ -77,7 +77,7 @@ def iou_penalty(boxes1, boxes2):
     """
 
     # Diagonal length of the smallest enclosing box
-    c2 = torch.zeros((boxes1.shape[0], boxes2.shape[0], 2))
+    c2 = torch.zeros((boxes1.shape[0], boxes2.shape[0], 2), device=boxes1.device)
     # Assign bottom right coords
     c2[..., 0] = torch.max(boxes1[:, 2].unsqueeze(-1), boxes2[:, 2].unsqueeze(-2))
     c2[..., 1] = torch.max(boxes1[:, 3].unsqueeze(-1), boxes2[:, 3].unsqueeze(-2))
@@ -89,7 +89,7 @@ def iou_penalty(boxes1, boxes2):
     c2 = c2.sum(axis=-1)
 
     # L2 - distance between box centers
-    center_dist2 = torch.zeros((boxes1.shape[0], boxes2.shape[0], 2))
+    center_dist2 = torch.zeros((boxes1.shape[0], boxes2.shape[0], 2), device=boxes1.device)
     # Centers of boxes1
     center_dist2[..., 0] = boxes1[:, [0, 2]].sum(dim=1).unsqueeze(1)
     center_dist2[..., 1] = boxes1[:, [1, 3]].sum(dim=1).unsqueeze(1)
