@@ -32,7 +32,7 @@ default_cfgs = {
                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth'},
     'cspdarknet53': {'arch': 'DarknetV4',
                      'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-                     'url': None},
+                     'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/cspdarknet53_256-3ef96818.pth'},
     'cspdarknet53_mish': {'arch': 'DarknetV4',
                           'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
                           'url': None},
