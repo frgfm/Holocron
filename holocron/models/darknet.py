@@ -17,7 +17,8 @@ from .resnet import _ResBlock
 from holocron.nn import Mish, DropBlock2d, GlobalAvgPool2d
 
 
-__all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'DarknetV4', 'darknet24', 'darknet19', 'darknet53', 'cspdarknet53']
+__all__ = ['DarknetV1', 'DarknetV2', 'DarknetV3', 'DarknetV4', 'darknet24', 'darknet19', 'darknet53', 'cspdarknet53',
+           'cspdarknet53_mish']
 
 
 default_cfgs = {
