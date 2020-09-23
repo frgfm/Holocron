@@ -33,6 +33,9 @@ default_cfgs = {
     'cspdarknet53': {'arch': 'DarknetV4',
                      'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
                      'url': None},
+    'cspdarknet53_mish': {'arch': 'DarknetV4',
+                          'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
+                          'url': None},
 }
 
 
@@ -373,3 +376,22 @@ def cspdarknet53(pretrained=False, progress=True, **kwargs):
     """
 
     return _darknet('cspdarknet53', pretrained, progress, **kwargs)
+
+
+def cspdarknet53_mish(pretrained=False, progress=True, **kwargs):
+    """Modified version of CSP-Darknet-53 from
+    `"CSPNet: A New Backbone that can Enhance Learning Capability of CNN" <https://arxiv.org/pdf/1911.11929.pdf>`_
+    with Mish as activation layer and DropBlock as regularization layer.
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    kwargs['act_layer'] = Mish()
+    kwargs['drop_layer'] = DropBlock2d
+
+    return _darknet('cspdarknet53_mish', pretrained, progress, **kwargs)
