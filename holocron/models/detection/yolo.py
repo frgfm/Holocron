@@ -841,8 +841,6 @@ class YOLOv4(nn.Module):
             norm_layer = nn.BatchNorm2d
         if backbone_norm_layer is None:
             backbone_norm_layer = norm_layer
-        if drop_layer is None:
-            drop_layer = DropBlock2d
 
         # backbone
         self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, Mish(),
