@@ -219,17 +219,15 @@ class CSPStage(nn.Module):
     def __init__(self, in_channels, out_channels, num_blocks=1,
                  act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
         super().__init__()
+        compression = 2 if num_blocks > 1 else 1
         self.base_layer = nn.Sequential(*conv_sequence(in_channels, out_channels,
                                                        act_layer, norm_layer, drop_layer, conv_layer,
-                                                       kernel_size=3, padding=1, stride=2, bias=False))
-        compression = 2 if num_blocks > 1 else 1
-        self.part1 = nn.Sequential(*conv_sequence(out_channels, out_channels // compression,
+                                                       kernel_size=3, padding=1, stride=2, bias=False),
+                                        # Share the conv
+                                        *conv_sequence(out_channels, 2 * out_channels // compression,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=1, bias=False))
-        self.part2 = nn.Sequential(*conv_sequence(out_channels, out_channels // compression,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=1, bias=False),
-                                   *[ResBlock(out_channels // compression,
+        self.main = nn.Sequential(*[ResBlock(out_channels // compression,
                                               out_channels // compression if num_blocks > 1 else in_channels,
                                               act_layer, norm_layer, drop_layer, conv_layer)
                                      for _ in range(num_blocks)],
@@ -242,10 +240,8 @@ class CSPStage(nn.Module):
 
     def forward(self, x):
         x = self.base_layer(x)
-        p1 = self.part1(x)
-        p2 = self.part2(x)
-
-        return self.transition(torch.cat([p1, p2], dim=1))
+        x1, x2 = x.chunk(2, dim=1)
+        return self.transition(torch.cat([x1, self.main(x2)], dim=1))
 
 
 class DarknetBodyV4(nn.Sequential):
