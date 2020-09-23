@@ -17,7 +17,7 @@ __all__ = ['Tridentneck', 'tridentnet50']
 
 default_cfgs = {
     'tridentnet50': {'block': 'Tridentneck', 'num_blocks': [3, 4, 6, 3],
-                     'url': None},
+                     'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/tridentnet50_224-98b4ce9c.pth'},
 }
 
 
