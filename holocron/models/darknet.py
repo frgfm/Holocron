@@ -252,12 +252,9 @@ class DarknetBodyV4(nn.Sequential):
         super().__init__()
 
         if act_layer is None:
-            # act_layer = Mish()
             act_layer = nn.LeakyReLU(inplace=True)
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-        # if drop_layer is None:
-        #     drop_layer = DropBlock2d
 
         in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
