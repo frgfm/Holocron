@@ -264,7 +264,7 @@ class DarknetBodyV4(nn.Sequential):
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=3, padding=1, bias=False))),
-            ('layers', nn.Sequential(*[CSPStage(_in_chans, out_chans, num_blocks,
+            ('stages', nn.Sequential(*[CSPStage(_in_chans, out_chans, num_blocks,
                                                 act_layer, norm_layer, drop_layer, conv_layer)
                                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
         )
@@ -278,9 +278,9 @@ class DarknetBodyV4(nn.Sequential):
         else:
             x = self.stem(x)
             features = []
-            for idx, stage in enumerate(self.layers):
+            for idx, stage in enumerate(self.stages):
                 x = stage(x)
-                if idx >= (len(self.layers) - self.num_features):
+                if idx >= (len(self.stages) - self.num_features):
                     features.append(x)
 
             return features
