@@ -92,6 +92,8 @@ Darknet
 
 .. autofunction:: cspdarknet53
 
+.. autofunction:: cspdarknet53_mish
+
 
 Object Detection
 ================

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolo &mdash; holocron 0.1.3a0+f5dec7a-git documentation</title>
+  <title>holocron.models.detection.yolo &mdash; holocron 0.1.3a0+2d7f48f-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.3a0+f5dec7a
+                0.1.3a0+2d7f48f
               </div>
             
           
@@ -1062,8 +1062,6 @@
             <span class="n">norm_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span>
         <span class="k">if</span> <span class="n">backbone_norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">backbone_norm_layer</span> <span class="o">=</span> <span class="n">norm_layer</span>
-        <span class="k">if</span> <span class="n">drop_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">drop_layer</span> <span class="o">=</span> <span class="n">DropBlock2d</span>
 
         <span class="c1"># backbone</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV4</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">Mish</span><span class="p">(),</span>
