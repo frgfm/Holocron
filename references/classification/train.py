@@ -76,7 +76,9 @@ def main(args):
 
     # Create the contiguous parameters.
     model_params = [p for p in model.parameters() if p.requires_grad]
-    if args.opt == 'adam':
+    if args.opt == 'sgd':
+        optimizer = torch.optim.SGD(model_params, args.lr, momentum=0.9, weight_decay=args.weight_decay)
+    elif args.opt == 'adam':
         optimizer = torch.optim.Adam(model_params, args.lr,
                                      betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
