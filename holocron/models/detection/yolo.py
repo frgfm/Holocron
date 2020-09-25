@@ -597,6 +597,8 @@ class YoloLayer(nn.Module):
 
         # Box dimension
         b_wh = torch.exp(output[..., 2:4]) * self.anchors.view(1, 1, 1, -1, 2)
+        # Fix overflow by clipping
+        b_wh = b_wh.clamp_(0, 2)
 
         top_left = b_xy - 0.5 * b_wh
         bot_right = top_left + b_wh
