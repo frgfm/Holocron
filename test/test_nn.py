@@ -393,7 +393,8 @@ for mod_name in act_modules:
 
 
 loss_modules = [('FocalLoss', 'focal_loss'),
-                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy')]
+                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy'),
+                ('ComplementCrossEntropy', 'complement_cross_entropy')]
 
 for (mod_name, fn_name) in loss_modules:
     def do_test(self, mod_name=mod_name, fn_name=fn_name):
