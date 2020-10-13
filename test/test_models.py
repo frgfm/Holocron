@@ -7,7 +7,8 @@ class ModelTester(unittest.TestCase):
 
     def _test_classification_model(self, name, num_classes=10):
 
-        x = torch.rand((2, 3, 224, 224))
+        batch_size = 2
+        x = torch.rand((batch_size, 3, 224, 224))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
@@ -15,11 +16,18 @@ class ModelTester(unittest.TestCase):
         self.assertEqual(out.shape[0], x.shape[0])
         self.assertEqual(out.shape[-1], num_classes)
 
+        # Check backprop is OK
+        target = torch.zeros(batch_size, dtype=torch.long)
+        model.train()
+        out = model(x)
+        loss = torch.nn.functional.cross_entropy(out, target)
+        loss.backward()
+
     def _test_detection_model(self, name, size):
 
         num_classes = 10
-        num_batches = 2
-        x = torch.rand((num_batches, 3, size, size))
+        batch_size = 2
+        x = torch.rand((batch_size, 3, size, size))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         # Check backbone pretrained
         model = models.__dict__[name](pretrained_backbone=True, num_classes=num_classes).eval()
@@ -34,7 +42,7 @@ class ModelTester(unittest.TestCase):
             self.assertIsInstance(out[0].get('labels'), torch.Tensor)
 
         # Check that list of Tensors does not change output
-        x_list = [torch.rand(3, size, size) for _ in range(num_batches)]
+        x_list = [torch.rand(3, size, size) for _ in range(batch_size)]
         with torch.no_grad():
             out_list = model(x_list)
             self.assertEqual(len(out_list), len(out))
@@ -74,15 +82,15 @@ class ModelTester(unittest.TestCase):
     def _test_segmentation_model(self, name, size, out_size):
 
         num_classes = 10
-        num_batches = 2
+        batch_size = 2
         num_channels = 1
-        x = torch.rand((num_batches, num_channels, size, size))
+        x = torch.rand((batch_size, num_channels, size, size))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
 
         self.assertIsInstance(out, torch.Tensor)
-        self.assertEqual(out.shape, (num_batches, num_classes, out_size, out_size))
+        self.assertEqual(out.shape, (batch_size, num_classes, out_size, out_size))
 
 
 for model_name in ['darknet24', 'darknet19', 'darknet53', 'cspdarknet53', 'cspdarknet53_mish',
