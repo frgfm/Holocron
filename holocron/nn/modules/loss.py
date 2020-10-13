@@ -8,7 +8,8 @@ import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'MixupLoss', 'ClassBalancedWrapper']
+__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'ComplementCrossEntropy',
+           'MixupLoss', 'ClassBalancedWrapper']
 
 
 class _Loss(nn.Module):
@@ -105,6 +106,28 @@ class LabelSmoothingCrossEntropy(_Loss):
 
     def __repr__(self):
         return f"{self.__class__.__name__}(eps={self.eps}, reduction='{self.reduction}')"
+
+
+class ComplementCrossEntropy(_Loss):
+    """Implements the complement cross entropy loss from
+    `"Imbalanced Image Classification with Complement Cross Entropy" <https://arxiv.org/pdf/2009.02189.pdf>`_
+
+    Args:
+        gamma (float, optional): smoothing factor
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): type of reduction to apply to the final loss
+    """
+
+    def __init__(self, gamma=-1, **kwargs):
+        super().__init__(**kwargs)
+        self.gamma = gamma
+
+    def forward(self, x, target):
+        return F.complement_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction, self.gamma)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(gamma={self.gamma}, reduction='{self.reduction}')"
 
 
 class MixupLoss(_Loss):

@@ -28,6 +28,8 @@ Loss functions
 
 .. autoclass:: LabelSmoothingCrossEntropy
 
+.. autoclass:: ComplementCrossEntropy
+
 Loss wrappers
 --------------
 

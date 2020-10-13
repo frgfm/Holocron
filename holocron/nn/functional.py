@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 
 __all__ = ['silu', 'mish', 'hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
-           'norm_conv2d', 'add2d', 'dropblock2d']
+           'complement_cross_entropy', 'norm_conv2d', 'add2d', 'dropblock2d']
 
 
 def silu(x):
@@ -174,7 +174,7 @@ def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt *= weight.view(1, -1)
+        logpt *= weight.view(1, -1, *([1] * (x.ndim - 2)))
 
     # CE Loss
     loss = - target * logpt
@@ -235,6 +235,61 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
     # Smooth the labels
     return eps / x.shape[1] * loss + (1 - eps) * F.nll_loss(logpt, target, weight,
                                                             ignore_index=ignore_index, reduction=reduction)
+
+
+def complement_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean', gamma=-1):
+    """Implements the complement cross entropy loss from
+    `"Imbalanced Image Classification with Complement Cross Entropy" <https://arxiv.org/pdf/2009.02189.pdf>`_
+
+    Args:
+        x (torch.Tensor[N, K, ...]): input tensor
+        target (torch.Tensor[N, ...]): target tensor
+        weight (torch.Tensor[K], optional): manual rescaling of each class
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): reduction method
+        gamma (float, optional): complement factor
+
+    Returns:
+        torch.Tensor: loss reduced with `reduction` method
+    """
+
+    if gamma == 0:
+        return F.cross_entropy(x, target, weight, ignore_index=ignore_index, reduction=reduction)
+
+    # log(P[class]) = log_softmax(score)[class]
+    # logpt = F.log_softmax(x, dim=1)
+
+    pt = F.softmax(x, dim=1)
+    pt /= (1 - pt.transpose(0, 1).gather(0, target.unsqueeze(0)).transpose(0, 1))
+
+    loss = - 1 / (x.shape[1] - 1) * pt * torch.log(pt)
+
+    # Nullify contributions to the loss
+    # TODO: vectorize or write CUDA extension
+    for class_idx in torch.unique(target):
+        loss[:, class_idx][target == class_idx] = 0.
+
+    # Ignore index (set loss contribution to 0)
+    if ignore_index >= 0 and ignore_index < x.shape[1]:
+        loss[:, ignore_index] = 0.
+
+    # Weight
+    if weight is not None:
+        # Tensor type
+        if weight.type() != x.data.type():
+            weight = weight.type_as(x.data)
+        loss *= weight.view(1, -1, *([1] * (x.ndim - 2)))
+
+    # Loss reduction
+    if reduction == 'sum':
+        loss = loss.sum()
+    else:
+        loss = loss.sum(dim=1)
+        if reduction == 'mean':
+            loss = loss.mean()
+
+    # Smooth the labels
+    return F.cross_entropy(x, target, weight, ignore_index=ignore_index, reduction=reduction) + gamma * loss
 
 
 def _xcorrNd(fn, x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1,

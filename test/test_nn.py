@@ -163,12 +163,18 @@ class NNTester(unittest.TestCase):
             target = torch.rand(x.shape)
         else:
             target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
-        criterion = loss.__dict__[name]()
-        self.assertEqual(criterion(x, target).item(),
-                         F.__dict__[fn_name](x, target).item())
-        criterion = loss.__dict__[name](reduction='none')
-        self.assertTrue(torch.equal(criterion(x, target),
-                                    F.__dict__[fn_name](x, target, reduction='none')))
+
+        # Check type casting of weights
+        class_weights = torch.ones(num_classes, dtype=torch.float16)
+        ignore_index = 0
+
+        # Check values between function and module
+        for reduction in ['none', 'sum', 'mean']:
+            # Check type casting of weights
+            criterion = loss.__dict__[name](weight=class_weights, reduction=reduction, ignore_index=ignore_index)
+            self.assertTrue(torch.equal(criterion(x, target),
+                                        F.__dict__[fn_name](x, target, weight=class_weights,
+                                                            reduction=reduction, ignore_index=ignore_index)))
 
     def test_concatdownsample2d(self):
 
@@ -393,7 +399,8 @@ for mod_name in act_modules:
 
 
 loss_modules = [('FocalLoss', 'focal_loss'),
-                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy')]
+                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy'),
+                ('ComplementCrossEntropy', 'complement_cross_entropy')]
 
 for (mod_name, fn_name) in loss_modules:
     def do_test(self, mod_name=mod_name, fn_name=fn_name):
