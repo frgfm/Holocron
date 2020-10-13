@@ -174,7 +174,7 @@ def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt *= weight.view(1, -1)
+        logpt *= weight.view(1, -1, *([1] * (x.ndim - 2)))
 
     # CE Loss
     loss = - target * logpt
