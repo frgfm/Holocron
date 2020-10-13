@@ -46,15 +46,13 @@ class ScaleConv2d(nn.Module):
         # Split the channel dimension into groups of self.width channels
         split_x = torch.split(x, self.width, 1)
         out = []
-        _res = split_x[0]
         for idx, layer in enumerate(self.conv):
             # If downsampled, don't add previous branch
             if idx == 0 or self.downsample is not None:
                 _res = split_x[idx]
             else:
-                _res += split_x[idx]
-            _res = layer(_res)
-            out.append(_res)
+                _res = out[-1] + split_x[idx]
+            out.append(layer(_res))
         # Use the last chunk as shortcut connection
         if self.scale > 1:
             # If the convs were strided, the shortcut needs to be downsampled
@@ -62,9 +60,8 @@ class ScaleConv2d(nn.Module):
                 out.append(self.downsample(split_x[-1]))
             else:
                 out.append(split_x[-1])
-        out = torch.cat(out, 1)
 
-        return out
+        return torch.cat(out, 1)
 
 
 class Bottle2neck(_ResBlock):
