@@ -16,6 +16,13 @@ class ModelTester(unittest.TestCase):
         self.assertEqual(out.shape[0], x.shape[0])
         self.assertEqual(out.shape[-1], num_classes)
 
+        # Check backprop is OK
+        target = torch.zeros(batch_size, dtype=torch.long)
+        model.train()
+        out = model(x)
+        loss = torch.nn.functional.cross_entropy(out, target)
+        loss.backward()
+
     def _test_detection_model(self, name, size):
 
         num_classes = 10
