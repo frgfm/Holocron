@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.3a0+780adb8-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.3a0+d80fc6f-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.3a0+780adb8
+                0.1.3a0+d80fc6f
               </div>
             
           
@@ -363,6 +363,31 @@
 <li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
 <li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>loss reduced with <cite>reduction</cite> method</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.nn.functional.complement_cross_entropy">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">complement_cross_entropy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="o">=</span><span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="o">=</span><span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#complement_cross_entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.complement_cross_entropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the complement cross entropy loss from
+<a class="reference external" href="https://arxiv.org/pdf/2009.02189.pdf">“Imbalanced Image Classification with Complement Cross Entropy”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>..</em><em>]</em>) – input tensor</p></li>
+<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>..</em><em>]</em>) – target tensor</p></li>
+<li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
+<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
+<li><p><strong>gamma</strong> (<em>python:float</em><em>, </em><em>optional</em>) – complement factor</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
