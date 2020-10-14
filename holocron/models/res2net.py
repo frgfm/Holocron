@@ -18,8 +18,9 @@ __all__ = ['Bottle2neck', 'res2net50_26w_4s']
 
 
 default_cfgs = {
-    'res2net50_26w_4s': {'num_blocks': [3, 4, 6, 3], 'width_per_group': 26, 'scale': 4,
-                         'url': None},
+    'res2net50_26w_4s': {
+        'num_blocks': [3, 4, 6, 3], 'width_per_group': 26, 'scale': 4,
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth'},
 }
 
 
