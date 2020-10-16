@@ -14,7 +14,6 @@ class AdaBelief(Adam):
         eps (float, optional): term added to the denominator to improve numerical stability (default: 1e-8)
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
         amsgrad (bool, optional): whether to use the AMSGrad variant (default: False)
-        rectify (bool, optional): whether to rectify variance
     """
 
     @torch.no_grad()
