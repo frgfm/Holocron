@@ -36,7 +36,6 @@ class RAdam(Adam):
             grads = []
             exp_avgs = []
             exp_avg_sqs = []
-            state_sums = []
             state_steps = []
 
             for p in group['params']:

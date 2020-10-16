@@ -55,7 +55,6 @@ class TAdam(Optimizer):
             exp_avgs = []
             exp_avg_sqs = []
             W_ts = []
-            state_sums = []
             max_exp_avg_sqs = []
             state_steps = []
 
