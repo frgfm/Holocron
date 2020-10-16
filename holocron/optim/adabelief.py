@@ -17,12 +17,6 @@ class AdaBelief(Adam):
         rectify (bool, optional): whether to rectify variance
     """
 
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                 weight_decay=0, amsgrad=False, rectify=False):
-
-        super().__init__(*args, **kwargs)
-        self.rectify = rectify
-
     @torch.no_grad()
     def step(self, closure=None):
         """Performs a single optimization step.
@@ -47,7 +41,7 @@ class AdaBelief(Adam):
                 if p.grad is not None:
                     params_with_grad.append(p)
                     if p.grad.is_sparse:
-                        raise RuntimeError('Adam does not support sparse gradients, please consider SparseAdam instead')
+                        raise RuntimeError('AdaBelief does not support sparse gradients')
                     grads.append(p.grad)
 
                     state = self.state[p]
@@ -86,6 +80,5 @@ class AdaBelief(Adam):
                         group['lr'],
                         group['weight_decay'],
                         group['eps'],
-                        self.rectify
                         )
         return loss
