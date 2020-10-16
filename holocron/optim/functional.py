@@ -119,10 +119,14 @@ def adabelief(params: List[Tensor],
               beta2: float,
               lr: float,
               weight_decay: float,
-              eps: float):
+              eps: float,
+              rectify: bool):
     r"""Functional API that performs AdaBelief algorithm computation.
     See :class:`~holocron.optim.AdaBelief` for details.
     """
+
+    if rectify:
+        sma_inf = 2 / (1 - beta2) - 1
 
     for i, param in enumerate(params):
 
@@ -143,14 +147,26 @@ def adabelief(params: List[Tensor],
         exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
         grad_residual = grad - exp_avg
         exp_avg_sq.mul_(beta2).addcmul_(grad_residual, grad_residual, value=1 - beta2)
-        if amsgrad:
-            # Maintains the maximum of all 2nd moment running avg. till now
-            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)
-            # Use the max. for normalizing running avg. of gradient
-            denom = (max_exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
-        else:
-            denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
 
         step_size = lr / bias_correction1
-
-        param.addcdiv_(exp_avg, denom, value=-step_size)
+        if self.rectify:
+            # Compute length of SMA
+            sma_t = sma_inf - 2 * step * (1 - bias_correction2) / bias_correction2
+            if sma_t > 4:
+                # Variance rectification term
+                r_t = math.sqrt((sma_t - 4) * (sma_t - 2) * sma_inf / ((sma_inf - 4) * (sma_inf - 2) * sma_t))
+                denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
+                # Adaptive momentum
+                param.data.addcdiv_(exp_avg, denom, value=-r_t * step_size)
+            else:
+                # Unadapted momentum
+                param.data.add_(exp_avg, alpha=-step_size)
+        else:
+            if amsgrad:
+                # Maintains the maximum of all 2nd moment running avg. till now
+                torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)
+                # Use the max. for normalizing running avg. of gradient
+                denom = (max_exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
+            else:
+                denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
+            param.addcdiv_(exp_avg, denom, value=-step_size)

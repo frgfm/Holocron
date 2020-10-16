@@ -13,7 +13,15 @@ class AdaBelief(Adam):
         betas (Tuple[float, float], optional): coefficients used for running averages (default: (0.9, 0.999))
         eps (float, optional): term added to the denominator to improve numerical stability (default: 1e-8)
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
+        amsgrad (bool, optional): whether to use the AMSGrad variant (default: False)
+        rectify (bool, optional): whether to rectify variance
     """
+
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
+                 weight_decay=0, amsgrad=False, rectify=False):
+
+        super().__init__(*args, **kwargs)
+        self.rectify = rectify
 
     @torch.no_grad()
     def step(self, closure=None):
@@ -78,6 +86,7 @@ class AdaBelief(Adam):
                         beta2,
                         group['lr'],
                         group['weight_decay'],
-                        group['eps']
+                        group['eps'],
+                        self.rectify
                         )
         return loss
