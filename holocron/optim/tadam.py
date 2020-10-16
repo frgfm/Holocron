@@ -1,10 +1,5 @@
-# -*- coding: utf-8 -*-
-
-'''
-Extended version of Adam optimizer with Student-t mean estimation
-'''
-
 import torch
+from . import functional as F
 from torch.optim.optimizer import Optimizer
 
 
@@ -20,7 +15,9 @@ class TAdam(Optimizer):
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
         dof (int, optional): degrees of freedom
     """
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0, dof=None):
+
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
+                 weight_decay=0, amsgrad=False, dof=None):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -29,8 +26,16 @@ class TAdam(Optimizer):
             raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0]))
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
-        defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, dof=dof)
+        if not 0.0 <= weight_decay:
+            raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
+        defaults = dict(lr=lr, betas=betas, eps=eps,
+                        weight_decay=weight_decay, amsgrad=amsgrad, dof=dof)
         super().__init__(params, defaults)
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        for group in self.param_groups:
+            group.setdefault('amsgrad', False)
 
     @torch.no_grad()
     def step(self, closure=None):
@@ -45,54 +50,64 @@ class TAdam(Optimizer):
                 loss = closure()
 
         for group in self.param_groups:
+            params_with_grad = []
+            grads = []
+            exp_avgs = []
+            exp_avg_sqs = []
+            W_ts = []
+            state_sums = []
+            max_exp_avg_sqs = []
+            state_steps = []
 
-            # Get group-shared variables
             beta1, beta2 = group['betas']
 
             for p in group['params']:
-                if p.grad is None:
-                    continue
-                grad = p.grad.data
-                if grad.is_sparse:
-                    raise RuntimeError('RAdam does not support sparse gradients')
+                if p.grad is not None:
+                    params_with_grad.append(p)
+                    if p.grad.is_sparse:
+                        raise RuntimeError('TAdam does not support sparse gradients.')
+                    grads.append(p.grad)
 
-                state = self.state[p]
+                    state = self.state[p]
+                    # Lazy state initialization
+                    if len(state) == 0:
+                        state['step'] = 0
+                        # Exponential moving average of gradient values
+                        state['exp_avg'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                        # Exponential moving average of squared gradient values
+                        state['exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                        if group['amsgrad']:
+                            # Maintains max of all exp. moving avg. of sq. grad. values
+                            state['max_exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                        # Tadam specific
+                        state['W_t'] = beta1 / (1 - beta1) * torch.ones(1, dtype=p.data.dtype, device=p.data.device)
 
-                # State initialization
-                if len(state) == 0:
-                    state['step'] = 0
-                    # Exponential moving average of gradient values
-                    state['exp_avg'] = torch.zeros_like(p.data)
-                    # Exponential moving average of squared gradient values
-                    state['exp_avg_sq'] = torch.zeros_like(p.data)
-                    #
-                    state['W_t'] = beta1 / (1 - beta1)
-                    state['d'] = p.data.numel()
-                    state['dof'] = state['d'] if group['dof'] is None else group['dof']
+                    exp_avgs.append(state['exp_avg'])
+                    exp_avg_sqs.append(state['exp_avg_sq'])
+                    W_ts.append(state['W_t'])
 
-                exp_avg, exp_avg_sq = state['exp_avg'], state['exp_avg_sq']
+                    if group['amsgrad']:
+                        max_exp_avg_sqs.append(state['max_exp_avg_sq'])
 
-                state['step'] += 1
+                    # update the steps for each param group update
+                    state['step'] += 1
+                    # record the step after step update
+                    state_steps.append(state['step'])
 
-                wt = grad.sub(exp_avg).pow_(2).div_(exp_avg_sq.add(group['eps'])).sum()
-                wt.add_(state['dof']).pow_(-1).mul_(state['dof'] + state['d'])
-
-                # Decay the first and second moment running average coefficient
-                exp_avg.mul_(state['W_t'] / (state['W_t'] + wt)).add_(grad, alpha=wt / (state['W_t'] + wt))
-                state['W_t'] *= (2 * beta1 - 1) / beta1
-                state['W_t'] += wt
-                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
-
-                # Bias corrections
-                bias_correction1 = 1 - beta1 ** state['step']
-                bias_correction2 = 1 - beta2 ** state['step']
-
-                # Weight decay
-                if group['weight_decay'] != 0:
-                    p.data.add_(p.data, alpha=-group['lr'] * group['weight_decay'])
-
-                # Adaptive momentum
-                p.data.addcdiv_(exp_avg / bias_correction1,
-                                (exp_avg_sq / bias_correction2).sqrt().add_(group['eps']), value=-group['lr'])
+            F.tadam(params_with_grad,
+                    grads,
+                    exp_avgs,
+                    exp_avg_sqs,
+                    max_exp_avg_sqs,
+                    W_ts,
+                    state_steps,
+                    group['amsgrad'],
+                    beta1,
+                    beta2,
+                    group['lr'],
+                    group['weight_decay'],
+                    group['eps'],
+                    group['dof']
+                    )
 
         return loss
