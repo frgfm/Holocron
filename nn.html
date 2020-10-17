@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.3a0+704c7e7-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.3a0+cbc2dd6-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.3a0+704c7e7
+                0.1.3a0+cbc2dd6
               </div>
             
           
@@ -125,6 +125,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#convolution-layers">Convolution layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#attention">Attention</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
@@ -625,6 +626,32 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.SPP">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">SPP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel_sizes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#SPP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.SPP" title="Permalink to this definition">¶</a></dt>
+<dd><p>SPP layer from <a class="reference external" href="https://arxiv.org/pdf/1406.4729.pdf">“Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kernel_sizes</strong> (<em>list&lt;python:int&gt;</em>) – kernel sizes of each pooling</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="attention">
+<h2>Attention<a class="headerlink" href="#attention" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="holocron.nn.SAM">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">SAM</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/attention.html#SAM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.SAM" title="Permalink to this definition">¶</a></dt>
+<dd><p>SAM layer from <a class="reference external" href="https://arxiv.org/pdf/1807.06521.pdf">“CBAM: Convolutional Block Attention Module”</a>
+modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">“YOLOv4: Optimal Speed and Accuracy of Object Detection”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>in_channels</strong> (<em>python:int</em>) – input channels</p>
 </dd>
 </dl>
 </dd></dl>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils.data.collate &mdash; holocron 0.1.3a0+cbc2dd6-git documentation</title>
+  <title>holocron.nn.modules.attention &mdash; holocron 0.1.3a0+cbc2dd6-git documentation</title>
   
 
   
@@ -204,7 +204,7 @@
         
           <li><a href="../../../index.html">Module code</a> &raquo;</li>
         
-      <li>holocron.utils.data.collate</li>
+      <li>holocron.nn.modules.attention</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -219,52 +219,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for holocron.utils.data.collate</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Collate functions</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+  <h1>Source code for holocron.nn.modules.attention</h1><div class="highlight"><pre>
+<span></span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data._utils.collate</span> <span class="kn">import</span> <span class="n">default_collate</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SAM&#39;</span><span class="p">]</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mixup_collate&#39;</span><span class="p">]</span>
-
-
-<div class="viewcode-block" id="mixup_collate"><a class="viewcode-back" href="../../../../utils.data.html#holocron.utils.data.mixup_collate">[docs]</a><span class="k">def</span> <span class="nf">mixup_collate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements a batch collate function with MixUp strategy from</span>
-<span class="sd">    `&quot;mixup: Beyond Empirical Risk Minimization&quot; &lt;https://arxiv.org/pdf/1710.09412.pdf&gt;`_</span>
+<div class="viewcode-block" id="SAM"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.SAM">[docs]</a><span class="k">class</span> <span class="nc">SAM</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;SAM layer from `&quot;CBAM: Convolutional Block Attention Module&quot; &lt;https://arxiv.org/pdf/1807.06521.pdf&gt;`_</span>
+<span class="sd">    modified in `&quot;YOLOv4: Optimal Speed and Accuracy of Object Detection&quot; &lt;https://arxiv.org/pdf/2004.10934.pdf&gt;`_.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        data (list): list of elements</span>
-<span class="sd">        alpha (float, optional): mixup factor</span>
-
-<span class="sd">    Example::</span>
-<span class="sd">        &gt;&gt;&gt; import torch</span>
-<span class="sd">        &gt;&gt;&gt; from holocron import utils</span>
-<span class="sd">        &gt;&gt;&gt; loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=utils.data.mixup_collate)</span>
+<span class="sd">        in_channels (int): input channels</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">default_collate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-    <span class="c1"># Sample lambda</span>
-    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">lam</span> <span class="o">=</span> <span class="mi">1</span>
-
-    <span class="c1"># Mix batch indices</span>
-    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
-
-    <span class="c1"># Create the new input and targets</span>
-    <span class="n">inputs</span> <span class="o">=</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">inputs</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="n">inputs</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
-    <span class="n">targets_a</span><span class="p">,</span> <span class="n">targets_b</span> <span class="o">=</span> <span class="n">targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets_a</span><span class="p">,</span> <span class="n">targets_b</span><span class="p">,</span> <span class="n">lam</span></div>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
 </pre></div>
 
            </div>
