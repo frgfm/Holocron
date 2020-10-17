@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from holocron.nn import functional as F
 from holocron.nn.init import init_module
-from holocron.nn.modules import activation, conv, loss, downsample, dropblock
+from holocron.nn.modules import activation, conv, loss, downsample, dropblock, lambda_layer
 
 
 class NNTester(unittest.TestCase):
@@ -377,6 +377,22 @@ class NNTester(unittest.TestCase):
 
         k = torch.tensor([[0.0625, 0.125, 0.0625], [0.125, 0.25, 0.125], [0.0625, 0.125, 0.0625]])
         self.assertTrue(torch.equal(out[..., 1, 1], (x[..., 1:-1, 1:-1] * k[None, None, ...]).sum(dim=(2, 3))))
+
+    def test_lambdalayer(self):
+
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 31, 16)
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 32, 16, r=2)
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 32, 16, r=None, n=None)
+
+        # Generate inputs
+        num_batches = 2
+        num_chan = 8
+        x = torch.rand((num_batches, num_chan, 32, 32))
+
+        mod = lambda_layer.LambdaLayer(num_chan, 32, 16, r=13)
+        out = mod(x)
+        self.assertEqual(out.shape, (num_batches, 32, 32, 32))
+        out.sum().backward()
 
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
