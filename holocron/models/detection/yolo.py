@@ -16,7 +16,7 @@ from torchvision.models.utils import load_state_dict_from_url
 from ..utils import conv_sequence
 from ..darknet import DarknetBodyV1, DarknetBodyV2, DarknetBodyV4, default_cfgs as dark_cfgs
 from holocron.ops.boxes import ciou_loss
-from holocron.nn import ConcatDownsample2d, Mish, DropBlock2d
+from holocron.nn import ConcatDownsample2d, Mish, DropBlock2d, SPP, SAM
 from holocron.nn.init import init_module
 
 
@@ -448,40 +448,6 @@ class YOLOv2(_YOLO):
 
             # Stack detections into a list
             return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
-
-
-class SAM(nn.Module):
-    """SAM layer from `"CBAM: Convolutional Block Attention Module" <https://arxiv.org/pdf/1807.06521.pdf>`_
-    modified in `"YOLOv4: Optimal Speed and Accuracy of Object Detection" <https://arxiv.org/pdf/2004.10934.pdf>`_.
-
-    Args:
-        in_channels (int): input channels
-    """
-    def __init__(self, in_channels):
-        super().__init__()
-        self.conv = nn.Conv2d(in_channels, 1, 1)
-
-    def forward(self, x):
-        return x * torch.sigmoid(self.conv(x))
-
-
-class SPP(nn.ModuleList):
-    """SPP layer from `"Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition"
-    <https://arxiv.org/pdf/1406.4729.pdf>`_.
-
-    Args:
-        kernel_sizes (list<int>): kernel sizes of each pooling
-    """
-
-    def __init__(self, kernel_sizes):
-        super().__init__([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2)
-                          for k_size in kernel_sizes])
-
-    def forward(self, x):
-        feats = [x]
-        for pool_layer in self:
-            feats.append(pool_layer(x))
-        return torch.cat(feats, dim=1)
 
 
 class PAN(nn.Module):

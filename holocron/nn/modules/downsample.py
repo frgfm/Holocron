@@ -1,15 +1,9 @@
-# -*- coding: utf-8 -*-
-
-'''
-Downsampling modules
-'''
-
 import numpy as np
 import torch
 import torch.nn as nn
 from .. import functional as F
 
-__all__ = ['ConcatDownsample2d', 'ConcatDownsample2dJit', 'GlobalAvgPool2d', 'BlurPool2d']
+__all__ = ['ConcatDownsample2d', 'ConcatDownsample2dJit', 'GlobalAvgPool2d', 'BlurPool2d', 'SPP']
 
 
 class ConcatDownsample2d(nn.Module):
@@ -116,3 +110,22 @@ class BlurPool2d(nn.Module):
 
     def extra_repr(self):
         return f"{self.channels}, kernel_size={self.kernel_size}, stride={self.stride}"
+
+
+class SPP(nn.ModuleList):
+    """SPP layer from `"Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition"
+    <https://arxiv.org/pdf/1406.4729.pdf>`_.
+
+    Args:
+        kernel_sizes (list<int>): kernel sizes of each pooling
+    """
+
+    def __init__(self, kernel_sizes):
+        super().__init__([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2)
+                          for k_size in kernel_sizes])
+
+    def forward(self, x):
+        feats = [x]
+        for pool_layer in self:
+            feats.append(pool_layer(x))
+        return torch.cat(feats, dim=1)

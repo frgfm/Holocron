@@ -1,5 +1,6 @@
 import unittest
 import torch
+from holocron.nn import DropBlock2d, BlurPool2d, SAM
 from holocron import models
 
 
@@ -91,6 +92,32 @@ class ModelTester(unittest.TestCase):
 
         self.assertIsInstance(out, torch.Tensor)
         self.assertEqual(out.shape, (batch_size, num_classes, out_size, out_size))
+
+    def _test_conv_seq(self, conv_seq, expected_classes, expected_channels):
+
+        self.assertEqual(len(conv_seq), len(expected_classes))
+        for _layer, mod_class in zip(conv_seq, expected_classes):
+            self.assertIsInstance(_layer, mod_class)
+
+        input_t = torch.rand(1, conv_seq[0].in_channels, 224, 224)
+        out = torch.nn.Sequential(*conv_seq)(input_t)
+        self.assertEqual(out.shape[:2], (1, expected_channels))
+        out.sum().backward()
+
+    def test_conv_sequence(self):
+
+        mod = models.utils.conv_sequence(3, 32, kernel_size=3, act_layer=torch.nn.ReLU(inplace=True),
+                                         norm_layer=torch.nn.BatchNorm2d, drop_layer=DropBlock2d, attention_layer=SAM)
+
+        self._test_conv_seq(mod, [torch.nn.Conv2d, torch.nn.BatchNorm2d, torch.nn.ReLU, SAM, DropBlock2d], 32)
+        self.assertEqual(mod[0].kernel_size, (3, 3))
+
+        mod = models.utils.conv_sequence(3, 32, kernel_size=3, stride=2, act_layer=torch.nn.ReLU(inplace=True),
+                                         norm_layer=torch.nn.BatchNorm2d, drop_layer=DropBlock2d, blurpool=True)
+        self._test_conv_seq(mod, [torch.nn.Conv2d, torch.nn.BatchNorm2d, torch.nn.ReLU, BlurPool2d, DropBlock2d], 32)
+        self.assertEqual(mod[0].kernel_size, (3, 3))
+        self.assertEqual(mod[0].stride, (1, 1))
+        self.assertEqual(mod[3].stride, 2)
 
 
 for model_name in ['darknet24', 'darknet19', 'darknet53', 'cspdarknet53', 'cspdarknet53_mish',
