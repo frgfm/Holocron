@@ -4,3 +4,4 @@ from .downsample import *
 from .conv import *
 from .dropblock import *
 from .attention import *
+from .lambda_layer import *
