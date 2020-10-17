@@ -61,7 +61,7 @@ conda install -c frgfm pylocron
 - Convolutions: [NormConv2d](https://arxiv.org/pdf/2005.05274v2.pdf), [Add2d](https://arxiv.org/pdf/1912.13200.pdf), [SlimConv2d](https://arxiv.org/pdf/2003.07469.pdf), [PyConv2d](https://arxiv.org/abs/2006.11538)
 - Regularization: [DropBlock](https://arxiv.org/abs/1810.12890)
 - Pooling: [BlurPool2d](https://arxiv.org/abs/1904.11486), [SPP](https://arxiv.org/abs/1406.4729)
-- Attention: [SAM](https://arxiv.org/abs/1807.06521)
+- Attention: [SAM](https://arxiv.org/abs/1807.06521), [LambdaLayer](https://openreview.net/forum?id=xTJEN-ggl1b)
 
 ### models
 
