@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.3a0+cbc2dd6-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.3a0+d5611f1-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.3a0+cbc2dd6
+                0.1.3a0+d5611f1
               </div>
             
           
@@ -652,6 +652,26 @@ modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>in_channels</strong> (<em>python:int</em>) – input channels</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.LambdaLayer">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">LambdaLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span></em>, <em class="sig-param"><span class="n">out_channels</span></em>, <em class="sig-param"><span class="n">dim_k</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">r</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_heads</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">dim_u</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/lambda_layer.html#LambdaLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.LambdaLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lambda layer from <a class="reference external" href="https://openreview.net/pdf?id=xTJEN-ggl1b">“LambdaNetworks: Modeling long-range interactions without attention”</a>. The implementation was adapted from <cite>lucidrains’
+&lt;https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py&gt;</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>python:int</em>) – input channels</p></li>
+<li><p><strong>out_channels</strong> (<em>python:int</em><em>, </em><em>optional</em>) – output channels</p></li>
+<li><p><strong>dim_k</strong> (<em>python:int</em>) – key dimension</p></li>
+<li><p><strong>n</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of input pixels</p></li>
+<li><p><strong>r</strong> (<em>python:int</em><em>, </em><em>optional</em>) – receptive field for relative positional encoding</p></li>
+<li><p><strong>num_heads</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of attention heads</p></li>
+<li><p><strong>dim_u</strong> (<em>python:int</em><em>, </em><em>optional</em>) – intra-depth dimension</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

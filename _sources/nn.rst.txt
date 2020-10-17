@@ -67,6 +67,8 @@ Downsampling
 
 
 Attention
-------------
+---------
 
 .. autoclass:: SAM
+
+.. autoclass:: LambdaLayer
