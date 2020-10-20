@@ -67,7 +67,7 @@ class SKBottleneck(_ResBlock):
         super().__init__(
             [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1,
                             stride=1, bias=False, **kwargs),
-             SKConv2d(width, width, act_layer, norm_layer, drop_layer, m=2, sa_ratio=16, groups=groups, stride=stride),
+             SKConv2d(width, width, 2, 16, act_layer, norm_layer, drop_layer, groups=groups, stride=stride),
              *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, conv_layer, kernel_size=1,
                             stride=1, bias=False, **kwargs)],
             downsample, act_layer)
