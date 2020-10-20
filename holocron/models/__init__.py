@@ -4,5 +4,6 @@ from .tridentnet import *
 from .pyconvresnet import *
 from .rexnet import *
 from .darknet import *
+from .sknet import *
 from .detection import *
 from .segmentation import *
