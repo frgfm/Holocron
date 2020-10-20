@@ -41,7 +41,6 @@ class SKConv2d(nn.Module):
                                                                       padding=idx + 1, **kwargs))
                                          for idx in range(m)])
         self.sa = SoftAttentionLayer(out_channels, sa_ratio, m, act_layer, norm_layer, drop_layer)
-        self.split_input = split_input
 
     def forward(self, x):
 
