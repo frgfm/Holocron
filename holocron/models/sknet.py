@@ -1,4 +1,3 @@
-import sys
 import logging
 import torch
 import torch.nn as nn
@@ -48,7 +47,7 @@ class SKConv2d(nn.Module):
 
         paths = torch.stack([path_conv(x) for path_conv in self.path_convs], dim=1)
 
-        b, m, c, h, w = paths.shape
+        b, m, c = paths.shape[:3]
         z = self.sa(paths.sum(dim=1)).view(b, m, c, 1, 1)
         attention_factors = torch.softmax(z, dim=1)
         out = (attention_factors * paths).sum(dim=1)
