@@ -127,7 +127,8 @@ for model_name in ['darknet24', 'darknet19', 'darknet53', 'cspdarknet53', 'cspda
                    'res2net50_26w_4s',
                    'tridentnet50',
                    'pyconv_resnet50', 'pyconvhg_resnet50',
-                   'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']:
+                   'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x',
+                   'sknet50', 'sknet101', 'sknet152']:
     num_classes = 1000 if model_name in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x'] else 10
 
     def do_test(self, model_name=model_name, num_classes=num_classes):

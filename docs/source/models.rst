@@ -80,6 +80,15 @@ ReXNet
 .. autofunction:: rexnet2_2x
 
 
+SKNet
+-----
+
+.. autofunction:: sknet50
+
+.. autofunction:: sknet100
+
+.. autofunction:: sknet152
+
 
 Darknet
 -------
