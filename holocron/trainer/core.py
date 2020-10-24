@@ -2,7 +2,7 @@ import math
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import torch
-from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, MultiplicativeLR
+from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, MultiplicativeLR  # type: ignore[attr-defined]
 from torchvision.ops.boxes import box_iou
 from fastprogress import master_bar, progress_bar
 

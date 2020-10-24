@@ -91,13 +91,13 @@ def tadam(params: List[Tensor],
         # Decay the first and second moment running average coefficient
         w_t = grad.sub(exp_avg).pow_(2).div_(exp_avg_sq.add(eps)).sum()
         w_t.add_(_dof).pow_(-1).mul_(_dof + param.data.numel())
-        exp_avg.mul_(W_t / (W_t + w_t)).addcdiv_(grad, W_t + w_t, value=w_t)
+        exp_avg.mul_(W_t / (W_t + w_t)).addcdiv_(w_t * grad, W_t + w_t)
         W_t.mul_((2 * beta1 - 1) / beta1)
         W_t.add_(w_t)
         exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
         if amsgrad:
             # Maintains the maximum of all 2nd moment running avg. till now
-            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)
+            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)  # type: ignore[attr-defined]
             # Use the max. for normalizing running avg. of gradient
             denom = (max_exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
         else:
@@ -146,7 +146,7 @@ def adabelief(params: List[Tensor],
 
         if amsgrad:
             # Maintains the maximum of all 2nd moment running avg. till now
-            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)
+            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)  # type: ignore[attr-defined]
             # Use the max. for normalizing running avg. of gradient
             denom = (max_exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
         else:
