@@ -11,11 +11,12 @@ from torch.nn import functional as F
 from torchvision.models.utils import load_state_dict_from_url
 from .resnet import _ResBlock, ResNet
 from .utils import conv_sequence
+from typing import Dict, Any, Optional, Callable
 
 
 __all__ = ['Tridentneck', 'tridentnet50']
 
-default_cfgs = {
+default_cfgs: Dict[str, Dict[str, Any]] = {
     'tridentnet50': {'block': 'Tridentneck', 'num_blocks': [3, 4, 6, 3],
                      'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/tridentnet50_224-98b4ce9c.pth'},
 }
@@ -23,15 +24,15 @@ default_cfgs = {
 
 class TridentConv2d(nn.Conv2d):
 
-    num_branches = 3
+    num_branches: int = 3
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         if self.dilation[0] != 1 and self.dilation[0] != self.num_branches:
             raise ValueError(f"expected dilation to either be 1 or {self.num_branches}.")
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         if x.shape[1] % self.num_branches != 0:
             raise ValueError("expected number of channels of input tensor to be a multiple of `num_branches`.")
 
@@ -41,7 +42,6 @@ class TridentConv2d(nn.Conv2d):
         else:
             dilations = [1 + idx for idx in range(self.num_branches)]
 
-        out = []
         # Use shared weight to apply the convolution
         out = torch.cat([F.conv2d(_x, self.weight, self.bias, self.stride, tuple(dilation * p for p in self.padding),
                                   (dilation,) * len(self.dilation), self.groups)
@@ -52,11 +52,23 @@ class TridentConv2d(nn.Conv2d):
 
 class Tridentneck(_ResBlock):
 
-    expansion = 4
+    expansion: int = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=3, act_layer=None, norm_layer=None, drop_layer=None):
-
+    def __init__(
+        self,
+        inplanes: int,
+        planes: int,
+        stride: int = 1,
+        downsample: Optional[nn.Module] = None,
+        groups: int = 1,
+        base_width: int = 64,
+        dilation: int = 3,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
+        **kwargs: Any
+    ) -> None:
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if act_layer is None:
@@ -76,9 +88,9 @@ class Tridentneck(_ResBlock):
             downsample, act_layer)
 
 
-def _tridentnet(arch, pretrained, progress, **kwargs):
+def _tridentnet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> ResNet:
     # Build the model
-    model = ResNet(Tridentneck, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512],
+    model = ResNet(Tridentneck, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512],  # type: ignore[arg-type]
                    num_repeats=3, **kwargs)
     # Load pretrained parameters
     if pretrained:
@@ -92,7 +104,7 @@ def _tridentnet(arch, pretrained, progress, **kwargs):
     return model
 
 
-def tridentnet50(pretrained=False, progress=True, **kwargs):
+def tridentnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
     """TridentNet-50 from
     `"Scale-Aware Trident Networks for Object Detection" <https://arxiv.org/pdf/1901.01892.pdf>`_
 

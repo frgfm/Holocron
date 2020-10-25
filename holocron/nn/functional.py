@@ -150,7 +150,13 @@ def concat_downsample2d(x: Tensor, scale_factor: int) -> Tensor:
     return x
 
 
-def multilabel_cross_entropy(x: Tensor, target: Tensor, weight: Optional[Tensor] = None, ignore_index: int = -100, reduction: str = 'mean') -> Tensor:
+def multilabel_cross_entropy(
+    x: Tensor,
+    target: Tensor,
+    weight: Optional[Tensor] = None,
+    ignore_index: int = -100,
+    reduction: str = 'mean'
+) -> Tensor:
     """Implements the cross entropy loss for multi-label targets
 
     Args:
@@ -193,7 +199,14 @@ def multilabel_cross_entropy(x: Tensor, target: Tensor, weight: Optional[Tensor]
     return loss
 
 
-def ls_cross_entropy(x: Tensor, target: Tensor, weight: Optional[Tensor] = None, ignore_index: int = -100, reduction: str = 'mean', eps: float = 0.1) -> Tensor:
+def ls_cross_entropy(
+    x: Tensor,
+    target: Tensor,
+    weight: Optional[Tensor] = None,
+    ignore_index: int = -100,
+    reduction: str = 'mean',
+    eps: float = 0.1
+) -> Tensor:
     """Implements the label smoothing cross entropy loss from
     `"Attention Is All You Need" <https://arxiv.org/pdf/1706.03762.pdf>`_
 
@@ -240,7 +253,14 @@ def ls_cross_entropy(x: Tensor, target: Tensor, weight: Optional[Tensor] = None,
                                                             ignore_index=ignore_index, reduction=reduction)
 
 
-def complement_cross_entropy(x: Tensor, target: Tensor, weight: Optional[Tensor] = None, ignore_index: int = -100, reduction: str = 'mean', gamma: float = -1) -> Tensor:
+def complement_cross_entropy(
+    x: Tensor,
+    target: Tensor,
+    weight: Optional[Tensor] = None,
+    ignore_index: int = -100,
+    reduction: str = 'mean',
+    gamma: float = -1
+) -> Tensor:
     """Implements the complement cross entropy loss from
     `"Imbalanced Image Classification with Complement Cross Entropy" <https://arxiv.org/pdf/2009.02189.pdf>`_
 

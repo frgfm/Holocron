@@ -12,12 +12,13 @@ import torch.nn as nn
 from torchvision.models.utils import load_state_dict_from_url
 from .resnet import _ResBlock, ResNet
 from .utils import conv_sequence
+from typing import Optional, Callable, Any, Dict
 
 
 __all__ = ['Bottle2neck', 'res2net50_26w_4s']
 
 
-default_cfgs = {
+default_cfgs: Dict[str, Dict[str, Any]] = {
     'res2net50_26w_4s': {
         'num_blocks': [3, 4, 6, 3], 'width_per_group': 26, 'scale': 4,
         'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth'},
@@ -25,8 +26,18 @@ default_cfgs = {
 
 
 class ScaleConv2d(nn.Module):
-    def __init__(self, scale, planes, kernel_size, stride=1, groups=1, downsample=False,
-                 act_layer=None, norm_layer=None, drop_layer=None):
+    def __init__(
+        self,
+        scale: int,
+        planes: int,
+        kernel_size: int,
+        stride: int = 1,
+        groups: int = 1,
+        downsample: bool = False,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
         super().__init__()
 
         self.scale = scale
@@ -40,9 +51,9 @@ class ScaleConv2d(nn.Module):
         if downsample:
             self.downsample = nn.AvgPool2d(kernel_size=3, stride=stride, padding=1)
         else:
-            self.downsample = None
+            self.downsample = None  # type: ignore[assignment]
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         # Split the channel dimension into groups of self.width channels
         split_x = torch.split(x, self.width, 1)
@@ -66,11 +77,22 @@ class ScaleConv2d(nn.Module):
 
 
 class Bottle2neck(_ResBlock):
-    expansion = 4
+    expansion: int = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
-                 base_width=26, dilation=1, act_layer=None, norm_layer=None, drop_layer=None,
-                 scale=4):
+    def __init__(
+        self,
+        inplanes: int,
+        planes: int,
+        stride: int = 1,
+        downsample: Optional[nn.Module] = None,
+        groups: int = 1,
+        base_width: int = 26,
+        dilation: int = 1,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        scale: int = 4
+    ) -> None:
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if act_layer is None:
@@ -89,9 +111,9 @@ class Bottle2neck(_ResBlock):
             downsample, act_layer)
 
 
-def _res2net(arch, pretrained, progress, **kwargs):
+def _res2net(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> ResNet:
     # Build the model
-    model = ResNet(Bottle2neck, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512],
+    model = ResNet(Bottle2neck, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512],  # type: ignore[arg-type]
                    width_per_group=default_cfgs[arch]['width_per_group'],
                    block_args=dict(scale=default_cfgs[arch]['scale']),
                    **kwargs)
@@ -107,7 +129,7 @@ def _res2net(arch, pretrained, progress, **kwargs):
     return model
 
 
-def res2net50_26w_4s(pretrained=False, progress=True, **kwargs):
+def res2net50_26w_4s(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
     """Res2Net-50 26wx4s from
     `"Res2Net: A New Multi-scale Backbone Architecture" <https://arxiv.org/pdf/1904.01169.pdf>`_
 

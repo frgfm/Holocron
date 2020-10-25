@@ -1,18 +1,23 @@
-# -*- coding: utf-8 -*-
-
-"""
-Utilities for models
-"""
-
 import torch.nn as nn
 from holocron.nn import BlurPool2d
+from typing import List, Optional, Any, Callable
 
 
 __all__ = ['conv_sequence']
 
 
-def conv_sequence(in_channels, out_channels, act_layer=None, norm_layer=None, drop_layer=None,
-                  conv_layer=None, bn_channels=None, attention_layer=None, blurpool=False, **kwargs):
+def conv_sequence(
+    in_channels: int,
+    out_channels: int,
+    act_layer: Optional[nn.Module] = None,
+    norm_layer: Optional[Callable[[int], nn.Module]] = None,
+    drop_layer: Optional[Callable[..., nn.Module]] = None,
+    conv_layer: Optional[Callable[..., nn.Module]] = None,
+    bn_channels: Optional[int] = None,
+    attention_layer: Optional[Callable[[int], nn.Module]] = None,
+    blurpool: bool = False,
+    **kwargs: Any
+) -> List[nn.Module]:
 
     if conv_layer is None:
         conv_layer = nn.Conv2d
