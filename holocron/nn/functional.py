@@ -145,7 +145,7 @@ def concat_downsample2d(x: Tensor, scale_factor: int) -> Tensor:
     # N * C * H * W --> N * C * (H/scale_factor) * scale_factor * (W/scale_factor) * scale_factor
     x = x.view(b, c, h // scale_factor, scale_factor, w // scale_factor, scale_factor)
     x = x.permute(0, 3, 5, 1, 2, 4).contiguous()
-    x = x.view(b, c * scale_factor ** 2, h // scale_factor, w // scale_factor)
+    x = x.view(b, int(c * scale_factor ** 2), h // scale_factor, w // scale_factor)
 
     return x
 
