@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer.utils &mdash; holocron 0.1.3a0+1a9488e-git documentation</title>
+  <title>holocron.trainer.utils &mdash; holocron 0.1.3a0+bcc3ea1-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.3a0+1a9488e
+                0.1.3a0+bcc3ea1
               </div>
             
           
@@ -221,13 +221,15 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.trainer.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">torch.nn.modules.batchnorm</span> <span class="kn">import</span> <span class="n">_BatchNorm</span>
+<span></span><span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">torch.nn.modules.batchnorm</span> <span class="kn">import</span> <span class="n">_BatchNorm</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;freeze_bn&#39;</span><span class="p">,</span> <span class="s1">&#39;freeze_model&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="freeze_bn"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.freeze_bn">[docs]</a><span class="k">def</span> <span class="nf">freeze_bn</span><span class="p">(</span><span class="n">mod</span><span class="p">):</span>
+<div class="viewcode-block" id="freeze_bn"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.freeze_bn">[docs]</a><span class="k">def</span> <span class="nf">freeze_bn</span><span class="p">(</span><span class="n">mod</span><span class="p">:</span> <span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Prevents parameter and stats from updating in Batchnorm layers that are frozen</span>
 
 <span class="sd">    Args:</span>
@@ -247,7 +249,7 @@
     <span class="k">return</span> <span class="n">mod</span></div>
 
 
-<div class="viewcode-block" id="freeze_model"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.freeze_model">[docs]</a><span class="k">def</span> <span class="nf">freeze_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">last_frozen_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frozen_bn_stat_update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="freeze_model"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.freeze_model">[docs]</a><span class="k">def</span> <span class="nf">freeze_model</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">last_frozen_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">frozen_bn_stat_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Freeze a specific range of model layers</span>
 
 <span class="sd">    Args:</span>

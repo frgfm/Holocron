@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer &mdash; holocron 0.1.3a0+1a9488e-git documentation</title>
+  <title>holocron.trainer &mdash; holocron 0.1.3a0+bcc3ea1-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.3a0+1a9488e
+                0.1.3a0+bcc3ea1
               </div>
             
           
@@ -229,10 +229,10 @@
 <p><a class="reference internal" href="#module-holocron.trainer" title="holocron.trainer"><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.trainer</span></code></a> provides some basic objects for training purposes.</p>
 <dl class="py class">
 <dt id="holocron.trainer.Trainer">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">Trainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">train_loader</span></em>, <em class="sig-param"><span class="n">val_loader</span></em>, <em class="sig-param"><span class="n">criterion</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="o">=</span><span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">Trainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">train_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">val_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">criterion</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py method">
 <dt id="holocron.trainer.Trainer.check_setup">
-<code class="sig-name descname">check_setup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">freeze_until</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lr</span><span class="o">=</span><span class="default_value">0.0003</span></em>, <em class="sig-param"><span class="n">num_it</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.check_setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.check_setup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">check_setup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lr</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.0003</span></em>, <em class="sig-param"><span class="n">num_it</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.check_setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.check_setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether you can overfit one batch</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -247,7 +247,7 @@
 
 <dl class="py method">
 <dt id="holocron.trainer.Trainer.fit_n_epochs">
-<code class="sig-name descname">fit_n_epochs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_epochs</span></em>, <em class="sig-param"><span class="n">lr</span></em>, <em class="sig-param"><span class="n">freeze_until</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sched_type</span><span class="o">=</span><span class="default_value">'onecycle'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.fit_n_epochs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.fit_n_epochs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fit_n_epochs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_epochs</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">lr</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sched_type</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'onecycle'</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.fit_n_epochs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.fit_n_epochs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train the model for a given number of epochs</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -263,7 +263,7 @@
 
 <dl class="py method">
 <dt id="holocron.trainer.Trainer.load">
-<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.load" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>Any<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resume from a trainer state</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -274,7 +274,7 @@
 
 <dl class="py method">
 <dt id="holocron.trainer.Trainer.lr_find">
-<code class="sig-name descname">lr_find</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">freeze_until</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start_lr</span><span class="o">=</span><span class="default_value">1e-07</span></em>, <em class="sig-param"><span class="n">end_lr</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">num_it</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.lr_find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.lr_find" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">lr_find</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start_lr</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-07</span></em>, <em class="sig-param"><span class="n">end_lr</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">num_it</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.lr_find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.lr_find" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gridsearch the optimal learning rate for the training</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -290,7 +290,7 @@
 
 <dl class="py method">
 <dt id="holocron.trainer.Trainer.plot_recorder">
-<code class="sig-name descname">plot_recorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">0.95</span></em>, <em class="sig-param"><span class="n">block</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.plot_recorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.plot_recorder" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_recorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">beta</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.95</span></em>, <em class="sig-param"><span class="n">block</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.plot_recorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.plot_recorder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Display the results of the LR grid search</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -304,29 +304,29 @@
 
 <dl class="py method">
 <dt id="holocron.trainer.Trainer.save">
-<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.save" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_file</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a trainer checkpoint</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>output_file</strong> (<em>str</em>) – destination file path</p>
+<dd class="field-odd"><p><strong>output_file</strong> – destination file path</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="holocron.trainer.Trainer.set_device">
-<code class="sig-name descname">set_device</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gpu</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.set_device"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.set_device" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_device</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gpu</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.set_device"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.set_device" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move tensor objects to the target GPU</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>gpu</strong> (<em>python:int</em>) – index of the target GPU device</p>
+<dd class="field-odd"><p><strong>gpu</strong> – index of the target GPU device</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="holocron.trainer.Trainer.to_cuda">
-<code class="sig-name descname">to_cuda</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">target</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.to_cuda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.to_cuda" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_cuda</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">target</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>torch.Tensor<span class="p">, </span>List<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>torch.Tensor<span class="p">]</span><span class="p">]</span><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>torch.Tensor<span class="p">, </span>Union<span class="p">[</span>torch.Tensor<span class="p">, </span>List<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>torch.Tensor<span class="p">]</span><span class="p">]</span><span class="p">]</span><span class="p">]</span><a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.to_cuda"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.to_cuda" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move input and target to GPU</p>
 </dd></dl>
 
@@ -336,7 +336,7 @@
 <h2>Image classification<a class="headerlink" href="#image-classification" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="holocron.trainer.ClassificationTrainer">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">ClassificationTrainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">train_loader</span></em>, <em class="sig-param"><span class="n">val_loader</span></em>, <em class="sig-param"><span class="n">criterion</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="o">=</span><span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#ClassificationTrainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.ClassificationTrainer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">ClassificationTrainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">train_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">val_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">criterion</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#ClassificationTrainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.ClassificationTrainer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Image classification trainer class</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -353,7 +353,7 @@
 </dl>
 <dl class="py method">
 <dt id="holocron.trainer.ClassificationTrainer.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#ClassificationTrainer.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.ClassificationTrainer.evaluate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/holocron/trainer/core.html#ClassificationTrainer.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.ClassificationTrainer.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the model on the validation set</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -369,7 +369,7 @@
 
 <dl class="py class">
 <dt id="holocron.trainer.SegmentationTrainer">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">SegmentationTrainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">train_loader</span></em>, <em class="sig-param"><span class="n">val_loader</span></em>, <em class="sig-param"><span class="n">criterion</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="o">=</span><span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#SegmentationTrainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.SegmentationTrainer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">SegmentationTrainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">train_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">val_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">criterion</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#SegmentationTrainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.SegmentationTrainer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Semantic segmentation trainer class</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -386,7 +386,7 @@
 </dl>
 <dl class="py method">
 <dt id="holocron.trainer.SegmentationTrainer.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ignore_index</span><span class="o">=</span><span class="default_value">255</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#SegmentationTrainer.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.SegmentationTrainer.evaluate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ignore_index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">255</span></em><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/holocron/trainer/core.html#SegmentationTrainer.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.SegmentationTrainer.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the model on the validation set</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -405,7 +405,7 @@
 
 <dl class="py class">
 <dt id="holocron.trainer.DetectionTrainer">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">DetectionTrainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">train_loader</span></em>, <em class="sig-param"><span class="n">val_loader</span></em>, <em class="sig-param"><span class="n">criterion</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="o">=</span><span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#DetectionTrainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.DetectionTrainer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">DetectionTrainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">train_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">val_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">criterion</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#DetectionTrainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.DetectionTrainer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Object detection trainer class</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -422,7 +422,7 @@
 </dl>
 <dl class="py method">
 <dt id="holocron.trainer.DetectionTrainer.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">iou_threshold</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#DetectionTrainer.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.DetectionTrainer.evaluate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">iou_threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.5</span></em><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/holocron/trainer/core.html#DetectionTrainer.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.DetectionTrainer.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the model on the validation set</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -444,7 +444,7 @@
 <h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="holocron.trainer.freeze_bn">
-<code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">freeze_bn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mod</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/utils.html#freeze_bn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.freeze_bn" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">freeze_bn</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mod</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em><span class="sig-paren">)</span> &#x2192; torch.nn.modules.module.Module<a class="reference internal" href="_modules/holocron/trainer/utils.html#freeze_bn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.freeze_bn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prevents parameter and stats from updating in Batchnorm layers that are frozen</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -461,7 +461,7 @@
 
 <dl class="py function">
 <dt id="holocron.trainer.freeze_model">
-<code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">freeze_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">last_frozen_layer</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frozen_bn_stat_update</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/utils.html#freeze_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.freeze_model" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">freeze_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">last_frozen_layer</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frozen_bn_stat_update</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; torch.nn.modules.module.Module<a class="reference internal" href="_modules/holocron/trainer/utils.html#freeze_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.freeze_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Freeze a specific range of model layers</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
