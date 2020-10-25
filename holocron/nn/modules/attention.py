@@ -12,9 +12,9 @@ class SAM(nn.Module):
     Args:
         in_channels (int): input channels
     """
-    def __init__(self, in_channels):
+    def __init__(self, in_channels: int) -> None:
         super().__init__()
         self.conv = nn.Conv2d(in_channels, 1, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x * torch.sigmoid(self.conv(x))

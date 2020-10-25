@@ -6,13 +6,15 @@ Bounding box operations
 
 import math
 import torch
+from torch import Tensor
 from torchvision.ops.boxes import box_iou, box_area
+from typing import Tuple
 
 
 __all__ = ['box_giou', 'diou_loss', 'ciou_loss']
 
 
-def _box_iou(boxes1, boxes2):
+def _box_iou(boxes1: Tensor, boxes2: Tensor) -> Tuple[Tensor, Tensor]:
     # from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py
     area1 = box_area(boxes1)
     area2 = box_area(boxes2)
@@ -29,7 +31,7 @@ def _box_iou(boxes1, boxes2):
     return iou, union
 
 
-def box_giou(boxes1, boxes2):
+def box_giou(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     """Computes the Generalized-IoU as described in `"Generalized Intersection over Union: A Metric and A Loss
     for Bounding Box Regression" <https://arxiv.org/pdf/1902.09630.pdf>`_. This implementation was adapted
     from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py
@@ -65,7 +67,7 @@ def box_giou(boxes1, boxes2):
     return iou - (area - union) / area
 
 
-def iou_penalty(boxes1, boxes2):
+def iou_penalty(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     """Implements the penalty term for the Distance-IoU loss
 
     Args:
@@ -86,7 +88,7 @@ def iou_penalty(boxes1, boxes2):
     c2[..., 1].sub_(torch.min(boxes1[:, 1].unsqueeze(-1), boxes2[:, 1].unsqueeze(-2)))
 
     c2.pow_(2)
-    c2 = c2.sum(axis=-1)
+    c2 = c2.sum(dim=-1)
 
     # L2 - distance between box centers
     center_dist2 = torch.zeros((boxes1.shape[0], boxes2.shape[0], 2), device=boxes1.device)
@@ -98,12 +100,12 @@ def iou_penalty(boxes1, boxes2):
     center_dist2[..., 1].sub_(boxes2[:, [1, 3]].sum(dim=1).unsqueeze(0))
 
     center_dist2.pow_(2)
-    center_dist2 = center_dist2.sum(axis=-1) / 4
+    center_dist2 = center_dist2.sum(dim=-1) / 4
 
     return center_dist2 / c2
 
 
-def diou_loss(boxes1, boxes2):
+def diou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     """Computes the Distance-IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
     Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_.
 
@@ -128,7 +130,7 @@ def diou_loss(boxes1, boxes2):
     return 1 - box_iou(boxes1, boxes2) + iou_penalty(boxes1, boxes2)
 
 
-def aspect_ratio(boxes):
+def aspect_ratio(boxes: Tensor) -> Tensor:
     """Computes the aspect ratio of boxes
 
     Args:
@@ -141,7 +143,7 @@ def aspect_ratio(boxes):
     return torch.atan((boxes[:, 2] - boxes[:, 0]) / (boxes[:, 3] - boxes[:, 1]))
 
 
-def aspect_ratio_consistency(boxes1, boxes2):
+def aspect_ratio_consistency(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     """Computes the aspect ratio consistency from the complete IoU loss
 
     Args:
@@ -159,7 +161,7 @@ def aspect_ratio_consistency(boxes1, boxes2):
     return v
 
 
-def ciou_loss(boxes1, boxes2):
+def ciou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     """Computes the Complete IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
     Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_.
 

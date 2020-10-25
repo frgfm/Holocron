@@ -1,19 +1,14 @@
-# -*- coding: utf-8 -*-
-
-"""
-Parameter initialization
-"""
-
 import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd
+from typing import Optional
 
 
-def init_module(module, nonlinearity=None):
+def init_module(module: nn.Module, nonlinearity: Optional[str] = None) -> None:
     """Initializes pytorch modules
 
     Args:
-        module (torch.nn.Module): module to initialize
-        nonlinearity (str, optional): linearity to initialize convolutions for
+        module: module to initialize
+        nonlinearity: linearity to initialize convolutions for
     """
 
     for m in module.modules():

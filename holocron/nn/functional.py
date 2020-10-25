@@ -1,49 +1,45 @@
-# -*- coding: utf-8 -*-
-
-'''
-Functional interface
-'''
-
 from math import floor
 import torch
+from torch import Tensor
 import torch.nn.functional as F
+from typing import Optional, Callable, Union, Tuple, List
 
 
 __all__ = ['silu', 'mish', 'hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
            'complement_cross_entropy', 'norm_conv2d', 'add2d', 'dropblock2d']
 
 
-def silu(x):
+def silu(x: Tensor) -> Tensor:
     """Implements the SiLU activation function
 
     Args:
-        x (torch.Tensor): input tensor
+        x: input tensor
     Returns:
-        torch.Tensor[x.size()]: output tensor
+        output tensor
     """
 
     return x * torch.sigmoid(x)
 
 
-def mish(x):
+def mish(x: Tensor) -> Tensor:
     """Implements the Mish activation function
 
     Args:
-        x (torch.Tensor): input tensor
+        x: input tensor
     Returns:
-        torch.Tensor[x.size()]: output tensor
+        output tensor
     """
 
     return x * torch.tanh(F.softplus(x))
 
 
-def hard_mish(x, inplace=False):
+def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
     """Implements the HardMish activation function
 
     Args:
-        x (torch.Tensor): input tensor
+        x: input tensor
     Returns:
-        torch.Tensor[x.size()]: output tensor
+        output tensor
     """
 
     if inplace:
@@ -52,15 +48,15 @@ def hard_mish(x, inplace=False):
         return 0.5 * x * (x + 2).clamp(min=0, max=2)
 
 
-def nl_relu(x, beta=1., inplace=False):
+def nl_relu(x: Tensor, beta: float = 1., inplace: bool = False) -> Tensor:
     """Implements the natural logarithm ReLU activation function
 
     Args:
-        x (torch.Tensor): input tensor
-        beta (float): beta used for NReLU
-        inplace (bool): whether the operation should be performed inplace
+        x: input tensor
+        beta: beta used for NReLU
+        inplace: whether the operation should be performed inplace
     Returns:
-        torch.Tensor[x.size()]: output tensor
+        output tensor
     """
 
     if inplace:
@@ -69,7 +65,14 @@ def nl_relu(x, beta=1., inplace=False):
         return torch.log(1 + beta * F.relu(x))
 
 
-def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamma=2):
+def focal_loss(
+    x: Tensor,
+    target: Tensor,
+    weight: Optional[Tensor] = None,
+    ignore_index: int = -100,
+    reduction: str = 'mean',
+    gamma: float = 2.
+) -> Tensor:
     """Implements the focal loss from
     `"Focal Loss for Dense Object Detection" <https://arxiv.org/pdf/1708.02002.pdf>`_
 
@@ -121,7 +124,7 @@ def focal_loss(x, target, weight=None, ignore_index=-100, reduction='mean', gamm
     return loss
 
 
-def concat_downsample2d(x, scale_factor):
+def concat_downsample2d(x: Tensor, scale_factor: int) -> Tensor:
     """Implements a loss-less downsampling operation described in
     `"YOLO9000: Better, Faster, Stronger" <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_
     by stacking adjacent information on the channel dimension.
@@ -147,7 +150,7 @@ def concat_downsample2d(x, scale_factor):
     return x
 
 
-def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'):
+def multilabel_cross_entropy(x: Tensor, target: Tensor, weight: Optional[Tensor] = None, ignore_index: int = -100, reduction: str = 'mean') -> Tensor:
     """Implements the cross entropy loss for multi-label targets
 
     Args:
@@ -174,7 +177,7 @@ def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt *= weight.view(1, -1, *([1] * (x.ndim - 2)))
+        logpt *= weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[attr-defined]
 
     # CE Loss
     loss = - target * logpt
@@ -190,7 +193,7 @@ def multilabel_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
     return loss
 
 
-def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean', eps=0.1):
+def ls_cross_entropy(x: Tensor, target: Tensor, weight: Optional[Tensor] = None, ignore_index: int = -100, reduction: str = 'mean', eps: float = 0.1) -> Tensor:
     """Implements the label smoothing cross entropy loss from
     `"Attention Is All You Need" <https://arxiv.org/pdf/1706.03762.pdf>`_
 
@@ -222,7 +225,7 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt *= weight.view(1, -1, *([1] * (logpt.ndim - 2)))
+        logpt *= weight.view(1, -1, *([1] * (logpt.ndim - 2)))  # type: ignore[attr-defined]
 
     # Loss reduction
     if reduction == 'sum':
@@ -237,7 +240,7 @@ def ls_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean'
                                                             ignore_index=ignore_index, reduction=reduction)
 
 
-def complement_cross_entropy(x, target, weight=None, ignore_index=-100, reduction='mean', gamma=-1):
+def complement_cross_entropy(x: Tensor, target: Tensor, weight: Optional[Tensor] = None, ignore_index: int = -100, reduction: str = 'mean', gamma: float = -1) -> Tensor:
     """Implements the complement cross entropy loss from
     `"Imbalanced Image Classification with Complement Cross Entropy" <https://arxiv.org/pdf/2009.02189.pdf>`_
 
@@ -260,7 +263,7 @@ def complement_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
     # logpt = F.log_softmax(x, dim=1)
 
     pt = F.softmax(x, dim=1)
-    pt /= (1 - pt.transpose(0, 1).gather(0, target.unsqueeze(0)).transpose(0, 1))
+    pt.div_(1 - pt.transpose(0, 1).gather(0, target.unsqueeze(0)).transpose(0, 1))
 
     loss = - 1 / (x.shape[1] - 1) * pt * torch.log(pt)
 
@@ -278,7 +281,7 @@ def complement_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        loss *= weight.view(1, -1, *([1] * (x.ndim - 2)))
+        loss *= weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[attr-defined]
 
     # Loss reduction
     if reduction == 'sum':
@@ -292,12 +295,28 @@ def complement_cross_entropy(x, target, weight=None, ignore_index=-100, reductio
     return F.cross_entropy(x, target, weight, ignore_index=ignore_index, reduction=reduction) + gamma * loss
 
 
-def _xcorrNd(fn, x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1,
-             normalize_slices=False, eps=1e-14):
+def _xcorr2d(
+    fn: Callable[[Tensor, Tensor], Tensor],
+    x: Tensor,
+    weight: Tensor,
+    bias: Optional[Tensor] = None,
+    stride: Union[int, List[int], Tuple[int, int]] = 1,
+    padding: Union[int, List[int], Tuple[int, int]] = 0,
+    dilation: Union[int, List[int], Tuple[int, int]] = 1,
+    groups: int = 1,
+    normalize_slices: bool = False,
+    eps: float = 1e-14
+) -> Tensor:
     """Implements cross-correlation operation"""
 
     # Reshape input Tensor into properly sized slices
     h, w = x.shape[-2:]
+    if isinstance(dilation, int):
+        dilation = (dilation, dilation)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(stride, int):
+        stride = (stride, stride)
     x = F.unfold(x, weight.shape[-2:], dilation=dilation, padding=padding, stride=stride)
     x = x.transpose(1, 2)
     # Normalize the slices
@@ -325,7 +344,7 @@ def _xcorrNd(fn, x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1
     return x
 
 
-def _convNd(x, weight):
+def _convNd(x: Tensor, weight: Tensor) -> Tensor:
     """Implements inner cross-correlation operation over slices
 
     Args:
@@ -336,7 +355,16 @@ def _convNd(x, weight):
     return x @ weight.view(weight.size(0), -1).t()
 
 
-def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, eps=1e-14):
+def norm_conv2d(
+    x: Tensor,
+    weight: Tensor,
+    bias: Optional[Tensor] = None,
+    stride: Union[int, List[int], Tuple[int, int]] = 1,
+    padding: Union[int, List[int], Tuple[int, int]] = 0,
+    dilation: Union[int, List[int], Tuple[int, int]] = 1,
+    groups: int = 1,
+    eps: float = 1e-14
+) -> Tensor:
     """Implements a normalized convolution operations in 2D. Based on the `implementation
     <https://github.com/kimdongsuk1/NormalizedCNN>`_ by the paper's author.
     See :class:`~holocron.nn.NormConv2d` for details and output shape.
@@ -363,10 +391,10 @@ def norm_conv2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1,
         >>> F.norm_conv2d(inputs, filters, padding=1)
     """
 
-    return _xcorrNd(_convNd, x, weight, bias, stride, padding, dilation, groups, True, eps)
+    return _xcorr2d(_convNd, x, weight, bias, stride, padding, dilation, groups, True, eps)
 
 
-def _addNd(x, weight):
+def _addNd(x: Tensor, weight: Tensor) -> Tensor:
     """Implements inner adder operation over slices
 
     Args:
@@ -377,7 +405,17 @@ def _addNd(x, weight):
     return -(x.unsqueeze(2) - weight.view(weight.size(0), -1)).abs().sum(-1)
 
 
-def add2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, normalize_slices=False, eps=1e-14):
+def add2d(
+    x: Tensor,
+    weight: Tensor,
+    bias: Optional[Tensor] = None,
+    stride: Union[int, List[int], Tuple[int, int]] = 1,
+    padding: Union[int, List[int], Tuple[int, int]] = 0,
+    dilation: Union[int, List[int], Tuple[int, int]] = 1,
+    groups: int = 1,
+    normalize_slices: bool = False,
+    eps: float = 1e-14
+) -> Tensor:
     """Implements an adder operation in 2D from `"AdderNet: Do We Really Need Multiplications in Deep Learning?"
     <https://arxiv.org/pdf/1912.13200.pdf>`_. See :class:`~holocron.nn.Add2d` for details and output shape.
 
@@ -404,14 +442,15 @@ def add2d(x, weight, bias=None, stride=1, padding=0, dilation=1, groups=1, norma
         >>> F.norm_conv2d(inputs, filters, padding=1)
     """
 
-    return _xcorrNd(_addNd, x, weight, bias, stride, padding, dilation, groups, normalize_slices, eps)
+    return _xcorr2d(_addNd, x, weight, bias, stride, padding, dilation, groups, normalize_slices, eps)
 
 
-def dropblock2d(x, drop_prob, block_size, inplace=False, training=True):
+def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = False, training: bool = True) -> Tensor:
     """Implements the dropblock operation from `"DropBlock: A regularization method for convolutional networks"
     <https://arxiv.org/pdf/1810.12890.pdf>`_
 
     Args:
+        x (torch.Tensor): input tensor
         drop_prob (float): probability of dropping activation value
         block_size (int): size of each block that is expended from the sampled mask
         inplace (bool, optional): whether the operation should be done inplace
