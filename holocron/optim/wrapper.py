@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*-
-
-'''
-Lookahead optimizer wrapper
-'''
-
 import torch
 from collections import defaultdict
 from torch.optim.optimizer import Optimizer
+from typing import Dict, Any, Optional, Callable
 
 
 __all__ = ['Lookahead', 'Scout']
@@ -22,7 +17,12 @@ class Lookahead(Optimizer):
         sync_period (int, optional): number of step performed on fast weights before weight synchronization
     """
 
-    def __init__(self, base_optimizer, sync_rate=0.5, sync_period=6):
+    def __init__(
+        self,
+        base_optimizer: torch.optim.Optimizer,
+        sync_rate=0.5,
+        sync_period=6
+    ) -> None:
         if sync_rate < 0 or sync_rate > 1:
             raise ValueError(f'expected positive float lower than 1 as sync_rate, received: {sync_rate}')
         if not isinstance(sync_period, int) or sync_period < 1:
@@ -38,29 +38,29 @@ class Lookahead(Optimizer):
         for group in self.base_optimizer.param_groups:
             self._add_param_group(group)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         return {
             'defaults': self.defaults,
             'state': self.state,
-            'base_state': self.base_optimizer.__getstate__(),
+            'base_state': self.base_optimizer.__getstate__(),  # type: ignore[attr-defined]
             'fast_steps': self.fast_steps,
             'param_groups': self.param_groups
         }
 
-    def state_dict(self):
+    def state_dict(self) -> Dict[str, Any]:
         return dict(**super(Lookahead, self).state_dict(),
                     base_state_dict=self.base_optimizer.state_dict())
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
         self.base_optimizer.load_state_dict(state_dict['base_state_dict'])
         super(Lookahead, self).load_state_dict(state_dict)
         # Update last key of class dict
         self.__setstate__({'base_state_dict': self.base_optimizer.state_dict()})
 
-    def zero_grad(self):
+    def zero_grad(self) -> None:
         self.base_optimizer.zero_grad()
 
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
 
         Arguments:
@@ -76,7 +76,7 @@ class Lookahead(Optimizer):
 
         return loss
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         format_string = self.__class__.__name__ + ' ('
         optimizer_repr = self.base_optimizer.__repr__().replace('\n', '\n\t')
         format_string += f"\nbase_optimizer={optimizer_repr},"
@@ -85,7 +85,7 @@ class Lookahead(Optimizer):
         format_string += '\n)'
         return format_string
 
-    def _add_param_group(self, param_group):
+    def _add_param_group(self, param_group: Dict[str, Any]) -> None:
         """Adds a new slow parameter group
 
         Args:
@@ -101,7 +101,7 @@ class Lookahead(Optimizer):
             p.reguires_grad = False
         self.param_groups.append(group)
 
-    def add_param_group(self, param_group):
+    def add_param_group(self, param_group: Dict[str, Any]) -> None:
         """Adds a parameter group to base optimizer (fast weights) and its corresponding slow version
 
         Args:
@@ -114,7 +114,7 @@ class Lookahead(Optimizer):
         # Add the corresponding slow param group
         self._add_param_group(self.base_optimizer.param_groups[-1])
 
-    def sync_params(self, sync_rate=0):
+    def sync_params(self, sync_rate: float = 0.) -> None:
         """Synchronize parameters as follows:
         slow_param <- slow_param + sync_rate * (fast_param - slow_param)
 
@@ -141,7 +141,12 @@ class Scout(Optimizer):
         sync_period (int, optional): number of step performed on fast weights before weight synchronization
     """
 
-    def __init__(self, base_optimizer, sync_rate=0.5, sync_period=6):
+    def __init__(
+        self,
+        base_optimizer: torch.optim.Optimizer,
+        sync_rate=0.5,
+        sync_period=6
+    ) -> None:
         if sync_rate < 0 or sync_rate > 1:
             raise ValueError(f'expected positive float lower than 1 as sync_rate, received: {sync_rate}')
         if not isinstance(sync_period, int) or sync_period < 1:
@@ -162,29 +167,29 @@ class Scout(Optimizer):
             for p in group['params']:
                 self.buffer.append(p.data.unsqueeze(0))
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         return {
             'defaults': self.defaults,
             'state': self.state,
-            'base_state': self.base_optimizer.__getstate__(),
+            'base_state': self.base_optimizer.__getstate__(),  # type: ignore[attr-defined]
             'fast_steps': self.fast_steps,
             'param_groups': self.param_groups
         }
 
-    def state_dict(self):
+    def state_dict(self) -> Dict[str, Any]:
         return dict(**super(Scout, self).state_dict(),
                     base_state_dict=self.base_optimizer.state_dict())
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
         self.base_optimizer.load_state_dict(state_dict['base_state_dict'])
         super(Scout, self).load_state_dict(state_dict)
         # Update last key of class dict
         self.__setstate__({'base_state_dict': self.base_optimizer.state_dict()})
 
-    def zero_grad(self):
+    def zero_grad(self) -> None:
         self.base_optimizer.zero_grad()
 
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
 
         Arguments:
@@ -209,7 +214,7 @@ class Scout(Optimizer):
                 update = p[1:] - p[:-1]
                 max_dev = (update - torch.mean(update, dim=0)).abs().max(dim=0).values
                 update_similarity.append((torch.std(update, dim=0) / max_dev).mean().item())
-            update_coherence = sum(std_list) / len(std_list)
+            update_coherence = sum(update_similarity) / len(update_similarity)
 
             sync_rate = max(1 - update_coherence, self.defaults['sync_rate'])
             # sync_rate = self.defaults['sync_rate']
@@ -222,7 +227,7 @@ class Scout(Optimizer):
 
         return loss
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         format_string = self.__class__.__name__ + ' ('
         optimizer_repr = self.base_optimizer.__repr__().replace('\n', '\n\t')
         format_string += f"\nbase_optimizer={optimizer_repr},"
@@ -231,7 +236,7 @@ class Scout(Optimizer):
         format_string += '\n)'
         return format_string
 
-    def _add_param_group(self, param_group):
+    def _add_param_group(self, param_group: Dict[str, Any]) -> None:
         """Adds a new slow parameter group
 
         Args:
@@ -247,7 +252,7 @@ class Scout(Optimizer):
             p.reguires_grad = False
         self.param_groups.append(group)
 
-    def add_param_group(self, param_group):
+    def add_param_group(self, param_group: Dict[str, Any]) -> None:
         """Adds a parameter group to base optimizer (fast weights) and its corresponding slow version
 
         Args:
@@ -260,7 +265,7 @@ class Scout(Optimizer):
         # Add the corresponding slow param group
         self._add_param_group(self.base_optimizer.param_groups[-1])
 
-    def sync_params(self, sync_rate=0):
+    def sync_params(self, sync_rate: float = 0.) -> None:
         """Synchronize parameters as follows:
         slow_param <- slow_param + sync_rate * (fast_param - slow_param)
 

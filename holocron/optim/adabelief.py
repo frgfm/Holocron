@@ -1,6 +1,7 @@
 import torch
 from . import functional as F
 from torch.optim import Adam
+from typing import Optional, Callable
 
 
 class AdaBelief(Adam):
@@ -17,7 +18,7 @@ class AdaBelief(Adam):
     """
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
         Arguments:
             closure (callable, optional): A closure that reevaluates the model

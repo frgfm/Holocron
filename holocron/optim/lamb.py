@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-
-'''
-Rectified Adam optimizer
-'''
-
 import torch
 from torch.optim.optimizer import Optimizer
-from typing import Tuple, Optional, Iterable
+from typing import Tuple, Optional, Iterable, Callable
 
 
 class Lamb(Optimizer):
@@ -46,7 +40,7 @@ class Lamb(Optimizer):
             self.scale_clip = (0., 10.)
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
 
         Arguments:

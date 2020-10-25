@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
-"""
-Optimization schedulers
-"""
-
 import math
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer

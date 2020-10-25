@@ -1,4 +1,3 @@
-r"""Functional interface"""
 import math
 import torch
 from torch import Tensor

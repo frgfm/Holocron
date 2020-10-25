@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import torch
 from torch.optim.optimizer import Optimizer
+from typing import Dict, Iterable, Optional, Callable, Tuple
 
 
 class Lars(Optimizer):
@@ -19,8 +18,16 @@ class Lars(Optimizer):
         scale_clip (tuple, optional): the lower and upper bounds for the weight norm in local LR of LARS
     """
 
-    def __init__(self, params, lr=1e-3, momentum=0, dampening=0,
-                 weight_decay=0, nesterov=False, scale_clip=None):
+    def __init__(
+        self,
+        params: Iterable[torch.nn.Parameter],
+        lr: float = 1e-3,
+        momentum: float = 0.,
+        dampening: float = 0.,
+        weight_decay: float = 0.,
+        nesterov: bool = False,
+        scale_clip: Optional[Tuple[float, float]] = None
+    ) -> None:
         if not isinstance(lr, float) or lr < 0.0:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if momentum < 0.0:
@@ -36,15 +43,15 @@ class Lars(Optimizer):
         # LARS arguments
         self.scale_clip = scale_clip
         if self.scale_clip is None:
-            self.scale_clip = (0, 10)
+            self.scale_clip = (0., 10.)
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Dict[str, torch.Tensor]):
         super(Lars, self).__setstate__(state)
         for group in self.param_groups:
             group.setdefault('nesterov', False)
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
 
         Arguments:
