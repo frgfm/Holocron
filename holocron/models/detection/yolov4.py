@@ -481,14 +481,14 @@ def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool
         pretrained_backbone = False
 
     # Build the model
-    model = YOLOv4(default_cfgs[arch]['backbone']['layout'], **kwargs)
+    model = YOLOv4(default_cfgs[arch]['backbone']['layout'], **kwargs)  # type: ignore[index]
     # Load backbone pretrained parameters
     if pretrained_backbone:
-        load_pretrained_params(model.backbone, f"{arch}'s backbone", default_cfgs[arch]['backbone']['url'], progress,
+        load_pretrained_params(model.backbone, default_cfgs[arch]['backbone']['url'], progress,  # type: ignore[index]
                                key_replacement=('features.', ''), key_filter='features.')
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
+        load_pretrained_params(model, default_cfgs[arch]['url'], progress)  # type: ignore[arg-type]
 
     return model
 

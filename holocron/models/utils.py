@@ -48,7 +48,6 @@ def conv_sequence(
 
 def load_pretrained_params(
     model: nn.Module,
-    arch: str,
     url: Optional[str] = None,
     progress: bool = True,
     key_replacement: Optional[Tuple[str, str]] = None,
@@ -56,7 +55,7 @@ def load_pretrained_params(
 ) -> None:
 
     if url is None:
-        logging.warning(f"Invalid model URL for {arch}, using default initialization.")
+        logging.warning("Invalid model URL, using default initialization.")
     else:
         state_dict = load_state_dict_from_url(url, progress=progress)
         if isinstance(key_filter, str):

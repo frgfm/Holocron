@@ -107,7 +107,7 @@ def _sknet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> ResNet
                    [64, 128, 256, 512], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
+        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
 
     return model
 

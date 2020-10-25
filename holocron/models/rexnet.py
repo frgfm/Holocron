@@ -138,7 +138,7 @@ def _rexnet(arch, pretrained, progress, **kwargs):
     model = ReXNet(default_cfgs[arch]['width_mult'], default_cfgs[arch]['depth_mult'], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
+        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
 
     return model
 

@@ -86,7 +86,7 @@ def _tridentnet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> R
                    num_repeats=3, **kwargs)
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
+        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
 
     return model
 

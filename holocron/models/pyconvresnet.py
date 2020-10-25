@@ -68,7 +68,7 @@ def _pyconvresnet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) ->
                                for group in default_cfgs[arch]['groups']], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
+        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
 
     return model
 
