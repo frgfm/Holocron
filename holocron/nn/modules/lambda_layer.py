@@ -1,6 +1,7 @@
 import torch
 from torch import nn, einsum
 import torch.nn.functional as F
+from typing import Optional
 
 __all__ = ['LambdaLayer']
 
@@ -19,7 +20,16 @@ class LambdaLayer(nn.Module):
         num_heads (int, optional): number of attention heads
         dim_u (int, optional): intra-depth dimension
     """
-    def __init__(self, in_channels, out_channels, dim_k, n=None, r=None, num_heads=4, dim_u=1):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        dim_k: int,
+        n: Optional[int] = None,
+        r: Optional[int] = None,
+        num_heads: int = 4,
+        dim_u: int = 1
+    ) -> None:
         super().__init__()
         self.u = dim_u
         self.num_heads = num_heads
@@ -47,7 +57,7 @@ class LambdaLayer(nn.Module):
                 raise AssertionError('You must specify the total sequence length (h x w)')
             self.pos_emb = nn.Parameter(torch.randn(n, n, dim_k, dim_u))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, c, h, w = x.shape
 
         # Project inputs & context to retrieve queries, keys and values

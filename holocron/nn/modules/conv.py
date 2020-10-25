@@ -1,27 +1,36 @@
-# -*- coding: utf-8 -*-
-
-'''
-Convolutional modules
-'''
-
 import math
 import torch
+from torch import Tensor
 import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd
 from torch.nn.modules.utils import _pair
 from torch.nn.functional import pad
+from typing import Optional, Tuple, List, Any
 from .. import functional as F
 
 __all__ = ['NormConv2d', 'Add2d', 'SlimConv2d', 'PyConv2d']
 
 
 class _NormConvNd(_ConvNd):
-    def __init__(self, in_channels, out_channels, kernel_size, stride,
-                 padding, dilation, transposed, output_padding,
-                 groups, bias, padding_mode, normalize_slices=False, eps=1e-14):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int,
+        padding: int,
+        dilation: int,
+        transposed: bool,
+        output_padding: int,
+        groups: int,
+        bias: bool,
+        padding_mode: str,
+        normalize_slices=False,
+        eps=1e-14
+    ) -> None:
         super().__init__(in_channels, out_channels, kernel_size, stride,
                          padding, dilation, transposed, output_padding,
-                         groups, bias, padding_mode)
+                         groups, bias, padding_mode)  # type: ignore[arg-type]
         self.normalize_slices = normalize_slices
         self.eps = eps
 
@@ -64,9 +73,19 @@ class NormConv2d(_NormConvNd):
             Default: 1e-14
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
-                 padding=0, dilation=1, groups=1, bias=True,
-                 padding_mode='zeros', eps=1e-14):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        dilation: int = 1,
+        groups: int = 1,
+        bias: bool = True,
+        padding_mode: str = 'zeros',
+        eps: float = 1e-14
+    ) -> None:
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
         padding = _pair(padding)
@@ -75,13 +94,13 @@ class NormConv2d(_NormConvNd):
             in_channels, out_channels, kernel_size, stride, padding, dilation,
             False, _pair(0), groups, bias, padding_mode, False, eps)
 
-    def forward(self, input):
+    def forward(self, x: Tensor) -> Tensor:
         if self.padding_mode != 'zeros':
-            return F.norm_conv2d(pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
-                                 self.weight, self.bias, self.stride, _pair(0),
-                                 self.dilation, self.groups, self.eps)
-        return F.norm_conv2d(input, self.weight, self.bias, self.stride, self.padding,
-                             self.dilation, self.groups, self.eps)
+            return F.norm_conv2d(pad(x, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+                                 self.weight, self.bias, self.stride, _pair(0),  # type: ignore[arg-type]
+                                 self.dilation, self.groups, self.eps)  # type: ignore[arg-type]
+        return F.norm_conv2d(x, self.weight, self.bias, self.stride, self.padding,  # type: ignore[arg-type]
+                             self.dilation, self.groups, self.eps)  # type: ignore[arg-type]
 
 
 class Add2d(_NormConvNd):
@@ -121,9 +140,20 @@ class Add2d(_NormConvNd):
             Default: 1e-14
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
-                 padding=0, dilation=1, groups=1, bias=True,
-                 padding_mode='zeros', normalize_slices=False, eps=1e-14):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        dilation: int = 1,
+        groups: int = 1,
+        bias: bool = True,
+        padding_mode: str = 'zeros',
+        normalize_slices: bool = False,
+        eps: float = 1e-14
+    ) -> None:
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
         padding = _pair(padding)
@@ -132,13 +162,13 @@ class Add2d(_NormConvNd):
             in_channels, out_channels, kernel_size, stride, padding, dilation,
             False, _pair(0), groups, bias, padding_mode, normalize_slices, eps)
 
-    def forward(self, input):
+    def forward(self, x: Tensor) -> Tensor:
         if self.padding_mode != 'zeros':
-            return F.add2d(pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
-                           self.weight, self.bias, self.stride, _pair(0),
-                           self.dilation, self.groups, self.normalize_slices, self.eps)
-        return F.add2d(input, self.weight, self.bias, self.stride, self.padding,
-                       self.dilation, self.groups, self.normalize_slices, self.eps)
+            return F.add2d(pad(x, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+                           self.weight, self.bias, self.stride, _pair(0),  # type: ignore[arg-type]
+                           self.dilation, self.groups, self.normalize_slices, self.eps)  # type: ignore[arg-type]
+        return F.add2d(x, self.weight, self.bias, self.stride, self.padding,  # type: ignore[arg-type]
+                       self.dilation, self.groups, self.normalize_slices, self.eps)  # type: ignore[arg-type]
 
 
 class SlimConv2d(nn.Module):
@@ -213,8 +243,19 @@ class SlimConv2d(nn.Module):
         L (int, optional): minimum squeezed channels. Default: 8
     """
 
-    def __init__(self, in_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True,
-                 padding_mode='zeros', r=32, L=2):
+    def __init__(
+        self,
+        in_channels: int,
+        kernel_size: int,
+        stride: int = 1,
+        padding: int = 0,
+        dilation: int = 1,
+        groups: int = 1,
+        bias: bool = True,
+        padding_mode: str = 'zeros',
+        r: int = 32,
+        L: int = 2
+    ) -> None:
         super().__init__()
         self.fc1 = nn.Conv2d(in_channels, max(in_channels // r, L), 1)
         self.bn = nn.BatchNorm2d(max(in_channels // r, L))
@@ -225,9 +266,9 @@ class SlimConv2d(nn.Module):
         self.conv_bot2 = nn.Conv2d(in_channels // 4, in_channels // 4, kernel_size, stride, padding,
                                    dilation, groups, bias, padding_mode)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         # Channel-wise weights
-        z = x.mean(dim=(2, 3), keepdims=True)
+        z = x.mean(dim=(2, 3), keepdim=True)
         z = self.bn(self.fc1(z))
         z = self.fc2(torch.relu(z))
         w = torch.sigmoid(z)
@@ -261,8 +302,16 @@ class PyConv2d(nn.ModuleList):
             channels to output channels. Default: 1
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size, num_levels=2, padding=0,
-                 groups=None, **kwargs):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        num_levels: int = 2,
+        padding: int = 0,
+        groups: Optional[List[int]] = None,
+        **kwargs: Any
+    ) -> None:
 
         if num_levels == 1:
             super().__init__([nn.Conv2d(in_channels, out_channels, kernel_size, padding=padding,
