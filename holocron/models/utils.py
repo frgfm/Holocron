@@ -1,9 +1,11 @@
+import logging
 import torch.nn as nn
 from holocron.nn import BlurPool2d
-from typing import List, Optional, Any, Callable
+from typing import List, Optional, Any, Callable, Dict, Tuple
+from torchvision.models.utils import load_state_dict_from_url
 
 
-__all__ = ['conv_sequence']
+__all__ = ['conv_sequence', 'load_pretrained_params']
 
 
 def conv_sequence(
@@ -42,3 +44,23 @@ def conv_sequence(
         conv_seq.append(drop_layer(inplace=True))
 
     return conv_seq
+
+
+def load_pretrained_params(
+    model: nn.Module,
+    arch: str,
+    url: Optional[str] = None,
+    progress: bool = True,
+    key_replacement: Optional[Tuple[str, str]] = None,
+    key_filter: Optional[str] = None,
+) -> None:
+
+    if url is None:
+        logging.warning(f"Invalid model URL for {arch}, using default initialization.")
+    else:
+        state_dict = load_state_dict_from_url(url, progress=progress)
+        if isinstance(key_filter, str):
+            state_dict = {k: v for k, v in state_dict.items() if k.startswith(key_filter)}
+        if isinstance(key_replacement, tuple):
+            state_dict = {k.replace(*key_replacement): v for k, v in state_dict.items()}
+        model.load_state_dict(state_dict)
