@@ -1,17 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """
 Implementation of Res2Net
 based on https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/res2net.py
 """
 
-import logging
 import math
 import torch
 import torch.nn as nn
-from torchvision.models.utils import load_state_dict_from_url
 from .resnet import _ResBlock, ResNet
-from .utils import conv_sequence
+from .utils import conv_sequence, load_pretrained_params
 from typing import Optional, Callable, Any, Dict
 
 
@@ -119,12 +115,7 @@ def _res2net(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> ResN
                    **kwargs)
     # Load pretrained parameters
     if pretrained:
-        if default_cfgs[arch]['url'] is None:
-            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
-        else:
-            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
-                                                  progress=progress)
-            model.load_state_dict(state_dict)
+        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
 
     return model
 

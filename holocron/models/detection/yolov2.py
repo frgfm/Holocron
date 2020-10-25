@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from torchvision.ops.misc import FrozenBatchNorm2d
 from typing import Dict, Any, Optional, Callable, Tuple, List, Union
 
-from ..utils import conv_sequence
+from ..utils import conv_sequence, load_pretrained_params
 from .yolo import _YOLO, _yolo
 from ..darknetv2 import DarknetBodyV2, default_cfgs as dark_cfgs
 from holocron.nn import ConcatDownsample2d
@@ -178,6 +178,24 @@ class YOLOv2(_YOLO):
 
             # Stack detections into a list
             return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
+
+
+def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, **kwargs: Any) -> YOLOv2:
+
+    if pretrained:
+        pretrained_backbone = False
+
+    # Build the model
+    model = YOLOv2(default_cfgs[arch]['backbone']['layout'], **kwargs)
+    # Load backbone pretrained parameters
+    if pretrained_backbone:
+        load_pretrained_params(model.backbone, f"{arch}'s backbone", default_cfgs[arch]['backbone']['url'], progress,
+                               key_replacement=('features.', ''), key_filter='features.')
+    # Load pretrained parameters
+    if pretrained:
+        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
+
+    return model
 
 
 def yolov2(pretrained: bool = False, progress: bool = True, pretrained_backbone: bool = True, **kwargs: Any) -> YOLOv2:

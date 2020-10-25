@@ -1,12 +1,9 @@
-import sys
-import logging
 from collections import OrderedDict
 import torch
 import torch.nn as nn
-from torchvision.models.utils import load_state_dict_from_url
 
 from ..nn.init import init_module
-from .utils import conv_sequence
+from .utils import conv_sequence, load_pretrained_params
 from holocron.nn import GlobalAvgPool2d
 from typing import Dict, Any, Optional, Callable, List, Tuple
 
@@ -15,8 +12,7 @@ __all__ = ['DarknetV1', 'darknet24']
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'darknet24': {'arch': 'DarknetV1',
-                  'layout': [[192], [128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024] * 2],
+    'darknet24': {'layout': [[192], [128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024] * 2],
                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet24_224-55729a5c.pth'},
 }
 
@@ -87,20 +83,12 @@ class DarknetV1(nn.Sequential):
         init_module(self, 'leaky_relu')
 
 
-def _darknet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> nn.Sequential:
-
-    # Retrieve the correct Darknet layout type
-    darknet_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
+def _darknet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> DarknetV1:
     # Build the model
-    model = darknet_type(default_cfgs[arch]['layout'], **kwargs)
+    model = DarknetV1(default_cfgs[arch]['layout'], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        if default_cfgs[arch]['url'] is None:
-            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
-        else:
-            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
-                                                  progress=progress)
-            model.load_state_dict(state_dict)
+        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
 
     return model
 
@@ -117,4 +105,4 @@ def darknet24(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _darknet('darknet24', pretrained, progress, **kwargs)  # type: ignore[return-value]
+    return _darknet('darknet24', pretrained, progress, **kwargs)

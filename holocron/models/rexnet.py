@@ -1,11 +1,9 @@
 import sys
-import logging
 from math import ceil
 from collections import OrderedDict
 import torch.nn as nn
-from torchvision.models.utils import load_state_dict_from_url
 from holocron.nn import SiLU, init, GlobalAvgPool2d
-from .utils import conv_sequence
+from .utils import conv_sequence, load_pretrained_params
 from typing import Dict, Any
 
 
@@ -140,12 +138,7 @@ def _rexnet(arch, pretrained, progress, **kwargs):
     model = ReXNet(default_cfgs[arch]['width_mult'], default_cfgs[arch]['depth_mult'], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        if default_cfgs[arch]['url'] is None:
-            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
-        else:
-            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
-                                                  progress=progress)
-            model.load_state_dict(state_dict)
+        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
 
     return model
 

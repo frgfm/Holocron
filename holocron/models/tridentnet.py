@@ -1,16 +1,8 @@
-# -*- coding: utf-8 -*-
-
-"""
-Implementation of TridentNet
-"""
-
-import logging
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from torchvision.models.utils import load_state_dict_from_url
 from .resnet import _ResBlock, ResNet
-from .utils import conv_sequence
+from .utils import conv_sequence, load_pretrained_params
 from typing import Dict, Any, Optional, Callable
 
 
@@ -94,12 +86,7 @@ def _tridentnet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> R
                    num_repeats=3, **kwargs)
     # Load pretrained parameters
     if pretrained:
-        if default_cfgs[arch]['url'] is None:
-            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
-        else:
-            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
-                                                  progress=progress)
-            model.load_state_dict(state_dict)
+        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
 
     return model
 

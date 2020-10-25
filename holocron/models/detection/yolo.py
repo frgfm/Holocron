@@ -1,15 +1,12 @@
-import sys
-import logging
 import torch
 from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.ops.boxes import box_iou, nms
 from torchvision.ops.misc import FrozenBatchNorm2d
-from torchvision.models.utils import load_state_dict_from_url
 from typing import Dict, Optional, Any, Callable, List, Tuple, Union
 
-from ..utils import conv_sequence
+from ..utils import conv_sequence, load_pretrained_params
 from ..darknet import DarknetBodyV1, default_cfgs as dark_cfgs
 from holocron.nn.init import init_module
 
@@ -334,33 +331,20 @@ class YOLOv1(_YOLO):
             return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
-def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, **kwargs: Any) -> _YOLO:
+def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, **kwargs: Any) -> YOLOv1:
 
     if pretrained:
         pretrained_backbone = False
 
-    # Retrieve the correct Darknet layout type
-    yolo_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
     # Build the model
-    model = yolo_type(default_cfgs[arch]['backbone']['layout'], **kwargs)
+    model = YOLOv1(default_cfgs[arch]['backbone']['layout'], **kwargs)
     # Load backbone pretrained parameters
     if pretrained_backbone:
-        if default_cfgs[arch]['backbone']['url'] is None:
-            logging.warning(f"Invalid model URL for {arch}'s backbone, using default initialization.")
-        else:
-            state_dict = load_state_dict_from_url(default_cfgs[arch]['backbone']['url'],
-                                                  progress=progress)
-            state_dict = {k.replace('features.', ''): v
-                          for k, v in state_dict.items() if k.startswith('features')}
-            model.backbone.load_state_dict(state_dict)
+        load_pretrained_params(model.backbone, f"{arch}'s backbone", default_cfgs[arch]['backbone']['url'], progress,
+                               key_replacement=('features.', ''), key_filter='features.')
     # Load pretrained parameters
     if pretrained:
-        if default_cfgs[arch]['url'] is None:
-            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
-        else:
-            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
-                                                  progress=progress)
-            model.load_state_dict(state_dict)
+        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
 
     return model
 

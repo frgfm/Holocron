@@ -6,7 +6,7 @@ from torchvision.ops.boxes import box_iou, nms
 from torchvision.ops.misc import FrozenBatchNorm2d
 from typing import Dict, Any, Optional, Tuple, List, Union, Callable
 
-from ..utils import conv_sequence
+from ..utils import conv_sequence, load_pretrained_params
 from .yolo import _yolo
 from ..darknetv4 import DarknetBodyV4, default_cfgs as dark_cfgs
 from holocron.ops.boxes import ciou_loss
@@ -474,6 +474,24 @@ class YOLOv4(nn.Module):
         x20, x13, x6 = self.neck(out)
 
         return self.head((x20, x13, x6), target)
+
+
+def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, **kwargs: Any) -> YOLOv4:
+
+    if pretrained:
+        pretrained_backbone = False
+
+    # Build the model
+    model = YOLOv4(default_cfgs[arch]['backbone']['layout'], **kwargs)
+    # Load backbone pretrained parameters
+    if pretrained_backbone:
+        load_pretrained_params(model.backbone, f"{arch}'s backbone", default_cfgs[arch]['backbone']['url'], progress,
+                               key_replacement=('features.', ''), key_filter='features.')
+    # Load pretrained parameters
+    if pretrained:
+        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
+
+    return model
 
 
 def yolov4(pretrained: bool = False, progress: bool = True, pretrained_backbone: bool = True, **kwargs: Any) -> YOLOv4:

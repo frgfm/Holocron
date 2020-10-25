@@ -3,9 +3,8 @@ import torch
 import torch.nn as nn
 
 from ..nn.init import init_module
-from .utils import conv_sequence
+from .utils import conv_sequence, load_pretrained_params
 from holocron.nn import GlobalAvgPool2d
-from .darknet import _darknet
 from typing import Dict, Any, Optional, Callable, List, Tuple, Union
 
 
@@ -109,6 +108,16 @@ class DarknetV2(nn.Sequential):
             ('pool', GlobalAvgPool2d(flatten=True))]))
 
         init_module(self, 'leaky_relu')
+
+
+def _darknet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> DarknetV2:
+    # Build the model
+    model = DarknetV2(default_cfgs[arch]['layout'], **kwargs)
+    # Load pretrained parameters
+    if pretrained:
+        load_pretrained_params(model, arch, default_cfgs[arch]['url'], progress, arch)
+
+    return model
 
 
 def darknet19(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> DarknetV2:
