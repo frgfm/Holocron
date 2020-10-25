@@ -6,7 +6,7 @@ from torchvision.ops.misc import FrozenBatchNorm2d
 from typing import Dict, Any, Optional, Callable, Tuple, List, Union
 
 from ..utils import conv_sequence, load_pretrained_params
-from .yolo import _YOLO, _yolo
+from .yolo import _YOLO
 from ..darknetv2 import DarknetBodyV2, default_cfgs as dark_cfgs
 from holocron.nn import ConcatDownsample2d
 from holocron.nn.init import init_module
