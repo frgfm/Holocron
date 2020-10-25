@@ -1,23 +1,17 @@
-# -*- coding: utf-8 -*-
-
-"""
-Personal implementation of UNet models
-"""
-
 import sys
-import logging
 import torch
+from torch import Tensor
 import torch.nn as nn
-from torchvision.models.utils import load_state_dict_from_url
+from typing import Dict, Any, Union, Optional, Callable, List
 
 from ...nn.init import init_module
-from ..utils import conv_sequence
+from ..utils import conv_sequence, load_pretrained_params
 
 
 __all__ = ['UNet', 'unet', 'UNetp', 'unetp', 'UNetpp', 'unetpp', 'UNet3p', 'unet3p']
 
 
-default_cfgs = {
+default_cfgs: Dict[str, Dict[str, Any]] = {
     'unet': {'arch': 'UNet',
              'layout': [64, 128, 256, 512, 1024],
              'url': None},
@@ -34,10 +28,19 @@ default_cfgs = {
 
 
 class DownPath(nn.Sequential):
-    def __init__(self, in_chan, out_chan, downsample=True, padding=0,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+    def __init__(
+        self,
+        in_chan: int,
+        out_chan: int,
+        downsample: bool = True,
+        padding: int = 0,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        conv_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
 
-        layers = [nn.MaxPool2d(2)] if downsample else []
+        layers: List[nn.Module] = [nn.MaxPool2d(2)] if downsample else []
         layers.extend([*conv_sequence(in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
                                       kernel_size=3, padding=padding),
                        *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
@@ -46,10 +49,21 @@ class DownPath(nn.Sequential):
 
 
 class UpPath(nn.Module):
-    def __init__(self, in_chan, out_chan, num_skips=1, conv_transpose=False, padding=0,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+    def __init__(
+        self,
+        in_chan: int,
+        out_chan: int,
+        num_skips: int = 1,
+        conv_transpose: bool = False,
+        padding: int = 0,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        conv_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
         super().__init__()
 
+        self.upsample: nn.Module
         if conv_transpose:
             self.upsample = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
         else:
@@ -65,7 +79,7 @@ class UpPath(nn.Module):
                                                   kernel_size=3, padding=padding))
         self.num_skips = num_skips
 
-    def forward(self, downfeats, upfeat):
+    def forward(self, downfeats: Union[Tensor, List[Tensor]], upfeat: Tensor) -> Tensor:
 
         if not isinstance(downfeats, list):
             downfeats = [downfeats]
@@ -92,8 +106,16 @@ class UNet(nn.Module):
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
     """
-    def __init__(self, layout, in_channels=1, num_classes=10,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+    def __init__(
+        self,
+        layout: List[int],
+        in_channels: int = 1,
+        num_classes: int = 10,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        conv_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
         super().__init__()
 
         if act_layer is None:
@@ -119,9 +141,9 @@ class UNet(nn.Module):
 
         init_module(self, 'relu')
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
 
-        xs = []
+        xs: List[Tensor] = []
         # Contracting path
         for encoder in self.encoders[:-1]:
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
@@ -146,8 +168,16 @@ class UNetp(nn.Module):
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
     """
-    def __init__(self, layout, in_channels=1, num_classes=10,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+    def __init__(
+        self,
+        layout: List[int],
+        in_channels: int = 1,
+        num_classes: int = 10,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        conv_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
         super().__init__()
 
         if act_layer is None:
@@ -174,9 +204,9 @@ class UNetp(nn.Module):
 
         init_module(self, 'relu')
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
 
-        xs = []
+        xs: List[Tensor] = []
         # Contracting path
         for encoder in self.encoders:
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
@@ -201,8 +231,16 @@ class UNetpp(nn.Module):
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
     """
-    def __init__(self, layout, in_channels=1, num_classes=10,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+    def __init__(
+        self,
+        layout: List[int],
+        in_channels: int = 1,
+        num_classes: int = 10,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        conv_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
         super().__init__()
 
         if act_layer is None:
@@ -229,9 +267,9 @@ class UNetpp(nn.Module):
 
         init_module(self, 'relu')
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
 
-        xs = []
+        xs: List[List[Tensor]] = []
         # Contracting path
         for encoder in self.encoders:
             xs.append([encoder(xs[-1][0] if len(xs) > 0 else x)])
@@ -249,8 +287,16 @@ class UNetpp(nn.Module):
 
 
 class FSAggreg(nn.Module):
-    def __init__(self, e_chans, skip_chan, d_chans,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+    def __init__(
+        self,
+        e_chans: List[int],
+        skip_chan: int,
+        d_chans: List[int],
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        conv_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
 
         super().__init__()
 
@@ -273,7 +319,7 @@ class FSAggreg(nn.Module):
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=3, padding=1))
 
-    def forward(self, downfeats, feat, upfeats):
+    def forward(self, downfeats: List[Tensor], feat: Tensor, upfeats: List[Tensor]):
 
         if len(downfeats) != len(self.downsamples) or len(upfeats) != len(self.upsamples):
             raise ValueError(f"Expected {len(self.downsamples)} encoding & {len(self.upsamples)} decoding features, "
@@ -295,8 +341,16 @@ class UNet3p(nn.Module):
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
     """
-    def __init__(self, layout, in_channels=1, num_classes=10,
-                 act_layer=None, norm_layer=None, drop_layer=None, conv_layer=None):
+    def __init__(
+        self,
+        layout: List[int],
+        in_channels: int = 1,
+        num_classes: int = 10,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+        conv_layer: Optional[Callable[..., nn.Module]] = None
+    ) -> None:
         super().__init__()
 
         if act_layer is None:
@@ -326,9 +380,9 @@ class UNet3p(nn.Module):
 
         init_module(self, 'relu')
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
 
-        xs = []
+        xs: List[Tensor] = []
         # Contracting path
         for encoder in self.encoders:
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
@@ -342,24 +396,19 @@ class UNet3p(nn.Module):
         return x
 
 
-def _unet(arch, pretrained, progress, **kwargs):
+def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> nn.Module:
     # Retrieve the correct Darknet layout type
     unet_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
     # Build the model
     model = unet_type(default_cfgs[arch]['layout'], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        if default_cfgs[arch]['url'] is None:
-            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
-        else:
-            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
-                                                  progress=progress)
-            model.load_state_dict(state_dict)
+        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
 
     return model
 
 
-def unet(pretrained=False, progress=True, **kwargs):
+def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet:
     """U-Net from
     `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
 
@@ -371,10 +420,10 @@ def unet(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: semantic segmentation model
     """
 
-    return _unet('unet', pretrained, progress, **kwargs)
+    return _unet('unet', pretrained, progress, **kwargs)  # type: ignore[return-value]
 
 
-def unetp(pretrained=False, progress=True, **kwargs):
+def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNetp:
     """UNet+ from
     `"UNet++: A Nested U-Net Architecture for Medical Image Segmentation" <https://arxiv.org/pdf/1807.10165.pdf>`_
 
@@ -386,10 +435,10 @@ def unetp(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: semantic segmentation model
     """
 
-    return _unet('unetp', pretrained, progress, **kwargs)
+    return _unet('unetp', pretrained, progress, **kwargs)  # type: ignore[return-value]
 
 
-def unetpp(pretrained=False, progress=True, **kwargs):
+def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNetpp:
     """UNet++ from
     `"UNet++: A Nested U-Net Architecture for Medical Image Segmentation" <https://arxiv.org/pdf/1807.10165.pdf>`_
 
@@ -401,10 +450,10 @@ def unetpp(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: semantic segmentation model
     """
 
-    return _unet('unetpp', pretrained, progress, **kwargs)
+    return _unet('unetpp', pretrained, progress, **kwargs)  # type: ignore[return-value]
 
 
-def unet3p(pretrained=False, progress=True, **kwargs):
+def unet3p(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet3p:
     """UNet3+ from
     `"UNet 3+: A Full-Scale Connected UNet For Medical Image Segmentation" <https://arxiv.org/pdf/2004.08790.pdf>`_
 
@@ -416,4 +465,4 @@ def unet3p(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: semantic segmentation model
     """
 
-    return _unet('unet3p', pretrained, progress, **kwargs)
+    return _unet('unet3p', pretrained, progress, **kwargs)  # type: ignore[return-value]
