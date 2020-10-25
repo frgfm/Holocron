@@ -1,11 +1,10 @@
 from collections import OrderedDict
-import torch
 import torch.nn as nn
 
 from ..nn.init import init_module
 from .utils import conv_sequence, load_pretrained_params
 from holocron.nn import GlobalAvgPool2d
-from typing import Dict, Any, Optional, Callable, List, Tuple
+from typing import Dict, Any, Optional, Callable, List
 
 
 __all__ = ['DarknetV1', 'darknet24']

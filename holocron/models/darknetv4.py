@@ -5,7 +5,6 @@ from typing import Dict, Any, Optional, Callable, List, Tuple, Union
 
 from ..nn.init import init_module
 from .utils import conv_sequence, load_pretrained_params
-from .resnet import _ResBlock
 from holocron.nn import Mish, DropBlock2d, GlobalAvgPool2d
 from .darknetv3 import ResBlock
 

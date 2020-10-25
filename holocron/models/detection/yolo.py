@@ -3,7 +3,6 @@ from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.ops.boxes import box_iou, nms
-from torchvision.ops.misc import FrozenBatchNorm2d
 from typing import Dict, Optional, Any, Callable, List, Tuple, Union
 
 from ..utils import conv_sequence, load_pretrained_params

@@ -1,7 +1,7 @@
 import logging
 import torch.nn as nn
 from holocron.nn import BlurPool2d
-from typing import List, Optional, Any, Callable, Dict, Tuple
+from typing import List, Optional, Any, Callable, Tuple
 from torchvision.models.utils import load_state_dict_from_url
 
 
