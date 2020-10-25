@@ -1,20 +1,21 @@
-r"""Functional interface"""
 import math
 import torch
 from torch import Tensor
 from typing import List
 
 
-def radam(params: List[Tensor],
-          grads: List[Tensor],
-          exp_avgs: List[Tensor],
-          exp_avg_sqs: List[Tensor],
-          state_steps: List[int],
-          beta1: float,
-          beta2: float,
-          lr: float,
-          weight_decay: float,
-          eps: float):
+def radam(
+    params: List[Tensor],
+    grads: List[Tensor],
+    exp_avgs: List[Tensor],
+    exp_avg_sqs: List[Tensor],
+    state_steps: List[int],
+    beta1: float,
+    beta2: float,
+    lr: float,
+    weight_decay: float,
+    eps: float
+) -> None:
     r"""Functional API that performs RAdam algorithm computation.
     See :class:`~holocron.optim.RAdam` for details.
     """
@@ -53,20 +54,22 @@ def radam(params: List[Tensor],
             param.data.add_(exp_avg, alpha=-step_size)
 
 
-def tadam(params: List[Tensor],
-          grads: List[Tensor],
-          exp_avgs: List[Tensor],
-          exp_avg_sqs: List[Tensor],
-          max_exp_avg_sqs: List[Tensor],
-          W_ts: List[Tensor],
-          state_steps: List[int],
-          amsgrad: bool,
-          beta1: float,
-          beta2: float,
-          lr: float,
-          weight_decay: float,
-          eps: float,
-          dof: float):
+def tadam(
+    params: List[Tensor],
+    grads: List[Tensor],
+    exp_avgs: List[Tensor],
+    exp_avg_sqs: List[Tensor],
+    max_exp_avg_sqs: List[Tensor],
+    W_ts: List[Tensor],
+    state_steps: List[int],
+    amsgrad: bool,
+    beta1: float,
+    beta2: float,
+    lr: float,
+    weight_decay: float,
+    eps: float,
+    dof: float
+) -> None:
     r"""Functional API that performs TAdam algorithm computation.
     See :class:`~holocron.optim.TAdam` for details.
     """
@@ -108,18 +111,20 @@ def tadam(params: List[Tensor],
         param.addcdiv_(exp_avg, denom, value=-step_size)
 
 
-def adabelief(params: List[Tensor],
-              grads: List[Tensor],
-              exp_avgs: List[Tensor],
-              exp_avg_sqs: List[Tensor],
-              max_exp_avg_sqs: List[Tensor],
-              state_steps: List[int],
-              amsgrad: bool,
-              beta1: float,
-              beta2: float,
-              lr: float,
-              weight_decay: float,
-              eps: float):
+def adabelief(
+    params: List[Tensor],
+    grads: List[Tensor],
+    exp_avgs: List[Tensor],
+    exp_avg_sqs: List[Tensor],
+    max_exp_avg_sqs: List[Tensor],
+    state_steps: List[int],
+    amsgrad: bool,
+    beta1: float,
+    beta2: float,
+    lr: float,
+    weight_decay: float,
+    eps: float
+) -> None:
     r"""Functional API that performs AdaBelief algorithm computation.
     See :class:`~holocron.optim.AdaBelief` for details.
     """

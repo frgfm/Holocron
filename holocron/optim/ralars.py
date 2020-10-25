@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*-
-
-'''
-Rectified Adam optimizer
-'''
-
 import math
 import torch
 from torch.optim.optimizer import Optimizer
+from typing import Iterable, Optional, Tuple, Callable
 
 
 class RaLars(Optimizer):
@@ -23,8 +18,16 @@ class RaLars(Optimizer):
         force_adaptive_momentum (float, optional): use adaptive momentum if variance is not tractable (default: False)
         scale_clip (float, optional): the maximal upper bound for the scale factor of LARS
     """
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0,
-                 force_adaptive_momentum=False, scale_clip=None):
+    def __init__(
+        self,
+        params: Iterable[torch.nn.Parameter],
+        lr: float = 1e-3,
+        betas: Tuple[float, float] = (0.9, 0.999),
+        eps: float = 1e-8,
+        weight_decay: float = 0.,
+        force_adaptive_momentum: bool = False,
+        scale_clip: Optional[Tuple[float, float]] = None
+    ) -> None:
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -43,7 +46,7 @@ class RaLars(Optimizer):
             self.scale_clip = (0, 10)
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
 
         Arguments:
@@ -58,11 +61,10 @@ class RaLars(Optimizer):
 
             # Get group-shared variables
             beta1, beta2 = group['betas']
-            sma_inf = group.get('sma_inf')
             # Compute max length of SMA on first step
-            if not isinstance(sma_inf, float):
+            if not isinstance(group.get('sma_inf'), float):
                 group['sma_inf'] = 2 / (1 - beta2) - 1
-                sma_inf = group.get('sma_inf')
+            sma_inf = group['sma_inf']
 
             for p in group['params']:
                 if p.grad is None:

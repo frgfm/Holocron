@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-
-'''
-Rectified Adam optimizer
-'''
-
 import torch
 from torch.optim.optimizer import Optimizer
+from typing import Tuple, Optional, Iterable, Callable
 
 
 class Lamb(Optimizer):
@@ -20,8 +15,15 @@ class Lamb(Optimizer):
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
         scale_clip (tuple, optional): the lower and upper bounds for the weight norm in local LR of LARS
     """
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0,
-                 scale_clip=None):
+    def __init__(
+        self,
+        params: Iterable[torch.nn.Parameter],
+        lr: float = 1e-3,
+        betas: Tuple[float, float] = (0.9, 0.999),
+        eps: float = 1e-8,
+        weight_decay: float = 0.,
+        scale_clip: Optional[Tuple[float, float]] = None
+    ) -> None:
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -35,10 +37,10 @@ class Lamb(Optimizer):
         # LARS arguments
         self.scale_clip = scale_clip
         if self.scale_clip is None:
-            self.scale_clip = (0, 10)
+            self.scale_clip = (0., 10.)
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
 
         Arguments:

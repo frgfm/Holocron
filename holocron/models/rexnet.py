@@ -1,23 +1,16 @@
-# -*- coding: utf-8 -*-
-
-"""
-Implementations of ReXNet variations
-"""
-
 import sys
-import logging
 from math import ceil
 from collections import OrderedDict
 import torch.nn as nn
-from torchvision.models.utils import load_state_dict_from_url
 from holocron.nn import SiLU, init, GlobalAvgPool2d
-from .utils import conv_sequence
+from .utils import conv_sequence, load_pretrained_params
+from typing import Dict, Any
 
 
 __all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']
 
 
-default_cfgs = {
+default_cfgs: Dict[str, Dict[str, Any]] = {
     'rexnet1_0x': {'width_mult': 1.0, 'depth_mult': 1.0,
                    'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth'},
     'rexnet1_3x': {'width_mult': 1.3, 'depth_mult': 1.0,
@@ -145,12 +138,7 @@ def _rexnet(arch, pretrained, progress, **kwargs):
     model = ReXNet(default_cfgs[arch]['width_mult'], default_cfgs[arch]['depth_mult'], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        if default_cfgs[arch]['url'] is None:
-            logging.warning(f"Invalid model URL for {arch}, using default initialization.")
-        else:
-            state_dict = load_state_dict_from_url(default_cfgs[arch]['url'],
-                                                  progress=progress)
-            model.load_state_dict(state_dict)
+        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
 
     return model
 

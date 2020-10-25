@@ -1,6 +1,7 @@
 import torch
 from . import functional as F
 from torch.optim.optimizer import Optimizer
+from typing import Iterable, Tuple, Optional, Dict, Callable
 
 
 class TAdam(Optimizer):
@@ -16,8 +17,16 @@ class TAdam(Optimizer):
         dof (int, optional): degrees of freedom
     """
 
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                 weight_decay=0, amsgrad=False, dof=None):
+    def __init__(
+        self,
+        params: Iterable[torch.nn.Parameter],
+        lr: float = 1e-3,
+        betas: Tuple[float, float] = (0.9, 0.999),
+        eps: float = 1e-8,
+        weight_decay: float = 0.,
+        amsgrad: bool = False,
+        dof: Optional[float] = None
+    ) -> None:
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -32,13 +41,13 @@ class TAdam(Optimizer):
                         weight_decay=weight_decay, amsgrad=amsgrad, dof=dof)
         super().__init__(params, defaults)
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Dict[str, torch.Tensor]) -> None:
         super().__setstate__(state)
         for group in self.param_groups:
             group.setdefault('amsgrad', False)
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
 
         Arguments:

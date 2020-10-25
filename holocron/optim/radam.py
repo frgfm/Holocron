@@ -1,6 +1,7 @@
 import torch
 from . import functional as F
 from torch.optim import Adam
+from typing import Iterable, Tuple, Optional, Callable
 
 
 class RAdam(Adam):
@@ -15,12 +16,18 @@ class RAdam(Adam):
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
     """
 
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                 weight_decay=0):
+    def __init__(
+        self,
+        params: Iterable[torch.nn.Parameter],
+        lr: float = 1e-3,
+        betas: Tuple[float, float] = (0.9, 0.999),
+        eps: float = 1e-8,
+        weight_decay: float = 0.
+    ) -> None:
         super().__init__(params, lr, betas, eps, weight_decay, False)
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         """Performs a single optimization step.
 
         Arguments:
