@@ -3,7 +3,7 @@ from torch.nn import Module
 from holocron.nn import PyConv2d
 from .resnet import ResNet, _ResBlock
 from .utils import conv_sequence, load_pretrained_params
-from typing import Optional, Callable, Any, Dict
+from typing import Optional, Callable, Any, Dict, List
 
 
 __all__ = ['PyBottleneck', 'pyconv_resnet50', 'pyconvhg_resnet50']
@@ -30,7 +30,7 @@ class PyBottleneck(_ResBlock):
         planes: int,
         stride: int = 1,
         downsample: Optional[Module] = None,
-        groups: int = 1,
+        groups: List[int] = [1],
         base_width: int = 64,
         dilation: int = 1,
         act_layer: Optional[Module] = None,
@@ -40,7 +40,7 @@ class PyBottleneck(_ResBlock):
         **kwargs: Any
     ) -> None:
 
-        width = int(planes * (base_width / 64.)) * groups
+        width = int(planes * (base_width / 64.)) * min(groups)
 
         super().__init__(
             [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, kernel_size=1,
