@@ -30,6 +30,9 @@ Loss functions
 
 .. autoclass:: ComplementCrossEntropy
 
+.. autoclass:: MutualChannelLoss
+
+
 Loss wrappers
 --------------
 
