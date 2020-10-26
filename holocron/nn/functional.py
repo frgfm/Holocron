@@ -1,4 +1,4 @@
-from math import floor
+from math import floor, ceil
 import torch
 from torch import Tensor
 import torch.nn.functional as F
@@ -6,7 +6,7 @@ from typing import Optional, Callable, Union, Tuple, List
 
 
 __all__ = ['silu', 'mish', 'hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
-           'complement_cross_entropy', 'norm_conv2d', 'add2d', 'dropblock2d']
+           'complement_cross_entropy', 'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d']
 
 
 def silu(x: Tensor) -> Tensor:
@@ -313,6 +313,71 @@ def complement_cross_entropy(
 
     # Smooth the labels
     return F.cross_entropy(x, target, weight, ignore_index=ignore_index, reduction=reduction) + gamma * loss
+
+
+def mutual_channel_loss(
+    x: Tensor,
+    target: Tensor,
+    weight: Optional[Tensor] = None,
+    ignore_index: int = -100,
+    reduction: str = 'mean',
+    chi: int = 2,
+    alpha: float = 1.
+) -> Tensor:
+    """Implements the mutual channel loss from
+    `"The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification"
+    <https://arxiv.org/pdf/2002.04264.pdf>`_.
+
+    Args:
+        x (torch.Tensor[N, K, ...]): input tensor
+        target (torch.Tensor[N, ...]): target tensor
+        weight (torch.Tensor[K], optional): manual rescaling of each class
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): reduction method
+        chi (int, optional): num of features per class
+        alpha (float, optional): diversity factor
+
+    Returns:
+        torch.Tensor: loss reduced with `reduction` method
+    """
+
+    # Flatten spatial dimension
+    b, c = x.shape[:2]
+    spatial_dims = x.shape[2:]
+    cnum = c // chi
+    x = x.view(b, cnum, chi, -1)
+
+    # CWA
+    base_mask = torch.zeros(chi, device=x.device)
+    base_mask[:ceil(chi / 2)] = 1
+    chan_mask = torch.zeros((cnum, chi), device=x.device)
+    for idx in range(cnum):
+        chan_mask[idx] = base_mask[torch.randperm(chi)]
+    discr_out = x * chan_mask.view(1, cnum, chi, 1)
+    # CCMP
+    discr_out = discr_out.max(dim=2).values
+    discr_out = discr_out.view(b, cnum, *spatial_dims)
+    # Weight casting
+    if isinstance(weight, torch.Tensor) and weight.type() != x.data.type():
+        weight = weight.type_as(x.data)
+
+    discr_loss = F.cross_entropy(discr_out, target, weight, ignore_index=ignore_index, reduction=reduction)
+
+    # Softmax
+    div_out = F.softmax(x, dim=-1)
+    # CCMP
+    div_out = div_out.max(dim=2).values
+
+    diversity_loss = div_out.mean(dim=1)
+
+    if reduction == 'sum':
+        diversity_loss = diversity_loss.sum()
+    elif reduction == 'mean':
+        diversity_loss = diversity_loss.mean()
+    else:
+        diversity_loss = diversity_loss.view(b, *spatial_dims)
+
+    return discr_loss - alpha * diversity_loss
 
 
 def _xcorr2d(

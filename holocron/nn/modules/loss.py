@@ -5,7 +5,7 @@ from typing import Optional, Union, Any, List
 from .. import functional as F
 
 __all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'ComplementCrossEntropy',
-           'MixupLoss', 'ClassBalancedWrapper']
+           'MixupLoss', 'ClassBalancedWrapper', 'MutualChannelLoss']
 
 
 class _Loss(nn.Module):
@@ -79,8 +79,8 @@ class MultiLabelCrossEntropy(_Loss):
         reduction (str, optional): type of reduction to apply to the final loss
     """
 
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def forward(self, x: Tensor, target: Tensor) -> Tensor:
         return F.multilabel_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction)
@@ -194,3 +194,35 @@ class ClassBalancedWrapper(nn.Module):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.criterion.__repr__()}, beta={self.beta})"
+
+
+class MutualChannelLoss(_Loss):
+    """Implements the mutual channel loss from
+    `"The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification"
+    <https://arxiv.org/pdf/2002.04264.pdf>`_.
+
+    Args:
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): type of reduction to apply to the final loss
+        chi (in, optional): num of features per class
+        alpha (float, optional): diversity factor
+    """
+
+    def __init__(
+        self,
+        weight: Optional[Union[float, List[float], Tensor]] = None,
+        ignore_index: int = -100,
+        reduction: str = 'mean',
+        chi: int = 2,
+        alpha: float = 1,
+    ) -> None:
+        super().__init__(weight, ignore_index, reduction)
+        self.chi = chi
+        self.alpha = alpha
+
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+        return F.mutual_channel_loss(x, target, self.weight, self.ignore_index, self.reduction, self.chi, self.alpha)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(reduction='{self.reduction}', chi={self.chi}, alpha={self.alpha})"
