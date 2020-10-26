@@ -144,9 +144,15 @@ class NNTester(unittest.TestCase):
         mod = nn.Linear(chi * num_classes, chi * num_classes)
 
         # Check backprop
-        train_loss = F.mutual_channel_loss(mod(x), target, ignore_index=0)
-        train_loss.backward()
-        self.assertIsInstance(mod.weight.grad, torch.Tensor)
+        for reduction in ['mean', 'sum', 'none']:
+            for p in mod.parameters():
+                p.grad = None
+            train_loss = F.mutual_channel_loss(mod(x), target, ignore_index=0, reduction=reduction)
+            if reduction == 'none':
+                self.assertEqual(train_loss.shape, (num_batches,))
+                train_loss = train_loss.sum()
+            train_loss.backward()
+            self.assertIsInstance(mod.weight.grad, torch.Tensor)
 
         # Check type casting of weights
         for p in mod.parameters():
