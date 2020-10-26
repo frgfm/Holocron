@@ -159,7 +159,6 @@ class NNTester(unittest.TestCase):
         train_loss.backward()
         self.assertIsInstance(mod.weight.grad, torch.Tensor)
 
-
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
 
