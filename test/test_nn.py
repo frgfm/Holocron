@@ -30,7 +30,7 @@ class NNTester(unittest.TestCase):
             if kwargs.get('inplace', False):
                 self.assertEqual(x.data_ptr(), out.data_ptr())
 
-    def _test_loss_function(self, name, same_loss=0, multi_label=False):
+    def _test_loss_function(self, name, same_loss=0., multi_label=False):
 
         num_batches = 2
         num_classes = 4
@@ -38,13 +38,14 @@ class NNTester(unittest.TestCase):
         x = torch.ones(num_batches, num_classes, requires_grad=True)
         x[:, 0, ...] = 10
 
+        loss_fn = F.__dict__[name]
+
         # Identical target
         if multi_label:
             target = torch.zeros_like(x)
             target[:, 0] = 1.
         else:
             target = torch.zeros(num_batches, dtype=torch.long)
-        loss_fn = F.__dict__[name]
         self.assertAlmostEqual(loss_fn(x, target).item(), same_loss, places=3)
         self.assertTrue(torch.allclose(loss_fn(x, target, reduction='none'),
                                        same_loss * torch.ones(num_batches, dtype=x.dtype),
@@ -130,6 +131,35 @@ class NNTester(unittest.TestCase):
         self.assertAlmostEqual(F.multilabel_cross_entropy(x, target).item(),
                                nn.functional.cross_entropy(x, target.argmax(dim=1)).item(), places=5)
 
+    def test_mc_loss(self):
+
+        num_batches = 2
+        num_classes = 4
+        chi = 2
+        # 4 classes
+        x = torch.ones(num_batches, chi * num_classes)
+        x[:, 0, ...] = 10
+        target = torch.zeros(num_batches, dtype=torch.long)
+
+        mod = nn.Linear(chi * num_classes, chi * num_classes)
+
+        # Check backprop
+        train_loss = F.mutual_channel_loss(mod(x), target, ignore_index=0)
+        train_loss.backward()
+        self.assertIsInstance(mod.weight.grad, torch.Tensor)
+
+        # Check type casting of weights
+        for p in mod.parameters():
+            p.grad = None
+        class_weights = torch.ones(num_classes, dtype=torch.float16)
+        ignore_index = 0
+
+        criterion = loss.MutualChannelLoss(weight=class_weights, ignore_index=ignore_index, chi=chi)
+        train_loss = criterion(mod(x), target)
+        train_loss.backward()
+        self.assertIsInstance(mod.weight.grad, torch.Tensor)
+
+
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
 
@@ -156,11 +186,12 @@ class NNTester(unittest.TestCase):
 
         num_batches = 2
         num_classes = 4
-        x = torch.rand(num_batches, num_classes, 20, 20)
+        x_class_factor = 2 if fn_name == 'mutual_channel_loss' else 1
+        x = torch.rand(num_batches, x_class_factor * num_classes, 20, 20)
 
         # Identical target
         if multi_label:
-            target = torch.rand(x.shape)
+            target = torch.rand(num_batches, num_classes, 20, 20)
         else:
             target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
 
