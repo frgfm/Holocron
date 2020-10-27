@@ -127,7 +127,5 @@ class SPP(nn.ModuleList):
                           for k_size in kernel_sizes])
 
     def forward(self, x):
-        feats = [x]
-        for pool_layer in self:
-            feats.append(pool_layer(x))
+        feats = [x] + [pool_layer(x) for pool_layer in self]
         return torch.cat(feats, dim=1)
