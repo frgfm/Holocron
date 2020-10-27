@@ -109,15 +109,15 @@ class YOLOv2(_YOLO):
 
         b, _, h, w = x.shape
         # B * C * H * W --> B * H * W * num_anchors * (5 + num_classes)
-        x = x.view(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
+        x = x.reshape(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
         c_y = torch.arange(h, dtype=torch.float, device=x.device)
         # Box coordinates
-        b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)) / w
-        b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)) / h
-        b_w = self.anchors[:, 0].view(1, 1, 1, -1) / w * torch.exp(x[..., 2])  # type: ignore[index]
-        b_h = self.anchors[:, 1].view(1, 1, 1, -1) / h * torch.exp(x[..., 3])  # type: ignore[index]
+        b_x = (torch.sigmoid(x[..., 0]) + c_x.reshape(1, 1, -1, 1)) / w
+        b_y = (torch.sigmoid(x[..., 1]) + c_y.reshape(1, -1, 1, 1)) / h
+        b_w = self.anchors[:, 0].reshape(1, 1, 1, -1) / w * torch.exp(x[..., 2])  # type: ignore[index]
+        b_h = self.anchors[:, 1].reshape(1, 1, 1, -1) / h * torch.exp(x[..., 3])  # type: ignore[index]
         # B * H * W * num_anchors * 4
         b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
