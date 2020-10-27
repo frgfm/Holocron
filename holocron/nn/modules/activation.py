@@ -1,25 +1,21 @@
-# -*- coding: utf-8 -*-
-
-'''
-Activation modules
-'''
-
 import torch
+from torch import Tensor
 import torch.nn as nn
 from .. import functional as F
+from typing import List
 
 __all__ = ['SiLU', 'Mish', 'HardMish', 'NLReLU', 'FReLU']
 
 
 class _Activation(nn.Module):
 
-    __constants__ = ['inplace']
+    __constants__: List[str] = ['inplace']
 
-    def __init__(self, inplace=False):
+    def __init__(self, inplace: bool = False) -> None:
         super().__init__()
         self.inplace = inplace
 
-    def extra_repr(self):
+    def extra_repr(self) -> str:
         inplace_str = 'inplace=True' if self.inplace else ''
         return inplace_str
 
@@ -46,7 +42,7 @@ class SiLU(nn.Module):
     .. math::
         f(x) = x \\cdot \\sigma(x)
     """
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         return _SiLU.apply(x)
 
 
@@ -59,8 +55,8 @@ class Mish(nn.Module):
     .. math::
         f(x) = x \\cdot \\tanh(ln(1 + e^x))
     """
-    def forward(self, input):
-        return F.mish(input)
+    def forward(self, x: Tensor) -> Tensor:
+        return F.mish(x)
 
 
 class HardMish(_Activation):
@@ -71,8 +67,8 @@ class HardMish(_Activation):
     .. math::
         f(x) = \\frac{x}{2} \\cdot \\min(2, \\max(0, x + 2))
     """
-    def forward(self, input):
-        return F.hard_mish(input, inplace=self.inplace)
+    def forward(self, x: Tensor) -> Tensor:
+        return F.hard_mish(x, inplace=self.inplace)
 
 
 class NLReLU(_Activation):
@@ -87,8 +83,8 @@ class NLReLU(_Activation):
     Args:
         inplace (bool): should the operation be performed inplace
     """
-    def forward(self, input):
-        return F.nl_relu(input, inplace=self.inplace)
+    def forward(self, x: Tensor) -> Tensor:
+        return F.nl_relu(x, inplace=self.inplace)
 
 
 class FReLU(nn.Module):
@@ -106,12 +102,12 @@ class FReLU(nn.Module):
     Args:
         inplace (bool): should the operation be performed inplace
     """
-    def __init__(self, in_channels, kernel_size=3):
+    def __init__(self, in_channels: int, kernel_size: int = 3) -> None:
         super().__init__()
         self.conv = nn.Conv2d(in_channels, in_channels, kernel_size, padding=kernel_size // 2, groups=in_channels)
         self.bn = nn.BatchNorm2d(in_channels)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         out = self.conv(x)
         out = self.bn(out)
         x = torch.max(x, out)

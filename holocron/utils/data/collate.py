@@ -1,24 +1,26 @@
-# -*- coding: utf-8 -*-
-
-"""
-Collate functions
-"""
-
 import numpy as np
 import torch
+from torch import Tensor
 from torch.utils.data._utils.collate import default_collate
+from typing import Tuple, List
 
 
 __all__ = ['mixup_collate']
 
 
-def mixup_collate(data, alpha=0.1):
+def mixup_collate(data: List[Tuple[Tensor, int]], alpha: float = 0.1) -> Tuple[Tensor, Tensor, Tensor, float]:
     """Implements a batch collate function with MixUp strategy from
     `"mixup: Beyond Empirical Risk Minimization" <https://arxiv.org/pdf/1710.09412.pdf>`_
 
     Args:
-        data (list): list of elements
-        alpha (float, optional): mixup factor
+        data: list of elements
+        alpha: mixup factor
+
+    Returns:
+        interpolated input
+        original target
+        resorted target
+        interpolation factor
 
     Example::
         >>> import torch

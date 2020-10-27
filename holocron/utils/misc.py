@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-
-"""
-Misc utilities
-"""
-
 from tqdm.auto import tqdm
 import torch
 

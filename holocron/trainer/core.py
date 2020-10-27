@@ -2,9 +2,14 @@ import math
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import torch
-from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, MultiplicativeLR
+from torch import nn
+from torch import Tensor
+from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, MultiplicativeLR  # type: ignore[attr-defined]
 from torchvision.ops.boxes import box_iou
+from fastprogress.fastprogress import ConsoleMasterBar
 from fastprogress import master_bar, progress_bar
+from typing import Optional, Dict, Any, Union, List, Tuple
 
 from contiguous_params import ContiguousParams
 
@@ -16,8 +21,16 @@ __all__ = ['Trainer', 'ClassificationTrainer', 'SegmentationTrainer', 'Detection
 
 class Trainer:
 
-    def __init__(self, model, train_loader, val_loader, criterion, optimizer,
-                 gpu=None, output_file='./checkpoint.pth'):
+    def __init__(
+        self,
+        model: nn.Module,
+        train_loader: DataLoader,
+        val_loader: DataLoader,
+        criterion: nn.Module,
+        optimizer: torch.optim.Optimizer,
+        gpu: Optional[int] = None,
+        output_file: str = './checkpoint.pth'
+    ) -> None:
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -33,16 +46,17 @@ class Trainer:
         self.epoch = 0
         self.min_loss = math.inf
         self.gpu = gpu
-        self._params = None
-        self.lr_recorder, self.loss_recorder = [], []
+        self._params: Optional[ContiguousParams] = None
+        self.lr_recorder: List[float] = []
+        self.loss_recorder: List[float] = []
         self.set_device(gpu)
         self._reset_opt(self.optimizer.defaults['lr'])
 
-    def set_device(self, gpu):
+    def set_device(self, gpu: Optional[int] = None) -> None:
         """Move tensor objects to the target GPU
 
         Args:
-            gpu (int): index of the target GPU device
+            gpu: index of the target GPU device
         """
         if isinstance(gpu, int):
             if not torch.cuda.is_available():
@@ -54,11 +68,11 @@ class Trainer:
             if isinstance(self.criterion, torch.nn.Module):
                 self.criterion = self.criterion.cuda()
 
-    def save(self, output_file):
+    def save(self, output_file: str) -> None:
         """Save a trainer checkpoint
 
         Args:
-            output_file (str): destination file path
+            output_file: destination file path
         """
         torch.save(dict(epoch=self.epoch, step=self.step, min_loss=self.min_loss,
                         optimizer=self.optimizer.state_dict(),
@@ -66,7 +80,7 @@ class Trainer:
                    output_file,
                    _use_new_zipfile_serialization=False)
 
-    def load(self, state):
+    def load(self, state: Dict[str, Any]) -> None:
         """Resume from a trainer state
 
         Args:
@@ -79,11 +93,10 @@ class Trainer:
         self.optimizer.load_state_dict(state['optimizer'])
         self.model.load_state_dict(state['model'])
 
-    def _fit_epoch(self, freeze_until, mb):
+    def _fit_epoch(self, mb: ConsoleMasterBar) -> None:
         """Fit a single epoch
 
         Args:
-            freeze_until (str): last layer to freeze
             mb (fastprogress.master_bar): primary progress bar
         """
         self.model = freeze_bn(self.model.train())
@@ -104,23 +117,27 @@ class Trainer:
             self.step += 1
         self.epoch += 1
 
-    def to_cuda(self, x, target):
+    def to_cuda(
+        self,
+        x: Tensor,
+        target: Union[Tensor, List[Dict[str, Tensor]]]
+    ) -> Tuple[Tensor, Union[Tensor, List[Dict[str, Tensor]]]]:
         """Move input and target to GPU"""
         if isinstance(self.gpu, int):
             if self.gpu >= torch.cuda.device_count():
                 raise ValueError("Invalid device index")
-            return self._to_cuda(x, target)
+            return self._to_cuda(x, target)  # type: ignore[arg-type]
         else:
             return x, target
 
     @staticmethod
-    def _to_cuda(x, target):
+    def _to_cuda(x: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
         """Move input and target to GPU"""
         x = x.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         return x, target
 
-    def _backprop_step(self, loss):
+    def _backprop_step(self, loss: Tensor) -> None:
         # Clean gradients
         self.optimizer.zero_grad()
         # Backpropate the loss
@@ -128,22 +145,22 @@ class Trainer:
         # Update the params
         self.optimizer.step()
 
-    def _get_loss(self, x, target):
+    def _get_loss(self, x: Tensor, target: Tensor) -> Tensor:
         # Forward
         out = self.model(x)
         # Loss computation
         return self.criterion(out, target)
 
-    def _set_params(self):
+    def _set_params(self) -> None:
         self._params = ContiguousParams([p for p in self.model.parameters() if p.requires_grad])
 
-    def _reset_opt(self, lr):
+    def _reset_opt(self, lr: float) -> None:
         """Reset the target params of the optimizer"""
         self.optimizer.defaults['lr'] = lr
         self.optimizer.state = defaultdict(dict)
         self.optimizer.param_groups = []
         self._set_params()
-        self.optimizer.add_param_group(dict(params=self._params.contiguous()))
+        self.optimizer.add_param_group(dict(params=self._params.contiguous()))  # type: ignore[union-attr]
 
     @torch.no_grad()
     def evaluate(self):
@@ -153,7 +170,7 @@ class Trainer:
     def _eval_metrics_str(eval_metrics):
         raise NotImplementedError
 
-    def _reset_scheduler(self, lr, num_epochs, sched_type='onecycle'):
+    def _reset_scheduler(self, lr: float, num_epochs: int, sched_type: str = 'onecycle') -> None:
         if sched_type == 'onecycle':
             self.scheduler = OneCycleLR(self.optimizer, lr, num_epochs * len(self.train_loader))
         elif sched_type == 'cosine':
@@ -161,7 +178,13 @@ class Trainer:
         else:
             raise ValueError(f"The following scheduler type is not supported: {sched_type}")
 
-    def fit_n_epochs(self, num_epochs, lr, freeze_until=None, sched_type='onecycle'):
+    def fit_n_epochs(
+        self,
+        num_epochs: int,
+        lr: float,
+        freeze_until: Optional[str] = None,
+        sched_type: str = 'onecycle'
+    ) -> None:
         """Train the model for a given number of epochs
 
         Args:
@@ -180,9 +203,9 @@ class Trainer:
         mb = master_bar(range(num_epochs))
         for _ in mb:
 
-            self._fit_epoch(freeze_until, mb)
+            self._fit_epoch(mb)
             # Check whether ops invalidated the buffer
-            self._params.assert_buffer_is_valid()
+            self._params.assert_buffer_is_valid()  # type: ignore[union-attr]
             eval_metrics = self.evaluate()
 
             # master bar
@@ -196,7 +219,13 @@ class Trainer:
                 self.min_loss = eval_metrics['val_loss']
                 self.save(self.output_file)
 
-    def lr_find(self, freeze_until=None, start_lr=1e-7, end_lr=1, num_it=100):
+    def lr_find(
+        self,
+        freeze_until: Optional[str] = None,
+        start_lr: float = 1e-7,
+        end_lr: float = 1,
+        num_it: int = 100
+    ) -> None:
         """Gridsearch the optimal learning rate for the training
 
         Args:
@@ -230,7 +259,7 @@ class Trainer:
             if batch_idx + 1 == num_it:
                 break
 
-    def plot_recorder(self, beta=0.95, block=True):
+    def plot_recorder(self, beta: float = 0.95, block: bool = True) -> None:
         """Display the results of the LR grid search
 
         Args:
@@ -243,7 +272,7 @@ class Trainer:
 
         # Exp moving average of loss
         smoothed_losses = []
-        avg_loss = 0
+        avg_loss = 0.
         for idx, loss in enumerate(self.loss_recorder):
             avg_loss = beta * avg_loss + (1 - beta) * loss
             smoothed_losses.append(avg_loss / (1 - beta ** (idx + 1)))
@@ -255,7 +284,7 @@ class Trainer:
         plt.grid(True, linestyle='--', axis='x')
         plt.show(block=block)
 
-    def check_setup(self, freeze_until=None, lr=3e-4, num_it=100):
+    def check_setup(self, freeze_until: Optional[str] = None, lr: float = 3e-4, num_it: int = 100) -> bool:
         """Check whether you can overfit one batch
 
         Args:
@@ -301,7 +330,7 @@ class ClassificationTrainer(Trainer):
     """
 
     @torch.no_grad()
-    def evaluate(self):
+    def evaluate(self) -> Dict[str, float]:
         """Evaluate the model on the validation set
 
         Returns:
@@ -310,7 +339,7 @@ class ClassificationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, top1, top5, num_samples = 0, 0, 0, 0
+        val_loss, top1, top5, num_samples = 0., 0, 0, 0
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
@@ -330,7 +359,7 @@ class ClassificationTrainer(Trainer):
         return dict(val_loss=val_loss, acc1=top1 / num_samples, acc5=top5 / num_samples)
 
     @staticmethod
-    def _eval_metrics_str(eval_metrics):
+    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
         return (f"Validation loss: {eval_metrics['val_loss']:.4} "
                 f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})")
 
@@ -349,7 +378,7 @@ class SegmentationTrainer(Trainer):
     """
 
     @torch.no_grad()
-    def evaluate(self, ignore_index=255):
+    def evaluate(self, ignore_index: int = 255) -> Dict[str, float]:
         """Evaluate the model on the validation set
 
         Args:
@@ -361,7 +390,7 @@ class SegmentationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, mean_iou = 0, 0
+        val_loss, mean_iou = 0., 0.
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
@@ -385,11 +414,11 @@ class SegmentationTrainer(Trainer):
         return dict(val_loss=val_loss, mean_iou=mean_iou)
 
     @staticmethod
-    def _eval_metrics_str(eval_metrics):
+    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
         return f"Validation loss: {eval_metrics['val_loss']:.4} (Mean IoU: {eval_metrics['mean_iou']:.2%})"
 
 
-def assign_iou(gt_boxes, pred_boxes, iou_threshold=0.5):
+def assign_iou(gt_boxes: Tensor, pred_boxes: Tensor, iou_threshold: float = 0.5) -> Tuple[List[int], List[int]]:
     """Assigns boxes by IoU"""
     iou = box_iou(gt_boxes, pred_boxes)
     iou = iou.max(dim=1)
@@ -397,14 +426,14 @@ def assign_iou(gt_boxes, pred_boxes, iou_threshold=0.5):
     assign_unique = torch.unique(iou.indices[gt_kept])
     # Filter
     if iou.indices[gt_kept].shape[0] == assign_unique.shape[0]:
-        return torch.arange(gt_boxes.shape[0])[gt_kept], iou.indices[gt_kept]
+        return torch.arange(gt_boxes.shape[0])[gt_kept], iou.indices[gt_kept]  # type: ignore[return-value]
     else:
         gt_indices, pred_indices = [], []
         for pred_idx in assign_unique:
             selection = iou.values[gt_kept][iou.indices[gt_kept] == pred_idx].argmax()
             gt_indices.append(torch.arange(gt_boxes.shape[0])[gt_kept][selection].item())
             pred_indices.append(iou.indices[gt_kept][selection].item())
-        return gt_indices, pred_indices
+        return gt_indices, pred_indices  # type: ignore[return-value]
 
 
 class DetectionTrainer(Trainer):
@@ -421,13 +450,16 @@ class DetectionTrainer(Trainer):
     """
 
     @staticmethod
-    def _to_cuda(x, target):
+    def _to_cuda(  # type: ignore[override]
+        x: List[Tensor],
+        target: List[Dict[str, Tensor]]
+    ) -> Tuple[List[Tensor], List[Dict[str, Tensor]]]:
         """Move input and target to GPU"""
         x = [_x.cuda(non_blocking=True) for _x in x]
         target = [{k: v.cuda(non_blocking=True) for k, v in t.items()} for t in target]
         return x, target
 
-    def _backprop_step(self, loss, grad_clip=.1):
+    def _backprop_step(self, loss: Tensor, grad_clip: float = .1) -> None:
         # Clean gradients
         self.optimizer.zero_grad()
         # Backpropate the loss
@@ -438,18 +470,18 @@ class DetectionTrainer(Trainer):
         # Update the params
         self.optimizer.step()
 
-    def _get_loss(self, x, target):
+    def _get_loss(self, x: List[Tensor], target: List[Dict[str, Tensor]]) -> Tensor:  # type: ignore[override]
         # Forward & loss computation
         loss_dict = self.model(x, target)
-        return sum(loss_dict.values())
+        return sum(loss_dict.values())  # type: ignore[return-value]
 
     @staticmethod
-    def _eval_metrics_str(eval_metrics):
+    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
         return (f"Loc error: {eval_metrics['loc_err']:.2%} | Clf error: {eval_metrics['clf_err']:.2%} | "
                 f"Det error: {eval_metrics['det_err']:.2%}")
 
     @torch.no_grad()
-    def evaluate(self, iou_threshold=0.5):
+    def evaluate(self, iou_threshold: float = 0.5) -> Dict[str, float]:
         """Evaluate the model on the validation set
 
         Args:

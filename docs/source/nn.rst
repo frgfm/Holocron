@@ -28,6 +28,11 @@ Loss functions
 
 .. autoclass:: LabelSmoothingCrossEntropy
 
+.. autoclass:: ComplementCrossEntropy
+
+.. autoclass:: MutualChannelLoss
+
+
 Loss wrappers
 --------------
 
@@ -60,3 +65,13 @@ Downsampling
 .. autoclass:: GlobalAvgPool2d
 
 .. autoclass:: BlurPool2d
+
+.. autoclass:: SPP
+
+
+Attention
+---------
+
+.. autoclass:: SAM
+
+.. autoclass:: LambdaLayer

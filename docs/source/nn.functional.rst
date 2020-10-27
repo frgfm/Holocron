@@ -30,6 +30,8 @@ Loss functions
 
 .. autofunction:: ls_cross_entropy
 
+.. autofunction:: complement_cross_entropy
+
 Convolutions
 ------------
 

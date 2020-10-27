@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from holocron.nn import functional as F
 from holocron.nn.init import init_module
-from holocron.nn.modules import activation, conv, loss, downsample, dropblock
+from holocron.nn.modules import activation, conv, loss, downsample, dropblock, lambda_layer
 
 
 class NNTester(unittest.TestCase):
@@ -30,7 +30,7 @@ class NNTester(unittest.TestCase):
             if kwargs.get('inplace', False):
                 self.assertEqual(x.data_ptr(), out.data_ptr())
 
-    def _test_loss_function(self, name, same_loss=0, multi_label=False):
+    def _test_loss_function(self, name, same_loss=0., multi_label=False):
 
         num_batches = 2
         num_classes = 4
@@ -38,13 +38,14 @@ class NNTester(unittest.TestCase):
         x = torch.ones(num_batches, num_classes, requires_grad=True)
         x[:, 0, ...] = 10
 
+        loss_fn = F.__dict__[name]
+
         # Identical target
         if multi_label:
             target = torch.zeros_like(x)
             target[:, 0] = 1.
         else:
             target = torch.zeros(num_batches, dtype=torch.long)
-        loss_fn = F.__dict__[name]
         self.assertAlmostEqual(loss_fn(x, target).item(), same_loss, places=3)
         self.assertTrue(torch.allclose(loss_fn(x, target, reduction='none'),
                                        same_loss * torch.ones(num_batches, dtype=x.dtype),
@@ -130,6 +131,40 @@ class NNTester(unittest.TestCase):
         self.assertAlmostEqual(F.multilabel_cross_entropy(x, target).item(),
                                nn.functional.cross_entropy(x, target.argmax(dim=1)).item(), places=5)
 
+    def test_mc_loss(self):
+
+        num_batches = 2
+        num_classes = 4
+        chi = 2
+        # 4 classes
+        x = torch.ones(num_batches, chi * num_classes)
+        x[:, 0, ...] = 10
+        target = torch.zeros(num_batches, dtype=torch.long)
+
+        mod = nn.Linear(chi * num_classes, chi * num_classes)
+
+        # Check backprop
+        for reduction in ['mean', 'sum', 'none']:
+            for p in mod.parameters():
+                p.grad = None
+            train_loss = F.mutual_channel_loss(mod(x), target, ignore_index=0, reduction=reduction)
+            if reduction == 'none':
+                self.assertEqual(train_loss.shape, (num_batches,))
+                train_loss = train_loss.sum()
+            train_loss.backward()
+            self.assertIsInstance(mod.weight.grad, torch.Tensor)
+
+        # Check type casting of weights
+        for p in mod.parameters():
+            p.grad = None
+        class_weights = torch.ones(num_classes, dtype=torch.float16)
+        ignore_index = 0
+
+        criterion = loss.MutualChannelLoss(weight=class_weights, ignore_index=ignore_index, chi=chi)
+        train_loss = criterion(mod(x), target)
+        train_loss.backward()
+        self.assertIsInstance(mod.weight.grad, torch.Tensor)
+
     def _test_activation_module(self, name, input_shape):
         module = activation.__dict__[name]
 
@@ -156,19 +191,26 @@ class NNTester(unittest.TestCase):
 
         num_batches = 2
         num_classes = 4
-        x = torch.rand(num_batches, num_classes, 20, 20)
+        x_class_factor = 2 if fn_name == 'mutual_channel_loss' else 1
+        x = torch.rand(num_batches, x_class_factor * num_classes, 20, 20)
 
         # Identical target
         if multi_label:
-            target = torch.rand(x.shape)
+            target = torch.rand(num_batches, num_classes, 20, 20)
         else:
             target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
-        criterion = loss.__dict__[name]()
-        self.assertEqual(criterion(x, target).item(),
-                         F.__dict__[fn_name](x, target).item())
-        criterion = loss.__dict__[name](reduction='none')
-        self.assertTrue(torch.equal(criterion(x, target),
-                                    F.__dict__[fn_name](x, target, reduction='none')))
+
+        # Check type casting of weights
+        class_weights = torch.ones(num_classes, dtype=torch.float16)
+        ignore_index = 0
+
+        # Check values between function and module
+        for reduction in ['none', 'sum', 'mean']:
+            # Check type casting of weights
+            criterion = loss.__dict__[name](weight=class_weights, reduction=reduction, ignore_index=ignore_index)
+            self.assertTrue(torch.equal(criterion(x, target),
+                                        F.__dict__[fn_name](x, target, weight=class_weights,
+                                                            reduction=reduction, ignore_index=ignore_index)))
 
     def test_concatdownsample2d(self):
 
@@ -372,6 +414,22 @@ class NNTester(unittest.TestCase):
         k = torch.tensor([[0.0625, 0.125, 0.0625], [0.125, 0.25, 0.125], [0.0625, 0.125, 0.0625]])
         self.assertTrue(torch.equal(out[..., 1, 1], (x[..., 1:-1, 1:-1] * k[None, None, ...]).sum(dim=(2, 3))))
 
+    def test_lambdalayer(self):
+
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 31, 16)
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 32, 16, r=2)
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 32, 16, r=None, n=None)
+
+        # Generate inputs
+        num_batches = 2
+        num_chan = 8
+        x = torch.rand((num_batches, num_chan, 32, 32))
+
+        mod = lambda_layer.LambdaLayer(num_chan, 32, 16, r=13)
+        out = mod(x)
+        self.assertEqual(out.shape, (num_batches, 32, 32, 32))
+        out.sum().backward()
+
 
 act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
 
@@ -393,7 +451,8 @@ for mod_name in act_modules:
 
 
 loss_modules = [('FocalLoss', 'focal_loss'),
-                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy')]
+                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy'),
+                ('ComplementCrossEntropy', 'complement_cross_entropy')]
 
 for (mod_name, fn_name) in loss_modules:
     def do_test(self, mod_name=mod_name, fn_name=fn_name):

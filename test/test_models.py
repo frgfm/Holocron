@@ -1,5 +1,6 @@
 import unittest
 import torch
+from holocron.nn import DropBlock2d, BlurPool2d, SAM
 from holocron import models
 
 
@@ -7,7 +8,8 @@ class ModelTester(unittest.TestCase):
 
     def _test_classification_model(self, name, num_classes=10):
 
-        x = torch.rand((2, 3, 224, 224))
+        batch_size = 2
+        x = torch.rand((batch_size, 3, 224, 224))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
@@ -15,11 +17,18 @@ class ModelTester(unittest.TestCase):
         self.assertEqual(out.shape[0], x.shape[0])
         self.assertEqual(out.shape[-1], num_classes)
 
+        # Check backprop is OK
+        target = torch.zeros(batch_size, dtype=torch.long)
+        model.train()
+        out = model(x)
+        loss = torch.nn.functional.cross_entropy(out, target)
+        loss.backward()
+
     def _test_detection_model(self, name, size):
 
         num_classes = 10
-        num_batches = 2
-        x = torch.rand((num_batches, 3, size, size))
+        batch_size = 2
+        x = torch.rand((batch_size, 3, size, size))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         # Check backbone pretrained
         model = models.__dict__[name](pretrained_backbone=True, num_classes=num_classes).eval()
@@ -34,7 +43,7 @@ class ModelTester(unittest.TestCase):
             self.assertIsInstance(out[0].get('labels'), torch.Tensor)
 
         # Check that list of Tensors does not change output
-        x_list = [torch.rand(3, size, size) for _ in range(num_batches)]
+        x_list = [torch.rand(3, size, size) for _ in range(batch_size)]
         with torch.no_grad():
             out_list = model(x_list)
             self.assertEqual(len(out_list), len(out))
@@ -74,15 +83,41 @@ class ModelTester(unittest.TestCase):
     def _test_segmentation_model(self, name, size, out_size):
 
         num_classes = 10
-        num_batches = 2
+        batch_size = 2
         num_channels = 1
-        x = torch.rand((num_batches, num_channels, size, size))
+        x = torch.rand((batch_size, num_channels, size, size))
         model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
         with torch.no_grad():
             out = model(x)
 
         self.assertIsInstance(out, torch.Tensor)
-        self.assertEqual(out.shape, (num_batches, num_classes, out_size, out_size))
+        self.assertEqual(out.shape, (batch_size, num_classes, out_size, out_size))
+
+    def _test_conv_seq(self, conv_seq, expected_classes, expected_channels):
+
+        self.assertEqual(len(conv_seq), len(expected_classes))
+        for _layer, mod_class in zip(conv_seq, expected_classes):
+            self.assertIsInstance(_layer, mod_class)
+
+        input_t = torch.rand(1, conv_seq[0].in_channels, 224, 224)
+        out = torch.nn.Sequential(*conv_seq)(input_t)
+        self.assertEqual(out.shape[:2], (1, expected_channels))
+        out.sum().backward()
+
+    def test_conv_sequence(self):
+
+        mod = models.utils.conv_sequence(3, 32, kernel_size=3, act_layer=torch.nn.ReLU(inplace=True),
+                                         norm_layer=torch.nn.BatchNorm2d, drop_layer=DropBlock2d, attention_layer=SAM)
+
+        self._test_conv_seq(mod, [torch.nn.Conv2d, torch.nn.BatchNorm2d, torch.nn.ReLU, SAM, DropBlock2d], 32)
+        self.assertEqual(mod[0].kernel_size, (3, 3))
+
+        mod = models.utils.conv_sequence(3, 32, kernel_size=3, stride=2, act_layer=torch.nn.ReLU(inplace=True),
+                                         norm_layer=torch.nn.BatchNorm2d, drop_layer=DropBlock2d, blurpool=True)
+        self._test_conv_seq(mod, [torch.nn.Conv2d, torch.nn.BatchNorm2d, torch.nn.ReLU, BlurPool2d, DropBlock2d], 32)
+        self.assertEqual(mod[0].kernel_size, (3, 3))
+        self.assertEqual(mod[0].stride, (1, 1))
+        self.assertEqual(mod[3].stride, 2)
 
 
 for model_name in ['darknet24', 'darknet19', 'darknet53', 'cspdarknet53', 'cspdarknet53_mish',
@@ -92,7 +127,8 @@ for model_name in ['darknet24', 'darknet19', 'darknet53', 'cspdarknet53', 'cspda
                    'res2net50_26w_4s',
                    'tridentnet50',
                    'pyconv_resnet50', 'pyconvhg_resnet50',
-                   'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']:
+                   'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x',
+                   'sknet50', 'sknet101', 'sknet152']:
     num_classes = 1000 if model_name in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x'] else 10
 
     def do_test(self, model_name=model_name, num_classes=num_classes):

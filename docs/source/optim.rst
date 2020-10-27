@@ -23,6 +23,8 @@ Implementations of recent parameter optimizer for Pytorch modules.
 
 .. autoclass:: TAdam
 
+.. autoclass:: AdaBelief
+
 
 Optimizer wrappers
 ------------------

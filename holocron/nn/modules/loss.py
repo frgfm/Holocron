@@ -1,26 +1,30 @@
-# -*- coding: utf-8 -*-
-
-"""
-Loss implementations
-"""
-
 import torch
+from torch import Tensor
 import torch.nn as nn
+from typing import Optional, Union, Any, List
 from .. import functional as F
 
-__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'MixupLoss', 'ClassBalancedWrapper']
+__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'ComplementCrossEntropy',
+           'MixupLoss', 'ClassBalancedWrapper', 'MutualChannelLoss']
 
 
 class _Loss(nn.Module):
 
-    def __init__(self, weight=None, ignore_index=-100, reduction='mean'):
+    def __init__(
+        self,
+        weight: Optional[Union[float, List[float], Tensor]] = None,
+        ignore_index: int = -100,
+        reduction: str = 'mean'
+    ) -> None:
         super().__init__()
-        self.weight = weight
         # Cast class weights if possible
+        self.weight: Optional[Tensor]
         if isinstance(weight, (float, int)):
-            self.weight = torch.Tensor([weight, 1 - weight])
+            self.weight = torch.Tensor([weight, 1 - weight])  # type: ignore[assignment]
         elif isinstance(weight, list):
-            self.weight = torch.Tensor(weight)
+            self.weight = torch.Tensor(weight)  # type: ignore[assignment]
+        else:
+            self.weight = weight
         self.ignore_index = ignore_index
         # Set the reduction method
         if reduction not in ['none', 'mean', 'sum']:
@@ -55,14 +59,14 @@ class FocalLoss(_Loss):
         reduction (str, optional): type of reduction to apply to the final loss
     """
 
-    def __init__(self, gamma=2, **kwargs):
+    def __init__(self, gamma: float = 2., **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.gamma = gamma
 
-    def forward(self, x, target):
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
         return F.focal_loss(x, target, self.weight, self.ignore_index, self.reduction, self.gamma)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}(gamma={self.gamma}, reduction='{self.reduction}')"
 
 
@@ -75,13 +79,13 @@ class MultiLabelCrossEntropy(_Loss):
         reduction (str, optional): type of reduction to apply to the final loss
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
-    def forward(self, x, target):
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
         return F.multilabel_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}(reduction='{self.reduction}')"
 
 
@@ -96,15 +100,37 @@ class LabelSmoothingCrossEntropy(_Loss):
         reduction (str, optional): type of reduction to apply to the final loss
     """
 
-    def __init__(self, eps=0.1, **kwargs):
+    def __init__(self, eps: float = 0.1, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eps = eps
 
-    def forward(self, x, target):
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
         return F.ls_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction, self.eps)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}(eps={self.eps}, reduction='{self.reduction}')"
+
+
+class ComplementCrossEntropy(_Loss):
+    """Implements the complement cross entropy loss from
+    `"Imbalanced Image Classification with Complement Cross Entropy" <https://arxiv.org/pdf/2009.02189.pdf>`_
+
+    Args:
+        gamma (float, optional): smoothing factor
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): type of reduction to apply to the final loss
+    """
+
+    def __init__(self, gamma: float = -1, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.gamma = gamma
+
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+        return F.complement_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction, self.gamma)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(gamma={self.gamma}, reduction='{self.reduction}')"
 
 
 class MixupLoss(_Loss):
@@ -114,11 +140,11 @@ class MixupLoss(_Loss):
     Args:
         criterion (callable): initial criterion to be used on normal sample & targets
     """
-    def __init__(self, criterion):
+    def __init__(self, criterion: nn.Module) -> None:
         super().__init__()
         self.criterion = criterion
 
-    def forward(self, x, target_a, target_b, lam):
+    def forward(self, x: Tensor, target_a: Tensor, target_b: Tensor, lam: float) -> Tensor:
         """Computes the mixed-up loss
 
         Args:
@@ -131,7 +157,7 @@ class MixupLoss(_Loss):
         """
         return lam * self.criterion(x, target_a) + (1 - lam) * self.criterion(x, target_b)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Mixup_{self.criterion.__repr__()}"
 
 
@@ -153,7 +179,7 @@ class ClassBalancedWrapper(nn.Module):
         beta (float, optional): rebalancing exponent
     """
 
-    def __init__(self, criterion, num_samples, beta=0.99):
+    def __init__(self, criterion: nn.Module, num_samples: Tensor, beta: float = 0.99) -> None:
         super().__init__()
         self.criterion = criterion
         self.beta = beta
@@ -163,8 +189,40 @@ class ClassBalancedWrapper(nn.Module):
         else:
             self.criterion.weight *= cb_weights.to(device=self.criterion.weight.device)
 
-    def forward(self, x, target):
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
         return self.criterion.forward(x, target)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.criterion.__repr__()}, beta={self.beta})"
+
+
+class MutualChannelLoss(_Loss):
+    """Implements the mutual channel loss from
+    `"The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification"
+    <https://arxiv.org/pdf/2002.04264.pdf>`_.
+
+    Args:
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
+        reduction (str, optional): type of reduction to apply to the final loss
+        chi (in, optional): num of features per class
+        alpha (float, optional): diversity factor
+    """
+
+    def __init__(
+        self,
+        weight: Optional[Union[float, List[float], Tensor]] = None,
+        ignore_index: int = -100,
+        reduction: str = 'mean',
+        chi: int = 2,
+        alpha: float = 1,
+    ) -> None:
+        super().__init__(weight, ignore_index, reduction)
+        self.chi = chi
+        self.alpha = alpha
+
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+        return F.mutual_channel_loss(x, target, self.weight, self.ignore_index, self.reduction, self.chi, self.alpha)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(reduction='{self.reduction}', chi={self.chi}, alpha={self.alpha})"
