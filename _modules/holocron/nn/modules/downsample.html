@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.downsample &mdash; holocron 0.1.4a0+2abcb6a-git documentation</title>
+  <title>holocron.nn.modules.downsample &mdash; holocron 0.1.4a0+e6dd199-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.4a0+2abcb6a
+                0.1.4a0+e6dd199
               </div>
             
           
@@ -350,9 +350,7 @@
                           <span class="k">for</span> <span class="n">k_size</span> <span class="ow">in</span> <span class="n">kernel_sizes</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">pool_layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
-            <span class="n">feats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pool_layer</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">pool_layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">pool_layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 </pre></div>
 
