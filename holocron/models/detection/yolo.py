@@ -81,7 +81,7 @@ class _YOLO(nn.Module):
                                           gt_boxes[idx][:, [1, 3]].mean(dim=-1) * h), dim=1).to(dtype=torch.long)
                 cell_idxs = gt_centers[:, 1] * w + gt_centers[:, 0]
                 # Assign the best anchor in each corresponding cell
-                iou_mat = box_iou(pred_xyxy[idx].view(-1, 4), gt_boxes[idx]).view(h * w, num_anchors, -1)
+                iou_mat = box_iou(pred_xyxy[idx].reshape(-1, 4), gt_boxes[idx]).reshape(h * w, num_anchors, -1)
                 iou_max = iou_mat[cell_idxs, :, range(gt_boxes[idx].shape[0])].max(dim=1)
                 box_idxs = iou_max.indices
                 # Keep IoU for loss computation
@@ -89,26 +89,26 @@ class _YOLO(nn.Module):
                 # Update anchor box matching
                 box_selection = torch.zeros((h * w, num_anchors), dtype=torch.bool)
                 box_selection[cell_idxs, box_idxs] = True
-                is_matched = torch.arange(h * w * num_anchors).view(-1, num_anchors)[cell_idxs, box_idxs]
-                not_matched = not_matched[box_selection.view(-1)]
+                is_matched = torch.arange(h * w * num_anchors).reshape(-1, num_anchors)[cell_idxs, box_idxs]
+                not_matched = not_matched[box_selection.reshape(-1)]
 
             # Update losses for boxes without any object
             if not_matched.shape[0] > 0:
                 # SSE between objectness and IoU
-                selection_o = pred_o.view(b, -1)[idx, not_matched]
+                selection_o = pred_o.reshape(b, -1)[idx, not_matched]
                 if ignore_high_iou and gt_boxes[idx].shape[0] > 0:
                     # Don't penalize anchor boxes with high IoU with GTs
-                    selection_o = selection_o[iou_mat.view(h * w * num_anchors)[not_matched].max(dim=1).values < 0.5]
+                    selection_o = selection_o[iou_mat.reshape(h * w * num_anchors)[not_matched].max(dim=1).values < 0.5]
                 # Update loss (target = 0)
                 noobj_loss += selection_o.pow(2).sum()
 
             # Update loss for boxes with an object
             if is_matched.shape[0] > 0:
                 # Get prediction assignment
-                selection_o = pred_o.view(b, -1)[idx, is_matched]
+                selection_o = pred_o.reshape(b, -1)[idx, is_matched]
                 pred_filter = cell_idxs if (pred_scores.shape[3] == 1) else is_matched
-                selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, pred_filter].view(-1, num_classes)
-                selected_boxes = pred_boxes.view(b, -1, 4)[idx, is_matched].view(-1, 4)
+                selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, pred_filter].reshape(-1, num_classes)
+                selected_boxes = pred_boxes.reshape(b, -1, 4)[idx, is_matched].reshape(-1, 4)
                 # Convert GT --> xc, yc, w, h
                 gt_wh = gt_boxes[idx][:, 2:] - gt_boxes[idx][:, :2]
                 gt_centers = (gt_boxes[idx][:, 2:] + gt_boxes[idx][:, :2]) / 2
@@ -260,19 +260,19 @@ class YOLOv1(_YOLO):
         b, _ = x.shape
         h, w = 7, 7
         # B * (H * W * (num_anchors * 5 + num_classes)) --> B * H * W * (num_anchors * 5 + num_classes)
-        x = x.view(b, h, w, self.num_anchors * 5 + self.num_classes)
+        x = x.reshape(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
         b_scores = x[..., -self.num_classes:]
         # Repeat for anchors to keep compatibility across YOLO versions
         b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
         #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
-        x = x[..., :self.num_anchors * 5].view(b, h, w, self.num_anchors, 5)
+        x = x[..., :self.num_anchors * 5].reshape(b, h, w, self.num_anchors, 5)
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
         c_y = torch.arange(h, dtype=torch.float, device=x.device)
         # Box coordinates
-        b_x = (torch.sigmoid(x[..., 0]) + c_x.view(1, 1, -1, 1)) / w
-        b_y = (torch.sigmoid(x[..., 1]) + c_y.view(1, -1, 1, 1)) / h
+        b_x = (torch.sigmoid(x[..., 0]) + c_x.reshape(1, 1, -1, 1)) / w
+        b_y = (torch.sigmoid(x[..., 1]) + c_y.reshape(1, -1, 1, 1)) / h
         b_w = torch.sigmoid(x[..., 2])
         b_h = torch.sigmoid(x[..., 3])
         # B * H * W * num_anchors * 4
@@ -320,11 +320,11 @@ class YOLOv1(_YOLO):
             return self._compute_losses(b_coords, b_o, b_scores, target)  # type: ignore[arg-type]
         else:
             # B * (H * W * num_anchors)
-            b_coords = b_coords.view(b_coords.shape[0], -1, 4)
-            b_o = b_o.view(b_o.shape[0], -1)
+            b_coords = b_coords.reshape(b_coords.shape[0], -1, 4)
+            b_o = b_o.reshape(b_o.shape[0], -1)
             # Repeat for each anchor box
             b_scores = b_scores.repeat_interleave(self.num_anchors, dim=3)
-            b_scores = b_scores.contiguous().view(b_scores.shape[0], -1, self.num_classes)
+            b_scores = b_scores.contiguous().reshape(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
             return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)

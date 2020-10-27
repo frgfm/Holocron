@@ -150,8 +150,8 @@ class YoloLayer(nn.Module):
         output = output.reshape(b, len(self.anchors), 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
 
         # Box center
-        c_x = torch.arange(w, dtype=torch.float32, device=output.device).view(1, 1, -1, 1)
-        c_y = torch.arange(h, dtype=torch.float32, device=output.device).view(1, -1, 1, 1)
+        c_x = torch.arange(w, dtype=torch.float32, device=output.device).reshape(1, 1, -1, 1)
+        c_y = torch.arange(h, dtype=torch.float32, device=output.device).reshape(1, -1, 1, 1)
 
         b_xy = self.scale_xy * torch.sigmoid(output[..., :2]) - 0.5 * (self.scale_xy - 1)
         b_xy[..., 0].add_(c_x)
@@ -235,7 +235,7 @@ class YoloLayer(nn.Module):
 
         # GT coords --> left, top, width, height
         _boxes = torch.cat(gt_boxes, dim=0)
-        gt_centers = _boxes[..., [0, 2, 1, 3]].view(-1, 2, 2).mean(dim=-1)
+        gt_centers = _boxes[..., [0, 2, 1, 3]].reshape(-1, 2, 2).mean(dim=-1)
         gt_centers[:, 0] *= w
         gt_centers[:, 1] *= h
         gt_centers = gt_centers.to(dtype=torch.long)
