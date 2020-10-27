@@ -57,7 +57,7 @@ class Lookahead(Optimizer):
         # Update last key of class dict
         self.__setstate__({'base_state_dict': self.base_optimizer.state_dict()})
 
-    def zero_grad(self) -> None:
+    def zero_grad(self):
         self.base_optimizer.zero_grad()
 
     def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
@@ -186,7 +186,7 @@ class Scout(Optimizer):
         # Update last key of class dict
         self.__setstate__({'base_state_dict': self.base_optimizer.state_dict()})
 
-    def zero_grad(self) -> None:
+    def zero_grad(self):
         self.base_optimizer.zero_grad()
 
     def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:

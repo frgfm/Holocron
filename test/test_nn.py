@@ -412,7 +412,8 @@ class NNTester(unittest.TestCase):
         self.assertEqual(out.size(), (num_batches, num_chan, 3, 3))
 
         k = torch.tensor([[0.0625, 0.125, 0.0625], [0.125, 0.25, 0.125], [0.0625, 0.125, 0.0625]])
-        self.assertTrue(torch.equal(out[..., 1, 1], (x[..., 1:-1, 1:-1] * k[None, None, ...]).sum(dim=(2, 3))))
+        self.assertTrue(torch.allclose(out[..., 1, 1], (x[..., 1:-1, 1:-1] * k[None, None, ...]).sum(dim=(2, 3)),
+                                       atol=1e-7))
 
     def test_lambdalayer(self):
 
