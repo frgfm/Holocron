@@ -172,8 +172,8 @@ class YOLOv2(_YOLO):
             return self._compute_losses(b_coords, b_o, b_scores, target)  # type: ignore[arg-type]
         else:
             # B * (H * W * num_anchors)
-            b_coords = b_coords.view(b_coords.shape[0], -1, 4)
-            b_o = b_o.view(b_o.shape[0], -1)
+            b_coords = b_coords.reshape(b_coords.shape[0], -1, 4)
+            b_o = b_o.reshape(b_o.shape[0], -1)
             b_scores = b_scores.reshape(b_scores.shape[0], -1, self.num_classes)
 
             # Stack detections into a list
