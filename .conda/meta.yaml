@@ -25,6 +25,7 @@ requirements:
     - numpy >=1.17.2
     - fastprogress >= 1.0.0
     - matplotlib >= 3.0.0
+    - contiguous_params >=1.0.0
 
 test:
   # Python imports
@@ -34,6 +35,7 @@ test:
     - holocron.nn
     - holocron.ops
     - holocron.optim
+    - holocron.trainer
     - holocron.utils
   requires:
     - python

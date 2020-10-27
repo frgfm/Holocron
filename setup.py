@@ -1,5 +1,4 @@
 #!usr/bin/python
-# -*- coding: utf-8 -*-
 
 """
 Package installation setup
@@ -45,7 +44,7 @@ requirements = [
     'numpy>=1.17.2',
     'fastprogress>=1.0.0',
     'matplotlib>=3.0.0',
-    'contiguous_params@git+https://github.com/philjd/contiguous_pytorch_params.git#egg=contiguous_params',
+    'contiguous-params==1.0.0',
 ]
 
 setup(
