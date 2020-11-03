@@ -7,7 +7,7 @@ from holocron.nn.init import init_module
 from holocron.nn.modules import activation, conv, loss, downsample, dropblock, lambda_layer
 
 
-class NNTester(unittest.TestCase):
+class ActivationTester(unittest.TestCase):
     def _test_activation_function(self, name, input_shape):
         fn = F.__dict__[name]
 
@@ -29,6 +29,61 @@ class NNTester(unittest.TestCase):
             self.assertEqual(out.size(), x.size())
             if kwargs.get('inplace', False):
                 self.assertEqual(x.data_ptr(), out.data_ptr())
+
+    def _test_activation_module(self, name, input_shape):
+        module = activation.__dict__[name]
+
+        # Optional testing
+        fn_args = inspect.signature(module).parameters.keys()
+        cfg = {}
+        if 'inplace' in fn_args:
+            cfg['inplace'] = [False, True]
+
+        # Generate inputs
+        x = torch.rand(input_shape)
+
+        # Optional argument testing
+        kwargs = {}
+        for inplace in cfg.get('inplace', [None]):
+            if isinstance(inplace, bool):
+                kwargs['inplace'] = inplace
+            out = module(**kwargs)(x)
+            self.assertEqual(out.size(), x.size())
+            if kwargs.get('inplace', False):
+                self.assertEqual(x.data_ptr(), out.data_ptr())
+
+    def test_frelu(self):
+
+        # Generate inputs
+        x = torch.rand(2, 8, 19, 19)
+
+        # Optional argument testing
+        with torch.no_grad():
+            out = activation.FReLU(8)(x)
+        self.assertEqual(out.size(), x.size())
+        self.assertFalse(torch.equal(out, x))
+
+
+act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
+
+for fn_name in act_fns:
+    def do_test(self, fn_name=fn_name):
+        input_shape = (32, 3, 224, 224)
+        self._test_activation_function(fn_name, input_shape)
+
+    setattr(ActivationTester, "test_" + fn_name, do_test)
+
+act_modules = ['SiLU', 'Mish', 'HardMish', 'NLReLU']
+
+for mod_name in act_modules:
+    def do_test(self, mod_name=mod_name):
+        input_shape = (32, 3, 224, 224)
+        self._test_activation_module(mod_name, input_shape)
+
+    setattr(ActivationTester, "test_" + mod_name, do_test)
+
+
+class LossTester(unittest.TestCase):
 
     def _test_loss_function(self, name, same_loss=0., multi_label=False):
 
@@ -165,28 +220,6 @@ class NNTester(unittest.TestCase):
         train_loss.backward()
         self.assertIsInstance(mod.weight.grad, torch.Tensor)
 
-    def _test_activation_module(self, name, input_shape):
-        module = activation.__dict__[name]
-
-        # Optional testing
-        fn_args = inspect.signature(module).parameters.keys()
-        cfg = {}
-        if 'inplace' in fn_args:
-            cfg['inplace'] = [False, True]
-
-        # Generate inputs
-        x = torch.rand(input_shape)
-
-        # Optional argument testing
-        kwargs = {}
-        for inplace in cfg.get('inplace', [None]):
-            if isinstance(inplace, bool):
-                kwargs['inplace'] = inplace
-            out = module(**kwargs)(x)
-            self.assertEqual(out.size(), x.size())
-            if kwargs.get('inplace', False):
-                self.assertEqual(x.data_ptr(), out.data_ptr())
-
     def _test_loss_module(self, name, fn_name, multi_label=False):
 
         num_batches = 2
@@ -212,42 +245,6 @@ class NNTester(unittest.TestCase):
                                         F.__dict__[fn_name](x, target, weight=class_weights,
                                                             reduction=reduction, ignore_index=ignore_index)))
 
-    def test_concatdownsample2d(self):
-
-        num_batches = 2
-        num_chan = 4
-        scale_factor = 2
-        x = torch.arange(num_batches * num_chan * 4 ** 2).view(num_batches, num_chan, 4, 4)
-
-        # Test functional API
-        self.assertRaises(AssertionError, F.concat_downsample2d, x, 3)
-        out = F.concat_downsample2d(x, scale_factor)
-        self.assertEqual(out.shape, (num_batches, num_chan * scale_factor ** 2,
-                                     x.shape[2] // scale_factor, x.shape[3] // scale_factor))
-
-        # Check first and last values
-        self.assertTrue(torch.equal(out[0][0], torch.tensor([[0, 2], [8, 10]])))
-        self.assertTrue(torch.equal(out[0][-num_chan], torch.tensor([[5, 7], [13, 15]])))
-        # Test module
-        mod = downsample.ConcatDownsample2d(scale_factor)
-        self.assertTrue(torch.equal(mod(x), out))
-        # Test JIT module
-        mod = downsample.ConcatDownsample2dJit(scale_factor)
-        self.assertTrue(torch.equal(mod(x), out))
-
-    def test_init(self):
-
-        module = nn.Sequential(
-            nn.Conv2d(3, 32, 3),
-            nn.BatchNorm2d(32),
-            nn.LeakyReLU(inplace=True))
-
-        # Check that each layer was initialized correctly
-        init_module(module, 'leaky_relu')
-        self.assertTrue(torch.all(module[0].bias.data == 0))
-        self.assertTrue(torch.all(module[1].weight.data == 1))
-        self.assertTrue(torch.all(module[1].bias.data == 0))
-
     def test_mixuploss(self):
 
         num_batches = 8
@@ -271,6 +268,137 @@ class NNTester(unittest.TestCase):
         self.assertEqual(mixup_criterion(x, target_a, target_b, 1).item(), criterion(x, target_a).item())
         self.assertEqual(mixup_criterion(x, target_a, target_b, 0).item(), criterion(x, target_b).item())
 
+    def test_cb_loss(self):
+
+        num_batches = 2
+        num_classes = 4
+        x = torch.rand(num_batches, num_classes, 20, 20)
+        beta = 0.99
+        num_samples = 10 * torch.ones(num_classes, dtype=torch.long)
+
+        # Identical target
+        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+        base_criterion = loss.LabelSmoothingCrossEntropy()
+        base_loss = base_criterion(x, target).item()
+        criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
+
+        self.assertIsInstance(criterion.criterion, loss.LabelSmoothingCrossEntropy)
+        self.assertIsNotNone(criterion.criterion.weight)
+
+        # Value tests
+        self.assertAlmostEqual(criterion(x, target).item(),
+                               (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
+        # With pre-existing weights
+        base_criterion = loss.LabelSmoothingCrossEntropy(weight=torch.ones(num_classes, dtype=torch.float32))
+        base_weights = base_criterion.weight.clone()
+        criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
+        self.assertFalse(torch.equal(base_weights, criterion.criterion.weight))
+        self.assertAlmostEqual(criterion(x, target).item(),
+                               (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
+
+        self.assertEqual(criterion.__repr__(),
+                         "ClassBalancedWrapper(LabelSmoothingCrossEntropy(eps=0.1, reduction='mean'), beta=0.99)")
+
+
+loss_modules = [('FocalLoss', 'focal_loss'),
+                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy'),
+                ('ComplementCrossEntropy', 'complement_cross_entropy')]
+
+for (mod_name, fn_name) in loss_modules:
+    def do_test(self, mod_name=mod_name, fn_name=fn_name):
+        self._test_loss_module(mod_name, fn_name, multi_label=False)
+
+    setattr(LossTester, "test_" + mod_name, do_test)
+
+
+loss_modules = [('MultiLabelCrossEntropy', 'multilabel_cross_entropy')]
+
+for (mod_name, fn_name) in loss_modules:
+    def do_test(self, mod_name=mod_name, fn_name=fn_name):
+        self._test_loss_module(mod_name, fn_name, multi_label=True)
+
+    setattr(LossTester, "test_" + mod_name, do_test)
+
+
+class DownsampleTester(unittest.TestCase):
+
+    def test_concatdownsample2d(self):
+
+        num_batches = 2
+        num_chan = 4
+        scale_factor = 2
+        x = torch.arange(num_batches * num_chan * 4 ** 2).view(num_batches, num_chan, 4, 4)
+
+        # Test functional API
+        self.assertRaises(AssertionError, F.concat_downsample2d, x, 3)
+        out = F.concat_downsample2d(x, scale_factor)
+        self.assertEqual(out.shape, (num_batches, num_chan * scale_factor ** 2,
+                                     x.shape[2] // scale_factor, x.shape[3] // scale_factor))
+
+        # Check first and last values
+        self.assertTrue(torch.equal(out[0][0], torch.tensor([[0, 2], [8, 10]])))
+        self.assertTrue(torch.equal(out[0][-num_chan], torch.tensor([[5, 7], [13, 15]])))
+        # Test module
+        mod = downsample.ConcatDownsample2d(scale_factor)
+        self.assertTrue(torch.equal(mod(x), out))
+        # Test JIT module
+        mod = downsample.ConcatDownsample2dJit(scale_factor)
+        self.assertTrue(torch.equal(mod(x), out))
+
+    def test_globalavgpool2d(self):
+
+        x = torch.rand(2, 8, 19, 19)
+
+        # Check that ops are doing the same thing
+        ref = nn.AdaptiveAvgPool2d(1)
+        mod = downsample.GlobalAvgPool2d(flatten=False)
+        out = mod(x)
+        self.assertTrue(torch.equal(out, ref(x)))
+        self.assertNotEqual(out.data_ptr, x.data_ptr)
+
+        # Check that flatten works
+        x = torch.rand(2, 8, 19, 19)
+        mod = downsample.GlobalAvgPool2d(flatten=True)
+        self.assertTrue(torch.equal(mod(x), ref(x).view(*x.shape[:2])))
+
+    def test_blurpool2d(self):
+
+        self.assertRaises(AssertionError, downsample.BlurPool2d, 1, 0)
+
+        # Generate inputs
+        num_batches = 2
+        num_chan = 8
+        x = torch.rand((num_batches, num_chan, 5, 5))
+        mod = downsample.BlurPool2d(num_chan, stride=2)
+
+        # Optional argument testing
+        with torch.no_grad():
+            out = mod(x)
+        self.assertEqual(out.size(), (num_batches, num_chan, 3, 3))
+
+        k = torch.tensor([[0.0625, 0.125, 0.0625], [0.125, 0.25, 0.125], [0.0625, 0.125, 0.0625]])
+        self.assertTrue(torch.allclose(out[..., 1, 1], (x[..., 1:-1, 1:-1] * k[None, None, ...]).sum(dim=(2, 3)),
+                                       atol=1e-7))
+
+    def test_zpool(self):
+
+        num_batches = 2
+        num_chan = 4
+        x = torch.rand((num_batches, num_chan, 32, 32))
+
+        # Test functional API
+        out = F.z_pool(x, 1)
+        self.assertEqual(out.shape, (num_batches, 2, 32, 32))
+        self.assertEqual(out[0, 0, 0, 0].item(), x[0, :, 0, 0].max().item())
+        self.assertEqual(out[0, 1, 0, 0].item(), x[0, :, 0, 0].mean().item())
+
+        # Test module
+        mod = downsample.ZPool(1)
+        self.assertTrue(torch.equal(mod(x), out))
+
+
+class ConvTester(unittest.TestCase):
+
     def _test_xcorr2d(self, name):
 
         x = torch.rand(2, 8, 19, 19)
@@ -292,6 +420,46 @@ class NNTester(unittest.TestCase):
         with torch.no_grad():
             out = mod(x)
         self.assertEqual(out.shape, (2, 6, 19, 19))
+
+    def test_pyconv2d(self):
+
+        x = torch.rand(2, 8, 19, 19)
+
+        # Pyramidal Conv
+        for num_levels in range(1, 5):
+            mod = conv.PyConv2d(8, 16, 3, num_levels, padding=1)
+
+            with torch.no_grad():
+                out = mod(x)
+            self.assertEqual(out.shape, (2, 16, 19, 19))
+
+    def test_lambdalayer(self):
+
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 31, 16)
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 32, 16, r=2)
+        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 32, 16, r=None, n=None)
+
+        # Generate inputs
+        num_batches = 2
+        num_chan = 8
+        x = torch.rand((num_batches, num_chan, 32, 32))
+
+        mod = lambda_layer.LambdaLayer(num_chan, 32, 16, r=13)
+        out = mod(x)
+        self.assertEqual(out.shape, (num_batches, 32, 32, 32))
+        out.sum().backward()
+
+
+xcorr_modules = ['NormConv2d', 'Add2d']
+
+for mod_name in xcorr_modules:
+    def do_test(self, mod_name=mod_name):
+        self._test_xcorr2d(mod_name)
+
+    setattr(ConvTester, "test_" + mod_name, do_test)
+
+
+class RegularizationTester(unittest.TestCase):
 
     def test_dropblock2d(self):
 
@@ -326,158 +494,21 @@ class NNTester(unittest.TestCase):
             out = mod(x)
         self.assertEqual(out.data_ptr, x.data_ptr)
 
-    def test_globalavgpool2d(self):
 
-        x = torch.rand(2, 8, 19, 19)
+class InitTester(unittest.TestCase):
 
-        # Check that ops are doing the same thing
-        ref = nn.AdaptiveAvgPool2d(1)
-        mod = downsample.GlobalAvgPool2d(flatten=False)
-        out = mod(x)
-        self.assertTrue(torch.equal(out, ref(x)))
-        self.assertNotEqual(out.data_ptr, x.data_ptr)
+    def test_init(self):
 
-        # Check that flatten works
-        x = torch.rand(2, 8, 19, 19)
-        mod = downsample.GlobalAvgPool2d(flatten=True)
-        self.assertTrue(torch.equal(mod(x), ref(x).view(*x.shape[:2])))
+        module = nn.Sequential(
+            nn.Conv2d(3, 32, 3),
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(inplace=True))
 
-    def test_pyconv2d(self):
-
-        x = torch.rand(2, 8, 19, 19)
-
-        # Pyramidal Conv
-        for num_levels in range(1, 5):
-            mod = conv.PyConv2d(8, 16, 3, num_levels, padding=1)
-
-            with torch.no_grad():
-                out = mod(x)
-            self.assertEqual(out.shape, (2, 16, 19, 19))
-
-    def test_frelu(self):
-
-        # Generate inputs
-        x = torch.rand(2, 8, 19, 19)
-
-        # Optional argument testing
-        with torch.no_grad():
-            out = activation.FReLU(8)(x)
-        self.assertEqual(out.size(), x.size())
-        self.assertFalse(torch.equal(out, x))
-
-    def test_cb_loss(self):
-
-        num_batches = 2
-        num_classes = 4
-        x = torch.rand(num_batches, num_classes, 20, 20)
-        beta = 0.99
-        num_samples = 10 * torch.ones(num_classes, dtype=torch.long)
-
-        # Identical target
-        target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
-        base_criterion = loss.LabelSmoothingCrossEntropy()
-        base_loss = base_criterion(x, target).item()
-        criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
-
-        self.assertIsInstance(criterion.criterion, loss.LabelSmoothingCrossEntropy)
-        self.assertIsNotNone(criterion.criterion.weight)
-
-        # Value tests
-        self.assertAlmostEqual(criterion(x, target).item(),
-                               (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
-        # With pre-existing weights
-        base_criterion = loss.LabelSmoothingCrossEntropy(weight=torch.ones(num_classes, dtype=torch.float32))
-        base_weights = base_criterion.weight.clone()
-        criterion = loss.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
-        self.assertFalse(torch.equal(base_weights, criterion.criterion.weight))
-        self.assertAlmostEqual(criterion(x, target).item(),
-                               (1 - beta) / (1 - beta ** num_samples[0].item()) * base_loss, places=5)
-
-        self.assertEqual(criterion.__repr__(),
-                         "ClassBalancedWrapper(LabelSmoothingCrossEntropy(eps=0.1, reduction='mean'), beta=0.99)")
-
-    def test_blurpool2d(self):
-
-        self.assertRaises(AssertionError, downsample.BlurPool2d, 1, 0)
-
-        # Generate inputs
-        num_batches = 2
-        num_chan = 8
-        x = torch.rand((num_batches, num_chan, 5, 5))
-        mod = downsample.BlurPool2d(num_chan, stride=2)
-
-        # Optional argument testing
-        with torch.no_grad():
-            out = mod(x)
-        self.assertEqual(out.size(), (num_batches, num_chan, 3, 3))
-
-        k = torch.tensor([[0.0625, 0.125, 0.0625], [0.125, 0.25, 0.125], [0.0625, 0.125, 0.0625]])
-        self.assertTrue(torch.allclose(out[..., 1, 1], (x[..., 1:-1, 1:-1] * k[None, None, ...]).sum(dim=(2, 3)),
-                                       atol=1e-7))
-
-    def test_lambdalayer(self):
-
-        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 31, 16)
-        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 32, 16, r=2)
-        self.assertRaises(AssertionError, lambda_layer.LambdaLayer, 3, 32, 16, r=None, n=None)
-
-        # Generate inputs
-        num_batches = 2
-        num_chan = 8
-        x = torch.rand((num_batches, num_chan, 32, 32))
-
-        mod = lambda_layer.LambdaLayer(num_chan, 32, 16, r=13)
-        out = mod(x)
-        self.assertEqual(out.shape, (num_batches, 32, 32, 32))
-        out.sum().backward()
-
-
-act_fns = ['silu', 'mish', 'hard_mish', 'nl_relu']
-
-for fn_name in act_fns:
-    def do_test(self, fn_name=fn_name):
-        input_shape = (32, 3, 224, 224)
-        self._test_activation_function(fn_name, input_shape)
-
-    setattr(NNTester, "test_" + fn_name, do_test)
-
-act_modules = ['SiLU', 'Mish', 'HardMish', 'NLReLU']
-
-for mod_name in act_modules:
-    def do_test(self, mod_name=mod_name):
-        input_shape = (32, 3, 224, 224)
-        self._test_activation_module(mod_name, input_shape)
-
-    setattr(NNTester, "test_" + mod_name, do_test)
-
-
-loss_modules = [('FocalLoss', 'focal_loss'),
-                ('LabelSmoothingCrossEntropy', 'ls_cross_entropy'),
-                ('ComplementCrossEntropy', 'complement_cross_entropy')]
-
-for (mod_name, fn_name) in loss_modules:
-    def do_test(self, mod_name=mod_name, fn_name=fn_name):
-        self._test_loss_module(mod_name, fn_name, multi_label=False)
-
-    setattr(NNTester, "test_" + mod_name, do_test)
-
-
-loss_modules = [('MultiLabelCrossEntropy', 'multilabel_cross_entropy')]
-
-for (mod_name, fn_name) in loss_modules:
-    def do_test(self, mod_name=mod_name, fn_name=fn_name):
-        self._test_loss_module(mod_name, fn_name, multi_label=True)
-
-    setattr(NNTester, "test_" + mod_name, do_test)
-
-
-xcorr_modules = ['NormConv2d', 'Add2d']
-
-for mod_name in xcorr_modules:
-    def do_test(self, mod_name=mod_name):
-        self._test_xcorr2d(mod_name)
-
-    setattr(NNTester, "test_" + mod_name, do_test)
+        # Check that each layer was initialized correctly
+        init_module(module, 'leaky_relu')
+        self.assertTrue(torch.all(module[0].bias.data == 0))
+        self.assertTrue(torch.all(module[1].weight.data == 1))
+        self.assertTrue(torch.all(module[1].bias.data == 0))
 
 
 if __name__ == '__main__':
