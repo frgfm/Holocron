@@ -5,7 +5,7 @@ import torch.nn as nn
 from typing import Tuple, Dict, Callable, List
 from .. import functional as F
 
-__all__ = ['ConcatDownsample2d', 'ConcatDownsample2dJit', 'GlobalAvgPool2d', 'BlurPool2d', 'SPP']
+__all__ = ['ConcatDownsample2d', 'ConcatDownsample2dJit', 'GlobalAvgPool2d', 'BlurPool2d', 'SPP', 'ZPool']
 
 
 class ConcatDownsample2d(nn.Module):
@@ -129,3 +129,19 @@ class SPP(nn.ModuleList):
     def forward(self, x):
         feats = [x] + [pool_layer(x) for pool_layer in self]
         return torch.cat(feats, dim=1)
+
+
+class ZPool(nn.Module):
+    """Z-pool layer from `"Rotate to Attend: Convolutional Triplet Attention Module"
+    <https://arxiv.org/pdf/2010.03045.pdf>`_.
+
+    Args:
+        dim: dimension to pool
+    """
+
+    def __init__(self, dim: int = 1) -> None:
+        super().__init__()
+        self.dim = dim
+
+    def forward(self, x: Tensor) -> Tensor:
+        return F.z_pool(x, self.dim)
