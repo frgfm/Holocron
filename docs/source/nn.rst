@@ -68,6 +68,8 @@ Downsampling
 
 .. autoclass:: SPP
 
+.. autoclass:: ZPool
+
 
 Attention
 ---------

@@ -49,4 +49,5 @@ Downsampling
 ------------
 
 .. autofunction:: concat_downsample2d
+.. autofunction:: z_pool
 
