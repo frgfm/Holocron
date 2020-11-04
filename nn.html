@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.4a0+e6dd199-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.4a0+60b5d22-git documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.1.4a0+e6dd199
+                0.1.4a0+60b5d22
               </div>
             
           
@@ -660,6 +660,17 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt id="holocron.nn.ZPool">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">ZPool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dim</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#ZPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.ZPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Z-pool layer from <a class="reference external" href="https://arxiv.org/pdf/2010.03045.pdf">“Rotate to Attend: Convolutional Triplet Attention Module”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dim</strong> – dimension to pool</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="attention">
 <h2>Attention<a class="headerlink" href="#attention" title="Permalink to this headline">¶</a></h2>
@@ -693,6 +704,14 @@ modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.TripletAttention">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">TripletAttention</code><a class="reference internal" href="_modules/holocron/nn/modules/attention.html#TripletAttention"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.TripletAttention" title="Permalink to this definition">¶</a></dt>
+<dd><p>Triplet attention layer from <a class="reference external" href="https://arxiv.org/pdf/2010.03045.pdf">“Rotate to Attend: Convolutional Triplet Attention Module”</a>. This implementation is based on the pytorch
+<a href="#id2"><span class="problematic" id="id3">`</span></a>implementation &lt;<a class="reference external" href="https://github.com/LandskapeAI/triplet-attention/blob/master/MODELS/triplet_attention.py">https://github.com/LandskapeAI/triplet-attention/blob/master/MODELS/triplet_attention.py</a>&gt; `
+by the paper’s authors.</p>
 </dd></dl>
 
 </div>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.downsample &mdash; holocron 0.1.4a0+e6dd199-git documentation</title>
+  <title>holocron.nn.modules.downsample &mdash; holocron 0.1.4a0+60b5d22-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.4a0+e6dd199
+                0.1.4a0+60b5d22
               </div>
             
           
@@ -228,7 +228,7 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ConcatDownsample2d&#39;</span><span class="p">,</span> <span class="s1">&#39;ConcatDownsample2dJit&#39;</span><span class="p">,</span> <span class="s1">&#39;GlobalAvgPool2d&#39;</span><span class="p">,</span> <span class="s1">&#39;BlurPool2d&#39;</span><span class="p">,</span> <span class="s1">&#39;SPP&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ConcatDownsample2d&#39;</span><span class="p">,</span> <span class="s1">&#39;ConcatDownsample2dJit&#39;</span><span class="p">,</span> <span class="s1">&#39;GlobalAvgPool2d&#39;</span><span class="p">,</span> <span class="s1">&#39;BlurPool2d&#39;</span><span class="p">,</span> <span class="s1">&#39;SPP&#39;</span><span class="p">,</span> <span class="s1">&#39;ZPool&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="ConcatDownsample2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ConcatDownsample2d">[docs]</a><span class="k">class</span> <span class="nc">ConcatDownsample2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -352,6 +352,22 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">pool_layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">pool_layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ZPool"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ZPool">[docs]</a><span class="k">class</span> <span class="nc">ZPool</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Z-pool layer from `&quot;Rotate to Attend: Convolutional Triplet Attention Module&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/2010.03045.pdf&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dim: dimension to pool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">z_pool</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
