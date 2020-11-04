@@ -77,3 +77,5 @@ Attention
 .. autoclass:: SAM
 
 .. autoclass:: LambdaLayer
+
+.. autoclass:: TripletAttention
