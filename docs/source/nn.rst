@@ -68,6 +68,8 @@ Downsampling
 
 .. autoclass:: SPP
 
+.. autoclass:: ZPool
+
 
 Attention
 ---------
@@ -75,3 +77,5 @@ Attention
 .. autoclass:: SAM
 
 .. autoclass:: LambdaLayer
+
+.. autoclass:: TripletAttention

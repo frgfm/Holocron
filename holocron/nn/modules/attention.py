@@ -1,8 +1,12 @@
 
 import torch
+from torch import Tensor
 import torch.nn as nn
 
-__all__ = ['SAM']
+from .downsample import ZPool
+
+
+__all__ = ['SAM', 'TripletAttention']
 
 
 class SAM(nn.Module):
@@ -16,5 +20,51 @@ class SAM(nn.Module):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, 1, 1)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         return x * torch.sigmoid(self.conv(x))
+
+
+class DimAttention(nn.Module):
+    """Attention layer across a specific dimension
+
+    Args:
+        dim: dimension to compute attention on
+    """
+    def __init__(self, dim: int) -> None:
+        super().__init__()
+        self.compress = nn.Sequential(
+            ZPool(dim=1),
+            nn.Conv2d(2, 1, kernel_size=7, stride=1, padding=3, bias=False),
+            nn.BatchNorm2d(1, eps=1e-5, momentum=0.01),
+            nn.Sigmoid()
+        )
+        self.dim = dim
+
+    def forward(self, x: Tensor) -> Tensor:
+        if self.dim != 1:
+            x = x.transpose(self.dim, 1).contiguous()
+        out = x * self.compress(x)
+        if self.dim != 1:
+            out = out.transpose(self.dim, 1).contiguous()
+        return out
+
+
+class TripletAttention(nn.Module):
+    """Triplet attention layer from `"Rotate to Attend: Convolutional Triplet Attention Module"
+    <https://arxiv.org/pdf/2010.03045.pdf>`_. This implementation is based on the pytorch
+    `implementation <https://github.com/LandskapeAI/triplet-attention/blob/master/MODELS/triplet_attention.py> `
+    by the paper's authors.
+    """
+    def __init__(self) -> None:
+        super().__init__()
+        self.c_branch = DimAttention(dim=1)
+        self.h_branch = DimAttention(dim=2)
+        self.w_branch = DimAttention(dim=3)
+
+    def forward(self, x: Tensor) -> Tensor:
+        x_c = self.c_branch(x)
+        x_h = self.h_branch(x)
+        x_w = self.w_branch(x)
+
+        out = (x_c + x_h + x_w) / 3
+        return out

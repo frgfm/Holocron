@@ -6,7 +6,7 @@ from typing import Optional, Callable, Union, Tuple, List
 
 
 __all__ = ['silu', 'mish', 'hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
-           'complement_cross_entropy', 'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d']
+           'complement_cross_entropy', 'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool']
 
 
 def silu(x: Tensor) -> Tensor:
@@ -148,6 +148,18 @@ def concat_downsample2d(x: Tensor, scale_factor: int) -> Tensor:
     x = x.view(b, int(c * scale_factor ** 2), h // scale_factor, w // scale_factor)
 
     return x
+
+
+def z_pool(x: Tensor, dim: int) -> Tensor:
+    """Z-pool layer from `"Rotate to Attend: Convolutional Triplet Attention Module"
+    <https://arxiv.org/pdf/2010.03045.pdf>`_.
+
+    Args:
+        x: input tensor
+        dim: dimension to pool
+    """
+
+    return torch.cat([x.max(dim, keepdim=True).values, x.mean(dim, keepdim=True)], dim=dim)
 
 
 def multilabel_cross_entropy(

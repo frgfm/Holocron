@@ -6,7 +6,7 @@ different tasks, including: image classification, pixelwise semantic
 segmentation, object detection, instance segmentation, person
 keypoint detection and video classification.
 
-The following datasets are available:
+The following models are available:
 
 .. contents:: Models
     :local:
