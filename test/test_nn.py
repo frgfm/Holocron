@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from holocron.nn import functional as F
 from holocron.nn.init import init_module
-from holocron.nn.modules import activation, conv, loss, downsample, dropblock, lambda_layer
+from holocron.nn.modules import activation, attention, conv, loss, downsample, dropblock, lambda_layer
 
 
 class ActivationTester(unittest.TestCase):
@@ -509,6 +509,32 @@ class InitTester(unittest.TestCase):
         self.assertTrue(torch.all(module[0].bias.data == 0))
         self.assertTrue(torch.all(module[1].weight.data == 1))
         self.assertTrue(torch.all(module[1].bias.data == 0))
+
+
+class AttentionTester(unittest.TestCase):
+
+    def _test_attention_mod(self, mod, x):
+
+        # Check that attention preserves shape
+        mod = mod.eval()
+        with torch.no_grad():
+            out = mod(x)
+        self.assertEqual(x.shape, out.shape)
+        # Check that it doesn't break backprop
+        mod = mod.train()
+        out = mod(x)
+        out.sum().backward()
+        self.assertIsInstance(next(mod.parameters()).grad, torch.Tensor)
+
+    def test_sam(self):
+        x = torch.rand(2, 8, 19, 19)
+        mod = attention.SAM(8)
+        self._test_attention_mod(mod, x)
+
+    def test_triplet_attention(self):
+        x = torch.rand(2, 8, 19, 19)
+        mod = attention.TripletAttention()
+        self._test_attention_mod(mod, x)
 
 
 if __name__ == '__main__':
