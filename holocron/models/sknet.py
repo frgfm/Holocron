@@ -139,7 +139,7 @@ def sknet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _sknet('sknet50', pretrained, progress, **kwargs)
+    return _sknet('sknet101', pretrained, progress, **kwargs)
 
 
 def sknet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -154,4 +154,4 @@ def sknet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _sknet('sknet50', pretrained, progress, **kwargs)
+    return _sknet('sknet152', pretrained, progress, **kwargs)
