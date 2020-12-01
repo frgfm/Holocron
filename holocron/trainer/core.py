@@ -338,6 +338,7 @@ class ClassificationTrainer(Trainer):
         """
 
         self.model.eval()
+        sigmoid = nn.Sigmoid()
 
         val_loss, top1, top5, num_samples = 0., 0, 0, 0
         for x, target in self.val_loader:
@@ -348,10 +349,19 @@ class ClassificationTrainer(Trainer):
             # Loss computation
             val_loss += self.criterion(out, target).item()
 
-            pred = out.topk(5, dim=1)[1]
-            correct = pred.eq(target.view(-1, 1).expand_as(pred))
-            top1 += correct[:, 0].sum().item()
-            top5 += correct.any(dim=1).sum().item()
+            if out.shape[1] > 1:  # Multiclass
+
+                pred = out.topk(1, dim=1)[1]
+                correct = pred.eq(target.view(-1, 1).expand_as(pred))
+                top1 += correct[:, 0].sum().item()
+
+                if out.shape[1] >= 5:
+                    pred = out.topk(5, dim=1)[1]
+                    top5 += correct.any(dim=1).sum().item()
+
+            else:  # Binary
+                top1 += torch.sum(abs(target - sigmoid(out)) < 0.5).item()
+
             num_samples += x.shape[0]
 
         val_loss /= len(self.val_loader)
