@@ -355,7 +355,7 @@ class ClassificationTrainer(Trainer):
                 correct = pred.eq(target.view(-1, 1).expand_as(pred))
                 top1 += correct[:, 0].sum().item()
 
-                if out.shape[1] >= 5:
+                if out.shape[1] >= 5: # Top5 score if there is 5 classes or more
                     pred = out.topk(5, dim=1)[1]
                     top5 += correct.any(dim=1).sum().item()
 
