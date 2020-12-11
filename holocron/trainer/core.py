@@ -340,7 +340,7 @@ class ClassificationTrainer(Trainer):
         self.model.eval()
         sigmoid = nn.Sigmoid()
 
-        val_loss, top1, top5, num_samples = 0., 0, 0, 0
+        val_loss, top1, top5, num_samples = 0., 0., 0., 0
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
