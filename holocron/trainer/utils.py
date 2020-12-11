@@ -37,7 +37,9 @@ def freeze_model(model: Module, last_frozen_layer: Optional[str] = None, frozen_
     Returns:
         torch.nn.Module: model
     """
-
+    # Unfreeze all parameters
+    for param in model.parameters():
+        param.requires_grad_(True)
     # Loop on parameters
     if isinstance(last_frozen_layer, str):
         layer_reached = False
