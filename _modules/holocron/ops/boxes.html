@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.ops.boxes &mdash; holocron 0.1.4a0+70e169b-git documentation</title>
+  <title>holocron.ops.boxes &mdash; holocron 0.1.4a0+18caf78-git documentation</title>
   
 
   
@@ -24,7 +24,6 @@
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
@@ -61,7 +60,7 @@
             
             
               <div class="version">
-                0.1.4a0+70e169b
+                0.1.4a0+18caf78
               </div>
             
           
@@ -432,7 +431,7 @@
 
     <span class="c1"># Check</span>
     <span class="n">_filter</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iou</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">ciou_loss</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span><span class="o">.</span><span class="n">addcdiv_</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">iou</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">])</span>
+    <span class="n">ciou_loss</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span><span class="o">.</span><span class="n">addcdiv_</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">],</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">iou</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">ciou_loss</span></div>
 </pre></div>
@@ -447,7 +446,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, François-Guillaume Fernandez
+        &copy; Copyright 2021, François-Guillaume Fernandez
 
     </p>
   </div>
