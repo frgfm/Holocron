@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from typing import Dict, Any, Optional, Callable, List
 from ..nn import GlobalAvgPool2d
-from .utils import conv_sequence, load_pretrained_params, fuse_conv_bn
+from .utils import load_pretrained_params, fuse_conv_bn
 
 
 __all__ = ['RepVGG', 'RepBlock', 'RepVGG', 'repvgg_a0', 'repvgg_a1', 'repvgg_a2',
