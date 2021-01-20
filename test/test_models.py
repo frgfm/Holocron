@@ -1,7 +1,67 @@
 import unittest
 import torch
+from torch import nn
 from holocron.nn import DropBlock2d, BlurPool2d, SAM
 from holocron import models
+
+
+class ModelUtilsTester(unittest.TestCase):
+
+    def _test_conv_seq(self, conv_seq, expected_classes, expected_channels):
+
+        self.assertEqual(len(conv_seq), len(expected_classes))
+        for _layer, mod_class in zip(conv_seq, expected_classes):
+            self.assertIsInstance(_layer, mod_class)
+
+        input_t = torch.rand(1, conv_seq[0].in_channels, 224, 224)
+        out = torch.nn.Sequential(*conv_seq)(input_t)
+        self.assertEqual(out.shape[:2], (1, expected_channels))
+        out.sum().backward()
+
+    def test_conv_sequence(self):
+
+        mod = models.utils.conv_sequence(3, 32, kernel_size=3, act_layer=torch.nn.ReLU(inplace=True),
+                                         norm_layer=torch.nn.BatchNorm2d, drop_layer=DropBlock2d, attention_layer=SAM)
+
+        self._test_conv_seq(mod, [torch.nn.Conv2d, torch.nn.BatchNorm2d, torch.nn.ReLU, SAM, DropBlock2d], 32)
+        self.assertEqual(mod[0].kernel_size, (3, 3))
+
+        mod = models.utils.conv_sequence(3, 32, kernel_size=3, stride=2, act_layer=torch.nn.ReLU(inplace=True),
+                                         norm_layer=torch.nn.BatchNorm2d, drop_layer=DropBlock2d, blurpool=True)
+        self._test_conv_seq(mod, [torch.nn.Conv2d, torch.nn.BatchNorm2d, torch.nn.ReLU, BlurPool2d, DropBlock2d], 32)
+        self.assertEqual(mod[0].kernel_size, (3, 3))
+        self.assertEqual(mod[0].stride, (1, 1))
+        self.assertEqual(mod[3].stride, 2)
+
+    def test_fuse_conv_bn(self):
+
+        # Check the channel verification
+        self.assertRaises(AssertionError, models.utils.fuse_conv_bn, nn.Conv2d(3, 5, 3), nn.BatchNorm2d(3))
+
+        # Prepare candidate modules
+        conv = nn.Conv2d(3, 8, 3, padding=1, bias=False).eval()
+        bn = nn.BatchNorm2d(8).eval()
+        bn.weight.data = torch.rand(8)
+
+        # Create the fused version
+        fused_conv = nn.Conv2d(3, 8, 3, padding=1, bias=True).eval()
+        k, b = models.utils.fuse_conv_bn(conv, bn)
+        fused_conv.weight.data = k
+        fused_conv.bias.data = b
+
+        # Check values
+        batch_size = 2
+        x = torch.rand((batch_size, 3, 32, 32))
+        with torch.no_grad():
+            self.assertTrue(torch.allclose(bn(conv(x)), fused_conv(x), atol=1e-6))
+
+        # Check the warning when there is already a bias
+        conv = nn.Conv2d(3, 8, 3, padding=1, bias=True).eval()
+        k, b = models.utils.fuse_conv_bn(conv, bn)
+        fused_conv.weight.data = k
+        fused_conv.bias.data = b
+        with torch.no_grad():
+            self.assertTrue(torch.allclose(bn(conv(x)), fused_conv(x), atol=1e-6))
 
 
 class ModelTester(unittest.TestCase):
@@ -93,42 +153,40 @@ class ModelTester(unittest.TestCase):
         self.assertIsInstance(out, torch.Tensor)
         self.assertEqual(out.shape, (batch_size, num_classes, out_size, out_size))
 
-    def _test_conv_seq(self, conv_seq, expected_classes, expected_channels):
+    def test_repvgg_reparametrize(self):
+        num_classes = 10
+        batch_size = 2
+        x = torch.rand((batch_size, 3, 224, 224))
+        model = models.repvgg_a0(pretrained=False, num_classes=num_classes).eval()
+        with torch.no_grad():
+            out = model(x)
 
-        self.assertEqual(len(conv_seq), len(expected_classes))
-        for _layer, mod_class in zip(conv_seq, expected_classes):
-            self.assertIsInstance(_layer, mod_class)
-
-        input_t = torch.rand(1, conv_seq[0].in_channels, 224, 224)
-        out = torch.nn.Sequential(*conv_seq)(input_t)
-        self.assertEqual(out.shape[:2], (1, expected_channels))
-        out.sum().backward()
-
-    def test_conv_sequence(self):
-
-        mod = models.utils.conv_sequence(3, 32, kernel_size=3, act_layer=torch.nn.ReLU(inplace=True),
-                                         norm_layer=torch.nn.BatchNorm2d, drop_layer=DropBlock2d, attention_layer=SAM)
-
-        self._test_conv_seq(mod, [torch.nn.Conv2d, torch.nn.BatchNorm2d, torch.nn.ReLU, SAM, DropBlock2d], 32)
-        self.assertEqual(mod[0].kernel_size, (3, 3))
-
-        mod = models.utils.conv_sequence(3, 32, kernel_size=3, stride=2, act_layer=torch.nn.ReLU(inplace=True),
-                                         norm_layer=torch.nn.BatchNorm2d, drop_layer=DropBlock2d, blurpool=True)
-        self._test_conv_seq(mod, [torch.nn.Conv2d, torch.nn.BatchNorm2d, torch.nn.ReLU, BlurPool2d, DropBlock2d], 32)
-        self.assertEqual(mod[0].kernel_size, (3, 3))
-        self.assertEqual(mod[0].stride, (1, 1))
-        self.assertEqual(mod[3].stride, 2)
+        # Reparametrize
+        model.reparametrize()
+        # Check that there is no longer any Conv1x1 or BatchNorm
+        for mod in model.modules():
+            self.assertFalse(isinstance(mod, nn.BatchNorm2d))
+            if isinstance(mod, nn.Conv2d):
+                self.assertEqual(mod.weight.data.shape[2:], (3, 3))
+        # Check that values are still matching
+        with torch.no_grad():
+            self.assertTrue(torch.allclose(out, model(x), atol=1e-5))
 
 
-for model_name in ['darknet24', 'darknet19', 'darknet53', 'cspdarknet53', 'cspdarknet53_mish',
-                   'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-                   'resnext50_32x4d', 'resnext101_32x8d',
-                   'resnet50d',
-                   'res2net50_26w_4s',
-                   'tridentnet50',
-                   'pyconv_resnet50', 'pyconvhg_resnet50',
-                   'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x',
-                   'sknet50', 'sknet101', 'sknet152']:
+clf_models = [
+    'darknet24', 'darknet19', 'darknet53', 'cspdarknet53', 'cspdarknet53_mish',
+    'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
+    'resnext50_32x4d', 'resnext101_32x8d',
+    'resnet50d',
+    'res2net50_26w_4s',
+    'tridentnet50',
+    'pyconv_resnet50', 'pyconvhg_resnet50',
+    'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x',
+    'sknet50', 'sknet101', 'sknet152',
+    'repvgg_a0', 'repvgg_b0',
+]
+
+for model_name in clf_models:
     num_classes = 1000 if model_name in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x'] else 10
 
     def do_test(self, model_name=model_name, num_classes=num_classes):

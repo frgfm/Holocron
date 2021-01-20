@@ -85,7 +85,7 @@ SKNet
 
 .. autofunction:: sknet50
 
-.. autofunction:: sknet100
+.. autofunction:: sknet101
 
 .. autofunction:: sknet152
 
@@ -102,6 +102,24 @@ Darknet
 .. autofunction:: cspdarknet53
 
 .. autofunction:: cspdarknet53_mish
+
+
+RepVGG
+------
+.. autofunction:: repvgg_a0
+
+.. autofunction:: repvgg_a1
+
+.. autofunction:: repvgg_a2
+
+.. autofunction:: repvgg_b0
+
+.. autofunction:: repvgg_b1
+
+.. autofunction:: repvgg_b2
+
+.. autofunction:: repvgg_b3
+
 
 
 Object Detection
