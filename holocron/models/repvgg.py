@@ -87,18 +87,19 @@ class RepBlock(nn.Module):
 
         # Conv 3x3
         rep.weight.data = fused_k3
-        rep.bias.data = fused_b3
+        rep.bias.data = fused_b3  # type: ignore[union-attr]
 
         # Conv 1x1
         rep.weight.data[..., 1:2, 1:2] += fused_k1
-        rep.bias.data += fused_b1
+        rep.bias.data += fused_b1  # type: ignore[union-attr]
 
         # Identity
         if len(self.branches) == 3:
             scale_factor = self.branches[2].weight.data / (self.branches[2].running_var + self.branches[2].eps).sqrt()
             # Identity is mapped as a diagonal matrix relatively to the out/in channel dimensions
             rep.weight.data[range(planes), range(inplanes), 1, 1] += scale_factor
-            rep.bias.data += self.branches[2].bias.data - scale_factor * self.branches[2].running_mean
+            rep.bias.data += self.branches[2].bias.data  # type: ignore[union-attr]
+            rep.bias.data -= scale_factor * self.branches[2].running_mean  # type: ignore[union-attr]
 
         # Update main branch & delete the others
         self.branches = nn.ModuleList([rep])
@@ -161,6 +162,7 @@ class RepVGG(nn.Sequential):
 
     def reparametrize(self) -> None:
         """Reparametrize the block by fusing convolutions and BN in each branch, then fusing all branches"""
+        self.features: nn.Sequential
         for stage in self.features:
             for block in stage:
                 block.reparametrize()

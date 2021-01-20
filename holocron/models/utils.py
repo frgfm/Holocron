@@ -80,7 +80,7 @@ def fuse_conv_bn(conv: nn.Conv2d, bn: nn.BatchNorm2d) -> Tuple[torch.Tensor, tor
     if bn.bias.data.shape[0] != conv.weight.data.shape[0]:
         raise AssertionError("expected same number of output channels for both `conv` and `bn`")
 
-    scale_factor = bn.weight.data.div(bn.running_var.add(bn.eps).sqrt())
+    scale_factor = bn.weight.data / torch.sqrt(bn.running_var + bn.eps)  # type: ignore[operator, arg-type]
 
     # Compute the new bias
     fused_bias = bn.bias.data - scale_factor * bn.running_mean
