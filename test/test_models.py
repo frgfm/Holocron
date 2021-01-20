@@ -53,7 +53,7 @@ class ModelUtilsTester(unittest.TestCase):
         batch_size = 2
         x = torch.rand((batch_size, 3, 32, 32))
         with torch.no_grad():
-            self.assertTrue(torch.allclose(bn(conv(x)), fused_conv(x), atol=1e-7))
+            self.assertTrue(torch.allclose(bn(conv(x)), fused_conv(x), atol=1e-6))
 
         # Check the warning when there is already a bias
         conv = nn.Conv2d(3, 8, 3, padding=1, bias=True).eval()
@@ -61,7 +61,7 @@ class ModelUtilsTester(unittest.TestCase):
         fused_conv.weight.data = k
         fused_conv.bias.data = b
         with torch.no_grad():
-            self.assertTrue(torch.allclose(bn(conv(x)), fused_conv(x), atol=1e-7))
+            self.assertTrue(torch.allclose(bn(conv(x)), fused_conv(x), atol=1e-6))
 
 
 class ModelTester(unittest.TestCase):
