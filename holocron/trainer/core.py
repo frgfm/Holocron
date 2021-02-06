@@ -16,7 +16,7 @@ from contiguous_params import ContiguousParams
 from .utils import freeze_bn, freeze_model
 
 
-__all__ = ['Trainer', 'ClassificationTrainer', 'SegmentationTrainer', 'DetectionTrainer']
+__all__ = ['Trainer', 'ClassificationTrainer', 'BinaryClassificationTrainer', 'SegmentationTrainer', 'DetectionTrainer']
 
 
 class Trainer:
