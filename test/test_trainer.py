@@ -148,6 +148,21 @@ class CoreTester(unittest.TestCase):
         res = learner.evaluate()
         self.assertEqual(res['acc5'], 0.)
 
+    def test_classification_trainer_more_than_5_classes(self):
+
+        num_it = 10
+        batch_size = 8
+        # Generate all dependencies
+        model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
+                              GlobalAvgPool2d(flatten=True), nn.Linear(32, 6))
+        train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size),
+                                                   batch_size=batch_size)
+        optimizer = torch.optim.Adam(model.parameters())
+        criterion = torch.nn.CrossEntropyLoss()
+        learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
+
+        learner.evaluate()
+
     def test_segmentation_trainer(self):
 
         num_it = 100
