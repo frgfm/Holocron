@@ -364,6 +364,52 @@ class ClassificationTrainer(Trainer):
                 f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})")
 
 
+class BinaryClassificationTrainer(Trainer):
+    """Image binary classification trainer class
+
+    Args:
+        model (torch.nn.Module): model to train
+        train_loader (torch.utils.data.DataLoader): training loader
+        val_loader (torch.utils.data.DataLoader): validation loader
+        criterion (torch.nn.Module): loss criterion
+        optimizer (torch.optim.Optimizer): parameter optimizer
+        gpu (int, optional): index of the GPU to use
+        output_file (str, optional): path where checkpoints will be saved
+    """
+
+    @torch.no_grad()
+    def evaluate(self) -> Dict[str, float]:
+        """Evaluate the model on the validation set
+
+        Returns:
+            dict: evaluation metrics
+        """
+
+        self.model.eval()
+
+        val_loss, top1, num_samples = 0., 0, 0
+        for x, target in self.val_loader:
+            x, target = self.to_cuda(x, target)
+
+            # Forward
+            out = self.model(x)
+            # Loss computation
+            val_loss += self.criterion(out, target).item()
+
+            top1 += torch.sum(abs(target - torch.sigmoid(out)) < 0.5).item()
+
+            num_samples += x.shape[0]
+
+        val_loss /= len(self.val_loader)
+
+        return dict(val_loss=val_loss, acc=top1 / num_samples)
+
+    @staticmethod
+    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
+        return (f"Validation loss: {eval_metrics['val_loss']:.4} "
+                f"(Acc: {eval_metrics['acc']:.2%})")
+
+
 class SegmentationTrainer(Trainer):
     """Semantic segmentation trainer class
 
