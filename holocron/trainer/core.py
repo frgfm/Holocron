@@ -382,7 +382,8 @@ class BinaryClassificationTrainer(Trainer):
 
     def __init__(self, model, train_loader, val_loader, criterion, optimizer, gpu=None, output_file='./checkpoint.pth',
                  use_sigmoid=True):
-        super(BinaryClassificationTrainer, self).__init__(model, train_loader, val_loader, criterion, optimizer, gpu, output_file)
+        super(BinaryClassificationTrainer, self).__init__(model, train_loader, val_loader, criterion, optimizer, gpu,
+                                                          output_file)
         self.use_sigmoid = use_sigmoid
 
     @torch.no_grad()
