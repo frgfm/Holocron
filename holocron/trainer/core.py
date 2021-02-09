@@ -375,8 +375,13 @@ class BinaryClassificationTrainer(Trainer):
         optimizer (torch.optim.Optimizer): parameter optimizer
         gpu (int, optional): index of the GPU to use
         output_file (str, optional): path where checkpoints will be saved
+        use_sigmoid (bool, optional): apply sigmoid function to the output
     """
 
+    def __init__(self, use_sigmoid=True):
+        super(BinaryClassificationTrainer, self).__init__()
+        self.use_sigmoid = use_sigmoid
+    
     @torch.no_grad()
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the model on the validation set
@@ -393,10 +398,13 @@ class BinaryClassificationTrainer(Trainer):
 
             # Forward
             out = self.model(x)
+            if self.use_sigmoid:
+                out = torch.sigmoid(out)
+
             # Loss computation
             val_loss += self.criterion(out, target).item()
 
-            top1 += torch.sum(abs(target - torch.sigmoid(out)) < 0.5).item()
+            top1 += torch.sum((target >= 0.5) == (out >= 0.5)).item()
 
             num_samples += x.shape[0]
 
