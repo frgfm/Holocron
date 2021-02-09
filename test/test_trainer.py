@@ -132,6 +132,29 @@ class CoreTester(unittest.TestCase):
             # Check that params were updated
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
 
+    def _test_classification_trainer(self, num_classes):
+
+        num_it = 10
+        batch_size = 8
+        # Generate all dependencies
+        model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
+                              GlobalAvgPool2d(flatten=True), nn.Linear(32, num_classes))
+        train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size),
+                                                   batch_size=batch_size)
+        optimizer = torch.optim.Adam(model.parameters())
+        criterion = torch.nn.CrossEntropyLoss()
+        learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
+
+        res = learner.evaluate()
+        if num_classes < 5:
+            self.assertEqual(res['acc5'], 0)
+
+    def test_classification_trainer_evaluate(self):
+        # Fewer than 5 classes
+        self._test_classification_trainer(6)
+        # More than 5 classes
+        self._test_classification_trainer(3)
+
     def test_segmentation_trainer(self):
 
         num_it = 100
