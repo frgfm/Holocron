@@ -22,6 +22,19 @@ class MockClassificationDataset(torch.utils.data.Dataset):
         return self.n
 
 
+class MockBinaryClassificationDataset(torch.utils.data.Dataset):
+    """Mock dataset generating a random sample and a fixed zero probability"""
+    def __init__(self, n):
+        super().__init__()
+        self.n = n
+
+    def __getitem__(self, idx):
+        return torch.rand((3, 32, 32)), torch.zeros((1,))
+
+    def __len__(self):
+        return self.n
+
+
 class MockSegDataset(torch.utils.data.Dataset):
     """Mock dataset generating a random sample and a fixed zero target"""
     def __init__(self, n):
@@ -139,7 +152,7 @@ class CoreTester(unittest.TestCase):
         # Generate all dependencies
         model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
                               GlobalAvgPool2d(flatten=True), nn.Linear(32, 1))
-        train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size),
+        train_loader = torch.utils.data.DataLoader(MockBinaryClassificationDataset(num_it * batch_size),
                                                    batch_size=batch_size)
         optimizer = torch.optim.Adam(model.parameters())
         criterion = torch.nn.BCELoss()
