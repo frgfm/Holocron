@@ -209,6 +209,6 @@ def ciou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
 
     # Check
     _filter = (v != 0) & (iou != 0)
-    ciou_loss[_filter].addcdiv_(v[_filter] ** 2, 1 - iou[_filter] + v[_filter])
+    ciou_loss[_filter].addcdiv_(v[_filter], 1 - iou[_filter] + v[_filter])
 
     return ciou_loss

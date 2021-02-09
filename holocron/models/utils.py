@@ -1,11 +1,12 @@
 import logging
+import torch
 import torch.nn as nn
 from holocron.nn import BlurPool2d
 from typing import List, Optional, Any, Callable, Tuple
 from torchvision.models.utils import load_state_dict_from_url
 
 
-__all__ = ['conv_sequence', 'load_pretrained_params']
+__all__ = ['conv_sequence', 'load_pretrained_params', 'fuse_conv_bn']
 
 
 def conv_sequence(
@@ -63,3 +64,30 @@ def load_pretrained_params(
         if isinstance(key_replacement, tuple):
             state_dict = {k.replace(*key_replacement): v for k, v in state_dict.items()}
         model.load_state_dict(state_dict)
+
+
+def fuse_conv_bn(conv: nn.Conv2d, bn: nn.BatchNorm2d) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Fuse convolution and batch normalization layers into a convolution with bias
+
+    Args:
+        conv: the convolutional layer
+        bn: the batch normalization layer
+    Returns:
+        the fused kernel and bias of the new convolution
+    """
+
+    # Check compatibility of both layers
+    if bn.bias.data.shape[0] != conv.weight.data.shape[0]:
+        raise AssertionError("expected same number of output channels for both `conv` and `bn`")
+
+    scale_factor = bn.weight.data / torch.sqrt(bn.running_var + bn.eps)  # type: ignore[operator, arg-type]
+
+    # Compute the new bias
+    fused_bias = bn.bias.data - scale_factor * bn.running_mean
+    if conv.bias is not None:
+        logging.warning("convolution layers placed before batch normalization should not have a bias.")
+        fused_bias += scale_factor * conv.bias.data
+    # Scale the kernel
+    fused_kernel = scale_factor.view(-1, 1, 1, 1) * conv.weight.data
+
+    return fused_kernel, fused_bias

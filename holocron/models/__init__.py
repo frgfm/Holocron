@@ -8,5 +8,6 @@ from .darknetv2 import *
 from .darknetv3 import *
 from .darknetv4 import *
 from .sknet import *
+from .repvgg import *
 from .detection import *
 from .segmentation import *
