@@ -348,12 +348,10 @@ class ClassificationTrainer(Trainer):
             # Loss computation
             val_loss += self.criterion(out, target).item()
 
-            pred = out.topk(1, dim=1)[1]
+            pred = out.topk(5, dim=1)[1] if out.shape[1] >= 5 else out.argmax(dim=1, keepdim=True)
             correct = pred.eq(target.view(-1, 1).expand_as(pred))
             top1 += correct[:, 0].sum().item()
-
-            if out.shape[1] >= 5:  # Top5 score if there is 5 classes or more
-                pred = out.topk(5, dim=1)[1]
+            if out.shape[1] >= 5:
                 top5 += correct.any(dim=1).sum().item()
 
             num_samples += x.shape[0]
