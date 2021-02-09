@@ -133,14 +133,14 @@ class CoreTester(unittest.TestCase):
             self.assertFalse(torch.equal(model[-1].weight.data, model_w))
 
     def _test_classification_trainer(self, num_classes):
-    
+
         num_it = 10
         batch_size = 8
         # Generate all dependencies
         model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
-                            GlobalAvgPool2d(flatten=True), nn.Linear(32, num_classes))
+                              GlobalAvgPool2d(flatten=True), nn.Linear(32, num_classes))
         train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size),
-                                                batch_size=batch_size)
+                                                   batch_size=batch_size)
         optimizer = torch.optim.Adam(model.parameters())
         criterion = torch.nn.CrossEntropyLoss()
         learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
