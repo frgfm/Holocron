@@ -142,13 +142,13 @@ class CoreTester(unittest.TestCase):
         train_loader = torch.utils.data.DataLoader(MockClassificationDataset(num_it * batch_size),
                                                    batch_size=batch_size)
         optimizer = torch.optim.Adam(model.parameters())
-        criterion = torch.nn.CrossEntropyLoss()
+        criterion = torch.nn.BCELoss()
 
         learner = trainer.BinaryClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
 
         res = learner.evaluate()
-        # Random test here, juste checking if evaluate ended well
-        self.assertGreater(res['acc'], -1)
+        self.assertGreaterEqual(res['acc'], 0)
+        self.assertLessEqual(res['acc'], 1)
 
     def test_segmentation_trainer(self):
 

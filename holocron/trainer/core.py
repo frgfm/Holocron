@@ -378,10 +378,11 @@ class BinaryClassificationTrainer(Trainer):
         use_sigmoid (bool, optional): apply sigmoid function to the output
     """
 
-    def __init__(self, use_sigmoid=True):
-        super(BinaryClassificationTrainer, self).__init__()
+    def __init__(self, model, train_loader, val_loader, criterion, optimizer, gpu=None, output_file='./checkpoint.pth',
+                 use_sigmoid=True):
+        super(BinaryClassificationTrainer, self).__init__(model, train_loader, val_loader, criterion, optimizer, gpu, output_file)
         self.use_sigmoid = use_sigmoid
-    
+
     @torch.no_grad()
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the model on the validation set
