@@ -377,14 +377,7 @@ class BinaryClassificationTrainer(Trainer):
         optimizer (torch.optim.Optimizer): parameter optimizer
         gpu (int, optional): index of the GPU to use
         output_file (str, optional): path where checkpoints will be saved
-        use_sigmoid (bool, optional): apply sigmoid function to the output
     """
-
-    def __init__(self, model, train_loader, val_loader, criterion, optimizer, gpu=None, output_file='./checkpoint.pth',
-                 use_sigmoid=True):
-        super(BinaryClassificationTrainer, self).__init__(model, train_loader, val_loader, criterion, optimizer, gpu,
-                                                          output_file)
-        self.use_sigmoid = use_sigmoid
 
     @torch.no_grad()
     def evaluate(self) -> Dict[str, float]:
@@ -402,8 +395,9 @@ class BinaryClassificationTrainer(Trainer):
 
             # Forward
             out = self.model(x)
-            if self.use_sigmoid:
-                out = torch.sigmoid(out)
+
+            # Apply sigmoid
+            out = torch.sigmoid(out)
 
             # Loss computation
             val_loss += self.criterion(out, target).item()
