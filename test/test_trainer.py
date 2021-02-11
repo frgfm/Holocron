@@ -178,7 +178,7 @@ class CoreTester(unittest.TestCase):
         train_loader = torch.utils.data.DataLoader(MockBinaryClassificationDataset(num_it * batch_size),
                                                    batch_size=batch_size)
         optimizer = torch.optim.Adam(model.parameters())
-        criterion = torch.nn.BCELoss()
+        criterion = torch.nn.BCEWithLogitsLoss()
 
         learner = trainer.BinaryClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
 
