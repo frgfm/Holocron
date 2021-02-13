@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer &mdash; holocron 0.1.4a0+bd750b3-git documentation</title>
+  <title>holocron.trainer &mdash; holocron 0.1.4a0+3ce1b64-git documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                0.1.4a0+bd750b3
+                0.1.4a0+3ce1b64
               </div>
             
           
@@ -354,6 +354,39 @@
 <dl class="py method">
 <dt id="holocron.trainer.ClassificationTrainer.evaluate">
 <code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/holocron/trainer/core.html#ClassificationTrainer.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.ClassificationTrainer.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the model on the validation set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>evaluation metrics</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.trainer.BinaryClassificationTrainer">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.trainer.</code><code class="sig-name descname">BinaryClassificationTrainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">train_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">val_loader</span><span class="p">:</span> <span class="n">torch.utils.data.dataloader.DataLoader</span></em>, <em class="sig-param"><span class="n">criterion</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">torch.optim.optimizer.Optimizer</span></em>, <em class="sig-param"><span class="n">gpu</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_file</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'./checkpoint.pth'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#BinaryClassificationTrainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.BinaryClassificationTrainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Image binary classification trainer class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – model to train</p></li>
+<li><p><strong>train_loader</strong> (<em>torch.utils.data.DataLoader</em>) – training loader</p></li>
+<li><p><strong>val_loader</strong> (<em>torch.utils.data.DataLoader</em>) – validation loader</p></li>
+<li><p><strong>criterion</strong> (<em>torch.nn.Module</em>) – loss criterion</p></li>
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – parameter optimizer</p></li>
+<li><p><strong>gpu</strong> (<em>python:int</em><em>, </em><em>optional</em>) – index of the GPU to use</p></li>
+<li><p><strong>output_file</strong> (<em>str</em><em>, </em><em>optional</em>) – path where checkpoints will be saved</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="holocron.trainer.BinaryClassificationTrainer.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/holocron/trainer/core.html#BinaryClassificationTrainer.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.BinaryClassificationTrainer.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the model on the validation set</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
