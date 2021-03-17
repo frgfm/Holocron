@@ -115,7 +115,7 @@ class OptimTester(unittest.TestCase):
         self.assertFalse(torch.equal(_p.data, p_val - lr * _p.grad))
 
 
-for opt_name in ['Lars', 'Lamb', 'RAdam', 'RaLars', 'TAdam', 'AdaBelief']:
+for opt_name in ['Lars', 'Lamb', 'RAdam', 'RaLars', 'TAdam', 'AdaBelief', 'AdamP']:
     def opt_test(self, opt_name=opt_name):
         self._test_optimizer(opt_name)
 
