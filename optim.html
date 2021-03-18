@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim &mdash; holocron 0.1.4a0+4f05c38-git documentation</title>
+  <title>holocron.optim &mdash; holocron 0.1.4a0+bd7cfa7-git documentation</title>
   
 
   
@@ -61,7 +61,7 @@
             
             
               <div class="version">
-                0.1.4a0+4f05c38
+                0.1.4a0+bd7cfa7
               </div>
             
           
@@ -337,6 +337,26 @@ Observed Gradients”</a>.</p>
 <li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
 <li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
 <li><p><strong>amsgrad</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to use the AMSGrad variant (default: False)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.optim.AdamP">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">holocron.optim.</span></code><code class="sig-name descname"><span class="pre">AdamP</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.parameter.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amsgrad</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/adamp.html#AdamP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.AdamP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the AdamP optimizer from <a class="reference external" href="https://arxiv.org/pdf/2006.08217.pdf">“AdamP: Slowing Down the Slowdown for Momentum Optimizers on
+Scale-invariant Weights”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
+<li><p><strong>lr</strong> (<em>python:float</em><em>, </em><em>optional</em>) – learning rate</p></li>
+<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>python:float</em><em>, </em><em>python:float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
+<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
+<li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
+<li><p><strong>amsgrad</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to use the AMSGrad variant (default: False)</p></li>
+<li><p><strong>delta</strong> (<em>python:float</em><em>, </em><em>optional</em>) – delta threshold for projection (default: False)</p></li>
 </ul>
 </dd>
 </dl>
