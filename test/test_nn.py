@@ -90,8 +90,9 @@ class LossTester(unittest.TestCase):
         num_batches = 2
         num_classes = 4
         # 4 classes
-        x = torch.ones(num_batches, num_classes, requires_grad=True)
+        x = torch.ones(num_batches, num_classes)
         x[:, 0, ...] = 10
+        x.requires_grad_(True)
 
         loss_fn = F.__dict__[name]
 
