@@ -25,6 +25,8 @@ Implementations of recent parameter optimizer for Pytorch modules.
 
 .. autoclass:: AdaBelief
 
+.. autoclass:: AdamP
+
 
 Optimizer wrappers
 ------------------

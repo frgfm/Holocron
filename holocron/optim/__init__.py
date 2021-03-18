@@ -4,5 +4,6 @@ from .radam import RAdam
 from .ralars import RaLars
 from .tadam import TAdam
 from .adabelief import AdaBelief
+from .adamp import AdamP
 from . import wrapper
 from . import lr_scheduler
