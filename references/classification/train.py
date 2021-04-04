@@ -12,24 +12,22 @@ import datetime
 import torch
 import torch.nn as nn
 from torch.utils.data import RandomSampler, SequentialSampler
-from torchvision.datasets import ImageFolder
+from torchvision.datasets import ImageFolder, CIFAR10, CIFAR100
 from torchvision.transforms import transforms
 
 import holocron
 from holocron.trainer import ClassificationTrainer
 
 
-def load_data(traindir, valdir, img_size=224, crop_pct=0.875):
+def load_imagenette(data_dir, img_size=224, crop_pct=0.875):
     # Data loading code
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
-    scale_size = min(int(math.floor(img_size / crop_pct)), 320)
-
     print("Loading training data")
     st = time.time()
     train_set = ImageFolder(
-        traindir,
+        os.path.join(data_dir, 'train'),
         transforms.Compose([
             transforms.RandomResizedCrop(img_size, scale=(0.3, 1.0)),
             transforms.RandomHorizontalFlip(),
@@ -41,10 +39,36 @@ def load_data(traindir, valdir, img_size=224, crop_pct=0.875):
 
     print("Loading validation data")
     eval_tf = []
+    scale_size = min(int(math.floor(img_size / crop_pct)), 320)
     if scale_size < 320:
         eval_tf.append(transforms.Resize(scale_size))
     eval_tf.extend([transforms.CenterCrop(img_size), transforms.ToTensor(), normalize])
-    val_set = ImageFolder(valdir, transforms.Compose(eval_tf))
+    val_set = ImageFolder(os.path.join(data_dir, 'val'), transforms.Compose(eval_tf))
+
+    return train_set, val_set
+
+
+def load_cifar(data_dir, cifar100=True):
+    # Data loading code
+    normalize = transforms.Normalize(mean=[0.5071, 0.4866, 0.4409],
+                                     std=[0.2673, 0.2564, 0.2761])
+
+    print("Loading training data")
+    st = time.time()
+    cifar_version = CIFAR100 if cifar100 else CIFAR10
+    train_set = cifar_version(
+        data_dir,
+        True,
+        transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02),
+            transforms.ToTensor(), normalize,
+            transforms.RandomErasing(p=0.9, value='random')
+        ]))
+    print("Took", time.time() - st)
+
+    print("Loading validation data")
+    val_set = CIFAR100(data_dir, False, transforms.Compose([transforms.ToTensor(), normalize]))
 
     return train_set, val_set
 
@@ -55,9 +79,11 @@ def main(args):
 
     torch.backends.cudnn.benchmark = True
 
-    train_dir = os.path.join(args.data_path, 'train')
-    val_dir = os.path.join(args.data_path, 'val')
-    train_set, val_set = load_data(train_dir, val_dir, img_size=args.img_size)
+    if args.dataset.lower() == "imagenette":
+        train_set, val_set = load_imagenette(args.data_path, img_size=args.img_size)
+    elif args.dataset.lower() in ("cifar10", "cifar100"):
+        train_set, val_set = load_cifar(args.data_path, args.dataset.lower() == "cifar100")
+
     train_loader = torch.utils.data.DataLoader(
         train_set, batch_size=args.batch_size, drop_last=True,
         sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True)
@@ -124,6 +150,7 @@ def parse_args():
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
     parser.add_argument('--model', default='darknet19', type=str, help='model')
+    parser.add_argument('--dataset', default='imagenette', type=str, help='dataset to train on')
     parser.add_argument('--freeze-until', default=None, type=str, help='Last layer to freeze')
     parser.add_argument('--device', default=None, type=int, help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
