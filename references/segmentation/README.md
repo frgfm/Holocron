@@ -35,8 +35,8 @@ Performances are evaluated on the validation set of the dataset using the mean I
 
 | Model  | mean IoU | Param # | MACs | Interpolation | Image size |
 | ------ | -------- | ------- | ---- | ------------- | ---------- |
-| unet   |          |         |      | bilinear      | 256        |
-| unetp  |          |         |      | bilinear      | 256        |
-| unetpp |          |         |      | bilinear      | 256        |
-| unet3p |          |         |      | bilinear      | 256        |
+| unet   |          | 31.38M  |      | bilinear      | 256        |
+| unetp  |          | 35.36M  |      | bilinear      | 256        |
+| unetpp |          | 36.61M  |      | bilinear      | 256        |
+| unet3p |          | 26.93M  |      | bilinear      | 256        |
 
