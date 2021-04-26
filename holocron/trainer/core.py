@@ -235,7 +235,7 @@ class Trainer:
            num_it (int, optional): number of iterations to perform
         """
 
-        if num_it > len(train_loader):
+        if num_it > len(self.train_loader):
             raise ValueError("the value of `num_it` needs to be lower than the number of available batches")
 
         self.model = freeze_model(self.model.train(), freeze_until)
