@@ -152,7 +152,7 @@ def main(args):
 
     if args.lr_finder:
         print("Looking for optimal LR")
-        trainer.lr_find(args.freeze_until)
+        trainer.lr_find(args.freeze_until, num_it=min(len(train_loader), 100))
         trainer.plot_recorder()
         return
     print("Start training")
