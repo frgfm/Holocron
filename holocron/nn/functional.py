@@ -106,8 +106,7 @@ def focal_loss(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        at = weight.gather(0, target.data.view(-1))
-        logpt *= at
+        logpt = weight.gather(0, target.data.view(-1)) * logpt
 
     # Loss
     loss = -1 * (1 - pt) ** gamma * logpt
@@ -195,7 +194,7 @@ def multilabel_cross_entropy(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt *= weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[attr-defined]
+        logpt = logpt * weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[attr-defined]
 
     # CE Loss
     loss = - target * logpt
@@ -250,7 +249,7 @@ def ls_cross_entropy(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt *= weight.view(1, -1, *([1] * (logpt.ndim - 2)))  # type: ignore[attr-defined]
+        logpt = logpt * weight.view(1, -1, *([1] * (logpt.ndim - 2)))  # type: ignore[attr-defined]
 
     # Loss reduction
     if reduction == 'sum':
@@ -313,7 +312,7 @@ def complement_cross_entropy(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        loss *= weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[attr-defined]
+        loss = loss * weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[attr-defined]
 
     # Loss reduction
     if reduction == 'sum':
