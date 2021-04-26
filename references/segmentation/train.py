@@ -40,25 +40,34 @@ def load_data(datadir):
 
     print("Loading training data")
     st = time.time()
-    dataset = VOCSegmentation(datadir, image_set='train', download=True,
-                              transforms=Compose([RandomResize(min_size, max_size),
-                                                  RandomCrop(crop_size),
-                                                  RandomHorizontalFlip(0.5),
-                                                  SampleTransform(transforms.ColorJitter(brightness=0.3,
-                                                                                         contrast=0.3,
-                                                                                         saturation=0.1,
-                                                                                         hue=0.02)),
-                                                  ToTensor(),
-                                                  SampleTransform(normalize)]))
+    dataset = VOCSegmentation(
+        datadir,
+        image_set='train',
+        download=True,
+        transforms=Compose([
+            RandomResize(min_size, max_size),
+            RandomCrop(crop_size),
+            RandomHorizontalFlip(0.5),
+            SampleTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
+            ToTensor(),
+            SampleTransform(normalize)
+        ])
+    )
 
     print("Took", time.time() - st)
 
     print("Loading validation data")
     st = time.time()
-    dataset_test = VOCSegmentation(datadir, image_set='val', download=True,
-                                   transforms=Compose([RandomResize(base_size, base_size),
-                                                       ToTensor(),
-                                                       SampleTransform(normalize)]))
+    dataset_test = VOCSegmentation(
+        datadir,
+        image_set='val',
+        download=True,
+        transforms=Compose([
+            RandomResize(base_size, base_size),
+            ToTensor(),
+            SampleTransform(normalize)
+        ])
+    )
 
     print("Took", time.time() - st)
 
