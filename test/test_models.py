@@ -146,7 +146,7 @@ class ModelTester(unittest.TestCase):
         batch_size = 2
         num_channels = 1
         x = torch.rand((batch_size, num_channels, size, size))
-        model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
+        model = models.__dict__[name](pretrained=True, num_classes=num_classes, in_channels=num_channels).eval()
         with torch.no_grad():
             out = model(x)
 
@@ -203,7 +203,7 @@ for model_name, size in [('yolov1', 448), ('yolov2', 416), ('yolov4', 608)]:
 
 
 # Lower input size to avoid OOM with CI
-for model_name, size, out_size in [('unet', 572, 388), ('unetp', 256, 256), ('unetpp', 256, 256), ('unet3p', 320, 320)]:
+for model_name, size, out_size in [('unet', 256, 256), ('unetp', 256, 256), ('unetpp', 256, 256), ('unet3p', 320, 320)]:
     def do_test(self, model_name=model_name, size=size, out_size=out_size):
         self._test_segmentation_model(model_name, size, out_size)
 
