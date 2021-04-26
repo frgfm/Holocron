@@ -125,7 +125,7 @@ class UNet(nn.Module):
         super().__init__()
 
         if act_layer is None:
-            act_layer = nn.ReLU(inplace=True)
+            act_layer = nn.ReLU(inplace=False)
 
         # Contracting path
         self.encoders = nn.ModuleList([])
