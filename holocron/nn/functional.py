@@ -250,7 +250,7 @@ def ls_cross_entropy(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt = logpt * weight.view(1, -1, *([1] * (logpt.ndim - 2)))  # type: ignore[attr-defined]
+        logpt *= weight.view(1, -1, *([1] * (logpt.ndim - 2)))  # type: ignore[attr-defined]
 
     # Loss reduction
     if reduction == 'sum':
