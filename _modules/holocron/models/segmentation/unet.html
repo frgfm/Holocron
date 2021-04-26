@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.segmentation.unet &mdash; holocron 0.1.4a0+7206d08-git documentation</title>
+  <title>holocron.models.segmentation.unet &mdash; holocron 0.1.4a0+62d6010-git documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.1.4a0+7206d08
+                0.1.4a0+62d6010
               </div>
             
           
@@ -83,7 +83,7 @@
               
             
             
-              <p><span class="caption-text">Getting Started</span></p>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../installing.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../installing.html#via-python-package">Via Python Package</a></li>
@@ -92,7 +92,7 @@
 </ul>
 </li>
 </ul>
-<p><span class="caption-text">Package Documentation</span></p>
+<p class="caption"><span class="caption-text">Package Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#classification">Classification</a><ul>
@@ -324,19 +324,25 @@
     <span class="sd">&quot;&quot;&quot;Implements a U-Net architecture</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        layout (list&lt;int&gt;): number of channels after each contracting block</span>
-<span class="sd">        in_channels (int, optional): number of channels in the input tensor</span>
-<span class="sd">        num_classes (int, optional): number of output classes</span>
+<span class="sd">        layout: number of channels after each contracting block</span>
+<span class="sd">        in_channels: number of channels in the input tensor</span>
+<span class="sd">        num_classes: number of output classes</span>
+<span class="sd">        act_layer: activation layer</span>
+<span class="sd">        norm_layer: normalization layer</span>
+<span class="sd">        drop_layer: dropout layer</span>
+<span class="sd">        conv_layer: convolutional layer</span>
+<span class="sd">        same_padding: enforces same padding in convolutions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
         <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">same_padding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -348,14 +354,14 @@
         <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_channels</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span>
         <span class="n">_pool</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DownPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">_pool</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DownPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">_pool</span><span class="p">,</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">same_padding</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
                                           <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">))</span>
             <span class="n">_pool</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># Expansive path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
         <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UpPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UpPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">same_padding</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
                                         <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">))</span>
 
         <span class="c1"># Classifier</span>
