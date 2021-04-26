@@ -235,6 +235,9 @@ class Trainer:
            num_it (int, optional): number of iterations to perform
         """
 
+        if num_it > len(train_loader):
+            raise ValueError("the value of `num_it` needs to be lower than the number of available batches")
+
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
         self._reset_opt(start_lr)
@@ -268,7 +271,7 @@ class Trainer:
         """
 
         if len(self.lr_recorder) != len(self.loss_recorder) or len(self.lr_recorder) == 0:
-            raise AssertionError("Please run the `lr_find` method first", len(self.lr_recorder),len(self.loss_recorder))
+            raise AssertionError("Please run the `lr_find` method first")
 
         # Exp moving average of loss
         smoothed_losses = []
