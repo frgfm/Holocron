@@ -268,7 +268,7 @@ class Trainer:
         """
 
         if len(self.lr_recorder) != len(self.loss_recorder) or len(self.lr_recorder) == 0:
-            raise AssertionError("Please run the `lr_find` method first")
+            raise AssertionError("Please run the `lr_find` method first", len(self.lr_recorder),len(self.loss_recorder))
 
         # Exp moving average of loss
         smoothed_losses = []
