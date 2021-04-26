@@ -102,19 +102,25 @@ class UNet(nn.Module):
     """Implements a U-Net architecture
 
     Args:
-        layout (list<int>): number of channels after each contracting block
-        in_channels (int, optional): number of channels in the input tensor
-        num_classes (int, optional): number of output classes
+        layout: number of channels after each contracting block
+        in_channels: number of channels in the input tensor
+        num_classes: number of output classes
+        act_layer: activation layer
+        norm_layer: normalization layer
+        drop_layer: dropout layer
+        conv_layer: convolutional layer
+        same_padding: enforces same padding in convolutions
     """
     def __init__(
         self,
         layout: List[int],
-        in_channels: int = 1,
+        in_channels: int = 3,
         num_classes: int = 10,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
+        same_padding: bool = True,
     ) -> None:
         super().__init__()
 
@@ -126,14 +132,14 @@ class UNet(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 0,
+            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1 if same_padding else 0,
                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan in zip(layout[1:], layout[:-1]):
-            self.decoders.append(UpPath(in_chan, out_chan, 1, False, 0,
+            self.decoders.append(UpPath(in_chan, out_chan, 1, False, 1 if same_padding else 0,
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier

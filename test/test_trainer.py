@@ -129,6 +129,7 @@ class CoreTester(unittest.TestCase):
             learner.load(checkpoint)
 
             self.assertRaises(AssertionError, learner.plot_recorder, block=False)
+            self.assertRaises(ValueError, learner.lr_find, num_it=num_it + 1)
             learner.lr_find(num_it=num_it)
             self.assertEqual(len(learner.lr_recorder), len(learner.loss_recorder))
             learner.plot_recorder(block=False)
