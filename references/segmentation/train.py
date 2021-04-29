@@ -160,6 +160,11 @@ def main(args):
         trainer.lr_find(args.freeze_until, num_it=min(len(train_loader), 100))
         trainer.plot_recorder()
         return
+    if args.check_setup:
+        print("Checking batch overfitting")
+        is_ok = trainer.check_setup(args.freeze_until, args.lr, num_it=min(len(train_loader), 100))
+        print(is_ok)
+        return
     print("Start training")
     start_time = time.time()
     trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until)
@@ -185,6 +190,7 @@ def parse_args():
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
     parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
+    parser.add_argument("--check-setup", dest='check_setup', action='store_true', help="Check your training setup")
     parser.add_argument('--output-file', default='./model.pth', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument("--show-samples", dest='show_samples', action='store_true',
