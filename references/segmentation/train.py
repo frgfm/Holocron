@@ -21,8 +21,6 @@ import holocron
 from holocron.trainer import SegmentationTrainer
 from transforms import Compose, RandomResize, RandomCrop, RandomHorizontalFlip, SampleTransform, ToTensor
 
-from torchvision.models.segmentation import deeplabv3_mobilenet_v3_large
-
 
 VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
                'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train',
@@ -117,9 +115,7 @@ def main(args):
         sampler=SequentialSampler(val_set), num_workers=args.workers, pin_memory=True)
 
     print("Creating model")
-    # model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES), in_channels=3)
-    model = deeplabv3_mobilenet_v3_large(pretrained=True)
-    model.classifier[-1] = nn.Conv2d(model.classifier[-1].in_channels, len(VOC_CLASSES), kernel_size=3, padding=1)
+    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES), in_channels=3)
 
     loss_weight = torch.ones(len(VOC_CLASSES))
     loss_weight[0] = 0.1

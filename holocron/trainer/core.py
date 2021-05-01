@@ -147,7 +147,7 @@ class Trainer:
 
     def _get_loss(self, x: Tensor, target: Tensor) -> Tensor:
         # Forward
-        out = self.model(x)['out']
+        out = self.model(x)
         # Loss computation
         return self.criterion(out, target)
 
@@ -450,7 +450,7 @@ class SegmentationTrainer(Trainer):
             x, target = self.to_cuda(x, target)
 
             # Forward
-            out = self.model(x)['out']
+            out = self.model(x)
             # Loss computation
             val_loss += self.criterion(out, target).item()
 
