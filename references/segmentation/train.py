@@ -169,7 +169,7 @@ def main(args):
     start_time = time.time()
     trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until)
     total_time_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
-    print('Training time {}'.format(total_time_str))
+    print(f"Training time {total_time_str}")
 
 
 def parse_args():
