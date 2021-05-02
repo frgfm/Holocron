@@ -142,7 +142,7 @@ class UNet(nn.Module):
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        _layout = layout[:-2][::-1] + layout[0:1]
+        _layout = layout[::-1][2:] + layout[0:1] if bilinear_upsampling else layout[::-1][1:]
         for in_chan, mid_chan, out_chan in zip(layout[::-1][:-1], layout[::-1][1:], _layout):
             self.decoders.append(UpPath(in_chan, mid_chan, out_chan, 1, bilinear_upsampling, int(same_padding),
                                         act_layer, norm_layer, drop_layer, conv_layer))
