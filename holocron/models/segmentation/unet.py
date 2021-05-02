@@ -27,25 +27,23 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
 }
 
 
-class DownPath(nn.Sequential):
-    def __init__(
-        self,
-        in_chan: int,
-        out_chan: int,
-        downsample: bool = True,
-        padding: int = 0,
-        act_layer: Optional[nn.Module] = None,
-        norm_layer: Optional[Callable[[int], nn.Module]] = None,
-        drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
-    ) -> None:
+def down_path(
+    in_chan: int,
+    out_chan: int,
+    downsample: bool = True,
+    padding: int = 0,
+    act_layer: Optional[nn.Module] = None,
+    norm_layer: Optional[Callable[[int], nn.Module]] = None,
+    drop_layer: Optional[Callable[..., nn.Module]] = None,
+    conv_layer: Optional[Callable[..., nn.Module]] = None
+) -> nn.Sequential:
 
-        layers: List[nn.Module] = [nn.MaxPool2d(2)] if downsample else []
-        layers.extend([*conv_sequence(in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
-                                      kernel_size=3, padding=padding),
-                       *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
-                                      kernel_size=3, padding=padding)])
-        super().__init__(*layers)
+    layers: List[nn.Module] = [nn.MaxPool2d(2)] if downsample else []
+    layers.extend([*conv_sequence(in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+                                  kernel_size=3, padding=padding),
+                   *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+                                  kernel_size=3, padding=padding)])
+    return nn.Sequential(*layers)
 
 
 class UpPath(nn.Module):
@@ -135,8 +133,8 @@ class UNet(nn.Module):
             _layout[-1] = _layout[-1] // 2
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, int(same_padding),
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoders.append(down_path(in_chan, out_chan, _pool, int(same_padding),
+                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
@@ -196,7 +194,7 @@ class UNetp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
+            self.encoders.append(down_path(in_chan, out_chan, _pool, 1,
                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
@@ -259,7 +257,7 @@ class UNetpp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
+            self.encoders.append(down_path(in_chan, out_chan, _pool, 1,
                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
@@ -371,7 +369,7 @@ class UNet3p(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
+            self.encoders.append(down_path(in_chan, out_chan, _pool, 1,
                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
