@@ -69,9 +69,7 @@ class UpPath(nn.Module):
         else:
             self.upsample = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
 
-        # Estimate the number of channels in the upsampled feature map
-        up_chan = in_chan if bilinear_upsampling else in_chan // 2
-        self.block = nn.Sequential(*conv_sequence(num_skips * in_chan // 2 + up_chan, out_chan,
+        self.block = nn.Sequential(*conv_sequence(in_chan, out_chan,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=3, padding=padding),
                                    *conv_sequence(out_chan, out_chan,
