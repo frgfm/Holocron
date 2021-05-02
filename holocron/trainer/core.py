@@ -1,6 +1,7 @@
 import math
 from collections import defaultdict
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from torch import nn
 from torch import Tensor
@@ -280,10 +281,17 @@ class Trainer:
             avg_loss = beta * avg_loss + (1 - beta) * loss
             smoothed_losses.append(avg_loss / (1 - beta ** (idx + 1)))
 
+        # Properly rescale Y-axis
+        vals = np.array(smoothed_losses[10:-5])
+        min_idx = vals.argmin()
+        max_val = vals[:min_idx].max()
+        delta = max_val - vals[min_idx]
+
         plt.plot(self.lr_recorder[10:-5], smoothed_losses[10:-5])
         plt.xscale('log')
         plt.xlabel('Learning Rate')
         plt.ylabel('Training loss')
+        plt.ylim(vals[min_idx] - 0.1 * delta, max_val + 0.2 * delta)
         plt.grid(True, linestyle='--', axis='x')
         plt.show(block=block)
 
@@ -317,6 +325,7 @@ class Trainer:
             prev_loss = batch_loss.item()
 
         return True
+        return _losses[-1] < _losses[0]
 
 
 class ClassificationTrainer(Trainer):
