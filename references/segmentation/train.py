@@ -9,6 +9,7 @@ import datetime
 import time
 import matplotlib.pyplot as plt
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.data
@@ -26,6 +27,10 @@ from transforms import Compose, RandomResize, RandomCrop, RandomHorizontalFlip, 
 VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
                'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train',
                'tvmonitor']
+
+
+def worker_init_fn(worker_id: int) -> None:
+    np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
 
 
 def plot_samples(images, targets, ignore_index=None):
@@ -79,7 +84,7 @@ def main(args):
 
         train_loader = torch.utils.data.DataLoader(
             train_set, batch_size=args.batch_size, drop_last=True,
-            sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True)
+            sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True, worker_init_fn=worker_init_fn)
 
         print(f"Training set loaded in {time.time() - st:.2f}s "
               f"({len(train_set)} samples in {len(train_loader)} batches)")
@@ -104,7 +109,8 @@ def main(args):
 
         val_loader = torch.utils.data.DataLoader(
             val_set, batch_size=args.batch_size, drop_last=False,
-            sampler=SequentialSampler(val_set), num_workers=args.workers, pin_memory=True)
+            sampler=SequentialSampler(val_set), num_workers=args.workers, pin_memory=True,
+            worker_init_fn=worker_init_fn)
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
@@ -161,6 +167,7 @@ def main(args):
         is_ok = trainer.check_setup(args.freeze_until, args.lr, num_it=min(len(train_loader), 100))
         print(is_ok)
         return
+
     print("Start training")
     start_time = time.time()
     trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched)

@@ -12,9 +12,10 @@ from fastprogress import master_bar, progress_bar
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
+import numpy as np
 import torch
 import torch.utils.data
-from torchvision import transforms
+from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
 from torchvision.ops.boxes import box_iou
 from torchvision.transforms import functional as F
@@ -31,56 +32,13 @@ VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', '
                'tvmonitor']
 
 
+def worker_init_fn(worker_id: int) -> None:
+    np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
+
+
 def collate_fn(batch):
     imgs, target = zip(*batch)
     return imgs, target
-
-
-def load_data(datadir, img_size=416, crop_pct=0.875):
-    # Data loading code
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
-
-    scale_size = int(math.floor(img_size / crop_pct))
-
-    print("Loading training data")
-    st = time.time()
-    train_set = VOCDetection(
-        datadir,
-        image_set='train',
-        download=True,
-        transforms=Compose([
-            VOCTargetTransform(VOC_CLASSES),
-            RandomResizedCrop((img_size, img_size), scale=(0.3, 1.0)),
-            RandomHorizontalFlip(),
-            convert_to_relative,
-            ImageTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
-            ImageTransform(transforms.ToTensor()),
-            ImageTransform(normalize)
-        ])
-    )
-
-    print("Took", time.time() - st)
-
-    print("Loading validation data")
-    st = time.time()
-    val_set = VOCDetection(
-        datadir,
-        image_set='val',
-        download=True,
-        transforms=Compose([
-            VOCTargetTransform(VOC_CLASSES),
-            Resize(scale_size),
-            CenterCrop(img_size),
-            convert_to_relative,
-            ImageTransform(transforms.ToTensor()),
-            ImageTransform(normalize)
-        ])
-    )
-
-    print("Took", time.time() - st)
-
-    return train_set, val_set
 
 
 def plot_samples(images, targets):
@@ -115,21 +73,65 @@ def main(args):
 
     torch.backends.cudnn.benchmark = True
 
-    train_set, val_set = load_data(args.data_path, img_size=args.img_size)
-    train_loader = torch.utils.data.DataLoader(
-        train_set, batch_size=args.batch_size, drop_last=True, collate_fn=collate_fn,
-        sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True)
+    # Data loading
+    normalize = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    crop_pct = 0.875
+    scale_size = int(math.floor(args.img_size / crop_pct))
+
+    train_loader, val_loader = None, None
+
+    if not args.test_only:
+        st = time.time()
+        train_set = VOCDetection(
+            datadir,
+            image_set='train',
+            download=True,
+            transforms=Compose([
+                VOCTargetTransform(VOC_CLASSES),
+                RandomResizedCrop((args.img_size, args.img_size), scale=(0.3, 1.0)),
+                RandomHorizontalFlip(),
+                convert_to_relative,
+                ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
+                ImageTransform(T.ToTensor()),
+                ImageTransform(normalize)
+            ])
+        )
+
+        train_loader = torch.utils.data.DataLoader(
+            train_set, batch_size=args.batch_size, drop_last=True, collate_fn=collate_fn,
+            sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True, worker_init_fn=worker_init_fn)
+
+        print(f"Training set loaded in {time.time() - st:.2f}s "
+              f"({len(train_set)} samples in {len(train_loader)} batches)")
 
     if args.show_samples:
         x, target = next(iter(train_loader))
         plot_samples(x, target)
         return
 
-    val_loader = torch.utils.data.DataLoader(
-        val_set, batch_size=args.batch_size, drop_last=False, collate_fn=collate_fn,
-        sampler=SequentialSampler(val_set), num_workers=args.workers, pin_memory=True)
+    if not (args.lr_finder or args.check_setup):
+        st = time.time()
+        val_set = VOCDetection(
+            datadir,
+            image_set='val',
+            download=True,
+            transforms=Compose([
+                VOCTargetTransform(VOC_CLASSES),
+                Resize(scale_size),
+                CenterCrop(args.img_size),
+                convert_to_relative,
+                ImageTransform(T.ToTensor()),
+                ImageTransform(normalize)
+            ])
+        )
 
-    print("Creating model")
+        val_loader = torch.utils.data.DataLoader(
+            val_set, batch_size=args.batch_size, drop_last=False, collate_fn=collate_fn,
+            sampler=SequentialSampler(val_set), num_workers=args.workers, pin_memory=True,
+            worker_init_fn=worker_init_fn)
+
+        print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
+
     model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES),
                                                  pretrained_backbone=True)
 
@@ -169,6 +171,13 @@ def main(args):
         trainer.lr_find(args.freeze_until, num_it=min(len(train_loader), 100))
         trainer.plot_recorder()
         return
+
+    if args.check_setup:
+        print("Checking batch overfitting")
+        is_ok = trainer.check_setup(args.freeze_until, args.lr, num_it=min(len(train_loader), 100))
+        print(is_ok)
+        return
+
     print("Start training")
     start_time = time.time()
     trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched)
@@ -187,13 +196,15 @@ def parse_args():
     parser.add_argument('--device', default=None, type=int, help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
     parser.add_argument('--epochs', default=20, type=int, help='number of total epochs to run')
-    parser.add_argument('-j', '--workers', default=16, type=int, help='number of data loading workers')
+    parser.add_argument('-j', '--workers', default=min(os.cpu_count(), 16), type=int,
+                        help='number of data loading workers')
     parser.add_argument('--img-size', default=416, type=int, help='image size')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
     parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
     parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
+    parser.add_argument("--check-setup", dest='check_setup', action='store_true', help="Check your training setup")
     parser.add_argument('--output-file', default='./model.pth', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument("--show-samples", dest='show_samples', action='store_true',
