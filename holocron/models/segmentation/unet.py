@@ -110,6 +110,7 @@ class UNet(nn.Module):
         drop_layer: dropout layer
         conv_layer: convolutional layer
         same_padding: enforces same padding in convolutions
+        conv_transpose: uses transposed convolution for upsampling
     """
     def __init__(
         self,
@@ -121,6 +122,7 @@ class UNet(nn.Module):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         same_padding: bool = True,
+        conv_transpose: bool = True,
     ) -> None:
         super().__init__()
 
@@ -138,8 +140,8 @@ class UNet(nn.Module):
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-            self.decoders.append(UpPath(in_chan, out_chan, 1, False, 1 if same_padding else 0,
         for in_chan, out_chan in zip(layout[1:][::-1], layout[:-1][::-1]):
+            self.decoders.append(UpPath(in_chan, out_chan, 1, conv_transpose, 1 if same_padding else 0,
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
