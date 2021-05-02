@@ -308,8 +308,6 @@ class Trainer:
         # Update param groups & LR
         self._reset_opt(lr)
 
-        prev_loss = math.inf
-
         x, target = next(iter(self.train_loader))
         x, target = self.to_cuda(x, target)
 
@@ -322,8 +320,6 @@ class Trainer:
             self._backprop_step(batch_loss)
 
             _losses.append(batch_loss.item())
-
-            prev_loss = batch_loss.item()
 
         return _losses[-1] < _losses[0]
 
