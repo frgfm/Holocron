@@ -54,7 +54,7 @@ class UpPath(nn.Module):
         in_chan: int,
         out_chan: int,
         num_skips: int = 1,
-        conv_transpose: bool = False,
+        bilinear_upsampling: bool = True,
         padding: int = 0,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
@@ -64,13 +64,13 @@ class UpPath(nn.Module):
         super().__init__()
 
         self.upsample: nn.Module
-        if conv_transpose:
-            self.upsample = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
-        else:
+        if bilinear_upsampling:
             self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+        else:
+            self.upsample = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
 
         # Estimate the number of channels in the upsampled feature map
-        up_chan = in_chan // 2 if conv_transpose else in_chan
+        up_chan = in_chan if bilinear_upsampling else in_chan // 2
         self.block = nn.Sequential(*conv_sequence(num_skips * in_chan // 2 + up_chan, out_chan,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=3, padding=padding),
@@ -110,7 +110,7 @@ class UNet(nn.Module):
         drop_layer: dropout layer
         conv_layer: convolutional layer
         same_padding: enforces same padding in convolutions
-        conv_transpose: uses transposed convolution for upsampling
+        bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling
     """
     def __init__(
         self,
@@ -122,7 +122,7 @@ class UNet(nn.Module):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         same_padding: bool = True,
-        conv_transpose: bool = True,
+        bilinear_upsampling: bool = True,
     ) -> None:
         super().__init__()
 
@@ -132,6 +132,8 @@ class UNet(nn.Module):
         # Contracting path
         self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
+        if bilinear_upsampling:
+            _layout[-1] = _layout[-1] // 2
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
             self.encoders.append(DownPath(in_chan, out_chan, _pool, 1 if same_padding else 0,
@@ -141,7 +143,7 @@ class UNet(nn.Module):
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan in zip(layout[1:][::-1], layout[:-1][::-1]):
-            self.decoders.append(UpPath(in_chan, out_chan, 1, conv_transpose, 1 if same_padding else 0,
+            self.decoders.append(UpPath(in_chan, out_chan, 1, bilinear_upsampling, 1 if same_padding else 0,
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
@@ -201,7 +203,7 @@ class UNetp(nn.Module):
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, 1, False, 1,
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, 1, True, 1,
                                                        act_layer, norm_layer, drop_layer, conv_layer)
                                                 for _ in range(len(layout) - idx - 1)]))
 
@@ -264,7 +266,7 @@ class UNetpp(nn.Module):
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips, False, 1,
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips, True, 1,
                                                        act_layer, norm_layer, drop_layer, conv_layer)
                                                 for num_skips in range(1, len(layout) - idx)]))
 
