@@ -173,6 +173,11 @@ class UNetp(nn.Module):
         layout (list<int>): number of channels after each contracting block
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
+        act_layer: activation layer
+        norm_layer: normalization layer
+        drop_layer: dropout layer
+        conv_layer: convolutional layer
+        bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling
     """
     def __init__(
         self,
@@ -182,7 +187,8 @@ class UNetp(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
+        bilinear_upsampling: bool = True,
     ) -> None:
         super().__init__()
 
@@ -201,7 +207,7 @@ class UNetp(nn.Module):
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, 1, True, 1,
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, 1, bilinear_upsampling, 1,
                                                        act_layer, norm_layer, drop_layer, conv_layer)
                                                 for _ in range(len(layout) - idx - 1)]))
 
@@ -236,6 +242,11 @@ class UNetpp(nn.Module):
         layout (list<int>): number of channels after each contracting block
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
+        act_layer: activation layer
+        norm_layer: normalization layer
+        drop_layer: dropout layer
+        conv_layer: convolutional layer
+        bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling
     """
     def __init__(
         self,
@@ -264,7 +275,7 @@ class UNetpp(nn.Module):
         # Expansive path
         self.decoders = nn.ModuleList([])
         for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips, True, 1,
+            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips, bilinear_upsampling, 1,
                                                        act_layer, norm_layer, drop_layer, conv_layer)
                                                 for num_skips in range(1, len(layout) - idx)]))
 
@@ -430,8 +441,8 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
 
 
 def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNetp:
-    """UNet+ from
-    `"UNet++: A Nested U-Net Architecture for Medical Image Segmentation" <https://arxiv.org/pdf/1807.10165.pdf>`_
+    """UNet+ from `"UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation"
+    <https://arxiv.org/pdf/1912.05074.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
@@ -445,8 +456,8 @@ def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNe
 
 
 def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNetpp:
-    """UNet++ from
-    `"UNet++: A Nested U-Net Architecture for Medical Image Segmentation" <https://arxiv.org/pdf/1807.10165.pdf>`_
+    """UNet++ from `"UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation"
+    <https://arxiv.org/pdf/1912.05074.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
