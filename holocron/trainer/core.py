@@ -313,18 +313,18 @@ class Trainer:
         x, target = next(iter(self.train_loader))
         x, target = self.to_cuda(x, target)
 
+        _losses = []
+
         for _ in range(num_it):
             # Forward
             batch_loss = self._get_loss(x, target)
             # Backprop
             self._backprop_step(batch_loss)
 
-            # Check that loss decreases
-            if batch_loss.item() > prev_loss:
-                return False
+            _losses.append(batch_loss.item())
+
             prev_loss = batch_loss.item()
 
-        return True
         return _losses[-1] < _losses[0]
 
 
