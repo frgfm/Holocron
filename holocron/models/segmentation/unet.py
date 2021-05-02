@@ -52,7 +52,6 @@ class UpPath(nn.Module):
     def __init__(
         self,
         in_chan: int,
-        mid_chan: int,
         out_chan: int,
         num_skips: int = 1,
         bilinear_upsampling: bool = True,
@@ -70,10 +69,10 @@ class UpPath(nn.Module):
         else:
             self.upsample = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
 
-        self.block = nn.Sequential(*conv_sequence(in_chan, mid_chan,
+        self.block = nn.Sequential(*conv_sequence(in_chan, out_chan,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=3, padding=padding),
-                                   *conv_sequence(mid_chan, out_chan,
+                                   *conv_sequence(out_chan, out_chan,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=3, padding=padding))
         self.num_skips = num_skips
@@ -142,9 +141,9 @@ class UNet(nn.Module):
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        _layout = layout[::-1][2:] + layout[0:1] if bilinear_upsampling else layout[::-1][1:]
-        for in_chan, mid_chan, out_chan in zip(layout[::-1][:-1], layout[::-1][1:], _layout):
-            self.decoders.append(UpPath(in_chan, mid_chan, out_chan, 1, bilinear_upsampling, int(same_padding),
+        _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][1:-1]] + [layout[0]]
+        for in_chan, out_chan in zip(layout[::-1][:-1], _layout):
+            self.decoders.append(UpPath(in_chan, out_chan, 1, bilinear_upsampling, int(same_padding),
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
