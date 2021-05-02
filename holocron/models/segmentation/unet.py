@@ -204,7 +204,7 @@ class UNetp(nn.Module):
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for in_chan, out_chan, num_cells in zip(layout[::-1][:-1], layout[::-1][1:], range(len(_layout))):
+        for in_chan, out_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) -1, 0, -1)):
             self.decoders.append(nn.ModuleList([
                 UpPath(in_chan + out_chan, out_chan, 1, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
@@ -224,19 +224,9 @@ class UNetp(nn.Module):
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
 
         # Nested expansive path
-        xs[0] = self.decoders[3][0](xs[0], xs[1])
-        xs[1] = self.decoders[2][0](xs[1], xs[2])
-        xs[2] = self.decoders[1][0](xs[2], xs[3])
-        xs[3] = self.decoders[0][0](xs[3], xs.pop())
-
-        xs[0] = self.decoders[3][1](xs[0], xs[1])
-        xs[1] = self.decoders[2][1](xs[1], xs[2])
-        xs[2] = self.decoders[1][1](xs[2], xs.pop())
-
-        xs[0] = self.decoders[3][2](xs[0], xs[1])
-        xs[1] = self.decoders[2][2](xs[1], xs.pop())
-
-        xs[0] = self.decoders[3][3](xs[0], xs.pop())
+        for j in range(len(self.decoders)):
+            for i in range(len(self.decoders) - j):
+                xs[i] = self.decoders[i][j](xs[i], xs[i + 1] if (i + 1) < (len(self.decoders) - j) else xs.pop())
 
         return self.classifier(xs.pop())
 
