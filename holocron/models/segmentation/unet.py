@@ -204,7 +204,7 @@ class UNetp(nn.Module):
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) -1, 0, -1)):
+        for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
             self.decoders.append(nn.ModuleList([
                 UpPath(next_chan + row_chan, row_chan, 1, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
@@ -263,13 +263,12 @@ class UNetpp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(down_path(in_chan, out_chan, _pool, 1,
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoders.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) -1, 0, -1)):
+        for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
             self.decoders.append(nn.ModuleList([
                 UpPath(next_chan + num_skips * row_chan, row_chan, num_skips, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
@@ -382,8 +381,7 @@ class UNet3p(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(down_path(in_chan, out_chan, _pool, 1,
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoders.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
