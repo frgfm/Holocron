@@ -177,18 +177,16 @@ class UNetp(nn.Module):
         norm_layer: normalization layer
         drop_layer: dropout layer
         conv_layer: convolutional layer
-        bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling
     """
     def __init__(
         self,
         layout: List[int],
-        in_channels: int = 1,
+        in_channels: int = 3,
         num_classes: int = 10,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
-        bilinear_upsampling: bool = True,
     ) -> None:
         super().__init__()
 
@@ -201,15 +199,17 @@ class UNetp(nn.Module):
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
             self.encoders.append(down_path(in_chan, out_chan, _pool, 1,
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, 1, bilinear_upsampling, 1,
-                                                       act_layer, norm_layer, drop_layer, conv_layer)
-                                                for _ in range(len(layout) - idx - 1)]))
+        for in_chan, out_chan, num_cells in zip(layout[::-1][:-1], layout[::-1][1:], range(len(_layout))):
+            self.decoders.append(nn.ModuleList([
+                UpPath(in_chan + out_chan, out_chan, 1, True, 1,
+                       act_layer, norm_layer, drop_layer, conv_layer)
+                for _ in range(num_cells + 1)
+            ]))
 
         # Classifier
         self.classifier = nn.Conv2d(layout[0], num_classes, 1)
@@ -224,15 +224,21 @@ class UNetp(nn.Module):
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
 
         # Nested expansive path
-        for j in range(len(self.decoders)):
-            for i in range(len(self.decoders) - j):
-                xs[i] = self.decoders[i][j](xs[i], xs[i + 1])
-            # Release memory
-            del xs[len(self.decoders) - j]
+        xs[0] = self.decoders[3][0](xs[0], xs[1])
+        xs[1] = self.decoders[2][0](xs[1], xs[2])
+        xs[2] = self.decoders[1][0](xs[2], xs[3])
+        xs[3] = self.decoders[0][0](xs[3], xs.pop())
 
-        # Classifier
-        x = self.classifier(xs[0])
-        return x
+        xs[0] = self.decoders[3][1](xs[0], xs[1])
+        xs[1] = self.decoders[2][1](xs[1], xs[2])
+        xs[2] = self.decoders[1][1](xs[2], xs.pop())
+
+        xs[0] = self.decoders[3][2](xs[0], xs[1])
+        xs[1] = self.decoders[2][2](xs[1], xs.pop())
+
+        xs[0] = self.decoders[3][3](xs[0], xs.pop())
+
+        return self.classifier(xs.pop())
 
 
 class UNetpp(nn.Module):
@@ -251,7 +257,7 @@ class UNetpp(nn.Module):
     def __init__(
         self,
         layout: List[int],
-        in_channels: int = 1,
+        in_channels: int = 3,
         num_classes: int = 10,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
@@ -361,7 +367,7 @@ class UNet3p(nn.Module):
     def __init__(
         self,
         layout: List[int],
-        in_channels: int = 1,
+        in_channels: int = 3,
         num_classes: int = 10,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
