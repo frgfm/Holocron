@@ -138,8 +138,8 @@ class UNet(nn.Module):
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for in_chan, out_chan in zip(layout[1:], layout[:-1]):
             self.decoders.append(UpPath(in_chan, out_chan, 1, False, 1 if same_padding else 0,
+        for in_chan, out_chan in zip(layout[1:][::-1], layout[:-1][::-1]):
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
@@ -156,10 +156,8 @@ class UNet(nn.Module):
         x = self.encoders[-1](xs[-1])
 
         # Expansive path
-        for idx in range(len(self.decoders) - 1, -1, -1):
-            x = self.decoders[idx](xs[idx], x)
-            # Release memory
-            del xs[idx]
+        for decoder in self.decoders:
+            x = decoder(xs.pop(), x)
 
         # Classifier
         x = self.classifier(x)
