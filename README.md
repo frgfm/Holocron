@@ -83,8 +83,6 @@ conda install -c frgfm pylocron
 
 - Optimizer: [LARS](https://arxiv.org/abs/1708.03888), [Lamb](https://arxiv.org/abs/1904.00962), [RAdam](https://arxiv.org/abs/1908.03265), [TAdam](https://arxiv.org/pdf/2003.00179.pdf), [AdamP](https://arxiv.org/pdf/2006.08217), [AdaBelief](https://arxiv.org/abs/2010.07468), and customized versions (RaLars)
 - Optimizer wrapper: [Lookahead](https://arxiv.org/abs/1907.08610), Scout (experimental)
-- Scheduler: [OneCycleScheduler](https://arxiv.org/abs/1803.09820) *(this implementation was made before PyTorch officially had an [implementation](https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.OneCycleLR), for better support it is advised to consider the official PyTorch version)*
-
 
 
 ## Technical roadmap
