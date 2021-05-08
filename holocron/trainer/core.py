@@ -282,7 +282,10 @@ class Trainer:
             smoothed_losses.append(avg_loss / (1 - beta ** (idx + 1)))
 
         # Properly rescale Y-axis
-        data_slice = slice(min(len(self.loss_recorder) // 10, 10), -min(len(self.loss_recorder) // 20, 5))
+        data_slice = slice(
+            min(len(self.loss_recorder) // 10, 10),
+            -min(len(self.loss_recorder) // 20, 5) if len(self.loss_recorder) >= 20 else len(self.loss_recorder)
+        )
         vals = np.array(smoothed_losses[data_slice])
         min_idx = vals.argmin()
         max_val = vals[:min_idx].max()
