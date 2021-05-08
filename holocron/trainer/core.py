@@ -1,6 +1,7 @@
 import math
 from collections import defaultdict
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from torch import nn
 from torch import Tensor
@@ -280,10 +281,21 @@ class Trainer:
             avg_loss = beta * avg_loss + (1 - beta) * loss
             smoothed_losses.append(avg_loss / (1 - beta ** (idx + 1)))
 
-        plt.plot(self.lr_recorder[10:-5], smoothed_losses[10:-5])
+        # Properly rescale Y-axis
+        data_slice = slice(
+            min(len(self.loss_recorder) // 10, 10),
+            -min(len(self.loss_recorder) // 20, 5) if len(self.loss_recorder) >= 20 else len(self.loss_recorder)
+        )
+        vals = np.array(smoothed_losses[data_slice])
+        min_idx = vals.argmin()
+        max_val = vals[:min_idx].max()
+        delta = max_val - vals[min_idx]
+
+        plt.plot(self.lr_recorder[data_slice], smoothed_losses[data_slice])
         plt.xscale('log')
         plt.xlabel('Learning Rate')
         plt.ylabel('Training loss')
+        plt.ylim(vals[min_idx] - 0.1 * delta, max_val + 0.2 * delta)
         plt.grid(True, linestyle='--', axis='x')
         plt.show(block=block)
 
@@ -300,10 +312,10 @@ class Trainer:
         # Update param groups & LR
         self._reset_opt(lr)
 
-        prev_loss = math.inf
-
         x, target = next(iter(self.train_loader))
         x, target = self.to_cuda(x, target)
+
+        _losses = []
 
         for _ in range(num_it):
             # Forward
@@ -311,12 +323,9 @@ class Trainer:
             # Backprop
             self._backprop_step(batch_loss)
 
-            # Check that loss decreases
-            if batch_loss.item() > prev_loss:
-                return False
-            prev_loss = batch_loss.item()
+            _losses.append(batch_loss.item())
 
-        return True
+        return _losses[-1] < _losses[0]
 
 
 class ClassificationTrainer(Trainer):

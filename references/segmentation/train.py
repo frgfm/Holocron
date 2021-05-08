@@ -4,14 +4,16 @@
 Training script for semantic segmentation
 '''
 
+import os
 import datetime
 import time
 import matplotlib.pyplot as plt
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.data
-from torchvision import transforms
+from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
 from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.transforms import functional as F
@@ -27,51 +29,8 @@ VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', '
                'tvmonitor']
 
 
-def load_data(datadir):
-    # Data loading code
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
-
-    base_size = 320
-    crop_size = 256
-
-    min_size = int(0.5 * base_size)
-    max_size = int(2.0 * base_size)
-
-    print("Loading training data")
-    st = time.time()
-    dataset = VOCSegmentation(
-        datadir,
-        image_set='train',
-        download=True,
-        transforms=Compose([
-            RandomResize(min_size, max_size),
-            RandomCrop(crop_size),
-            RandomHorizontalFlip(0.5),
-            SampleTransform(transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
-            ToTensor(),
-            SampleTransform(normalize)
-        ])
-    )
-
-    print("Took", time.time() - st)
-
-    print("Loading validation data")
-    st = time.time()
-    dataset_test = VOCSegmentation(
-        datadir,
-        image_set='val',
-        download=True,
-        transforms=Compose([
-            RandomResize(base_size, base_size),
-            ToTensor(),
-            SampleTransform(normalize)
-        ])
-    )
-
-    print("Took", time.time() - st)
-
-    return dataset, dataset_test
+def worker_init_fn(worker_id: int) -> None:
+    np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
 
 
 def plot_samples(images, targets, ignore_index=None):
@@ -100,23 +59,64 @@ def main(args):
 
     torch.backends.cudnn.benchmark = True
 
-    train_set, val_set = load_data(args.data_path)
-    train_loader = torch.utils.data.DataLoader(
-        train_set, batch_size=args.batch_size, drop_last=True,
-        sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True)
+    # Data loading
+    normalize = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    base_size = 320
+    crop_size = 256
+    min_size, max_size = int(0.5 * base_size), int(2.0 * base_size)
+
+    train_loader, val_loader = None, None
+    if not args.test_only:
+        st = time.time()
+        train_set = VOCSegmentation(
+            args.data_path,
+            image_set='train',
+            download=True,
+            transforms=Compose([
+                RandomResize(min_size, max_size),
+                RandomCrop(crop_size),
+                RandomHorizontalFlip(0.5),
+                SampleTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
+                ToTensor(),
+                SampleTransform(normalize)
+            ])
+        )
+
+        train_loader = torch.utils.data.DataLoader(
+            train_set, batch_size=args.batch_size, drop_last=True,
+            sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True, worker_init_fn=worker_init_fn)
+
+        print(f"Training set loaded in {time.time() - st:.2f}s "
+              f"({len(train_set)} samples in {len(train_loader)} batches)")
 
     if args.show_samples:
         x, target = next(iter(train_loader))
         plot_samples(x, target, ignore_index=255)
         return
 
-    val_loader = torch.utils.data.DataLoader(
-        val_set, batch_size=args.batch_size, drop_last=False,
-        sampler=SequentialSampler(val_set), num_workers=args.workers, pin_memory=True)
+    if not (args.lr_finder or args.check_setup):
+        st = time.time()
+        val_set = VOCSegmentation(
+            args.data_path,
+            image_set='val',
+            download=True,
+            transforms=Compose([
+                RandomResize(base_size, base_size),
+                ToTensor(),
+                SampleTransform(normalize)
+            ])
+        )
 
-    print("Creating model")
+        val_loader = torch.utils.data.DataLoader(
+            val_set, batch_size=args.batch_size, drop_last=False,
+            sampler=SequentialSampler(val_set), num_workers=args.workers, pin_memory=True,
+            worker_init_fn=worker_init_fn)
+
+        print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
+
     model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES), in_channels=3)
 
+    # Loss setup
     loss_weight = torch.ones(len(VOC_CLASSES))
     loss_weight[0] = 0.1
     if args.loss == 'crossentropy':
@@ -126,6 +126,7 @@ def main(args):
     elif args.loss == 'focal':
         criterion = holocron.nn.FocalLoss(weight=loss_weight, ignore_index=255)
 
+    # Optimizer setup
     model_params = [p for p in model.parameters() if p.requires_grad]
     if args.opt == 'sgd':
         optimizer = torch.optim.SGD(model_params, args.lr, momentum=0.9, weight_decay=args.weight_decay)
@@ -160,11 +161,18 @@ def main(args):
         trainer.lr_find(args.freeze_until, num_it=min(len(train_loader), 100))
         trainer.plot_recorder()
         return
+
+    if args.check_setup:
+        print("Checking batch overfitting")
+        is_ok = trainer.check_setup(args.freeze_until, args.lr, num_it=min(len(train_loader), 100))
+        print(is_ok)
+        return
+
     print("Start training")
     start_time = time.time()
-    trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until)
+    trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched)
     total_time_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
-    print('Training time {}'.format(total_time_str))
+    print(f"Training time {total_time_str}")
 
 
 def parse_args():
@@ -178,13 +186,15 @@ def parse_args():
     parser.add_argument('--device', default=None, type=int, help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
     parser.add_argument('--epochs', default=20, type=int, help='number of total epochs to run')
-    parser.add_argument('-j', '--workers', default=16, type=int, help='number of data loading workers')
+    parser.add_argument('-j', '--workers', default=min(os.cpu_count(), 16), type=int,
+                        help='number of data loading workers')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
     parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
     parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
+    parser.add_argument("--check-setup", dest='check_setup', action='store_true', help="Check your training setup")
     parser.add_argument('--output-file', default='./model.pth', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument("--show-samples", dest='show_samples', action='store_true',

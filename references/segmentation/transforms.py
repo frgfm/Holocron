@@ -8,7 +8,7 @@ import random
 import numpy as np
 import torch
 from PIL import Image
-from torchvision.transforms import transforms
+from torchvision.transforms import transforms, InterpolationMode
 from torchvision.transforms import functional as F
 
 
@@ -45,7 +45,7 @@ class RandomResize(object):
         else:
             size = random.randint(self.min_size, self.max_size)
         image = F.resize(image, (size, size))
-        target = F.resize(target, (size, size), interpolation=Image.NEAREST)
+        target = F.resize(target, (size, size), interpolation=InterpolationMode.NEAREST)
         return image, target
 
     def __repr__(self):

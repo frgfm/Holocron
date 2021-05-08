@@ -27,25 +27,23 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
 }
 
 
-class DownPath(nn.Sequential):
-    def __init__(
-        self,
-        in_chan: int,
-        out_chan: int,
-        downsample: bool = True,
-        padding: int = 0,
-        act_layer: Optional[nn.Module] = None,
-        norm_layer: Optional[Callable[[int], nn.Module]] = None,
-        drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
-    ) -> None:
+def down_path(
+    in_chan: int,
+    out_chan: int,
+    downsample: bool = True,
+    padding: int = 0,
+    act_layer: Optional[nn.Module] = None,
+    norm_layer: Optional[Callable[[int], nn.Module]] = None,
+    drop_layer: Optional[Callable[..., nn.Module]] = None,
+    conv_layer: Optional[Callable[..., nn.Module]] = None
+) -> nn.Sequential:
 
-        layers: List[nn.Module] = [nn.MaxPool2d(2)] if downsample else []
-        layers.extend([*conv_sequence(in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
-                                      kernel_size=3, padding=padding),
-                       *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
-                                      kernel_size=3, padding=padding)])
-        super().__init__(*layers)
+    layers: List[nn.Module] = [nn.MaxPool2d(2)] if downsample else []
+    layers.extend([*conv_sequence(in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+                                  kernel_size=3, padding=padding),
+                   *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+                                  kernel_size=3, padding=padding)])
+    return nn.Sequential(*layers)
 
 
 class UpPath(nn.Module):
@@ -54,7 +52,7 @@ class UpPath(nn.Module):
         in_chan: int,
         out_chan: int,
         num_skips: int = 1,
-        conv_transpose: bool = False,
+        bilinear_upsampling: bool = True,
         padding: int = 0,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
@@ -64,14 +62,12 @@ class UpPath(nn.Module):
         super().__init__()
 
         self.upsample: nn.Module
-        if conv_transpose:
-            self.upsample = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
-        else:
+        if bilinear_upsampling:
             self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+        else:
+            self.upsample = nn.ConvTranspose2d(in_chan, in_chan // 2, 2, stride=2)
 
-        # Estimate the number of channels in the upsampled feature map
-        up_chan = in_chan // 2 if conv_transpose else in_chan
-        self.block = nn.Sequential(*conv_sequence(num_skips * in_chan // 2 + up_chan, out_chan,
+        self.block = nn.Sequential(*conv_sequence(in_chan, out_chan,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
                                                   kernel_size=3, padding=padding),
                                    *conv_sequence(out_chan, out_chan,
@@ -89,11 +85,12 @@ class UpPath(nn.Module):
         _upfeat = self.upsample(upfeat)
         # Crop contracting path features
         for idx, downfeat in enumerate(downfeats):
-            delta_w = downfeat.shape[-1] - _upfeat.shape[-1]
-            w_slice = slice(delta_w // 2, -delta_w // 2 if delta_w > 0 else downfeat.shape[-1])
-            delta_h = downfeat.shape[-2] - _upfeat.shape[-2]
-            h_slice = slice(delta_h // 2, -delta_h // 2 if delta_h > 0 else downfeat.shape[-2])
-            downfeats[idx] = downfeat[..., h_slice, w_slice]
+            if downfeat.shape != _upfeat.shape:
+                delta_w = downfeat.shape[-1] - _upfeat.shape[-1]
+                w_slice = slice(delta_w // 2, -delta_w // 2 if delta_w > 0 else downfeat.shape[-1])
+                delta_h = downfeat.shape[-2] - _upfeat.shape[-2]
+                h_slice = slice(delta_h // 2, -delta_h // 2 if delta_h > 0 else downfeat.shape[-2])
+                downfeats[idx] = downfeat[..., h_slice, w_slice]
         # Concatenate both feature maps and forward them
         return self.block(torch.cat((*downfeats, _upfeat), dim=1))
 
@@ -110,6 +107,7 @@ class UNet(nn.Module):
         drop_layer: dropout layer
         conv_layer: convolutional layer
         same_padding: enforces same padding in convolutions
+        bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling
     """
     def __init__(
         self,
@@ -121,6 +119,7 @@ class UNet(nn.Module):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         same_padding: bool = True,
+        bilinear_upsampling: bool = True,
     ) -> None:
         super().__init__()
 
@@ -130,16 +129,19 @@ class UNet(nn.Module):
         # Contracting path
         self.encoders = nn.ModuleList([])
         _layout = [in_channels] + layout
+        if bilinear_upsampling:
+            _layout[-1] = _layout[-1] // 2
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1 if same_padding else 0,
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoders.append(down_path(in_chan, out_chan, _pool, int(same_padding),
+                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for in_chan, out_chan in zip(layout[1:], layout[:-1]):
-            self.decoders.append(UpPath(in_chan, out_chan, 1, False, 1 if same_padding else 0,
+        _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][1:-1]] + [layout[0]]
+        for in_chan, out_chan in zip(layout[::-1][:-1], _layout):
+            self.decoders.append(UpPath(in_chan, out_chan, 1, bilinear_upsampling, int(same_padding),
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
@@ -156,10 +158,8 @@ class UNet(nn.Module):
         x = self.encoders[-1](xs[-1])
 
         # Expansive path
-        for idx in range(len(self.decoders) - 1, -1, -1):
-            x = self.decoders[idx](xs[idx], x)
-            # Release memory
-            del xs[idx]
+        for decoder in self.decoders:
+            x = decoder(xs.pop(), x)
 
         # Classifier
         x = self.classifier(x)
@@ -173,16 +173,20 @@ class UNetp(nn.Module):
         layout (list<int>): number of channels after each contracting block
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
+        act_layer: activation layer
+        norm_layer: normalization layer
+        drop_layer: dropout layer
+        conv_layer: convolutional layer
     """
     def __init__(
         self,
         layout: List[int],
-        in_channels: int = 1,
+        in_channels: int = 3,
         num_classes: int = 10,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
 
@@ -194,16 +198,18 @@ class UNetp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoders.append(down_path(in_chan, out_chan, _pool, 1,
+                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, 1, False, 1,
-                                                       act_layer, norm_layer, drop_layer, conv_layer)
-                                                for _ in range(len(layout) - idx - 1)]))
+        for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
+            self.decoders.append(nn.ModuleList([
+                UpPath(next_chan + row_chan, row_chan, 1, True, 1,
+                       act_layer, norm_layer, drop_layer, conv_layer)
+                for _ in range(num_cells + 1)
+            ]))
 
         # Classifier
         self.classifier = nn.Conv2d(layout[0], num_classes, 1)
@@ -220,13 +226,9 @@ class UNetp(nn.Module):
         # Nested expansive path
         for j in range(len(self.decoders)):
             for i in range(len(self.decoders) - j):
-                xs[i] = self.decoders[i][j](xs[i], xs[i + 1])
-            # Release memory
-            del xs[len(self.decoders) - j]
+                xs[i] = self.decoders[i][j](xs[i], xs[i + 1] if (i + 1) < (len(self.decoders) - j) else xs.pop())
 
-        # Classifier
-        x = self.classifier(xs[0])
-        return x
+        return self.classifier(xs.pop())
 
 
 class UNetpp(nn.Module):
@@ -236,11 +238,15 @@ class UNetpp(nn.Module):
         layout (list<int>): number of channels after each contracting block
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
+        act_layer: activation layer
+        norm_layer: normalization layer
+        drop_layer: dropout layer
+        conv_layer: convolutional layer
     """
     def __init__(
         self,
         layout: List[int],
-        in_channels: int = 1,
+        in_channels: int = 3,
         num_classes: int = 10,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
@@ -257,16 +263,17 @@ class UNetpp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoders.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for in_chan, out_chan, idx in zip(layout[1:], layout[:-1], range(len(layout))):
-            self.decoders.append(nn.ModuleList([UpPath(in_chan, out_chan, num_skips, False, 1,
-                                                       act_layer, norm_layer, drop_layer, conv_layer)
-                                                for num_skips in range(1, len(layout) - idx)]))
+        for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
+            self.decoders.append(nn.ModuleList([
+                UpPath(next_chan + num_skips * row_chan, row_chan, num_skips, True, 1,
+                       act_layer, norm_layer, drop_layer, conv_layer)
+                for num_skips in range(1, num_cells + 2)
+            ]))
 
         # Classifier
         self.classifier = nn.Conv2d(layout[0], num_classes, 1)
@@ -283,12 +290,13 @@ class UNetpp(nn.Module):
         # Nested expansive path
         for j in range(len(self.decoders)):
             for i in range(len(self.decoders) - j):
-                xs[i].append(self.decoders[i][j](xs[i], xs[i + 1][-1]))
-            # Release memory
-            del xs[len(self.decoders) - j]
+                xs[i].append(self.decoders[i][j](
+                    xs[i][:j + 1],
+                    xs[i + 1][j] if (i + 1) < (len(self.decoders) - j) else xs.pop()[-1]
+                ))
 
         # Classifier
-        x = self.classifier(xs[0][-1])
+        x = self.classifier(xs.pop()[-1])
         return x
 
 
@@ -346,11 +354,15 @@ class UNet3p(nn.Module):
         layout (list<int>): number of channels after each contracting block
         in_channels (int, optional): number of channels in the input tensor
         num_classes (int, optional): number of output classes
+        act_layer: activation layer
+        norm_layer: normalization layer
+        drop_layer: dropout layer
+        conv_layer: convolutional layer
     """
     def __init__(
         self,
         layout: List[int],
-        in_channels: int = 1,
+        in_channels: int = 3,
         num_classes: int = 10,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
@@ -369,8 +381,7 @@ class UNet3p(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(DownPath(in_chan, out_chan, _pool, 1,
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoders.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
@@ -430,8 +441,8 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
 
 
 def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNetp:
-    """UNet+ from
-    `"UNet++: A Nested U-Net Architecture for Medical Image Segmentation" <https://arxiv.org/pdf/1807.10165.pdf>`_
+    """UNet+ from `"UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation"
+    <https://arxiv.org/pdf/1912.05074.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
@@ -445,8 +456,8 @@ def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNe
 
 
 def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNetpp:
-    """UNet++ from
-    `"UNet++: A Nested U-Net Architecture for Medical Image Segmentation" <https://arxiv.org/pdf/1807.10165.pdf>`_
+    """UNet++ from `"UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation"
+    <https://arxiv.org/pdf/1912.05074.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
