@@ -210,8 +210,8 @@ class Trainer:
             eval_metrics = self.evaluate()
 
             # master bar
-            mb.main_bar.comment = f"Epoch {self.start_epoch + self.epoch}/{self.start_epoch + num_epochs}"
-            mb.write(f"Epoch {self.start_epoch + self.epoch}/{self.start_epoch + num_epochs} - "
+            mb.main_bar.comment = f"Epoch {self.epoch}/{self.start_epoch + num_epochs}"
+            mb.write(f"Epoch {self.epoch}/{self.start_epoch + num_epochs} - "
                      f"{self._eval_metrics_str(eval_metrics)}")
 
             if eval_metrics['val_loss'] < self.min_loss:
