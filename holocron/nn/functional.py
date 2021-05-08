@@ -292,14 +292,16 @@ def complement_cross_entropy(
         torch.Tensor: loss reduced with `reduction` method
     """
 
+    ce_loss = F.cross_entropy(x, target, weight, ignore_index=ignore_index, reduction=reduction)
+
     if gamma == 0:
-        return F.cross_entropy(x, target, weight, ignore_index=ignore_index, reduction=reduction)
+        return ce_loss
 
     # log(P[class]) = log_softmax(score)[class]
     # logpt = F.log_softmax(x, dim=1)
 
     pt = F.softmax(x, dim=1)
-    pt.div_(1 - pt.transpose(0, 1).gather(0, target.unsqueeze(0)).transpose(0, 1))
+    pt = pt / (1 - pt.transpose(0, 1).gather(0, target.unsqueeze(0)).transpose(0, 1))
 
     loss = - 1 / (x.shape[1] - 1) * pt * torch.log(pt)
 
@@ -309,8 +311,9 @@ def complement_cross_entropy(
         loss[:, class_idx][target == class_idx] = 0.
 
     # Ignore index (set loss contribution to 0)
+    valid_idxs = torch.ones(loss.shape[1], dtype=torch.bool, device=x.device)
     if ignore_index >= 0 and ignore_index < x.shape[1]:
-        loss[:, ignore_index] = 0.
+        valid_idxs[ignore_index] = False
 
     # Weight
     if weight is not None:
@@ -321,14 +324,14 @@ def complement_cross_entropy(
 
     # Loss reduction
     if reduction == 'sum':
-        loss = loss.sum()
+        loss = loss[:, valid_idxs].sum()
     else:
-        loss = loss.sum(dim=1)
+        loss = loss[:, valid_idxs].sum(dim=1)
         if reduction == 'mean':
             loss = loss.mean()
 
     # Smooth the labels
-    return F.cross_entropy(x, target, weight, ignore_index=ignore_index, reduction=reduction) + gamma * loss
+    return ce_loss + gamma * loss
 
 
 def mutual_channel_loss(
