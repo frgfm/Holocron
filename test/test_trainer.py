@@ -77,7 +77,8 @@ def _test_trainer(
     num_it: int,
     ref_param: str,
     freeze_until: Optional[str] = None,
-    lr: float = 1e-3) -> None:
+    lr: float = 1e-3
+) -> None:
 
     learner.save(learner.output_file)
     checkpoint = torch.load(learner.output_file, map_location='cpu')
@@ -149,6 +150,7 @@ def test_classification_trainer_few_classes():
     # Fewer than 5 classes
     assert learner.evaluate()['acc5'] == 0
 
+
 def test_binary_classification_trainer():
 
     num_it = 10
@@ -164,6 +166,7 @@ def test_binary_classification_trainer():
 
     res = learner.evaluate()
     assert 0 <= res['acc'] <= 1
+
 
 def test_segmentation_trainer(tmpdir_factory):
 
@@ -182,6 +185,7 @@ def test_segmentation_trainer(tmpdir_factory):
                                           output_file=file_path, gpu=0 if torch.cuda.is_available() else None)
 
     _test_trainer(learner, num_it, '2.weight', None)
+
 
 def test_detection_trainer(tmpdir_factory):
 

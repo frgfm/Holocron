@@ -9,6 +9,7 @@ from torch import nn
 
 from holocron import trainer
 
+
 def test_freeze_bn():
 
     # Simple module with BN
@@ -26,6 +27,7 @@ def test_freeze_bn():
     assert torch.equal(mod[1].num_batches_tracked, nb)
     assert torch.equal(mod[1].running_mean, rm)
     assert torch.equal(mod[1].running_var, rv)
+
 
 def test_freeze_model():
 
