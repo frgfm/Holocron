@@ -23,6 +23,7 @@ from torchvision.transforms import functional as F
 from torch.utils.data import RandomSampler, SequentialSampler
 
 import holocron
+from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
 from transforms import Compose, RandomResize, RandomCrop, RandomHorizontalFlip, SampleTransform, ToTensor
 
@@ -117,7 +118,7 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES), in_channels=3)
+    model = segmentation.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES))
 
     # Loss setup
     loss_weight = torch.ones(len(VOC_CLASSES))
