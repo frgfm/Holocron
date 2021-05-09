@@ -13,7 +13,6 @@ def test_stackupsample2d():
 
     num_batches = 2
     num_chan = 4
-    scale_factor = 2
     x = torch.arange(num_batches * num_chan * 4 ** 2).view(num_batches, num_chan, 4, 4)
 
     # Test functional API
