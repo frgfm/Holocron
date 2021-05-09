@@ -65,8 +65,8 @@ def main(args):
 
     # Data loading
     normalize = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    base_size = 320
-    crop_size = 256
+    base_size = 520
+    crop_size = 480
     min_size, max_size = int(0.5 * base_size), int(2.0 * base_size)
 
     train_loader, val_loader = None, None
@@ -78,9 +78,8 @@ def main(args):
             download=True,
             transforms=Compose([
                 RandomResize(min_size, max_size),
-                RandomCrop(crop_size),
                 RandomHorizontalFlip(0.5),
-                SampleTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
+                RandomCrop(crop_size),
                 ToTensor(),
                 SampleTransform(normalize)
             ])
