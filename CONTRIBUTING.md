@@ -8,6 +8,8 @@ Everything you need to know to contribute efficiently to the project.
 
 - [holocron](https://github.com/frgfm/Holocron/blob/master/holocron) - The actual holocron library
 - [test](https://github.com/frgfm/Holocron/blob/master/test) - Python unit tests
+- [docs](https://github.com/frgfm/Holocron/blob/master/docs) - Sphinx documentation building
+- [references](https://github.com/frgfm/Holocron/blob/master/references) - Reference training scripts
 
 
 
@@ -36,3 +38,31 @@ Use Github [issues](https://github.com/frgfm/Holocron/issues) for feature reques
 
 - **Code**: ensure to provide docstrings to your Python code. In doing so, please follow [Google-style](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) so it can ease the process of documentation later.
 - **Commit message**: please follow [Udacity guide](http://udacity.github.io/git-styleguide/)
+
+### Running CI verifications locally
+
+#### Unit tests
+
+In order to run the same unit tests as the CI workflows, you can run unittests locally:
+
+```shell
+pytest test/
+```
+
+#### Lint verification
+
+To ensure that your incoming PR complies with the lint settings, you need to install [flake8](https://flake8.pycqa.org/en/latest/) and run the following command from the repository's root folder:
+
+```shell
+flake8 ./
+```
+This will read the `.flake8` setting file and let you know whether your commits need some adjustments.
+
+#### Annotation typing
+
+Additionally, to catch type-related issues and have a cleaner codebase, annotation typing are expected. After installing [mypy](https://github.com/python/mypy), you can run the verifications as follows:
+
+```shell
+mypy --config-file mypy.ini
+```
+The `mypy.ini` file will be read to check your typing.
