@@ -8,6 +8,7 @@ from collections import OrderedDict
 import torch
 from torch import Tensor
 import torch.nn as nn
+from torch.nn import functional as F
 from typing import Dict, Any, Union, Optional, Callable, List, Tuple
 from torchvision.models import vgg11, resnet34
 from torchvision.models._utils import IntermediateLayerGetter
@@ -230,16 +231,19 @@ class UpPath2(nn.Module):
         super().__init__()
 
         self.upsample = nn.Sequential(
-            *conv_sequence(up_chan, in_chan * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
+            *conv_sequence(up_chan, up_chan // 2 * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
             StackUpsample2d(scale_factor=2)
         )
 
-        self.block = nn.Sequential(*conv_sequence(2 * in_chan, out_chan,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=padding),
-                                   *conv_sequence(out_chan, out_chan,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=padding))
+        self.bn = nn.BatchNorm2d(in_chan) if norm_layer is None else norm_layer(in_chan)
+
+        self.block = nn.Sequential(
+            act_layer,
+            *conv_sequence(in_chan + up_chan // 2, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=padding),
+            *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=3, padding=padding)
+        )
 
     def forward(self, downfeat: Tensor, upfeat: Tensor) -> Tensor:
 
@@ -247,15 +251,11 @@ class UpPath2(nn.Module):
         _upfeat = self.upsample(upfeat)
 
         # Crop upsampled features
-        if downfeat.shape != _upfeat.shape:
-            delta_w = _upfeat.shape[-1] - downfeat.shape[-1]
-            w_slice = slice(delta_w // 2, -(delta_w // 2) - (delta_w % 2) if delta_w > 0 else downfeat.shape[-1])
-            delta_h = _upfeat.shape[-2] - downfeat.shape[-2]
-            h_slice = slice(delta_h // 2, -(delta_h // 2) - (delta_h % 2) if delta_h > 0 else downfeat.shape[-2])
-            _upfeat = _upfeat[..., h_slice, w_slice]
+        if downfeat.shape[-2:] != _upfeat.shape[-2:]:
+            _upfeat = F.interpolate(_upfeat, downfeat.shape[-2:], mode='nearest')
 
         # Concatenate both feature maps and forward them
-        return self.block(torch.cat((downfeat, _upfeat), dim=1))
+        return self.block(torch.cat((self.bn(downfeat), _upfeat), dim=1))
 
 
 class DynamicUNet(nn.Module):
@@ -305,20 +305,24 @@ class DynamicUNet(nn.Module):
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        for up_chan, in_chan in zip(chans[::-1][:-1], chans[::-1][1:]):
-            self.decoders.append(UpPath2(up_chan, in_chan, in_chan, int(same_padding),
+        up_chans = [chans[-1]]
+        for in_chan in chans[::-1][1:]:
+            up_chans.append(in_chan + up_chans[-1] // 2)
+        up_chans[-1] = up_chans[-1] // 2
+        for up_chan, in_chan, out_chan in zip(up_chans[:-1], chans[::-1][1:], up_chans[1:]):
+            self.decoders.append(UpPath2(up_chan, in_chan, out_chan, int(same_padding),
                                          act_layer, norm_layer, drop_layer, conv_layer))
 
         # Final upsampling if sizes don't match
         _layers: List[nn.Module] = []
         if final_upsampling:
             _layers.extend([
-                *conv_sequence(chans[0], chans[0] * 2 ** 2,
+                *conv_sequence(up_chans[-1], up_chans[-1] * 2 ** 2,
                                act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
                 StackUpsample2d(scale_factor=2)
             ])
 
-        _layers.append(nn.Conv2d(chans[0], num_classes, 1))
+        _layers.append(nn.Conv2d(up_chans[-1], num_classes, 1))
 
         # Classifier
         self.classifier = nn.Sequential(*_layers)
@@ -424,7 +428,6 @@ def unet_tvresnet34(
 
     backbone = resnet34(pretrained=pretrained_backbone and not pretrained)
     kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
-    kwargs['norm_layer'] = kwargs.get('norm_layer', nn.BatchNorm2d)
 
     return  _dynamic_unet('unet_tvresnet34', backbone, pretrained, progress, **kwargs)
 
@@ -438,7 +441,6 @@ def unet_rexnet13(
 
     backbone = rexnet1_3x(pretrained=pretrained_backbone and not pretrained).features
     kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
-    kwargs['norm_layer'] = kwargs.get('norm_layer', nn.BatchNorm2d)
     kwargs['act_layer'] = kwargs.get('act_layer', SiLU())
     # hotfix of https://github.com/pytorch/vision/issues/3802
     backbone[21] = SiLU()
