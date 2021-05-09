@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+de25835-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+6dc9448-git documentation</title>
   
 
   
@@ -21,6 +21,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
@@ -32,6 +33,8 @@
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/my_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -59,7 +62,7 @@
             
             
               <div class="version">
-                0.1.4a0+de25835
+                0.1.4a0+6dc9448
               </div>
             
           
@@ -124,6 +127,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#attention">Attention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -132,6 +136,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ops.html">holocron.ops</a><ul>
@@ -232,7 +237,8 @@
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;silu&#39;</span><span class="p">,</span> <span class="s1">&#39;mish&#39;</span><span class="p">,</span> <span class="s1">&#39;hard_mish&#39;</span><span class="p">,</span> <span class="s1">&#39;nl_relu&#39;</span><span class="p">,</span> <span class="s1">&#39;focal_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;multilabel_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ls_cross_entropy&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;complement_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;mutual_channel_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;dropblock2d&#39;</span><span class="p">,</span> <span class="s1">&#39;z_pool&#39;</span><span class="p">]</span>
+           <span class="s1">&#39;complement_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;mutual_channel_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;dropblock2d&#39;</span><span class="p">,</span> <span class="s1">&#39;z_pool&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;concat_downsample2d&#39;</span><span class="p">,</span> <span class="s1">&#39;stack_upsample2d&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="silu"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.silu">[docs]</a><span class="k">def</span> <span class="nf">silu</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -371,6 +377,34 @@
     <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">w</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">)</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="n">scale_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="n">h</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">w</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="stack_upsample2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.stack_upsample2d">[docs]</a><span class="k">def</span> <span class="nf">stack_upsample2d</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Implements a loss-less upsampling operation described in `&quot;Real-Time Single Image and Video Super-Resolution</span>
+<span class="sd">    Using an Efficient Sub-Pixel Convolutional Neural Network&quot; &lt;https://arxiv.org/pdf/1609.05158.pdf&gt;`_</span>
+<span class="sd">    by unstacking the channel axis into adjacent information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (torch.Tensor[N, C, H, W]): input tensor</span>
+<span class="sd">        scale_factor (int): spatial scaling factor</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor[N, C / scale_factor ** 2, H * scale_factor, W * scale_factor]: upsampled tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">c</span> <span class="o">%</span> <span class="p">(</span><span class="n">scale_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;The number of channels in the input tensor must be a multiple of `scale_factor` squared&quot;</span><span class="p">)</span>
+
+    <span class="c1"># N * C * H * W --&gt; N * scale_factor * scale_factor * (C / scale_factor ** 2) * H * W</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">c</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">scale_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="c1"># --&gt; N * (C / scale_factor ** 2) * H * scale_factor * W * scale_factor</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="c1"># --&gt; N * (C / scale_factor ** 2) * (H * scale_factor) * (W * scale_factor)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">scale_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="n">h</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">w</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">x</span></div>
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.lambda_layer &mdash; holocron 0.1.4a0+de25835-git documentation</title>
+  <title>holocron.nn.modules.lambda_layer &mdash; holocron 0.1.4a0+6dc9448-git documentation</title>
   
 
   
@@ -21,6 +21,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
         <script src="../../../../_static/doctools.js"></script>
@@ -32,6 +33,8 @@
   
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -59,7 +62,7 @@
             
             
               <div class="version">
-                0.1.4a0+de25835
+                0.1.4a0+6dc9448
               </div>
             
           
@@ -124,6 +127,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#attention">Attention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -132,6 +136,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../ops.html">holocron.ops</a><ul>
@@ -235,7 +240,10 @@
 <div class="viewcode-block" id="LambdaLayer"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.LambdaLayer">[docs]</a><span class="k">class</span> <span class="nc">LambdaLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Lambda layer from `&quot;LambdaNetworks: Modeling long-range interactions without attention&quot;</span>
 <span class="sd">    &lt;https://openreview.net/pdf?id=xTJEN-ggl1b&gt;`_. The implementation was adapted from `lucidrains&#39;</span>
-<span class="sd">    &lt;https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py&gt;`.</span>
+<span class="sd">    &lt;https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py&gt;`_.</span>
+
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/lambdalayer.png</span>
+<span class="sd">        :align: center</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        in_channels (int): input channels</span>

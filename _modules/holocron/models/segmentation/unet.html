@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.segmentation.unet &mdash; holocron 0.1.4a0+de25835-git documentation</title>
+  <title>holocron.models.segmentation.unet &mdash; holocron 0.1.4a0+6dc9448-git documentation</title>
   
 
   
@@ -21,6 +21,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
         <script src="../../../../_static/doctools.js"></script>
@@ -32,6 +33,8 @@
   
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -59,7 +62,7 @@
             
             
               <div class="version">
-                0.1.4a0+de25835
+                0.1.4a0+6dc9448
               </div>
             
           
@@ -124,6 +127,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#attention">Attention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -132,6 +136,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../ops.html">holocron.ops</a><ul>
@@ -655,6 +660,9 @@
     <span class="sd">&quot;&quot;&quot;U-Net from</span>
 <span class="sd">    `&quot;U-Net: Convolutional Networks for Biomedical Image Segmentation&quot; &lt;https://arxiv.org/pdf/1505.04597.pdf&gt;`_</span>
 
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png</span>
+<span class="sd">        :align: center</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
@@ -669,6 +677,9 @@
 <div class="viewcode-block" id="unetp"><a class="viewcode-back" href="../../../../models.html#holocron.models.unetp">[docs]</a><span class="k">def</span> <span class="nf">unetp</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UNetp</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;UNet+ from `&quot;UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1912.05074.pdf&gt;`_</span>
+
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unetp.png</span>
+<span class="sd">        :align: center</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
@@ -685,6 +696,9 @@
     <span class="sd">&quot;&quot;&quot;UNet++ from `&quot;UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1912.05074.pdf&gt;`_</span>
 
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unetpp.png</span>
+<span class="sd">        :align: center</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
@@ -699,6 +713,9 @@
 <div class="viewcode-block" id="unet3p"><a class="viewcode-back" href="../../../../models.html#holocron.models.unet3p">[docs]</a><span class="k">def</span> <span class="nf">unet3p</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UNet3p</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;UNet3+ from</span>
 <span class="sd">    `&quot;UNet 3+: A Full-Scale Connected UNet For Medical Image Segmentation&quot; &lt;https://arxiv.org/pdf/2004.08790.pdf&gt;`_</span>
+
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet3p.png</span>
+<span class="sd">        :align: center</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>

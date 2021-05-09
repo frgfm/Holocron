@@ -5,10 +5,11 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils &mdash; holocron 0.1.4a0+de25835-git documentation</title>
+  <title>holocron.utils &mdash; holocron 0.1.4a0+6dc9448-git documentation</title>
   
 
   
@@ -21,6 +22,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -32,6 +34,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
   <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -61,7 +65,7 @@
             
             
               <div class="version">
-                0.1.4a0+de25835
+                0.1.4a0+6dc9448
               </div>
             
           
@@ -126,6 +130,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#attention">Attention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
@@ -134,6 +139,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a><ul>
@@ -222,14 +228,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-holocron.utils">
+  <section id="module-holocron.utils">
 <span id="holocron-utils"></span><h1>holocron.utils<a class="headerlink" href="#module-holocron.utils" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference internal" href="#module-holocron.utils" title="holocron.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.utils</span></code></a> provides some utilities for general usage.</p>
-<div class="section" id="miscellaneous">
+<section id="miscellaneous">
 <h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="holocron.utils.lr_finder">
-<code class="sig-prename descclassname"><span class="pre">holocron.utils.</span></code><code class="sig-name descname"><span class="pre">lr_finder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_training_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_it</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_div</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/misc.html#lr_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.lr_finder" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="holocron.utils.lr_finder">
+<span class="sig-prename descclassname"><span class="pre">holocron.utils.</span></span><span class="sig-name descname"><span class="pre">lr_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_training_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_it</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_div</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/misc.html#lr_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.lr_finder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Learning rate finder as described in
 <a class="reference external" href="https://arxiv.org/pdf/1506.01186.pdf">“Cyclical Learning Rates for Training Neural Networks”</a></p>
 <dl class="field-list simple">
@@ -259,8 +265,8 @@ losses (list&lt;float&gt;): list of training losses</p>
 </dl>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

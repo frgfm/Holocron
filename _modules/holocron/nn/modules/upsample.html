@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils.data.collate &mdash; holocron 0.1.4a0+6dc9448-git documentation</title>
+  <title>holocron.nn.modules.upsample &mdash; holocron 0.1.4a0+6dc9448-git documentation</title>
   
 
   
@@ -208,7 +208,7 @@
         
           <li><a href="../../../index.html">Module code</a> &raquo;</li>
         
-      <li>holocron.utils.data.collate</li>
+      <li>holocron.nn.modules.upsample</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -223,59 +223,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for holocron.utils.data.collate</h1><div class="highlight"><pre>
+  <h1>Source code for holocron.nn.modules.upsample</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License version 2.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data._utils.collate</span> <span class="kn">import</span> <span class="n">default_collate</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;StackUpsample2d&#39;</span><span class="p">]</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mixup_collate&#39;</span><span class="p">]</span>
+<div class="viewcode-block" id="StackUpsample2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.StackUpsample2d">[docs]</a><span class="k">class</span> <span class="nc">StackUpsample2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements a loss-less upsampling operation described in `&quot;Real-Time Single Image and Video Super-Resolution</span>
+<span class="sd">    Using an Efficient Sub-Pixel Convolutional Neural Network&quot; &lt;https://arxiv.org/pdf/1609.05158.pdf&gt;`_</span>
+<span class="sd">    by unstacking the channel axis into adjacent information.</span>
 
-
-<div class="viewcode-block" id="mixup_collate"><a class="viewcode-back" href="../../../../utils.data.html#holocron.utils.data.mixup_collate">[docs]</a><span class="k">def</span> <span class="nf">mixup_collate</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Implements a batch collate function with MixUp strategy from</span>
-<span class="sd">    `&quot;mixup: Beyond Empirical Risk Minimization&quot; &lt;https://arxiv.org/pdf/1710.09412.pdf&gt;`_</span>
+<span class="sd">    .. image:: https://docs.fast.ai/images/pixelshuffle.png</span>
+<span class="sd">        :align: center</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        data: list of elements</span>
-<span class="sd">        alpha: mixup factor</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        interpolated input</span>
-<span class="sd">        original target</span>
-<span class="sd">        resorted target</span>
-<span class="sd">        interpolation factor</span>
-
-<span class="sd">    Example::</span>
-<span class="sd">        &gt;&gt;&gt; import torch</span>
-<span class="sd">        &gt;&gt;&gt; from holocron import utils</span>
-<span class="sd">        &gt;&gt;&gt; loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=utils.data.mixup_collate)</span>
+<span class="sd">        scale_factor (int): spatial scaling factor</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">default_collate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="n">scale_factor</span>
 
-    <span class="c1"># Sample lambda</span>
-    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">lam</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 
-    <span class="c1"># Mix batch indices</span>
-    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">stack_upsample2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">)</span>
 
-    <span class="c1"># Create the new input and targets</span>
-    <span class="n">inputs</span> <span class="o">=</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">inputs</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="n">inputs</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
-    <span class="n">targets_a</span><span class="p">,</span> <span class="n">targets_b</span> <span class="o">=</span> <span class="n">targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets_a</span><span class="p">,</span> <span class="n">targets_b</span><span class="p">,</span> <span class="n">lam</span></div>
+    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;scale_factor=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span><span class="si">}</span><span class="s2">&quot;</span></div>
 </pre></div>
 
            </div>
