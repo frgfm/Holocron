@@ -245,6 +245,15 @@ class UpPath2(nn.Module):
 
         # Upsample expansive features
         _upfeat = self.upsample(upfeat)
+
+        # Crop upsampled features
+        if downfeat.shape != _upfeat.shape:
+            delta_w = _upfeat.shape[-1] - downfeat.shape[-1]
+            w_slice = slice(delta_w // 2, -delta_w // 2 - (delta_w % 2) if delta_w > 0 else downfeat.shape[-1])
+            delta_h = _upfeat.shape[-2] - downfeat.shape[-2]
+            h_slice = slice(delta_h // 2, -delta_h // 2 - (delta_h % 2) if delta_h > 0 else downfeat.shape[-2])
+            _upfeat = _upfeat[..., h_slice, w_slice]
+
         # Concatenate both feature maps and forward them
         return self.block(torch.cat((downfeat, _upfeat), dim=1))
 
