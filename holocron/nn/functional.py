@@ -11,7 +11,8 @@ from typing import Optional, Callable, Union, Tuple, List
 
 
 __all__ = ['silu', 'mish', 'hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'ls_cross_entropy',
-           'complement_cross_entropy', 'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool']
+           'complement_cross_entropy', 'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool',
+           'concat_downsample2d', 'stack_upsample2d']
 
 
 def silu(x: Tensor) -> Tensor:
@@ -150,6 +151,34 @@ def concat_downsample2d(x: Tensor, scale_factor: int) -> Tensor:
     x = x.view(b, c, h // scale_factor, scale_factor, w // scale_factor, scale_factor)
     x = x.permute(0, 3, 5, 1, 2, 4).contiguous()
     x = x.view(b, int(c * scale_factor ** 2), h // scale_factor, w // scale_factor)
+
+    return x
+
+
+def stack_upsample2d(x: Tensor, scale_factor: int) -> Tensor:
+    """Implements a loss-less upsampling operation described in `"Real-Time Single Image and Video Super-Resolution
+    Using an Efficient Sub-Pixel Convolutional Neural Network" <https://arxiv.org/pdf/1609.05158.pdf>`_
+    by unstacking the channel axis into adjacent information.
+
+    Args:
+        x (torch.Tensor[N, C, H, W]): input tensor
+        scale_factor (int): spatial scaling factor
+
+    Returns:
+        torch.Tensor[N, C / scale_factor ** 2, H * scale_factor, W * scale_factor]: upsampled tensor
+    """
+
+    b, c, h, w = x.shape
+
+    if (c % (scale_factor ** 2) != 0):
+        raise AssertionError("The number of channels in the input tensor must be a multiple of `scale_factor` squared")
+
+    # N * C * H * W --> N * scale_factor * scale_factor * (C / scale_factor ** 2) * H * W
+    x = x.view(b, scale_factor, scale_factor, c // int(scale_factor ** 2), h, w)
+    # --> N * (C / scale_factor ** 2) * H * scale_factor * W * scale_factor
+    x = x.permute(0, 3, 4, 1, 5, 2).contiguous()
+    # --> N * (C / scale_factor ** 2) * (H * scale_factor) * (W * scale_factor)
+    x = x.view(b, c // int(scale_factor ** 2), h * scale_factor, w * scale_factor)
 
     return x
 
