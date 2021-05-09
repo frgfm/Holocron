@@ -118,6 +118,9 @@ def diou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     :math:`c` c is the diagonal length of the smallest enclosing box covering the two boxes,
     and :math:`\\rho(.)` is the Euclidean distance.
 
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/diou_loss.png
+        :align: center
+
     Args:
         boxes1 (torch.Tensor[M, 4]): bounding boxes
         boxes2 (torch.Tensor[N, 4]): bounding boxes

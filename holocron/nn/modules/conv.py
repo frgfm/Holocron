@@ -124,6 +124,10 @@ class Add2d(_NormConvNd):
     :math:`H` is a height of input planes in pixels, and :math:`W` is
     width in pixels.
 
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/add2d.png
+        :align: center
+        :alt: Add2D schema
+
     Args:
         in_channels (int): Number of channels in the input image
         out_channels (int): Number of channels produced by the convolution
@@ -229,6 +233,10 @@ class SlimConv2d(nn.Module):
 
     where :math:`\\oplus` is the channel-wise concatenation.
 
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/slimconv2d.png
+        :align: center
+        :alt: SlimConv2D schema
+
 
     Args:
         in_channels (int): Number of channels in the input image
@@ -295,6 +303,10 @@ class SlimConv2d(nn.Module):
 class PyConv2d(nn.ModuleList):
     """Implements the convolution module from `"Pyramidal Convolution: Rethinking Convolutional Neural Networks for
     Visual Recognition" <https://arxiv.org/pdf/2006.11538.pdf>`_.
+
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/pyconv2d.png
+        :align: center
+        :alt: PyConv2D schema
 
     Args:
         in_channels (int): Number of channels in the input image

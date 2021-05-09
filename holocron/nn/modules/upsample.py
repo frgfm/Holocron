@@ -15,6 +15,9 @@ class StackUpsample2d(nn.Module):
     Using an Efficient Sub-Pixel Convolutional Neural Network" <https://arxiv.org/pdf/1609.05158.pdf>`_
     by unstacking the channel axis into adjacent information.
 
+    .. image:: https://docs.fast.ai/images/pixelshuffle.png
+        :align: center
+
     Args:
         scale_factor (int): spatial scaling factor
     """

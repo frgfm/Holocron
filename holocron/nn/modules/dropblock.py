@@ -14,6 +14,9 @@ class DropBlock2d(nn.Module):
     """Implements the DropBlock module from `"DropBlock: A regularization method for convolutional networks"
     <https://arxiv.org/pdf/1810.12890.pdf>`_
 
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/dropblock.png
+        :align: center
+
     Args:
         p (float, optional): probability of dropping activation value
         block_size (int, optional): size of each block that is expended from the sampled mask

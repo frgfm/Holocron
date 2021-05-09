@@ -14,7 +14,10 @@ __all__ = ['LambdaLayer']
 class LambdaLayer(nn.Module):
     """Lambda layer from `"LambdaNetworks: Modeling long-range interactions without attention"
     <https://openreview.net/pdf?id=xTJEN-ggl1b>`_. The implementation was adapted from `lucidrains'
-    <https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py>`.
+    <https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py>`_.
+
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/lambdalayer.png
+        :align: center
 
     Args:
         in_channels (int): input channels

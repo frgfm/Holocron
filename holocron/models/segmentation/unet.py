@@ -434,6 +434,9 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
     """U-Net from
     `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
 
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png
+        :align: center
+
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
@@ -448,6 +451,9 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
 def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNetp:
     """UNet+ from `"UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation"
     <https://arxiv.org/pdf/1912.05074.pdf>`_
+
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unetp.png
+        :align: center
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
@@ -464,6 +470,9 @@ def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
     """UNet++ from `"UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation"
     <https://arxiv.org/pdf/1912.05074.pdf>`_
 
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unetpp.png
+        :align: center
+
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
@@ -478,6 +487,9 @@ def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
 def unet3p(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet3p:
     """UNet3+ from
     `"UNet 3+: A Full-Scale Connected UNet For Medical Image Segmentation" <https://arxiv.org/pdf/2004.08790.pdf>`_
+
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet3p.png
+        :align: center
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet

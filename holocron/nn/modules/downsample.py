@@ -81,6 +81,9 @@ class BlurPool2d(nn.Module):
     module as described in `"Making Convolutional Networks Shift-Invariant Again"
     <https://arxiv.org/pdf/1904.11486.pdf>`_.
 
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/blurpool.png
+        :align: center
+
     Args:
         channels (int): Number of input channels
         kernel_size (int, optional): binomial filter size for blurring. currently supports 3 (default) and 5.
