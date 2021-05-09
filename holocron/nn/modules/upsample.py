@@ -26,3 +26,6 @@ class StackUpsample2d(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
 
         return F.stack_upsample2d(x, self.scale_factor)
+
+    def extra_repr(self) -> str:
+        return f"scale_factor={self.scale_factor}"
