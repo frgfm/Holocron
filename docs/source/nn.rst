@@ -79,3 +79,9 @@ Attention
 .. autoclass:: LambdaLayer
 
 .. autoclass:: TripletAttention
+
+
+Upsampling
+------------
+
+.. autoclass:: StackUpsample2d

@@ -55,9 +55,9 @@ class DimAttention(nn.Module):
 
 class TripletAttention(nn.Module):
     """Triplet attention layer from `"Rotate to Attend: Convolutional Triplet Attention Module"
-    <https://arxiv.org/pdf/2010.03045.pdf>`_. This implementation is based on the pytorch
-    `implementation <https://github.com/LandskapeAI/triplet-attention/blob/master/MODELS/triplet_attention.py> `
-    by the paper's authors.
+    <https://arxiv.org/pdf/2010.03045.pdf>`_. This implementation is based on the
+    `one <https://github.com/LandskapeAI/triplet-attention/blob/master/MODELS/triplet_attention.py>`_
+    from the paper's authors.
     """
     def __init__(self) -> None:
         super().__init__()
