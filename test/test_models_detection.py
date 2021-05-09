@@ -14,9 +14,9 @@ def _test_detection_model(name, input_size):
     num_classes = 10
     batch_size = 2
     x = torch.rand((batch_size, 3, *input_size))
-    model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
+    model = detection.__dict__[name](pretrained=True, num_classes=num_classes).eval()
     # Check backbone pretrained
-    model = models.__dict__[name](pretrained_backbone=True, num_classes=num_classes).eval()
+    model = detection.__dict__[name](pretrained_backbone=True, num_classes=num_classes).eval()
     with torch.no_grad():
         out = model(x)
 
