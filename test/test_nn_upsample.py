@@ -5,6 +5,7 @@
 
 import pytest
 import torch
+from holocron.nn.modules import upsample
 from holocron.nn import functional as F
 
 
@@ -22,4 +23,10 @@ def test_stackupsample2d():
     # Check that it's the inverse of concat_downsample2d
     x = torch.rand((num_batches, num_chan, 32, 32))
     down = F.concat_downsample2d(x, scale_factor=2)
-    assert torch.equal(F.stack_upsample2d(down, scale_factor=2), x)
+    up = F.stack_upsample2d(down, scale_factor=2)
+    assert torch.equal(up, x)
+
+    # module interface
+    mod = upsample.StackUpsample2d(scale_factor=2)
+    assert torch.equal(mod(down), up)
+    assert repr(mod) == "StackUpsample2d(scale_factor=2)"
