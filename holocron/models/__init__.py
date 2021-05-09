@@ -9,5 +9,5 @@ from .darknetv3 import *
 from .darknetv4 import *
 from .sknet import *
 from .repvgg import *
-from .detection import *
-from .segmentation import *
+from . import detection
+from . import segmentation
