@@ -36,7 +36,7 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 
 ## Setup
 
-Python 3.6 (or higher) and [pip](https://pip.pypa.io/en/stable/)/[conda](https://docs.conda.io/en/latest/miniconda.html) are required to install TorchCAM.
+Python 3.6 (or higher) and [pip](https://pip.pypa.io/en/stable/)/[conda](https://docs.conda.io/en/latest/miniconda.html) are required to install Holocron.
 
 ### Stable release
 
