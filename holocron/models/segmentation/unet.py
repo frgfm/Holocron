@@ -14,7 +14,7 @@ from torchvision.models import vgg11, resnet34
 from torchvision.models._utils import IntermediateLayerGetter
 
 from ...nn.init import init_module
-from ...nn import StackUpsample2d, SiLU, GlobalAvgPool2d
+from ...nn import SiLU, GlobalAvgPool2d
 from ..rexnet import rexnet1_3x
 from ..utils import conv_sequence, load_pretrained_params
 
@@ -232,7 +232,7 @@ class UpPath2(nn.Module):
 
         self.upsample = nn.Sequential(
             *conv_sequence(up_chan, up_chan // 2 * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
-            StackUpsample2d(scale_factor=2)
+            nn.PixelShuffle(upscale_factor=2)
         )
 
         self.bn = nn.BatchNorm2d(in_chan) if norm_layer is None else norm_layer(in_chan)
@@ -319,7 +319,7 @@ class DynamicUNet(nn.Module):
             _layers.extend([
                 *conv_sequence(up_chans[-1], up_chans[-1] * 2 ** 2,
                                act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
-                StackUpsample2d(scale_factor=2)
+                nn.PixelShuffle(upscale_factor=2)
             ])
 
         _layers.append(nn.Conv2d(up_chans[-1], num_classes, 1))
