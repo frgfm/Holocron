@@ -216,7 +216,7 @@ class UNet(nn.Module):
         return x
 
 
-class UpPath2(nn.Module):
+class UBlock(nn.Module):
     def __init__(
         self,
         up_chan: int,
@@ -317,8 +317,8 @@ class DynamicUNet(nn.Module):
             up_chans.append(in_chan + up_chans[-1] // 2)
         up_chans[-1] = up_chans[-1] // 2
         for up_chan, in_chan, out_chan in zip(up_chans[:-1], chans[::-1][1:], up_chans[1:]):
-            self.decoders.append(UpPath2(up_chan, in_chan, out_chan, int(same_padding),
-                                         act_layer, norm_layer, drop_layer, conv_layer))
+            self.decoders.append(UBlock(up_chan, in_chan, out_chan, int(same_padding),
+                                        act_layer, norm_layer, drop_layer, conv_layer))
 
         # Final upsampling if sizes don't match
         _layers: List[nn.Module] = []
