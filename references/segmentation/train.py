@@ -65,8 +65,8 @@ def main(args):
 
     # Data loading
     normalize = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    base_size = 520
-    crop_size = 480
+    base_size = 320
+    crop_size = 256
     min_size, max_size = int(0.5 * base_size), int(2.0 * base_size)
 
     train_loader, val_loader = None, None
