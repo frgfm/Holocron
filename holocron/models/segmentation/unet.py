@@ -300,8 +300,15 @@ class DynamicUNet(nn.Module):
         if training_mode:
             self.encoder.train()
 
-        if act_layer is None:
-            act_layer = nn.ReLU(inplace=True)
+        # Middle layers
+        self.bridge = nn.Sequential(
+            nn.BatchNorm2d(chans[-1]) if norm_layer is None else norm_layer(chans[-1]),
+            act_layer,
+            *conv_sequence(chans[-1], 2 * chans[-1],
+                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+            *conv_sequence(2 * chans[-1], chans[-1],
+                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1)
+        )
 
         # Expansive path
         self.decoders = nn.ModuleList([])
@@ -333,7 +340,7 @@ class DynamicUNet(nn.Module):
 
         # Contracting path
         xs: List[Tensor] = list(self.encoder(x).values())
-        x = xs.pop()
+        x = self.bridge(xs.pop())
 
         # Expansive path
         for decoder in self.decoders:
