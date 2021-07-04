@@ -13,7 +13,7 @@ from setuptools import setup, find_packages
 
 version = '0.1.4a0'
 sha = 'Unknown'
-package_name = 'pylocron'
+package_name = 'holocron'
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,7 +51,7 @@ requirements = [
 ]
 
 setup(
-    name=package_name,
+    name=os.getenv('PKG_INDEX') if os.getenv('PKG_INDEX') else package_name,
     version=version,
     author='François-Guillaume Fernandez',
     description='Modules, operations and models for computer vision in PyTorch',
