@@ -92,7 +92,7 @@ jobs:
 
   docs-build:
     runs-on: ubuntu-latest
-    needs: pkg-install
+    needs: install
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
