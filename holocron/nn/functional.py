@@ -405,9 +405,9 @@ def _xcorr2d(
     x: Tensor,
     weight: Tensor,
     bias: Optional[Tensor] = None,
-    stride: Union[int, List[int], Tuple[int, int]] = 1,
-    padding: Union[int, List[int], Tuple[int, int]] = 0,
-    dilation: Union[int, List[int], Tuple[int, int]] = 1,
+    stride: Union[int, Tuple[int, int]] = 1,
+    padding: Union[int, Tuple[int, int]] = 0,
+    dilation: Union[int, Tuple[int, int]] = 1,
     groups: int = 1,
     normalize_slices: bool = False,
     eps: float = 1e-14
@@ -464,9 +464,9 @@ def norm_conv2d(
     x: Tensor,
     weight: Tensor,
     bias: Optional[Tensor] = None,
-    stride: Union[int, List[int], Tuple[int, int]] = 1,
-    padding: Union[int, List[int], Tuple[int, int]] = 0,
-    dilation: Union[int, List[int], Tuple[int, int]] = 1,
+    stride: Union[int, Tuple[int, int]] = 1,
+    padding: Union[int, Tuple[int, int]] = 0,
+    dilation: Union[int, Tuple[int, int]] = 1,
     groups: int = 1,
     eps: float = 1e-14
 ) -> Tensor:
@@ -514,9 +514,9 @@ def add2d(
     x: Tensor,
     weight: Tensor,
     bias: Optional[Tensor] = None,
-    stride: Union[int, List[int], Tuple[int, int]] = 1,
-    padding: Union[int, List[int], Tuple[int, int]] = 0,
-    dilation: Union[int, List[int], Tuple[int, int]] = 1,
+    stride: Union[int, Tuple[int, int]] = 1,
+    padding: Union[int, Tuple[int, int]] = 0,
+    dilation: Union[int, Tuple[int, int]] = 1,
     groups: int = 1,
     normalize_slices: bool = False,
     eps: float = 1e-14

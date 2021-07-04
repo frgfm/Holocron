@@ -25,13 +25,13 @@ As a contributor, you will only have to ensure coverage of your code by adding a
 
 
 
-## Issues
+## Issues
 
 Use Github [issues](https://github.com/frgfm/Holocron/issues) for feature requests, or bug reporting. When doing so, use issue templates whenever possible and provide enough information for other contributors to jump in.
 
 
 
-## Developping holocron
+## Developping holocron
 
 
 ### Commits
@@ -63,6 +63,6 @@ This will read the `.flake8` setting file and let you know whether your commits 
 Additionally, to catch type-related issues and have a cleaner codebase, annotation typing are expected. After installing [mypy](https://github.com/python/mypy), you can run the verifications as follows:
 
 ```shell
-mypy --config-file mypy.ini
+mypy --config-file mypy.ini holocron
 ```
 The `mypy.ini` file will be read to check your typing.

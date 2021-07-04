@@ -1,11 +1,16 @@
+h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.caption {
+    font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
+    font-weight: normal;
+}
+
+h1 {
+    text-transform: uppercase;
+    letter-spacing: 1.78px
+}
+
 body {
     font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
     background: #fff;
-}
-
-
-h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.caption {
-    font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
 }
 
 /* Use white for docs background */
@@ -17,7 +22,11 @@ h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.capti
     background-color: #f3f4f7;
 }
 .wy-nav-side {
-	background-color: #f3f4f7;
+    background-color: #f3f4f7;
+}
+
+.wy-nav-content {
+    max-width: 900px;
 }
 
 .wy-nav-content-wrap, .wy-menu li.current > a  {
@@ -33,12 +42,12 @@ a {
 }
 
 @media screen and (min-width: 1100px) {
-	.wy-nav-content-wrap {
+    .wy-nav-content-wrap {
         background-color: #fff;
     }
     .wy-nav-side {
-    	background-color: #f3f4f7;
-	}
+        background-color: #f3f4f7;
+    }
     .wy-nav-content {
         background: #fff;
     }
@@ -49,8 +58,8 @@ a {
         background-color: #fff;
     }
     .wy-nav-side {
-    	background-color: #f3f4f7;
-	}
+        background-color: #f3f4f7;
+    }
     .wy-nav-content {
         background: #fff;
     }
@@ -109,7 +118,7 @@ a {
 
 /* Use our red for literals (it's very similar to the original color) */
 .rst-content tt.literal, .rst-content tt.literal, .rst-content code.literal {
-    color: #F05732;
+    color: #B91444;
 }
 
 .rst-content tt.xref, a .rst-content tt, .rst-content tt.xref,
@@ -165,4 +174,42 @@ nav .hidden-section {
 
 .wy-side-nav-search>div.version {
     color: #000;
+}
+
+/* Version control */
+
+.version-button {
+    color: #900C30;
+    border: none;
+    padding: 5px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.version-button:hover, .version-button:focus {
+    background-color: #ab6578;
+    color: #ffffff;
+}
+
+.version-dropdown {
+    display: none;
+    min-width: 160px;
+    overflow: auto;
+    font-size: 15px;
+}
+
+.version-dropdown a {
+    color: #900C30;
+    padding: 3px 4px;
+    text-decoration: none;
+    display: block;
+}
+
+.version-dropdown a:hover {
+    background-color: #ab6578;
+    color: #ffffff;
+}
+
+.version-show {
+    display: block;
 }
