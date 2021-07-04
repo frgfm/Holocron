@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+72d41d5-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+9c4e191-git documentation</title>
   
 
   
@@ -25,6 +25,7 @@
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -35,8 +36,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/css/my_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
@@ -58,13 +58,6 @@
           
           </a>
 
-          
-            
-            
-              <div class="version">
-                0.1.4a0+72d41d5
-              </div>
-            
           
 
           
@@ -106,7 +99,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#object-detection">Object Detection</a><ul>
@@ -127,7 +119,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#attention">Attention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -136,7 +127,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ops.html">holocron.ops</a><ul>
@@ -146,6 +136,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../trainer.html">holocron.trainer</a><ul>
@@ -224,12 +215,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.nn.functional</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
-
-<span class="c1"># This program is licensed under the Apache License version 2.</span>
-<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
-
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span><span class="p">,</span> <span class="n">ceil</span>
+<span></span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span><span class="p">,</span> <span class="n">ceil</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
@@ -237,8 +223,7 @@
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;silu&#39;</span><span class="p">,</span> <span class="s1">&#39;mish&#39;</span><span class="p">,</span> <span class="s1">&#39;hard_mish&#39;</span><span class="p">,</span> <span class="s1">&#39;nl_relu&#39;</span><span class="p">,</span> <span class="s1">&#39;focal_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;multilabel_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ls_cross_entropy&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;complement_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;mutual_channel_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;dropblock2d&#39;</span><span class="p">,</span> <span class="s1">&#39;z_pool&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;concat_downsample2d&#39;</span><span class="p">,</span> <span class="s1">&#39;stack_upsample2d&#39;</span><span class="p">]</span>
+           <span class="s1">&#39;complement_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;mutual_channel_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;dropblock2d&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="silu"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.silu">[docs]</a><span class="k">def</span> <span class="nf">silu</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -338,7 +323,8 @@
         <span class="c1"># Tensor type</span>
         <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">type</span><span class="p">():</span>
             <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">logpt</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">logpt</span>
+        <span class="n">at</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">logpt</span> <span class="o">*=</span> <span class="n">at</span>
 
     <span class="c1"># Loss</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">pt</span><span class="p">)</span> <span class="o">**</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">logpt</span>
@@ -381,46 +367,6 @@
     <span class="k">return</span> <span class="n">x</span></div>
 
 
-<div class="viewcode-block" id="stack_upsample2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.stack_upsample2d">[docs]</a><span class="k">def</span> <span class="nf">stack_upsample2d</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements a loss-less upsampling operation described in `&quot;Real-Time Single Image and Video Super-Resolution</span>
-<span class="sd">    Using an Efficient Sub-Pixel Convolutional Neural Network&quot; &lt;https://arxiv.org/pdf/1609.05158.pdf&gt;`_</span>
-<span class="sd">    by unstacking the channel axis into adjacent information.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        x (torch.Tensor[N, C, H, W]): input tensor</span>
-<span class="sd">        scale_factor (int): spatial scaling factor</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor[N, C / scale_factor ** 2, H * scale_factor, W * scale_factor]: upsampled tensor</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">c</span> <span class="o">%</span> <span class="p">(</span><span class="n">scale_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;The number of channels in the input tensor must be a multiple of `scale_factor` squared&quot;</span><span class="p">)</span>
-
-    <span class="c1"># N * C * H * W --&gt; N * scale_factor * scale_factor * (C / scale_factor ** 2) * H * W</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">c</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">scale_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
-    <span class="c1"># --&gt; N * (C / scale_factor ** 2) * H * scale_factor * W * scale_factor</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
-    <span class="c1"># --&gt; N * (C / scale_factor ** 2) * (H * scale_factor) * (W * scale_factor)</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">scale_factor</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="n">h</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">w</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">x</span></div>
-
-
-<div class="viewcode-block" id="z_pool"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.z_pool">[docs]</a><span class="k">def</span> <span class="nf">z_pool</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Z-pool layer from `&quot;Rotate to Attend: Convolutional Triplet Attention Module&quot;</span>
-<span class="sd">    &lt;https://arxiv.org/pdf/2010.03045.pdf&gt;`_.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        x: input tensor</span>
-<span class="sd">        dim: dimension to pool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span></div>
-
-
 <div class="viewcode-block" id="multilabel_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.multilabel_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">multilabel_cross_entropy</span><span class="p">(</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
@@ -454,7 +400,7 @@
         <span class="c1"># Tensor type</span>
         <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">type</span><span class="p">():</span>
             <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">logpt</span> <span class="o">=</span> <span class="n">logpt</span> <span class="o">*</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>  <span class="c1"># type: ignore[attr-defined]</span>
+        <span class="n">logpt</span> <span class="o">*=</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
     <span class="c1"># CE Loss</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span> <span class="n">target</span> <span class="o">*</span> <span class="n">logpt</span>
@@ -509,7 +455,7 @@
         <span class="c1"># Tensor type</span>
         <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">type</span><span class="p">():</span>
             <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">logpt</span> <span class="o">=</span> <span class="n">logpt</span> <span class="o">*</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">logpt</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>  <span class="c1"># type: ignore[attr-defined]</span>
+        <span class="n">logpt</span> <span class="o">*=</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">logpt</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
     <span class="c1"># Loss reduction</span>
     <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
@@ -547,16 +493,14 @@
 <span class="sd">        torch.Tensor: loss reduced with `reduction` method</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">ce_loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="n">gamma</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">ce_loss</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">)</span>
 
     <span class="c1"># log(P[class]) = log_softmax(score)[class]</span>
     <span class="c1"># logpt = F.log_softmax(x, dim=1)</span>
 
     <span class="n">pt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">pt</span> <span class="o">=</span> <span class="n">pt</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">pt</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">pt</span><span class="o">.</span><span class="n">div_</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">pt</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
     <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">pt</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
 
@@ -566,27 +510,26 @@
         <span class="n">loss</span><span class="p">[:,</span> <span class="n">class_idx</span><span class="p">][</span><span class="n">target</span> <span class="o">==</span> <span class="n">class_idx</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
 
     <span class="c1"># Ignore index (set loss contribution to 0)</span>
-    <span class="n">valid_idxs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ignore_index</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">ignore_index</span> <span class="o">&lt;</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="n">valid_idxs</span><span class="p">[</span><span class="n">ignore_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">loss</span><span class="p">[:,</span> <span class="n">ignore_index</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
 
     <span class="c1"># Weight</span>
     <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Tensor type</span>
         <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">type</span><span class="p">():</span>
             <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span> <span class="o">*</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>  <span class="c1"># type: ignore[attr-defined]</span>
+        <span class="n">loss</span> <span class="o">*=</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
     <span class="c1"># Loss reduction</span>
     <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="p">[:,</span> <span class="n">valid_idxs</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="p">[:,</span> <span class="n">valid_idxs</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
     <span class="c1"># Smooth the labels</span>
-    <span class="k">return</span> <span class="n">ce_loss</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">loss</span></div>
+    <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">loss</span></div>
 
 
 <span class="k">def</span> <span class="nf">mutual_channel_loss</span><span class="p">(</span>
@@ -851,7 +794,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2021, François-Guillaume Fernandez
 
     </p>
   </div>

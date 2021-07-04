@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; holocron 0.1.4a0+72d41d5-git documentation</title>
+  <title>Index &mdash; holocron 0.1.4a0+9c4e191-git documentation</title>
   
 
   
@@ -25,6 +25,7 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/js/custom.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,8 +36,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
 </head>
@@ -58,13 +58,6 @@
           
           </a>
 
-          
-            
-            
-              <div class="version">
-                0.1.4a0+72d41d5
-              </div>
-            
           
 
           
@@ -106,7 +99,6 @@
 <li class="toctree-l3"><a class="reference internal" href="models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#darknet">Darknet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#object-detection">Object Detection</a><ul>
@@ -127,7 +119,6 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#attention">Attention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
@@ -136,7 +127,6 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#downsampling">Downsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a><ul>
@@ -146,6 +136,7 @@
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
@@ -238,21 +229,19 @@
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#Y"><strong>Y</strong></a>
- | <a href="#Z"><strong>Z</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="optim.html#holocron.optim.AdaBelief">AdaBelief (class in holocron.optim)</a>
-</li>
-      <li><a href="optim.html#holocron.optim.AdamP">AdamP (class in holocron.optim)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -266,12 +255,10 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="trainer.html#holocron.trainer.BinaryClassificationTrainer">BinaryClassificationTrainer (class in holocron.trainer)</a>
+      <li><a href="nn.html#holocron.nn.BlurPool2d">BlurPool2d (class in holocron.nn)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="nn.html#holocron.nn.BlurPool2d">BlurPool2d (class in holocron.nn)</a>
-</li>
       <li><a href="ops.html#holocron.ops.box_giou">box_giou() (in module holocron.ops)</a>
 </li>
   </ul></td>
@@ -330,11 +317,9 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="trainer.html#holocron.trainer.BinaryClassificationTrainer.evaluate">evaluate() (holocron.trainer.BinaryClassificationTrainer method)</a>
+      <li><a href="trainer.html#holocron.trainer.ClassificationTrainer.evaluate">evaluate() (holocron.trainer.ClassificationTrainer method)</a>
 
       <ul>
-        <li><a href="trainer.html#holocron.trainer.ClassificationTrainer.evaluate">(holocron.trainer.ClassificationTrainer method)</a>
-</li>
         <li><a href="trainer.html#holocron.trainer.DetectionTrainer.evaluate">(holocron.trainer.DetectionTrainer method)</a>
 </li>
         <li><a href="trainer.html#holocron.trainer.SegmentationTrainer.evaluate">(holocron.trainer.SegmentationTrainer method)</a>
@@ -488,6 +473,14 @@
   </ul></td>
 </tr></table>
 
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="optim.html#holocron.optim.lr_scheduler.OneCycleScheduler">OneCycleScheduler (class in holocron.optim.lr_scheduler)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -511,26 +504,10 @@
 </li>
       <li><a href="optim.html#holocron.optim.RaLars">RaLars (class in holocron.optim)</a>
 </li>
-      <li><a href="models.html#holocron.models.repvgg_a0">repvgg_a0() (in module holocron.models)</a>
-</li>
-      <li><a href="models.html#holocron.models.repvgg_a1">repvgg_a1() (in module holocron.models)</a>
-</li>
-      <li><a href="models.html#holocron.models.repvgg_a2">repvgg_a2() (in module holocron.models)</a>
-</li>
-      <li><a href="models.html#holocron.models.repvgg_b0">repvgg_b0() (in module holocron.models)</a>
-</li>
-      <li><a href="models.html#holocron.models.repvgg_b1">repvgg_b1() (in module holocron.models)</a>
-</li>
-      <li><a href="models.html#holocron.models.repvgg_b2">repvgg_b2() (in module holocron.models)</a>
-</li>
-      <li><a href="models.html#holocron.models.repvgg_b3">repvgg_b3() (in module holocron.models)</a>
-</li>
       <li><a href="models.html#holocron.models.res2net50_26w_4s">res2net50_26w_4s() (in module holocron.models)</a>
 </li>
       <li><a href="models.html#holocron.models.resnet101">resnet101() (in module holocron.models)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="models.html#holocron.models.resnet152">resnet152() (in module holocron.models)</a>
 </li>
       <li><a href="models.html#holocron.models.resnet18">resnet18() (in module holocron.models)</a>
@@ -539,6 +516,8 @@
 </li>
       <li><a href="models.html#holocron.models.resnet50">resnet50() (in module holocron.models)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="models.html#holocron.models.resnet50d">resnet50d() (in module holocron.models)</a>
 </li>
       <li><a href="models.html#holocron.models.resnext101_32x8d">resnext101_32x8d() (in module holocron.models)</a>
@@ -571,13 +550,11 @@
 </li>
       <li><a href="trainer.html#holocron.trainer.Trainer.set_device">set_device() (holocron.trainer.Trainer method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="nn.html#holocron.nn.SiLU">SiLU (class in holocron.nn)</a>
 </li>
       <li><a href="nn.functional.html#holocron.nn.functional.silu">silu() (in module holocron.nn.functional)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="models.html#holocron.models.sknet101">sknet101() (in module holocron.models)</a>
 </li>
       <li><a href="models.html#holocron.models.sknet152">sknet152() (in module holocron.models)</a>
 </li>
@@ -586,10 +563,6 @@
       <li><a href="nn.html#holocron.nn.SlimConv2d">SlimConv2d (class in holocron.nn)</a>
 </li>
       <li><a href="nn.html#holocron.nn.SPP">SPP (class in holocron.nn)</a>
-</li>
-      <li><a href="nn.functional.html#holocron.nn.functional.stack_upsample2d">stack_upsample2d() (in module holocron.nn.functional)</a>
-</li>
-      <li><a href="nn.html#holocron.nn.StackUpsample2d">StackUpsample2d (class in holocron.nn)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -606,8 +579,6 @@
       <li><a href="trainer.html#holocron.trainer.Trainer">Trainer (class in holocron.trainer)</a>
 </li>
       <li><a href="models.html#holocron.models.tridentnet50">tridentnet50() (in module holocron.models)</a>
-</li>
-      <li><a href="nn.html#holocron.nn.TripletAttention">TripletAttention (class in holocron.nn)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -642,18 +613,6 @@
   </ul></td>
 </tr></table>
 
-<h2 id="Z">Z</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="nn.functional.html#holocron.nn.functional.z_pool">z_pool() (in module holocron.nn.functional)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="nn.html#holocron.nn.ZPool">ZPool (class in holocron.nn)</a>
-</li>
-  </ul></td>
-</tr></table>
-
 
 
            </div>
@@ -666,7 +625,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2021, François-Guillaume Fernandez
 
     </p>
   </div>

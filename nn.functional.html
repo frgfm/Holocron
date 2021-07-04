@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+72d41d5-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+9c4e191-git documentation</title>
   
 
   
@@ -26,6 +26,7 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/js/custom.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -36,8 +37,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="holocron.ops" href="ops.html" />
@@ -61,13 +61,6 @@
           
           </a>
 
-          
-            
-            
-              <div class="version">
-                0.1.4a0+72d41d5
-              </div>
-            
           
 
           
@@ -109,7 +102,6 @@
 <li class="toctree-l3"><a class="reference internal" href="models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#darknet">Darknet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#object-detection">Object Detection</a><ul>
@@ -130,7 +122,6 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#attention">Attention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.nn.functional</a><ul>
@@ -139,7 +130,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#downsampling">Downsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a><ul>
@@ -149,6 +139,7 @@
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
@@ -306,9 +297,9 @@
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>...</em><em>]</em>) – hard target tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
-<li><p><strong>gamma</strong> (<em>python:float</em><em>, </em><em>optional</em>) – gamma parameter of focal loss</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – gamma parameter of focal loss</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -330,7 +321,7 @@
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – target tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
 </ul>
 </dd>
@@ -354,9 +345,9 @@
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>...</em><em>]</em>) – target tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -379,9 +370,9 @@
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>...</em><em>]</em>) – target tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
-<li><p><strong>gamma</strong> (<em>python:float</em><em>, </em><em>optional</em>) – complement factor</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – complement factor</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -408,15 +399,15 @@ See <a class="reference internal" href="nn.html#holocron.nn.NormConv2d" title="h
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>out_channels</em><em>, </em><em>in_channels</em><em>, </em><em>Kh</em><em>, </em><em>Kw</em><em>]</em>) – filters</p></li>
 <li><p><strong>bias</strong> (<em>torch.Tensor</em><em>[</em><em>out_channels</em><em>]</em><em>, </em><em>optional</em>) – optional bias tensor of shape (out_channels).
 Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
-<li><p><strong>stride</strong> (<em>python:int</em><em>, </em><em>optional</em>) – the stride of the convolving kernel. Can be a single number or a
+<li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – the stride of the convolving kernel. Can be a single number or a
 tuple <cite>(sH, sW)</cite>. Default: 1</p></li>
-<li><p><strong>padding</strong> (<em>python:int</em><em>, </em><em>optional</em>) – implicit paddings on both sides of the input. Can be a
+<li><p><strong>padding</strong> (<em>int</em><em>, </em><em>optional</em>) – implicit paddings on both sides of the input. Can be a
 single number or a tuple <cite>(padH, padW)</cite>. Default: 0</p></li>
-<li><p><strong>dilation</strong> (<em>python:int</em><em>, </em><em>optional</em>) – the spacing between kernel elements. Can be a single number or
+<li><p><strong>dilation</strong> (<em>int</em><em>, </em><em>optional</em>) – the spacing between kernel elements. Can be a single number or
 a tuple <cite>(dH, dW)</cite>. Default: 1</p></li>
-<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – split input into groups, in_channels should be divisible by the
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – split input into groups, in_channels should be divisible by the
 number of groups. Default: 1</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
 Default: 1e-14</p></li>
 </ul>
 </dd>
@@ -443,16 +434,16 @@ Default: 1e-14</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>out_channels</em><em>, </em><em>in_channels</em><em>, </em><em>Kh</em><em>, </em><em>Kw</em><em>]</em>) – filters</p></li>
 <li><p><strong>bias</strong> (<em>torch.Tensor</em><em>[</em><em>out_channels</em><em>]</em><em>, </em><em>optional</em>) – optional bias tensor of shape (out_channels).
 Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
-<li><p><strong>stride</strong> (<em>python:int</em><em>, </em><em>optional</em>) – the stride of the convolving kernel. Can be a single number or a
+<li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – the stride of the convolving kernel. Can be a single number or a
 tuple <cite>(sH, sW)</cite>. Default: 1</p></li>
-<li><p><strong>padding</strong> (<em>python:int</em><em>, </em><em>optional</em>) – implicit paddings on both sides of the input. Can be a
+<li><p><strong>padding</strong> (<em>int</em><em>, </em><em>optional</em>) – implicit paddings on both sides of the input. Can be a
 single number or a tuple <cite>(padH, padW)</cite>. Default: 0</p></li>
-<li><p><strong>dilation</strong> (<em>python:int</em><em>, </em><em>optional</em>) – the spacing between kernel elements. Can be a single number or
+<li><p><strong>dilation</strong> (<em>int</em><em>, </em><em>optional</em>) – the spacing between kernel elements. Can be a single number or
 a tuple <cite>(dH, dW)</cite>. Default: 1</p></li>
-<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – split input into groups, in_channels should be divisible by the
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – split input into groups, in_channels should be divisible by the
 number of groups. Default: 1</p></li>
 <li><p><strong>normalize_slices</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether input slices should be normalized</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
 Default: 1e-14</p></li>
 </ul>
 </dd>
@@ -479,8 +470,8 @@ Default: 1e-14</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em>) – input tensor</p></li>
-<li><p><strong>drop_prob</strong> (<em>python:float</em>) – probability of dropping activation value</p></li>
-<li><p><strong>block_size</strong> (<em>python:int</em>) – size of each block that is expended from the sampled mask</p></li>
+<li><p><strong>drop_prob</strong> (<em>float</em>) – probability of dropping activation value</p></li>
+<li><p><strong>block_size</strong> (<em>int</em>) – size of each block that is expended from the sampled mask</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether the operation should be done inplace</p></li>
 <li><p><strong>training</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether the input should be processed in training mode</p></li>
 </ul>
@@ -501,7 +492,7 @@ by stacking adjacent information on the channel dimension.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>C</em><em>, </em><em>H</em><em>, </em><em>W</em><em>]</em>) – input tensor</p></li>
-<li><p><strong>scale_factor</strong> (<em>python:int</em>) – spatial scaling factor</p></li>
+<li><p><strong>scale_factor</strong> (<em>int</em>) – spatial scaling factor</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -509,45 +500,6 @@ by stacking adjacent information on the channel dimension.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>torch.Tensor[N, scale_factor ** 2 * C, H / scale_factor, W / scale_factor]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.z_pool">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">z_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">torch.Tensor</span><a class="reference internal" href="_modules/holocron/nn/functional.html#z_pool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.z_pool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Z-pool layer from <a class="reference external" href="https://arxiv.org/pdf/2010.03045.pdf">“Rotate to Attend: Convolutional Triplet Attention Module”</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – input tensor</p></li>
-<li><p><strong>dim</strong> – dimension to pool</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</section>
-<section id="upsampling">
-<h2>Upsampling<a class="headerlink" href="#upsampling" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.stack_upsample2d">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">stack_upsample2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">torch.Tensor</span><a class="reference internal" href="_modules/holocron/nn/functional.html#stack_upsample2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.stack_upsample2d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a loss-less upsampling operation described in <a class="reference external" href="https://arxiv.org/pdf/1609.05158.pdf">“Real-Time Single Image and Video Super-Resolution
-Using an Efficient Sub-Pixel Convolutional Neural Network”</a>
-by unstacking the channel axis into adjacent information.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>C</em><em>, </em><em>H</em><em>, </em><em>W</em><em>]</em>) – input tensor</p></li>
-<li><p><strong>scale_factor</strong> (<em>python:int</em>) – spatial scaling factor</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>upsampled tensor</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.Tensor[N, C / scale_factor ** 2, H * scale_factor, W * scale_factor]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -575,7 +527,7 @@ by unstacking the channel axis into adjacent information.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2021, François-Guillaume Fernandez
 
     </p>
   </div>

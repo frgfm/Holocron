@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolo &mdash; holocron 0.1.4a0+72d41d5-git documentation</title>
+  <title>holocron.models.detection.yolo &mdash; holocron 0.1.4a0+9c4e191-git documentation</title>
   
 
   
@@ -25,6 +25,7 @@
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
         <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/js/custom.js"></script>
     
     <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
 
@@ -35,8 +36,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" /> 
 </head>
@@ -58,13 +58,6 @@
           
           </a>
 
-          
-            
-            
-              <div class="version">
-                0.1.4a0+72d41d5
-              </div>
-            
           
 
           
@@ -106,7 +99,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#darknet">Darknet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#object-detection">Object Detection</a><ul>
@@ -127,7 +119,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#attention">Attention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -136,7 +127,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#downsampling">Downsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../ops.html">holocron.ops</a><ul>
@@ -146,6 +136,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../trainer.html">holocron.trainer</a><ul>
@@ -224,12 +215,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.models.detection.yolo</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
-
-<span class="c1"># This program is licensed under the Apache License version 2.</span>
-<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
-
-<span class="kn">import</span> <span class="nn">torch</span>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
@@ -312,7 +298,7 @@
                                           <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">][:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">h</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
                 <span class="n">cell_idxs</span> <span class="o">=</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">w</span> <span class="o">+</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
                 <span class="c1"># Assign the best anchor in each corresponding cell</span>
-                <span class="n">iou_mat</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">pred_xyxy</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_anchors</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">iou_mat</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">pred_xyxy</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_anchors</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">iou_max</span> <span class="o">=</span> <span class="n">iou_mat</span><span class="p">[</span><span class="n">cell_idxs</span><span class="p">,</span> <span class="p">:,</span> <span class="nb">range</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">box_idxs</span> <span class="o">=</span> <span class="n">iou_max</span><span class="o">.</span><span class="n">indices</span>
                 <span class="c1"># Keep IoU for loss computation</span>
@@ -320,26 +306,26 @@
                 <span class="c1"># Update anchor box matching</span>
                 <span class="n">box_selection</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_anchors</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
                 <span class="n">box_selection</span><span class="p">[</span><span class="n">cell_idxs</span><span class="p">,</span> <span class="n">box_idxs</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">is_matched</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">num_anchors</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_anchors</span><span class="p">)[</span><span class="n">cell_idxs</span><span class="p">,</span> <span class="n">box_idxs</span><span class="p">]</span>
-                <span class="n">not_matched</span> <span class="o">=</span> <span class="n">not_matched</span><span class="p">[</span><span class="n">box_selection</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+                <span class="n">is_matched</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">num_anchors</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_anchors</span><span class="p">)[</span><span class="n">cell_idxs</span><span class="p">,</span> <span class="n">box_idxs</span><span class="p">]</span>
+                <span class="n">not_matched</span> <span class="o">=</span> <span class="n">not_matched</span><span class="p">[</span><span class="n">box_selection</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
 
             <span class="c1"># Update losses for boxes without any object</span>
             <span class="k">if</span> <span class="n">not_matched</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># SSE between objectness and IoU</span>
-                <span class="n">selection_o</span> <span class="o">=</span> <span class="n">pred_o</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">not_matched</span><span class="p">]</span>
+                <span class="n">selection_o</span> <span class="o">=</span> <span class="n">pred_o</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">not_matched</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">ignore_high_iou</span> <span class="ow">and</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="c1"># Don&#39;t penalize anchor boxes with high IoU with GTs</span>
-                    <span class="n">selection_o</span> <span class="o">=</span> <span class="n">selection_o</span><span class="p">[</span><span class="n">iou_mat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">num_anchors</span><span class="p">)[</span><span class="n">not_matched</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">]</span>
+                    <span class="n">selection_o</span> <span class="o">=</span> <span class="n">selection_o</span><span class="p">[</span><span class="n">iou_mat</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">num_anchors</span><span class="p">)[</span><span class="n">not_matched</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">]</span>
                 <span class="c1"># Update loss (target = 0)</span>
                 <span class="n">noobj_loss</span> <span class="o">+=</span> <span class="n">selection_o</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
             <span class="c1"># Update loss for boxes with an object</span>
             <span class="k">if</span> <span class="n">is_matched</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># Get prediction assignment</span>
-                <span class="n">selection_o</span> <span class="o">=</span> <span class="n">pred_o</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">is_matched</span><span class="p">]</span>
+                <span class="n">selection_o</span> <span class="o">=</span> <span class="n">pred_o</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">is_matched</span><span class="p">]</span>
                 <span class="n">pred_filter</span> <span class="o">=</span> <span class="n">cell_idxs</span> <span class="k">if</span> <span class="p">(</span><span class="n">pred_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">else</span> <span class="n">is_matched</span>
-                <span class="n">selected_scores</span> <span class="o">=</span> <span class="n">pred_scores</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">pred_filter</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
-                <span class="n">selected_boxes</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">is_matched</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+                <span class="n">selected_scores</span> <span class="o">=</span> <span class="n">pred_scores</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">pred_filter</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+                <span class="n">selected_boxes</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)[</span><span class="n">idx</span><span class="p">,</span> <span class="n">is_matched</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
                 <span class="c1"># Convert GT --&gt; xc, yc, w, h</span>
                 <span class="n">gt_wh</span> <span class="o">=</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">][:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">][:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
                 <span class="n">gt_centers</span> <span class="o">=</span> <span class="p">(</span><span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">][:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">+</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">][:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
@@ -491,19 +477,19 @@
         <span class="n">b</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span>
         <span class="c1"># B * (H * W * (num_anchors * 5 + num_classes)) --&gt; B * H * W * (num_anchors * 5 + num_classes)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
         <span class="c1"># Classification scores</span>
         <span class="n">b_scores</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">:]</span>
         <span class="c1"># Repeat for anchors to keep compatibility across YOLO versions</span>
         <span class="n">b_scores</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">b_scores</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="c1">#  B * H * W * (num_anchors * 5 + num_classes) --&gt;  B * H * W * num_anchors * 5</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span> <span class="o">*</span> <span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span> <span class="o">*</span> <span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
         <span class="c1"># Cell offset</span>
         <span class="n">c_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">c_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="c1"># Box coordinates</span>
-        <span class="n">b_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">c_x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">w</span>
-        <span class="n">b_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">c_y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">h</span>
+        <span class="n">b_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">c_x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">w</span>
+        <span class="n">b_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">c_y</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">h</span>
         <span class="n">b_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
         <span class="n">b_h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
         <span class="c1"># B * H * W * num_anchors * 4</span>
@@ -551,11 +537,11 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_losses</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># B * (H * W * num_anchors)</span>
-            <span class="n">b_coords</span> <span class="o">=</span> <span class="n">b_coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-            <span class="n">b_o</span> <span class="o">=</span> <span class="n">b_o</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">b_coords</span> <span class="o">=</span> <span class="n">b_coords</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+            <span class="n">b_o</span> <span class="o">=</span> <span class="n">b_o</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="c1"># Repeat for each anchor box</span>
             <span class="n">b_scores</span> <span class="o">=</span> <span class="n">b_scores</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-            <span class="n">b_scores</span> <span class="o">=</span> <span class="n">b_scores</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+            <span class="n">b_scores</span> <span class="o">=</span> <span class="n">b_scores</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
 
             <span class="c1"># Stack detections into a list</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span><span class="p">)</span>
@@ -658,7 +644,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2021, François-Guillaume Fernandez
 
     </p>
   </div>

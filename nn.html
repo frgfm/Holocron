@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.4a0+72d41d5-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.4a0+9c4e191-git documentation</title>
   
 
   
@@ -26,6 +26,7 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/js/custom.js"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
@@ -37,8 +38,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="holocron.nn.functional" href="nn.functional.html" />
@@ -62,13 +62,6 @@
           
           </a>
 
-          
-            
-            
-              <div class="version">
-                0.1.4a0+72d41d5
-              </div>
-            
           
 
           
@@ -110,7 +103,6 @@
 <li class="toctree-l3"><a class="reference internal" href="models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#darknet">Darknet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#object-detection">Object Detection</a><ul>
@@ -131,7 +123,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#attention">Attention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
@@ -140,7 +131,6 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#downsampling">Downsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a><ul>
@@ -150,6 +140,7 @@
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
@@ -312,9 +303,9 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>gamma</strong> (<em>python:float</em><em>, </em><em>optional</em>) – exponent parameter of the focal loss</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – exponent parameter of the focal loss</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
 </dd>
@@ -329,7 +320,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
 </dd>
@@ -344,9 +335,9 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
 </dd>
@@ -361,9 +352,9 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>gamma</strong> (<em>python:float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
 </dd>
@@ -379,10 +370,10 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
-<li><p><strong>ignore_index</strong> (<em>python:int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
+<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 <li><p><strong>chi</strong> (<em>in</em><em>, </em><em>optional</em>) – num of features per class</p></li>
-<li><p><strong>alpha</strong> (<em>python:float</em><em>, </em><em>optional</em>) – diversity factor</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – diversity factor</p></li>
 </ul>
 </dd>
 </dl>
@@ -418,7 +409,7 @@ samples for class <span class="math notranslate nohighlight">\(y\)</span>, and <
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>criterion</strong> (<em>torch.nn.Module</em>) – loss module</p></li>
 <li><p><strong>num_samples</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em>) – number of samples for each class</p></li>
-<li><p><strong>beta</strong> (<em>python:float</em><em>, </em><em>optional</em>) – rebalancing exponent</p></li>
+<li><p><strong>beta</strong> (<em>float</em><em>, </em><em>optional</em>) – rebalancing exponent</p></li>
 </ul>
 </dd>
 </dl>
@@ -446,21 +437,21 @@ width in pixels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>in_channels</strong> (<em>python:int</em>) – Number of channels in the input image</p></li>
-<li><p><strong>out_channels</strong> (<em>python:int</em>) – Number of channels produced by the convolution</p></li>
-<li><p><strong>kernel_size</strong> (<em>python:int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
-<li><p><strong>stride</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
-<li><p><strong>padding</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+<li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
+<li><p><strong>padding</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
 the input. Default: 0</p></li>
-<li><p><strong>dilation</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
+<li><p><strong>dilation</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
 elements. Default: 1</p></li>
-<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
 channels to output channels. Default: 1</p></li>
 <li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a learnable bias to the
 output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 <li><p><strong>padding_mode</strong> (<em>string</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code>, <code class="docutils literal notranslate"><span class="pre">'reflect'</span></code>,
 <code class="docutils literal notranslate"><span class="pre">'replicate'</span></code> or <code class="docutils literal notranslate"><span class="pre">'circular'</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code></p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
 Default: 1e-14</p></li>
 </ul>
 </dd>
@@ -480,19 +471,18 @@ can be precisely described as:</p>
 <p>where <span class="math notranslate nohighlight">\(C\)</span> denotes a number of channels,
 <span class="math notranslate nohighlight">\(H\)</span> is a height of input planes in pixels, and <span class="math notranslate nohighlight">\(W\)</span> is
 width in pixels.</p>
-<img alt="Add2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/add2d.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>in_channels</strong> (<em>python:int</em>) – Number of channels in the input image</p></li>
-<li><p><strong>out_channels</strong> (<em>python:int</em>) – Number of channels produced by the convolution</p></li>
-<li><p><strong>kernel_size</strong> (<em>python:int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
-<li><p><strong>stride</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
-<li><p><strong>padding</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+<li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
+<li><p><strong>padding</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
 the input. Default: 0</p></li>
-<li><p><strong>dilation</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
+<li><p><strong>dilation</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
 elements. Default: 1</p></li>
-<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
 channels to output channels. Default: 1</p></li>
 <li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a learnable bias to the
 output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
@@ -500,7 +490,7 @@ output. Default: <code class="docutils literal notranslate"><span class="pre">Tr
 <code class="docutils literal notranslate"><span class="pre">'replicate'</span></code> or <code class="docutils literal notranslate"><span class="pre">'circular'</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code></p></li>
 <li><p><strong>normalize_slices</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether slices should be normalized before performing cross-correlation.
 Default: False</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – a value added to the denominator for numerical stability.
 Default: 1e-14</p></li>
 </ul>
 </dd>
@@ -546,25 +536,24 @@ followed by a convolution of kernel size <span class="math notranslate nohighlig
 <div class="math notranslate nohighlight">
 \[Y = T_{top} \oplus T_{bot}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\oplus\)</span> is the channel-wise concatenation.</p>
-<img alt="SlimConv2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/slimconv2d.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>in_channels</strong> (<em>python:int</em>) – Number of channels in the input image</p></li>
-<li><p><strong>kernel_size</strong> (<em>python:int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
-<li><p><strong>stride</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
-<li><p><strong>padding</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+<li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution. Default: 1</p></li>
+<li><p><strong>padding</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
 the input. Default: 0</p></li>
-<li><p><strong>dilation</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
+<li><p><strong>dilation</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel
 elements. Default: 1</p></li>
-<li><p><strong>groups</strong> (<em>python:int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
 channels to output channels. Default: 1</p></li>
 <li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a learnable bias to the
 output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 <li><p><strong>padding_mode</strong> (<em>string</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code>, <code class="docutils literal notranslate"><span class="pre">'reflect'</span></code>,
 <code class="docutils literal notranslate"><span class="pre">'replicate'</span></code> or <code class="docutils literal notranslate"><span class="pre">'circular'</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code></p></li>
-<li><p><strong>r</strong> (<em>python:int</em><em>, </em><em>optional</em>) – squeezing divider. Default: 32</p></li>
-<li><p><strong>L</strong> (<em>python:int</em><em>, </em><em>optional</em>) – minimum squeezed channels. Default: 8</p></li>
+<li><p><strong>r</strong> (<em>int</em><em>, </em><em>optional</em>) – squeezing divider. Default: 32</p></li>
+<li><p><strong>L</strong> (<em>int</em><em>, </em><em>optional</em>) – minimum squeezed channels. Default: 8</p></li>
 </ul>
 </dd>
 </dl>
@@ -575,17 +564,16 @@ output. Default: <code class="docutils literal notranslate"><span class="pre">Tr
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">PyConv2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_levels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/conv.html#PyConv2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.PyConv2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the convolution module from <a class="reference external" href="https://arxiv.org/pdf/2006.11538.pdf">“Pyramidal Convolution: Rethinking Convolutional Neural Networks for
 Visual Recognition”</a>.</p>
-<img alt="PyConv2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/pyconv2d.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>in_channels</strong> (<em>python:int</em>) – Number of channels in the input image</p></li>
-<li><p><strong>out_channels</strong> (<em>python:int</em>) – Number of channels produced by the convolution</p></li>
-<li><p><strong>kernel_size</strong> (<em>python:int</em>) – Size of the convolving kernel</p></li>
-<li><p><strong>num_levels</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of stacks in the pyramid</p></li>
-<li><p><strong>padding</strong> (<em>python:int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+<li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>num_levels</strong> (<em>int</em><em>, </em><em>optional</em>) – number of stacks in the pyramid</p></li>
+<li><p><strong>padding</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
 the input. Default: 0</p></li>
-<li><p><strong>groups</strong> (<em>list</em><em>(</em><em>python:int</em><em>)</em><em>, </em><em>optional</em>) – Number of blocked connections from input
+<li><p><strong>groups</strong> (<em>list</em><em>(</em><em>int</em><em>)</em><em>, </em><em>optional</em>) – Number of blocked connections from input
 channels to output channels. Default: 1</p></li>
 </ul>
 </dd>
@@ -599,12 +587,11 @@ channels to output channels. Default: 1</p></li>
 <dt class="sig sig-object py" id="holocron.nn.DropBlock2d">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">DropBlock2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/dropblock.html#DropBlock2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.DropBlock2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the DropBlock module from <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">“DropBlock: A regularization method for convolutional networks”</a></p>
-<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/dropblock.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/dropblock.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>p</strong> (<em>python:float</em><em>, </em><em>optional</em>) – probability of dropping activation value</p></li>
-<li><p><strong>block_size</strong> (<em>python:int</em><em>, </em><em>optional</em>) – size of each block that is expended from the sampled mask</p></li>
+<li><p><strong>p</strong> (<em>float</em><em>, </em><em>optional</em>) – probability of dropping activation value</p></li>
+<li><p><strong>block_size</strong> (<em>int</em><em>, </em><em>optional</em>) – size of each block that is expended from the sampled mask</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether the operation should be done inplace</p></li>
 </ul>
 </dd>
@@ -620,7 +607,7 @@ channels to output channels. Default: 1</p></li>
 <dd><p>Implements a loss-less downsampling operation described in <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a> by stacking adjacent information on the channel dimension.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>scale_factor</strong> (<em>python:int</em>) – spatial scaling factor</p>
+<dd class="field-odd"><p><strong>scale_factor</strong> (<em>int</em>) – spatial scaling factor</p>
 </dd>
 </dl>
 </dd></dl>
@@ -641,13 +628,12 @@ channels to output channels. Default: 1</p></li>
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">BlurPool2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#BlurPool2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.BlurPool2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ross Wightman’s <a class="reference external" href="https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/layers/blur_pool.py">implementation</a> of blur pooling
 module as described in <a class="reference external" href="https://arxiv.org/pdf/1904.11486.pdf">“Making Convolutional Networks Shift-Invariant Again”</a>.</p>
-<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/blurpool.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/blurpool.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>channels</strong> (<em>python:int</em>) – Number of input channels</p></li>
-<li><p><strong>kernel_size</strong> (<em>python:int</em><em>, </em><em>optional</em>) – binomial filter size for blurring. currently supports 3 (default) and 5.</p></li>
-<li><p><strong>stride</strong> (<em>python:int</em><em>, </em><em>optional</em>) – downsampling filter stride</p></li>
+<li><p><strong>channels</strong> (<em>int</em>) – Number of input channels</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em><em>, </em><em>optional</em>) – binomial filter size for blurring. currently supports 3 (default) and 5.</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – downsampling filter stride</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -665,18 +651,7 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 <dd><p>SPP layer from <a class="reference external" href="https://arxiv.org/pdf/1406.4729.pdf">“Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition”</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>kernel_sizes</strong> (<em>list&lt;python:int&gt;</em>) – kernel sizes of each pooling</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="holocron.nn.ZPool">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">ZPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#ZPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.ZPool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Z-pool layer from <a class="reference external" href="https://arxiv.org/pdf/2010.03045.pdf">“Rotate to Attend: Convolutional Triplet Attention Module”</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>dim</strong> – dimension to pool</p>
+<dd class="field-odd"><p><strong>kernel_sizes</strong> (<em>list&lt;int&gt;</em>) – kernel sizes of each pooling</p>
 </dd>
 </dl>
 </dd></dl>
@@ -691,7 +666,7 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">“YOLOv4: Optimal Speed and Accuracy of Object Detection”</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>in_channels</strong> (<em>python:int</em>) – input channels</p>
+<dd class="field-odd"><p><strong>in_channels</strong> (<em>int</em>) – input channels</p>
 </dd>
 </dl>
 </dd></dl>
@@ -699,44 +674,19 @@ modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.nn.LambdaLayer">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">LambdaLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_k</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_u</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/lambda_layer.html#LambdaLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.LambdaLayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Lambda layer from <a class="reference external" href="https://openreview.net/pdf?id=xTJEN-ggl1b">“LambdaNetworks: Modeling long-range interactions without attention”</a>. The implementation was adapted from <a class="reference external" href="https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py">lucidrains’</a>.</p>
-<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/lambdalayer.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/lambdalayer.png" />
+<dd><p>Lambda layer from <a class="reference external" href="https://openreview.net/pdf?id=xTJEN-ggl1b">“LambdaNetworks: Modeling long-range interactions without attention”</a>. The implementation was adapted from <cite>lucidrains’
+&lt;https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py&gt;</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>in_channels</strong> (<em>python:int</em>) – input channels</p></li>
-<li><p><strong>out_channels</strong> (<em>python:int</em><em>, </em><em>optional</em>) – output channels</p></li>
-<li><p><strong>dim_k</strong> (<em>python:int</em>) – key dimension</p></li>
-<li><p><strong>n</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of input pixels</p></li>
-<li><p><strong>r</strong> (<em>python:int</em><em>, </em><em>optional</em>) – receptive field for relative positional encoding</p></li>
-<li><p><strong>num_heads</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of attention heads</p></li>
-<li><p><strong>dim_u</strong> (<em>python:int</em><em>, </em><em>optional</em>) – intra-depth dimension</p></li>
+<li><p><strong>in_channels</strong> (<em>int</em>) – input channels</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em><em>, </em><em>optional</em>) – output channels</p></li>
+<li><p><strong>dim_k</strong> (<em>int</em>) – key dimension</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – number of input pixels</p></li>
+<li><p><strong>r</strong> (<em>int</em><em>, </em><em>optional</em>) – receptive field for relative positional encoding</p></li>
+<li><p><strong>num_heads</strong> (<em>int</em><em>, </em><em>optional</em>) – number of attention heads</p></li>
+<li><p><strong>dim_u</strong> (<em>int</em><em>, </em><em>optional</em>) – intra-depth dimension</p></li>
 </ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="holocron.nn.TripletAttention">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">TripletAttention</span></span><a class="reference internal" href="_modules/holocron/nn/modules/attention.html#TripletAttention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.TripletAttention" title="Permalink to this definition">¶</a></dt>
-<dd><p>Triplet attention layer from <a class="reference external" href="https://arxiv.org/pdf/2010.03045.pdf">“Rotate to Attend: Convolutional Triplet Attention Module”</a>. This implementation is based on the
-<a class="reference external" href="https://github.com/LandskapeAI/triplet-attention/blob/master/MODELS/triplet_attention.py">one</a>
-from the paper’s authors.</p>
-</dd></dl>
-
-</section>
-<section id="upsampling">
-<h2>Upsampling<a class="headerlink" href="#upsampling" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="holocron.nn.StackUpsample2d">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">StackUpsample2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/upsample.html#StackUpsample2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.StackUpsample2d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a loss-less upsampling operation described in <a class="reference external" href="https://arxiv.org/pdf/1609.05158.pdf">“Real-Time Single Image and Video Super-Resolution
-Using an Efficient Sub-Pixel Convolutional Neural Network”</a>
-by unstacking the channel axis into adjacent information.</p>
-<img alt="https://docs.fast.ai/images/pixelshuffle.png" class="align-center" src="https://docs.fast.ai/images/pixelshuffle.png" />
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>scale_factor</strong> (<em>python:int</em>) – spatial scaling factor</p>
 </dd>
 </dl>
 </dd></dl>
@@ -764,7 +714,7 @@ by unstacking the channel axis into adjacent information.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2021, François-Guillaume Fernandez
 
     </p>
   </div>

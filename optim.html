@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim &mdash; holocron 0.1.4a0+72d41d5-git documentation</title>
+  <title>holocron.optim &mdash; holocron 0.1.4a0+9c4e191-git documentation</title>
   
 
   
@@ -26,6 +26,7 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/js/custom.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -36,8 +37,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="holocron.trainer" href="trainer.html" />
@@ -61,13 +61,6 @@
           
           </a>
 
-          
-            
-            
-              <div class="version">
-                0.1.4a0+72d41d5
-              </div>
-            
           
 
           
@@ -109,7 +102,6 @@
 <li class="toctree-l3"><a class="reference internal" href="models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#darknet">Darknet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#object-detection">Object Detection</a><ul>
@@ -130,7 +122,6 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#attention">Attention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
@@ -139,7 +130,6 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.functional.html#downsampling">Downsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a><ul>
@@ -149,6 +139,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
@@ -243,10 +234,10 @@ the current state and will update the parameters based on the computed gradients
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>python:float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>python:float</em><em>, </em><em>python:float</em><em>]</em><em>, </em><em>optional</em>) – beta coefficients used for running averages (default: (0.9, 0.999))</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
-<li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
+<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
+<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – beta coefficients used for running averages (default: (0.9, 0.999))</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
 <li><p><strong>scale_clip</strong> (<em>tuple</em><em>, </em><em>optional</em>) – the lower and upper bounds for the weight norm in local LR of LARS</p></li>
 </ul>
 </dd>
@@ -262,10 +253,10 @@ the current state and will update the parameters based on the computed gradients
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining
 parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>python:float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>momentum</strong> (<em>python:float</em><em>, </em><em>optional</em>) – momentum factor (default: 0)</p></li>
-<li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
-<li><p><strong>dampening</strong> (<em>python:float</em><em>, </em><em>optional</em>) – dampening for momentum (default: 0)</p></li>
+<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
+<li><p><strong>momentum</strong> (<em>float</em><em>, </em><em>optional</em>) – momentum factor (default: 0)</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
+<li><p><strong>dampening</strong> (<em>float</em><em>, </em><em>optional</em>) – dampening for momentum (default: 0)</p></li>
 <li><p><strong>nesterov</strong> (<em>bool</em><em>, </em><em>optional</em>) – enables Nesterov momentum (default: False)</p></li>
 <li><p><strong>scale_clip</strong> (<em>tuple</em><em>, </em><em>optional</em>) – the lower and upper bounds for the weight norm in local LR of LARS</p></li>
 </ul>
@@ -281,10 +272,10 @@ parameter groups</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>python:float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>python:float</em><em>, </em><em>python:float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
-<li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
+<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
+<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
 </ul>
 </dd>
 </dl>
@@ -299,12 +290,12 @@ parameter groups</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>python:float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>python:float</em><em>, </em><em>python:float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages  (default: (0.9, 0.999))</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
-<li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
-<li><p><strong>force_adaptive_momentum</strong> (<em>python:float</em><em>, </em><em>optional</em>) – use adaptive momentum if variance is not tractable (default: False)</p></li>
-<li><p><strong>scale_clip</strong> (<em>python:float</em><em>, </em><em>optional</em>) – the maximal upper bound for the scale factor of LARS</p></li>
+<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
+<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages  (default: (0.9, 0.999))</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
+<li><p><strong>force_adaptive_momentum</strong> (<em>float</em><em>, </em><em>optional</em>) – use adaptive momentum if variance is not tractable (default: False)</p></li>
+<li><p><strong>scale_clip</strong> (<em>float</em><em>, </em><em>optional</em>) – the maximal upper bound for the scale factor of LARS</p></li>
 </ul>
 </dd>
 </dl>
@@ -318,11 +309,11 @@ parameter groups</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>python:float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>python:float</em><em>, </em><em>python:float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
-<li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
-<li><p><strong>dof</strong> (<em>python:int</em><em>, </em><em>optional</em>) – degrees of freedom</p></li>
+<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
+<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
+<li><p><strong>dof</strong> (<em>int</em><em>, </em><em>optional</em>) – degrees of freedom</p></li>
 </ul>
 </dd>
 </dl>
@@ -337,31 +328,11 @@ Observed Gradients”</a>.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>python:float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>python:float</em><em>, </em><em>python:float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
-<li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
+<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
+<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
 <li><p><strong>amsgrad</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to use the AMSGrad variant (default: False)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="holocron.optim.AdamP">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">AdamP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.parameter.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amsgrad</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/adamp.html#AdamP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.AdamP" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the AdamP optimizer from <a class="reference external" href="https://arxiv.org/pdf/2006.08217.pdf">“AdamP: Slowing Down the Slowdown for Momentum Optimizers on
-Scale-invariant Weights”</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>python:float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>python:float</em><em>, </em><em>python:float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
-<li><p><strong>eps</strong> (<em>python:float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
-<li><p><strong>weight_decay</strong> (<em>python:float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
-<li><p><strong>amsgrad</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to use the AMSGrad variant (default: False)</p></li>
-<li><p><strong>delta</strong> (<em>python:float</em><em>, </em><em>optional</em>) – delta threshold for projection (default: False)</p></li>
 </ul>
 </dd>
 </dl>
@@ -385,8 +356,8 @@ should write your code this way:</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>base_optimizer</strong> (<em>torch.optim.optimizer.Optimizer</em>) – base parameter optimizer</p></li>
-<li><p><strong>sync_rate</strong> (<em>python:int</em><em>, </em><em>optional</em>) – rate of weight synchronization</p></li>
-<li><p><strong>sync_period</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of step performed on fast weights before weight synchronization</p></li>
+<li><p><strong>sync_rate</strong> (<em>int</em><em>, </em><em>optional</em>) – rate of weight synchronization</p></li>
+<li><p><strong>sync_period</strong> (<em>int</em><em>, </em><em>optional</em>) – number of step performed on fast weights before weight synchronization</p></li>
 </ul>
 </dd>
 </dl>
@@ -400,8 +371,73 @@ should write your code this way:</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>base_optimizer</strong> (<em>torch.optim.optimizer.Optimizer</em>) – base parameter optimizer</p></li>
-<li><p><strong>sync_rate</strong> (<em>python:int</em><em>, </em><em>optional</em>) – rate of weight synchronization</p></li>
-<li><p><strong>sync_period</strong> (<em>python:int</em><em>, </em><em>optional</em>) – number of step performed on fast weights before weight synchronization</p></li>
+<li><p><strong>sync_rate</strong> (<em>int</em><em>, </em><em>optional</em>) – rate of weight synchronization</p></li>
+<li><p><strong>sync_period</strong> (<em>int</em><em>, </em><em>optional</em>) – number of step performed on fast weights before weight synchronization</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="learning-rate-schedulers">
+<h2>Learning rate schedulers<a class="headerlink" href="#learning-rate-schedulers" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.optim.lr_scheduler</span></code> provides several methods to adjust the learning
+rate based on the number of epochs. <a class="reference internal" href="#holocron.optim.lr_scheduler.OneCycleScheduler" title="holocron.optim.lr_scheduler.OneCycleScheduler"><code class="xref py py-class docutils literal notranslate"><span class="pre">holocron.optim.lr_scheduler.OneCycleScheduler</span></code></a>
+allows dynamic learning rate reducing based on some validation measurements.</p>
+<p>Learning rate scheduling should be applied after optimizer’s update; e.g., you
+should write your code this way:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scheduler</span> <span class="o">=</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">train</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">validate</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="holocron.optim.lr_scheduler.OneCycleScheduler">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.optim.lr_scheduler.</span></span><span class="sig-name descname"><span class="pre">OneCycleScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle_momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lr_scheduler.html#OneCycleScheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.lr_scheduler.OneCycleScheduler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the One Cycle scheduler from <a class="reference external" href="https://arxiv.org/pdf/1803.09820.pdf">“A disciplined approach to neural network hyper-parameters”</a>. Please note that this implementation was made before pytorch supports it,
+using the official Pytorch implementation is advised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>Optimizer</em>) – Wrapped optimizer.</p></li>
+<li><p><strong>total_size</strong> (<em>int</em>) – Number of training iterations to be performed</p></li>
+<li><p><strong>max_lr</strong> (<em>float</em><em> or </em><em>list</em>) – Upper learning rate boundaries in the cycle
+for each parameter group. Functionally,
+it defines the cycle amplitude (max_lr - base_lr).
+The lr at any cycle is the sum of base_lr
+and some scaling of the amplitude; therefore
+max_lr may not actually be reached depending on
+scaling function.</p></li>
+<li><p><strong>warmup_ratio</strong> (<em>float</em>) – ratio of iterations used to reach max_lr</p></li>
+<li><p><strong>phases</strong> (<em>tuple</em>) – specify the scaling mode of both phases (possible values: ‘linear’, ‘cosine’)</p></li>
+<li><p><strong>base_ratio</strong> (<em>float</em>) – ratio between base_lr and max_lr during warmup phase</p></li>
+<li><p><strong>final_ratio</strong> (<em>float</em>) – ratio between base_lr and max_lr during last phase</p></li>
+<li><p><strong>cycle_momentum</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, momentum is cycled inversely
+to learning rate between ‘base_momentum’ and ‘max_momentum’.
+Default: True</p></li>
+<li><p><strong>base_momentum</strong> (<em>float</em><em> or </em><em>list</em>) – Lower momentum boundaries in the cycle
+for each parameter group. Note that momentum is cycled inversely
+to learning rate; at the peak of a cycle, momentum is
+‘base_momentum’ and learning rate is ‘max_lr’.
+Default: 0.8</p></li>
+<li><p><strong>max_momentum</strong> (<em>float</em><em> or </em><em>list</em>) – Upper momentum boundaries in the cycle
+for each parameter group. Functionally,
+it defines the cycle amplitude (max_momentum - base_momentum).
+The momentum at any cycle is the difference of max_momentum
+and some scaling of the amplitude; therefore
+base_momentum may not actually be reached depending on
+scaling function. Note that momentum is cycled inversely
+to learning rate; at the start of a cycle, momentum is ‘max_momentum’
+and learning rate is ‘base_lr’
+Default: 0.9</p></li>
+<li><p><strong>last_epoch</strong> (<em>int</em>) – The index of the last batch. This parameter is used when
+resuming a training job. Since <cite>step()</cite> should be invoked after each
+batch instead of after each epoch, this number represents the total
+number of <em>batches</em> computed, not the total number of epochs computed.
+When last_epoch=-1, the schedule is started from the beginning.
+Default: -1</p></li>
 </ul>
 </dd>
 </dl>
@@ -430,7 +466,7 @@ should write your code this way:</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2021, François-Guillaume Fernandez
 
     </p>
   </div>

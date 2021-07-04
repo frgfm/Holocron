@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.darknetv3 &mdash; holocron 0.1.4a0+72d41d5-git documentation</title>
+  <title>holocron.models.darknetv3 &mdash; holocron 0.1.4a0+9c4e191-git documentation</title>
   
 
   
@@ -25,6 +25,7 @@
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -35,8 +36,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/css/my_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
@@ -58,13 +58,6 @@
           
           </a>
 
-          
-            
-            
-              <div class="version">
-                0.1.4a0+72d41d5
-              </div>
-            
           
 
           
@@ -106,7 +99,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#object-detection">Object Detection</a><ul>
@@ -127,7 +119,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#attention">Attention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -136,7 +127,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ops.html">holocron.ops</a><ul>
@@ -146,6 +136,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../trainer.html">holocron.trainer</a><ul>
@@ -224,12 +215,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.models.darknetv3</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
-
-<span class="c1"># This program is licensed under the Apache License version 2.</span>
-<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
-
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
@@ -387,7 +373,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2021, François-Guillaume Fernandez
 
     </p>
   </div>

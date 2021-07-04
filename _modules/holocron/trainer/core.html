@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer.core &mdash; holocron 0.1.4a0+72d41d5-git documentation</title>
+  <title>holocron.trainer.core &mdash; holocron 0.1.4a0+9c4e191-git documentation</title>
   
 
   
@@ -25,6 +25,7 @@
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/js/custom.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -35,8 +36,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/css/my_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
@@ -58,13 +58,6 @@
           
           </a>
 
-          
-            
-            
-              <div class="version">
-                0.1.4a0+72d41d5
-              </div>
-            
           
 
           
@@ -106,7 +99,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#object-detection">Object Detection</a><ul>
@@ -127,7 +119,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#attention">Attention</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -136,7 +127,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#convolutions">Convolutions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#upsampling">Upsampling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../ops.html">holocron.ops</a><ul>
@@ -146,6 +136,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../trainer.html">holocron.trainer</a><ul>
@@ -224,15 +215,9 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.trainer.core</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
-
-<span class="c1"># This program is licensed under the Apache License version 2.</span>
-<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
-
-<span class="kn">import</span> <span class="nn">math</span>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
@@ -248,7 +233,7 @@
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">freeze_bn</span><span class="p">,</span> <span class="n">freeze_model</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trainer&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;BinaryClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;SegmentationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;DetectionTrainer&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trainer&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;SegmentationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;DetectionTrainer&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Trainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer">[docs]</a><span class="k">class</span> <span class="nc">Trainer</span><span class="p">:</span>
@@ -441,8 +426,8 @@
             <span class="n">eval_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
 
             <span class="c1"># master bar</span>
-            <span class="n">mb</span><span class="o">.</span><span class="n">main_bar</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="n">num_epochs</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">mb</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="n">num_epochs</span><span class="si">}</span><span class="s2"> - &quot;</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">main_bar</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="n">num_epochs</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="n">num_epochs</span><span class="si">}</span><span class="s2"> - &quot;</span>
                      <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span><span class="p">:</span>
@@ -466,9 +451,6 @@
 <span class="sd">           end_lr (float, optional): final learning rate</span>
 <span class="sd">           num_it (int, optional): number of iterations to perform</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="n">num_it</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;the value of `num_it` needs to be lower than the number of available batches&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
@@ -512,21 +494,10 @@
             <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">avg_loss</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">loss</span>
             <span class="n">smoothed_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg_loss</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">**</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
 
-        <span class="c1"># Properly rescale Y-axis</span>
-        <span class="n">data_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span>
-            <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">)</span> <span class="o">//</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
-            <span class="o">-</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">)</span> <span class="o">//</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">20</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">smoothed_losses</span><span class="p">[</span><span class="n">data_slice</span><span class="p">])</span>
-        <span class="n">min_idx</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
-        <span class="n">max_val</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[:</span><span class="n">min_idx</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-        <span class="n">delta</span> <span class="o">=</span> <span class="n">max_val</span> <span class="o">-</span> <span class="n">vals</span><span class="p">[</span><span class="n">min_idx</span><span class="p">]</span>
-
-        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">[</span><span class="n">data_slice</span><span class="p">],</span> <span class="n">smoothed_losses</span><span class="p">[</span><span class="n">data_slice</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">],</span> <span class="n">smoothed_losses</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">])</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Learning Rate&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Training loss&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="n">min_idx</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">delta</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">+</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">delta</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span></div>
 
@@ -543,10 +514,10 @@
         <span class="c1"># Update param groups &amp; LR</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
 
+        <span class="n">prev_loss</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
+
         <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span><span class="p">))</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-        <span class="n">_losses</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_it</span><span class="p">):</span>
             <span class="c1"># Forward</span>
@@ -554,9 +525,12 @@
             <span class="c1"># Backprop</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_backprop_step</span><span class="p">(</span><span class="n">batch_loss</span><span class="p">)</span>
 
-            <span class="n">_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="c1"># Check that loss decreases</span>
+            <span class="k">if</span> <span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">prev_loss</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="n">prev_loss</span> <span class="o">=</span> <span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">_losses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div></div>
+        <span class="k">return</span> <span class="kc">True</span></div></div>
 
 
 <div class="viewcode-block" id="ClassificationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer">[docs]</a><span class="k">class</span> <span class="nc">ClassificationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
@@ -591,12 +565,10 @@
             <span class="c1"># Loss computation</span>
             <span class="n">val_loss</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
-            <span class="n">pred</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">5</span> <span class="k">else</span> <span class="n">out</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">correct</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span>
             <span class="n">top1</span> <span class="o">+=</span> <span class="n">correct</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
-                <span class="n">top5</span> <span class="o">+=</span> <span class="n">correct</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
+            <span class="n">top5</span> <span class="o">+=</span> <span class="n">correct</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
             <span class="n">num_samples</span> <span class="o">+=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">val_loss</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">)</span>
@@ -607,56 +579,6 @@
     <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;(Acc@1: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc1&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">, Acc@5: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc5&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="BinaryClassificationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.BinaryClassificationTrainer">[docs]</a><span class="k">class</span> <span class="nc">BinaryClassificationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Image binary classification trainer class</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model (torch.nn.Module): model to train</span>
-<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
-<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
-<span class="sd">        criterion (torch.nn.Module): loss criterion</span>
-<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
-<span class="sd">        gpu (int, optional): index of the GPU to use</span>
-<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="BinaryClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.BinaryClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict: evaluation metrics</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-        <span class="n">val_loss</span><span class="p">,</span> <span class="n">top1</span><span class="p">,</span> <span class="n">num_samples</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">:</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="c1"># Forward</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-            <span class="c1"># Apply sigmoid</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-
-            <span class="c1"># Loss computation</span>
-            <span class="n">val_loss</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-            <span class="n">top1</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">target</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">out</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-            <span class="n">num_samples</span> <span class="o">+=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="n">val_loss</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">acc</span><span class="o">=</span><span class="n">top1</span> <span class="o">/</span> <span class="n">num_samples</span><span class="p">)</span></div>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;(Acc: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SegmentationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.SegmentationTrainer">[docs]</a><span class="k">class</span> <span class="nc">SegmentationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
@@ -828,7 +750,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2021, François-Guillaume Fernandez
 
     </p>
   </div>
