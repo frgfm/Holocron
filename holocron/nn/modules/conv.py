@@ -33,9 +33,9 @@ class _NormConvNd(_ConvNd):
         normalize_slices=False,
         eps=1e-14
     ) -> None:
-        super().__init__(in_channels, out_channels, kernel_size, stride,
-                         padding, dilation, transposed, output_padding,
-                         groups, bias, padding_mode)  # type: ignore[arg-type]
+        super().__init__(in_channels, out_channels, kernel_size, stride,  # type: ignore[arg-type]
+                         padding, dilation, transposed, output_padding,  # type: ignore[arg-type]
+                         groups, bias, padding_mode)
         self.normalize_slices = normalize_slices
         self.eps = eps
 

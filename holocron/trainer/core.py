@@ -419,7 +419,7 @@ class BinaryClassificationTrainer(Trainer):
             # Loss computation
             val_loss += self.criterion(out, target).item()
 
-            top1 += torch.sum((target >= 0.5) == (out >= 0.5)).item()
+            top1 += int(torch.sum((target >= 0.5) == (out >= 0.5)).item())
 
             num_samples += x.shape[0]
 
