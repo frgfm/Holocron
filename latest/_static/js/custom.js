@@ -41,7 +41,7 @@ function addVersionControl() {
 
     const htmlLines = [];
     for (const [key, value] of Object.entries(versionMapping)) {
-        let baseUrlIndex = (version == "torch-cam") ? versionIndex + 1: versionIndex;
+        let baseUrlIndex = (version == "Holocron") ? versionIndex + 1: versionIndex;
         var urlParts = parts.slice(0, baseUrlIndex);
         if (key != "") {
             urlParts = urlParts.concat([key]);
@@ -56,7 +56,7 @@ function addVersionControl() {
     // Button for version selection
     const versionButton = document.createElement("div");
     versionButton.classList.add("version-button");
-    let label = (version == "torch-cam") ? stableVersion : version
+    let label = (version == "Holocron") ? stableVersion : version
     versionButton.innerText = label.concat(" ▼");
 
     // Toggle the menu when we click on the button
