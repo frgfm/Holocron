@@ -121,7 +121,6 @@ def main(args):
         args.pretrained,
         not(args.pretrained),
         num_classes=len(VOC_CLASSES),
-        in_channels=3
     )
 
     # Loss setup
