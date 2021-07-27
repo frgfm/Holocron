@@ -191,7 +191,7 @@ class UNet(nn.Module):
         self.decoders = nn.ModuleList([])
         _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][1:-1]] + [layout[0]]
         for in_chan, out_chan in zip(layout[::-1][:-1], _layout):
-            self.decoders.append(UpPath(in_chan, out_chan, bilinear_upsampling, int(same_padding),
+            self.decoders.append(UpPath(in_chan, out_chan, out_chan, bilinear_upsampling, int(same_padding),
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
@@ -229,6 +229,9 @@ class UBlock(nn.Module):
         conv_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
         super().__init__()
+
+        if act_layer is None:
+            act_layer = nn.ReLU(inplace=True)
 
         self.upsample = nn.Sequential(
             *conv_sequence(up_chan, up_chan // 2 * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer,
@@ -297,7 +300,6 @@ class DynamicUNet(nn.Module):
         with torch.no_grad():
             shapes = [v.shape[1:] for v in self.encoder(torch.zeros(1, *input_shape)).values()]
         chans = [s[0] for s in shapes]
-        sizes = [s[1] for s in shapes]
         if training_mode:
             self.encoder.train()
 
@@ -395,7 +397,7 @@ def _dynamic_unet(arch: str, backbone: nn.Module, pretrained: bool, progress: bo
     return model
 
 
-def unet2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet:
+def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 1, **kwargs: Any) -> DynamicUNet:
     """U-Net from
     `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
 
@@ -410,7 +412,7 @@ def unet2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNe
         torch.nn.Module: semantic segmentation model
     """
 
-    backbone = UNetBackbone(default_cfgs['unet2']['layout']).features
+    backbone = UNetBackbone(default_cfgs['unet2']['layout'], in_channels=in_channels).features
 
     return _dynamic_unet('unet2', backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
 
@@ -444,10 +446,11 @@ def unet_rexnet13(
     pretrained: bool = False,
     pretrained_backbone: bool = True,
     progress: bool = True,
+    in_channels: int = 3,
     **kwargs: Any
 ) -> DynamicUNet:
 
-    backbone = rexnet1_3x(pretrained=pretrained_backbone and not pretrained).features
+    backbone = rexnet1_3x(pretrained=pretrained_backbone and not pretrained, in_channels=in_channels).features
     kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
     kwargs['act_layer'] = kwargs.get('act_layer', SiLU())
     # hotfix of https://github.com/pytorch/vision/issues/3802
