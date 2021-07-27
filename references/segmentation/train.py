@@ -117,7 +117,12 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = segmentation.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES))
+    model = segmentation.__dict__[args.model](
+        args.pretrained,
+        not(args.pretrained),
+        num_classes=len(VOC_CLASSES),
+        in_channels=3
+    )
 
     # Loss setup
     loss_weight = torch.ones(len(VOC_CLASSES))

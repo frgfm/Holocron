@@ -231,7 +231,8 @@ class UBlock(nn.Module):
         super().__init__()
 
         self.upsample = nn.Sequential(
-            *conv_sequence(up_chan, up_chan // 2 * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
+            *conv_sequence(up_chan, up_chan // 2 * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer,
+                           kernel_size=1),
             nn.PixelShuffle(upscale_factor=2)
         )
 
@@ -383,7 +384,7 @@ def _dynamic_unet(arch: str, backbone: nn.Module, pretrained: bool, progress: bo
     # Build the encoder
     encoder = IntermediateLayerGetter(
         backbone,
-        {name : str(idx) for idx, name in enumerate(default_cfgs[arch]['backbone_layers'])}
+        {name: str(idx) for idx, name in enumerate(default_cfgs[arch]['backbone_layers'])}
     )
     # Build the model
     model = DynamicUNet(encoder, **kwargs)
@@ -411,7 +412,7 @@ def unet2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNe
 
     backbone = UNetBackbone(default_cfgs['unet2']['layout']).features
 
-    return _dynamic_unet('unet2', backbone, pretrained, progress, **kwargs)
+    return _dynamic_unet('unet2', backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
 
 
 def unet_vgg11(
@@ -423,7 +424,7 @@ def unet_vgg11(
 
     backbone = vgg11(pretrained=pretrained_backbone and not pretrained).features
 
-    return  _dynamic_unet('unet_vgg11', backbone, pretrained, progress, **kwargs)
+    return _dynamic_unet('unet_vgg11', backbone, pretrained, progress, **kwargs)
 
 
 def unet_tvresnet34(
@@ -436,7 +437,7 @@ def unet_tvresnet34(
     backbone = resnet34(pretrained=pretrained_backbone and not pretrained)
     kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
 
-    return  _dynamic_unet('unet_tvresnet34', backbone, pretrained, progress, **kwargs)
+    return _dynamic_unet('unet_tvresnet34', backbone, pretrained, progress, **kwargs)
 
 
 def unet_rexnet13(
@@ -452,4 +453,4 @@ def unet_rexnet13(
     # hotfix of https://github.com/pytorch/vision/issues/3802
     backbone[21] = SiLU()
 
-    return  _dynamic_unet('unet_rexnet13', backbone, pretrained, progress, **kwargs)
+    return _dynamic_unet('unet_rexnet13', backbone, pretrained, progress, **kwargs)
