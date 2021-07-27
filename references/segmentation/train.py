@@ -104,7 +104,7 @@ def main(args):
             image_set='val',
             download=True,
             transforms=Compose([
-                RandomResize(base_size, base_size),
+                RandomResize(crop_size, crop_size),
                 ToTensor(),
                 SampleTransform(normalize)
             ])
