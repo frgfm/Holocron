@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer &mdash; holocron 0.1.4a0+e1fed60-git documentation</title>
+  <title>holocron.trainer &mdash; holocron 0.1.4a0+b622f70-git documentation</title>
   
 
   
@@ -399,7 +399,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.trainer.SegmentationTrainer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.trainer.</span></span><span class="sig-name descname"><span class="pre">SegmentationTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.nn.modules.module.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.utils.data.dataloader.DataLoader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.utils.data.dataloader.DataLoader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.nn.modules.module.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.optim.optimizer.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'./checkpoint.pth'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#SegmentationTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.trainer.SegmentationTrainer" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.trainer.</span></span><span class="sig-name descname"><span class="pre">SegmentationTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/trainer/core.html#SegmentationTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.trainer.SegmentationTrainer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Semantic segmentation trainer class</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -411,6 +411,7 @@
 <li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – parameter optimizer</p></li>
 <li><p><strong>gpu</strong> (<em>int</em><em>, </em><em>optional</em>) – index of the GPU to use</p></li>
 <li><p><strong>output_file</strong> (<em>str</em><em>, </em><em>optional</em>) – path where checkpoints will be saved</p></li>
+<li><p><strong>num_classes</strong> (<em>int</em>) – number of output classes</p></li>
 </ul>
 </dd>
 </dl>
