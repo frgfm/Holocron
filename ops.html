@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.ops &mdash; holocron 0.1.4a0+afae658-git documentation</title>
+  <title>holocron.ops &mdash; holocron 0.1.4a0+e1fed60-git documentation</title>
   
 
   
@@ -83,7 +83,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installing.html#via-python-package">Via Python Package</a></li>
@@ -92,7 +92,7 @@
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">Package Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Package Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
@@ -231,7 +231,7 @@
 <h2>Boxes<a class="headerlink" href="#boxes" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.ops.box_giou">
-<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">box_giou</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">torch.Tensor</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_giou"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.box_giou" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">box_giou</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_giou"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.box_giou" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Generalized-IoU as described in <a class="reference external" href="https://arxiv.org/pdf/1902.09630.pdf">“Generalized Intersection over Union: A Metric and A Loss
 for Bounding Box Regression”</a>. This implementation was adapted
 from <a class="reference external" href="https://github.com/facebookresearch/detr/blob/master/util/box_ops.py">https://github.com/facebookresearch/detr/blob/master/util/box_ops.py</a></p>
@@ -259,7 +259,7 @@ and <span class="math notranslate nohighlight">\(C\)</span> is the area of the s
 
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.ops.diou_loss">
-<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">diou_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">torch.Tensor</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#diou_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.diou_loss" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">diou_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/holocron/ops/boxes.html#diou_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.diou_loss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Distance-IoU loss as described in <a class="reference external" href="https://arxiv.org/pdf/1911.08287.pdf">“Distance-IoU Loss: Faster and Better Learning for
 Bounding Box Regression”</a>.</p>
 <p>The loss is defined as follows:</p>
@@ -287,7 +287,7 @@ and <span class="math notranslate nohighlight">\(\rho(.)\)</span> is the Euclide
 
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.ops.ciou_loss">
-<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">ciou_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">torch.Tensor</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#ciou_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.ciou_loss" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">ciou_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/holocron/ops/boxes.html#ciou_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.ciou_loss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Complete IoU loss as described in <a class="reference external" href="https://arxiv.org/pdf/1911.08287.pdf">“Distance-IoU Loss: Faster and Better Learning for
 Bounding Box Regression”</a>.</p>
 <p>The loss is defined as follows:</p>
