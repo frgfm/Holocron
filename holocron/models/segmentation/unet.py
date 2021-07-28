@@ -41,7 +41,7 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
         'url': None
     },
     'unet_rexnet13': {
-        'backbone_layers': ['3', '5', '7', '13', '21'],
+        'backbone_layers': ['3', '5', '7', '13', '18'],
         'url': None
     },
 }
