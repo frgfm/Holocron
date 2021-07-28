@@ -181,7 +181,7 @@ def test_segmentation_trainer(tmpdir_factory):
     optimizer = torch.optim.Adam(model.parameters())
     criterion = nn.CrossEntropyLoss()
 
-    learner = trainer.SegmentationTrainer(model, train_loader, train_loader, criterion, optimizer,
+    learner = trainer.SegmentationTrainer(model, train_loader, train_loader, criterion, optimizer, num_classes=5,
                                           output_file=file_path, gpu=0 if torch.cuda.is_available() else None)
 
     _test_trainer(learner, num_it, '2.weight', None)
