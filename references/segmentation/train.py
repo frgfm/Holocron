@@ -25,7 +25,7 @@ from torch.utils.data import RandomSampler, SequentialSampler
 import holocron
 from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
-from transforms import Compose, RandomResize, RandomCrop, RandomHorizontalFlip, SampleTransform, ToTensor
+from transforms import Compose, Resize, RandomResize, RandomCrop, RandomHorizontalFlip, ImageTransform, ToTensor
 
 
 VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
@@ -78,10 +78,11 @@ def main(args):
             download=True,
             transforms=Compose([
                 RandomResize(min_size, max_size),
-                RandomHorizontalFlip(0.5),
                 RandomCrop(crop_size),
+                RandomHorizontalFlip(0.5),
+                ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
                 ToTensor(),
-                SampleTransform(normalize)
+                ImageTransform(normalize)
             ])
         )
 
@@ -104,9 +105,9 @@ def main(args):
             image_set='val',
             download=True,
             transforms=Compose([
-                RandomResize((crop_size, crop_size), (crop_size, crop_size)),
+                Resize((crop_size, crop_size)),
                 ToTensor(),
-                SampleTransform(normalize)
+                ImageTransform(normalize)
             ])
         )
 
