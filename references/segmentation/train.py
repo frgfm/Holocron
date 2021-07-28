@@ -191,9 +191,11 @@ def main(args):
     if args.show_preds:
         x, target = next(iter(train_loader))
         with torch.no_grad():
+            if isinstance(args.device, int):
+                x = x.cuda()
             trainer.model.eval()
             preds = trainer.model(x)
-        plot_predictions(x, preds, target, ignore_index=255)
+        plot_predictions(x.cpu(), preds.cpu(), target, ignore_index=255)
         return
 
     if args.test_only:
