@@ -38,7 +38,7 @@ def worker_init_fn(worker_id: int) -> None:
 
 
 def plot_samples(images, targets, ignore_index=None):
-    # Unnormalize image
+    # Unnormalize image
     nb_samples = 4
     _, axes = plt.subplots(2, nb_samples, figsize=(20, 5))
     for idx in range(nb_samples):
@@ -52,8 +52,38 @@ def plot_samples(images, targets, ignore_index=None):
 
         axes[0][idx].imshow(img)
         axes[0][idx].axis('off')
+        axes[0][idx].set_title('Input image')
         axes[1][idx].imshow(target)
         axes[1][idx].axis('off')
+        axes[1][idx].set_title('Target')
+    plt.show()
+
+
+def plot_predictions(images, preds, targets, ignore_index=None):
+    # Unnormalize image
+    nb_samples = 4
+    _, axes = plt.subplots(3, nb_samples, figsize=(20, 5))
+    for idx in range(nb_samples):
+        img = images[idx]
+        img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
+        img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
+        img = F.to_pil_image(img)
+        # Target
+        target = targets[idx]
+        if isinstance(ignore_index, int):
+            target[target == ignore_index] = 0
+        # Prediction
+        pred = preds[idx].detach().cpu().argmax(dim=0)
+
+        axes[0][idx].imshow(img)
+        axes[0][idx].axis('off')
+        axes[0][idx].set_title('Input image')
+        axes[1][idx].imshow(target)
+        axes[1][idx].axis('off')
+        axes[1][idx].set_title('Target')
+        axes[2][idx].imshow(pred)
+        axes[2][idx].axis('off')
+        axes[2][idx].set_title('Prediction')
     plt.show()
 
 
@@ -126,7 +156,7 @@ def main(args):
 
     # Loss setup
     loss_weight = torch.ones(len(VOC_CLASSES))
-    loss_weight[0] = 0.1
+    # loss_weight[0] = 0.1
     if args.loss == 'crossentropy':
         criterion = nn.CrossEntropyLoss(weight=loss_weight, ignore_index=255)
     elif args.loss == 'label_smoothing':
@@ -144,19 +174,27 @@ def main(args):
     elif args.opt == 'radam':
         optimizer = holocron.optim.RAdam(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
-    elif args.opt == 'ranger':
-        optimizer = Lookahead(holocron.optim.RAdam(model_params, args.lr,
-                                                   betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
-    elif args.opt == 'tadam':
-        optimizer = holocron.optim.TAdam(model_params, args.lr,
+    elif args.opt == 'adamp':
+        optimizer = holocron.optim.AdamP(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+    elif args.opt == 'adabelief':
+        optimizer = holocron.optim.AdaBelief(model_params, args.lr,
+                                             betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     trainer = SegmentationTrainer(model, train_loader, val_loader, criterion, optimizer,
-                                  args.device, args.output_file)
+                                  args.device, args.output_file, num_classes=len(VOC_CLASSES))
     if args.resume:
         print(f"Resuming {args.resume}")
         checkpoint = torch.load(args.resume, map_location='cpu')
         trainer.load(checkpoint)
+
+    if args.show_preds:
+        x, target = next(iter(train_loader))
+        with torch.no_grad():
+            trainer.model.eval()
+            preds = trainer.model(x)
+        plot_predictions(x, preds, target, ignore_index=255)
+        return
 
     if args.test_only:
         print("Running evaluation")
@@ -207,6 +245,8 @@ def parse_args():
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument("--show-samples", dest='show_samples', action='store_true',
                         help="Whether training samples should be displayed")
+    parser.add_argument("--show-preds", dest='show_preds', action='store_true',
+                        help="Whether one batch predictions should be displayed")
     parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
     parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
                         action="store_true")
