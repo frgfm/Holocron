@@ -306,7 +306,7 @@ def complement_cross_entropy(
 
     loss = - 1 / (x.shape[1] - 1) * pt * torch.log(pt)
 
-    # Nullify contributions to the loss
+    # Nullify contributions to the loss
     # TODO: vectorize or write CUDA extension
     for class_idx in torch.unique(target):
         loss[:, class_idx][target == class_idx] = 0.
@@ -331,7 +331,7 @@ def complement_cross_entropy(
         if reduction == 'mean':
             loss = loss.mean()
 
-    # Smooth the labels
+    # Smooth the labels
     return ce_loss + gamma * loss
 
 
@@ -367,7 +367,7 @@ def mutual_channel_loss(
     cnum = c // chi
     x = x.view(b, cnum, chi, -1)
 
-    # CWA
+    # CWA
     base_mask = torch.zeros(chi, device=x.device)
     base_mask[:ceil(chi / 2)] = 1
     chan_mask = torch.zeros((cnum, chi), device=x.device)
