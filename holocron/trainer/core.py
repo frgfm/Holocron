@@ -444,7 +444,12 @@ class SegmentationTrainer(Trainer):
         optimizer (torch.optim.Optimizer): parameter optimizer
         gpu (int, optional): index of the GPU to use
         output_file (str, optional): path where checkpoints will be saved
+        num_classes (int): number of output classes
     """
+
+    def __init__(self, *args: Any, num_classes: int = 10, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.num_classes = num_classes
 
     @torch.no_grad()
     def evaluate(self, ignore_index: int = 255) -> Dict[str, float]:
@@ -460,6 +465,8 @@ class SegmentationTrainer(Trainer):
         self.model.eval()
 
         val_loss, mean_iou = 0., 0.
+        conf_mat = torch.zeros((self.num_classes, self.num_classes), dtype=torch.int64,
+                               device=next(self.model.parameters()).device)
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
@@ -468,23 +475,24 @@ class SegmentationTrainer(Trainer):
             # Loss computation
             val_loss += self.criterion(out, target).item()
 
-            pred = out.argmax(dim=1)
-            tmp_iou, num_seg = 0, 0
-            for class_idx in torch.unique(target):
-                if class_idx != ignore_index:
-                    inter = (pred[target == class_idx] == class_idx).sum().item()
-                    tmp_iou += inter / ((pred == class_idx) | (target == class_idx)).sum().item()
-                    num_seg += 1
-            mean_iou += tmp_iou / num_seg
+            # borrowed from https://github.com/pytorch/vision/blob/master/references/segmentation/train.py
+            pred = out.argmax(dim=1).flatten()
+            target = target.flatten()
+            k = (target >= 0) & (target < self.num_classes)
+            inds = self.num_classes * target[k].to(torch.int64) + pred[k]
+            nc = self.num_classes
+            conf_mat += torch.bincount(inds, minlength=nc ** 2).reshape(nc, nc)
 
         val_loss /= len(self.val_loader)
-        mean_iou /= len(self.val_loader)
+        acc_global = (torch.diag(conf_mat).sum() / conf_mat.sum()).item()
+        mean_iou = (torch.diag(conf_mat) / (conf_mat.sum(1) + conf_mat.sum(0) - torch.diag(conf_mat))).mean().item()
 
-        return dict(val_loss=val_loss, mean_iou=mean_iou)
+        return dict(val_loss=val_loss, acc_global=acc_global, mean_iou=mean_iou)
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return f"Validation loss: {eval_metrics['val_loss']:.4} (Mean IoU: {eval_metrics['mean_iou']:.2%})"
+        return (f"Validation loss: {eval_metrics['val_loss']:.4} "
+                f"(Acc: {eval_metrics['acc_global']:.2%} | Mean IoU: {eval_metrics['mean_iou']:.2%})")
 
 
 def assign_iou(gt_boxes: Tensor, pred_boxes: Tensor, iou_threshold: float = 0.5) -> Tuple[List[int], List[int]]:

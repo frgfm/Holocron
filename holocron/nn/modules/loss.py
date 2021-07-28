@@ -25,11 +25,13 @@ class _Loss(nn.Module):
         # Cast class weights if possible
         self.weight: Optional[Tensor]
         if isinstance(weight, (float, int)):
-            self.weight = torch.Tensor([weight, 1 - weight])  # type: ignore[assignment]
+            self.register_buffer('weight', torch.Tensor([weight, 1 - weight]))
         elif isinstance(weight, list):
-            self.weight = torch.Tensor(weight)  # type: ignore[assignment]
+            self.register_buffer('weight', torch.Tensor(weight))
+        elif isinstance(weight, Tensor):
+            self.register_buffer('weight', weight)
         else:
-            self.weight = weight
+            self.weight = None
         self.ignore_index = ignore_index
         # Set the reduction method
         if reduction not in ['none', 'mean', 'sum']:
