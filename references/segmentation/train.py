@@ -163,8 +163,8 @@ def main(args):
         criterion = holocron.nn.LabelSmoothingCrossEntropy(weight=loss_weight, ignore_index=255)
     elif args.loss == 'focal':
         criterion = holocron.nn.FocalLoss(weight=loss_weight, ignore_index=255)
-    elif args.loss == 'cce':
-        criterion = holocron.nn.ComplementCrossEntropy(weight=loss_weight, ignore_index=255)
+    elif args.loss == 'mc':
+        criterion = holocron.nn.MutualChannelLoss(weight=loss_weight, ignore_index=255)
 
     # Optimizer setup
     model_params = [p for p in model.parameters() if p.requires_grad]
