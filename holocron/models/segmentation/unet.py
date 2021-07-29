@@ -19,7 +19,7 @@ from ..rexnet import rexnet1_3x
 from ..utils import conv_sequence, load_pretrained_params
 
 
-__all__ = ['UNet', 'unet', 'DynamicUNet', 'unet_vgg11', 'unet_tvresnet34', 'unet_rexnet13', 'unet2']
+__all__ = ['UNet', 'unet', 'DynamicUNet', 'unet_tvvgg11', 'unet_tvresnet34', 'unet_rexnet13', 'unet2']
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
@@ -421,7 +421,7 @@ def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 3,
     return _dynamic_unet('unet2', backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
 
 
-def unet_vgg11(
+def unet_tvvgg11(
     pretrained: bool = False,
     pretrained_backbone: bool = True,
     progress: bool = True,
