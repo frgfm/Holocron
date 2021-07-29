@@ -2,4 +2,3 @@ pylocron
 tqdm
 fastprogress>=0.1.21
 matplotlib>=3.0.0
-contiguous_params@git+https://github.com/philjd/contiguous_pytorch_params.git#egg=contiguous_params

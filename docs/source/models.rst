@@ -166,3 +166,11 @@ U-Net
 .. autofunction:: unetpp
 
 .. autofunction:: unet3p
+
+.. autofunction:: unet2
+
+.. autofunction:: unet_tvvgg11
+
+.. autofunction:: unet_tvresnet34
+
+.. autofunction:: unet_rexnet13

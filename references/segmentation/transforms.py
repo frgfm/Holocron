@@ -35,6 +35,19 @@ class Compose(transforms.Compose):
         return image, target
 
 
+class Resize(object):
+    def __init__(self, output_size):
+        self.output_size = output_size
+
+    def __call__(self, image, target):
+        image = F.resize(image, self.output_size)
+        target = F.resize(target, self.output_size, interpolation=InterpolationMode.NEAREST)
+        return image, target
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(output_size={self.output_size})"
+
+
 class RandomResize(object):
     def __init__(self, min_size, max_size=None):
         self.min_size = min_size
@@ -47,8 +60,8 @@ class RandomResize(object):
             size = self.min_size
         else:
             size = random.randint(self.min_size, self.max_size)
-        image = F.resize(image, (size, size))
-        target = F.resize(target, (size, size), interpolation=InterpolationMode.NEAREST)
+        image = F.resize(image, size)
+        target = F.resize(target, size, interpolation=InterpolationMode.NEAREST)
         return image, target
 
     def __repr__(self):
@@ -97,7 +110,7 @@ class ToTensor(transforms.ToTensor):
         return img, target
 
 
-class SampleTransform(object):
+class ImageTransform(object):
     def __init__(self, transform):
         self.transform = transform
 

@@ -23,8 +23,9 @@ from torchvision.transforms import functional as F
 from torch.utils.data import RandomSampler, SequentialSampler
 
 import holocron
+from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
-from transforms import Compose, RandomResize, RandomCrop, RandomHorizontalFlip, SampleTransform, ToTensor
+from transforms import Compose, Resize, RandomResize, RandomCrop, RandomHorizontalFlip, ImageTransform, ToTensor
 
 
 VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
@@ -37,7 +38,7 @@ def worker_init_fn(worker_id: int) -> None:
 
 
 def plot_samples(images, targets, ignore_index=None):
-    # Unnormalize image
+    # Unnormalize image
     nb_samples = 4
     _, axes = plt.subplots(2, nb_samples, figsize=(20, 5))
     for idx in range(nb_samples):
@@ -51,8 +52,38 @@ def plot_samples(images, targets, ignore_index=None):
 
         axes[0][idx].imshow(img)
         axes[0][idx].axis('off')
+        axes[0][idx].set_title('Input image')
         axes[1][idx].imshow(target)
         axes[1][idx].axis('off')
+        axes[1][idx].set_title('Target')
+    plt.show()
+
+
+def plot_predictions(images, preds, targets, ignore_index=None):
+    # Unnormalize image
+    nb_samples = 4
+    _, axes = plt.subplots(3, nb_samples, figsize=(20, 5))
+    for idx in range(nb_samples):
+        img = images[idx]
+        img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
+        img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
+        img = F.to_pil_image(img)
+        # Target
+        target = targets[idx]
+        if isinstance(ignore_index, int):
+            target[target == ignore_index] = 0
+        # Prediction
+        pred = preds[idx].detach().cpu().argmax(dim=0)
+
+        axes[0][idx].imshow(img)
+        axes[0][idx].axis('off')
+        axes[0][idx].set_title('Input image')
+        axes[1][idx].imshow(target)
+        axes[1][idx].axis('off')
+        axes[1][idx].set_title('Target')
+        axes[2][idx].imshow(pred)
+        axes[2][idx].axis('off')
+        axes[2][idx].set_title('Prediction')
     plt.show()
 
 
@@ -79,9 +110,9 @@ def main(args):
                 RandomResize(min_size, max_size),
                 RandomCrop(crop_size),
                 RandomHorizontalFlip(0.5),
-                SampleTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
+                ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
                 ToTensor(),
-                SampleTransform(normalize)
+                ImageTransform(normalize)
             ])
         )
 
@@ -104,9 +135,9 @@ def main(args):
             image_set='val',
             download=True,
             transforms=Compose([
-                RandomResize(base_size, base_size),
+                Resize((crop_size, crop_size)),
                 ToTensor(),
-                SampleTransform(normalize)
+                ImageTransform(normalize)
             ])
         )
 
@@ -117,17 +148,23 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES), in_channels=3)
+    model = segmentation.__dict__[args.model](
+        args.pretrained,
+        not(args.pretrained),
+        num_classes=len(VOC_CLASSES),
+    )
 
     # Loss setup
     loss_weight = torch.ones(len(VOC_CLASSES))
-    loss_weight[0] = 0.1
+    # loss_weight[0] = 0.1
     if args.loss == 'crossentropy':
         criterion = nn.CrossEntropyLoss(weight=loss_weight, ignore_index=255)
     elif args.loss == 'label_smoothing':
         criterion = holocron.nn.LabelSmoothingCrossEntropy(weight=loss_weight, ignore_index=255)
     elif args.loss == 'focal':
         criterion = holocron.nn.FocalLoss(weight=loss_weight, ignore_index=255)
+    elif args.loss == 'mc':
+        criterion = holocron.nn.MutualChannelLoss(weight=loss_weight, ignore_index=255)
 
     # Optimizer setup
     model_params = [p for p in model.parameters() if p.requires_grad]
@@ -139,19 +176,29 @@ def main(args):
     elif args.opt == 'radam':
         optimizer = holocron.optim.RAdam(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
-    elif args.opt == 'ranger':
-        optimizer = Lookahead(holocron.optim.RAdam(model_params, args.lr,
-                                                   betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
-    elif args.opt == 'tadam':
-        optimizer = holocron.optim.TAdam(model_params, args.lr,
+    elif args.opt == 'adamp':
+        optimizer = holocron.optim.AdamP(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+    elif args.opt == 'adabelief':
+        optimizer = holocron.optim.AdaBelief(model_params, args.lr,
+                                             betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     trainer = SegmentationTrainer(model, train_loader, val_loader, criterion, optimizer,
-                                  args.device, args.output_file)
+                                  args.device, args.output_file, num_classes=len(VOC_CLASSES))
     if args.resume:
         print(f"Resuming {args.resume}")
         checkpoint = torch.load(args.resume, map_location='cpu')
         trainer.load(checkpoint)
+
+    if args.show_preds:
+        x, target = next(iter(train_loader))
+        with torch.no_grad():
+            if isinstance(args.device, int):
+                x = x.cuda()
+            trainer.model.eval()
+            preds = trainer.model(x)
+        plot_predictions(x.cpu(), preds.cpu(), target, ignore_index=255)
+        return
 
     if args.test_only:
         print("Running evaluation")
@@ -202,6 +249,8 @@ def parse_args():
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument("--show-samples", dest='show_samples', action='store_true',
                         help="Whether training samples should be displayed")
+    parser.add_argument("--show-preds", dest='show_preds', action='store_true',
+                        help="Whether one batch predictions should be displayed")
     parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
     parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
                         action="store_true")
