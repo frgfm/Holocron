@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+b622f70-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+74e4e16-git documentation</title>
   
 
   
@@ -523,28 +523,6 @@ by stacking adjacent information on the channel dimension.</p>
 </section>
 <section id="upsampling">
 <h2>Upsampling<a class="headerlink" href="#upsampling" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.stack_upsample2d">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">stack_upsample2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/holocron/nn/functional.html#stack_upsample2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.stack_upsample2d" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a loss-less upsampling operation described in <a class="reference external" href="https://arxiv.org/pdf/1609.05158.pdf">“Real-Time Single Image and Video Super-Resolution
-Using an Efficient Sub-Pixel Convolutional Neural Network”</a>
-by unstacking the channel axis into adjacent information.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>C</em><em>, </em><em>H</em><em>, </em><em>W</em><em>]</em>) – input tensor</p></li>
-<li><p><strong>scale_factor</strong> (<em>int</em>) – spatial scaling factor</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>upsampled tensor</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.Tensor[N, C / scale_factor ** 2, H * scale_factor, W * scale_factor]</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 </section>
 
