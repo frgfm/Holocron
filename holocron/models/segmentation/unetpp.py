@@ -55,18 +55,18 @@ class UNetp(nn.Module):
             act_layer = nn.ReLU(inplace=True)
 
         # Contracting path
-        self.encoders = nn.ModuleList([])
+        self.encoder = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(down_path(in_chan, out_chan, _pool, 1,
-                                           act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoder.append(down_path(in_chan, out_chan, _pool, 1,
+                                          act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
-        self.decoders = nn.ModuleList([])
+        self.decoder = nn.ModuleList([])
         for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
-            self.decoders.append(nn.ModuleList([
+            self.decoder.append(nn.ModuleList([
                 UpPath(next_chan + row_chan, row_chan, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
                 for _ in range(num_cells + 1)
@@ -81,13 +81,13 @@ class UNetp(nn.Module):
 
         xs: List[Tensor] = []
         # Contracting path
-        for encoder in self.encoders:
+        for encoder in self.encoder:
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
 
         # Nested expansive path
-        for j in range(len(self.decoders)):
-            for i in range(len(self.decoders) - j):
-                xs[i] = self.decoders[i][j](xs[i], xs[i + 1] if (i + 1) < (len(self.decoders) - j) else xs.pop())
+        for j in range(len(self.decoder)):
+            for i in range(len(self.decoder) - j):
+                xs[i] = self.decoder[i][j](xs[i], xs[i + 1] if (i + 1) < (len(self.decoder) - j) else xs.pop())
 
         return self.classifier(xs.pop())
 
@@ -120,17 +120,17 @@ class UNetpp(nn.Module):
             act_layer = nn.ReLU(inplace=True)
 
         # Contracting path
-        self.encoders = nn.ModuleList([])
+        self.encoder = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
-        self.decoders = nn.ModuleList([])
+        self.decoder = nn.ModuleList([])
         for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
-            self.decoders.append(nn.ModuleList([
+            self.decoder.append(nn.ModuleList([
                 UpPath(next_chan + num_skips * row_chan, row_chan, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
                 for num_skips in range(1, num_cells + 2)
@@ -145,15 +145,15 @@ class UNetpp(nn.Module):
 
         xs: List[List[Tensor]] = []
         # Contracting path
-        for encoder in self.encoders:
+        for encoder in self.encoder:
             xs.append([encoder(xs[-1][0] if len(xs) > 0 else x)])
 
         # Nested expansive path
-        for j in range(len(self.decoders)):
-            for i in range(len(self.decoders) - j):
-                xs[i].append(self.decoders[i][j](
+        for j in range(len(self.decoder)):
+            for i in range(len(self.decoder) - j):
+                xs[i].append(self.decoder[i][j](
                     xs[i][:j + 1],
-                    xs[i + 1][j] if (i + 1) < (len(self.decoders) - j) else xs.pop()[-1]
+                    xs[i + 1][j] if (i + 1) < (len(self.decoder) - j) else xs.pop()[-1]
                 ))
 
         # Classifier

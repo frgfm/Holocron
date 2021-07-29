@@ -99,20 +99,22 @@ class UNet3p(nn.Module):
             norm_layer = nn.BatchNorm2d
 
         # Contracting path
-        self.encoders = nn.ModuleList([])
+        self.encoder = nn.ModuleList([])
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         # Expansive path
-        self.decoders = nn.ModuleList([])
+        self.decoder = nn.ModuleList([])
         for row in range(len(layout) - 1):
-            self.decoders.append(FSAggreg(layout[:row],
-                                          layout[row],
-                                          [len(layout) * layout[0]] * (len(layout) - 2 - row) + layout[-1:],
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.decoder.append(FSAggreg(
+                layout[:row],
+                layout[row],
+                [len(layout) * layout[0]] * (len(layout) - 2 - row) + layout[-1:],
+                act_layer, norm_layer, drop_layer, conv_layer
+            ))
 
         # Classifier
         self.classifier = nn.Conv2d(len(layout) * layout[0], num_classes, 1)
@@ -123,12 +125,12 @@ class UNet3p(nn.Module):
 
         xs: List[Tensor] = []
         # Contracting path
-        for encoder in self.encoders:
+        for encoder in self.encoder:
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
 
         # Full-scale expansive path
-        for idx in range(len(self.decoders) - 1, -1, -1):
-            xs[idx] = self.decoders[idx](xs[:idx], xs[idx], xs[idx + 1:])
+        for idx in range(len(self.decoder) - 1, -1, -1):
+            xs[idx] = self.decoder[idx](xs[:idx], xs[idx], xs[idx + 1:])
 
         # Classifier
         x = self.classifier(xs[0])

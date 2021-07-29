@@ -193,11 +193,11 @@ class UNet(nn.Module):
         )
 
         # Expansive path
-        self.decoders = nn.ModuleList([])
+        self.decoder = nn.ModuleList([])
         _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][:-1]] + [layout[0]]
         for in_chan, out_chan in zip([2 * layout[-1]] + layout[::-1][:-1], _layout):
-            self.decoders.append(UpPath(in_chan, out_chan, bilinear_upsampling, int(same_padding),
-                                        act_layer, norm_layer, drop_layer, conv_layer))
+            self.decoder.append(UpPath(in_chan, out_chan, bilinear_upsampling, int(same_padding),
+                                       act_layer, norm_layer, drop_layer, conv_layer))
 
         # Classifier
         self.classifier = nn.Conv2d(layout[0], num_classes, 1)
@@ -213,7 +213,7 @@ class UNet(nn.Module):
         x = self.bridge(xs[-1])
 
         # Expansive path
-        for decoder in self.decoders:
+        for decoder in self.decoder:
 
             x = decoder(xs.pop(), x)
 
@@ -320,11 +320,11 @@ class DynamicUNet(nn.Module):
         )
 
         # Expansive path
-        self.decoders = nn.ModuleList([])
+        self.decoder = nn.ModuleList([])
         _layout = chans[::-1][1:] + [chans[0]]
         for up_chan, out_chan in zip(chans[::-1], _layout):
-            self.decoders.append(UBlock(up_chan, up_chan, out_chan, int(same_padding),
-                                        act_layer, norm_layer, drop_layer, conv_layer))
+            self.decoder.append(UBlock(up_chan, up_chan, out_chan, int(same_padding),
+                                       act_layer, norm_layer, drop_layer, conv_layer))
 
         # Final upsampling if sizes don't match
         self.upsample: Optional[nn.Sequential] = None
@@ -347,7 +347,7 @@ class DynamicUNet(nn.Module):
         x = self.bridge(xs[-1])
 
         # Expansive path
-        for decoder in self.decoders:
+        for decoder in self.decoder:
             x = decoder(xs.pop(), x)
 
         if self.upsample is not None:
