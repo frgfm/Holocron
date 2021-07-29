@@ -31,9 +31,9 @@ class UNetp(nn.Module):
     """Implements a UNet+ architecture
 
     Args:
-        layout (list<int>): number of channels after each contracting block
-        in_channels (int, optional): number of channels in the input tensor
-        num_classes (int, optional): number of output classes
+        layout: number of channels after each contracting block
+        in_channels: number of channels in the input tensor
+        num_classes: number of output classes
         act_layer: activation layer
         norm_layer: normalization layer
         drop_layer: dropout layer
@@ -96,9 +96,9 @@ class UNetpp(nn.Module):
     """Implements a UNet++ architecture
 
     Args:
-        layout (list<int>): number of channels after each contracting block
-        in_channels (int, optional): number of channels in the input tensor
-        num_classes (int, optional): number of output classes
+        layout: number of channels after each contracting block
+        in_channels: number of channels in the input tensor
+        num_classes: number of output classes
         act_layer: activation layer
         norm_layer: normalization layer
         drop_layer: dropout layer
@@ -181,11 +181,11 @@ def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNe
         :align: center
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on PASCAL VOC2012
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
-        torch.nn.Module: semantic segmentation model
+        semantic segmentation model
     """
 
     return _unet('unetp', pretrained, progress, **kwargs)  # type: ignore[return-value]
@@ -199,11 +199,11 @@ def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
         :align: center
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on PASCAL VOC2012
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
-        torch.nn.Module: semantic segmentation model
+        semantic segmentation model
     """
 
     return _unet('unetpp', pretrained, progress, **kwargs)  # type: ignore[return-value]

@@ -376,11 +376,11 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
         :align: center
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on PASCAL VOC2012
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
-        torch.nn.Module: semantic segmentation model
+        semantic segmentation model
     """
 
     return _unet('unet', pretrained, progress, **kwargs)
@@ -402,18 +402,21 @@ def _dynamic_unet(arch: str, backbone: nn.Module, pretrained: bool, progress: bo
 
 
 def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 3, **kwargs: Any) -> DynamicUNet:
-    """U-Net from
+    """Modified version of U-Net from
     `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
+    that includes a more advanced upscaling block inspired by `fastai
+    <https://docs.fast.ai/vision.models.unet.html#DynamicUnet>`_.
 
     .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png
         :align: center
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on PASCAL VOC2012
+        progress: If True, displays a progress bar of the download to stderr
+        in_channels: number of input channels
 
     Returns:
-        torch.nn.Module: semantic segmentation model
+        semantic segmentation model
     """
 
     backbone = UNetBackbone(default_cfgs['unet2']['encoder_layout'], in_channels=in_channels).features
@@ -427,6 +430,19 @@ def unet_tvvgg11(
     progress: bool = True,
     **kwargs: Any
 ) -> DynamicUNet:
+    """U-Net from
+    `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
+    with a VGG-11 backbone used as encoder, and more advanced upscaling blocks inspired by `fastai
+    <https://docs.fast.ai/vision.models.unet.html#DynamicUnet>`_.
+
+    Args:
+        pretrained: If True, returns a model pre-trained on PASCAL VOC2012
+        pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet
+        progress: If True, displays a progress bar of the download to stderr
+
+    Returns:
+        semantic segmentation model
+    """
 
     backbone = vgg11(pretrained=pretrained_backbone and not pretrained).features
 
@@ -439,6 +455,19 @@ def unet_tvresnet34(
     progress: bool = True,
     **kwargs: Any
 ) -> DynamicUNet:
+    """U-Net from
+    `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
+    with a ResNet-34 backbone used as encoder, and more advanced upscaling blocks inspired by `fastai
+    <https://docs.fast.ai/vision.models.unet.html#DynamicUnet>`_.
+
+    Args:
+        pretrained: If True, returns a model pre-trained on PASCAL VOC2012
+        pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet
+        progress: If True, displays a progress bar of the download to stderr
+
+    Returns:
+        semantic segmentation model
+    """
 
     backbone = resnet34(pretrained=pretrained_backbone and not pretrained)
     kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
@@ -453,6 +482,19 @@ def unet_rexnet13(
     in_channels: int = 3,
     **kwargs: Any
 ) -> DynamicUNet:
+    """U-Net from
+    `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
+    with a ReXNet-1.3x backbone used as encoder, and more advanced upscaling blocks inspired by `fastai
+    <https://docs.fast.ai/vision.models.unet.html#DynamicUnet>`_.
+
+    Args:
+        pretrained: If True, returns a model pre-trained on PASCAL VOC2012
+        pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet
+        progress: If True, displays a progress bar of the download to stderr
+
+    Returns:
+        semantic segmentation model
+    """
 
     backbone = rexnet1_3x(pretrained=pretrained_backbone and not pretrained, in_channels=in_channels).features
     kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
