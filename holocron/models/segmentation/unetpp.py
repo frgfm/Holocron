@@ -67,7 +67,7 @@ class UNetp(nn.Module):
         self.decoders = nn.ModuleList([])
         for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
             self.decoders.append(nn.ModuleList([
-                UpPath(next_chan + row_chan, row_chan, 1, True, 1,
+                UpPath(next_chan + row_chan, row_chan, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
                 for _ in range(num_cells + 1)
             ]))
@@ -131,7 +131,7 @@ class UNetpp(nn.Module):
         self.decoders = nn.ModuleList([])
         for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
             self.decoders.append(nn.ModuleList([
-                UpPath(next_chan + num_skips * row_chan, row_chan, num_skips, True, 1,
+                UpPath(next_chan + num_skips * row_chan, row_chan, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
                 for num_skips in range(1, num_cells + 2)
             ]))
@@ -162,7 +162,7 @@ class UNetpp(nn.Module):
 
 
 def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> nn.Module:
-    # Retrieve the correct Darknet layout type
+    # Retrieve the correct Darknet layout type
     unet_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
     # Build the model
     model = unet_type(default_cfgs[arch]['layout'], **kwargs)
