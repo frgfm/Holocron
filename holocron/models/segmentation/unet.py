@@ -245,7 +245,7 @@ class UBlock(nn.Module):
             nn.PixelShuffle(upscale_factor=2)
         )
 
-        self.bn = nn.BatchNorm2d(left_chan) if norm_layer is None else norm_layer(in_chan)
+        self.bn = nn.BatchNorm2d(left_chan) if norm_layer is None else norm_layer(left_chan)
 
         self.block = nn.Sequential(
             act_layer,
