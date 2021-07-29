@@ -181,7 +181,7 @@ class UNet(nn.Module):
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
             self.encoder.append(down_path(in_chan, out_chan, _pool, int(same_padding),
-                                           act_layer, norm_layer, drop_layer, conv_layer))
+                                          act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         self.bridge = nn.Sequential(
