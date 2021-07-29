@@ -24,12 +24,12 @@ __all__ = ['UNet', 'unet', 'DynamicUNet', 'unet_vgg11', 'unet_tvresnet34', 'unet
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     'unet': {
-        'layout': [64, 128, 256, 512, 1024],
+        'encoder_layout': [64, 128, 256, 512],
         'url': None
     },
     'unet2': {
-        'layout': [64, 128, 256, 512, 512],
-        'backbone_layers': ['0', '1', '2', '3', '4'],
+        'encoder_layout': [64, 128, 256, 512],
+        'backbone_layers': ['0', '1', '2', '3'],
         'url': None
     },
     'unet_vgg11': {
@@ -42,7 +42,7 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
     },
     'unet_rexnet13': {
         'backbone_layers': ['3', '5', '7', '13', '18'],
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet_rexnet13_256-61f13b0d.pth',
+        'url': None,
     },
 }
 
@@ -176,20 +176,26 @@ class UNet(nn.Module):
             act_layer = nn.ReLU(inplace=True)
 
         # Contracting path
-        self.encoders = nn.ModuleList([])
+        self.encoder = nn.ModuleList([])
         _layout = [in_channels] + layout
-        if bilinear_upsampling:
-            _layout[-1] = _layout[-1] // 2
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoders.append(down_path(in_chan, out_chan, _pool, int(same_padding),
+            self.encoder.append(down_path(in_chan, out_chan, _pool, int(same_padding),
                                            act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
+        self.bridge = nn.Sequential(
+            nn.MaxPool2d((2, 2)),
+            *conv_sequence(layout[-1], 2 * layout[-1],
+                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+            *conv_sequence(2 * layout[-1], layout[-1],
+                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+        )
+
         # Expansive path
         self.decoders = nn.ModuleList([])
-        _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][1:-1]] + [layout[0]]
-        for in_chan, out_chan in zip(layout[::-1][:-1], _layout):
+        _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][:-1]] + [layout[0]]
+        for in_chan, out_chan in zip([2 * layout[-1]] + layout[::-1][:-1], _layout):
             self.decoders.append(UpPath(in_chan, out_chan, bilinear_upsampling, int(same_padding),
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
@@ -202,12 +208,13 @@ class UNet(nn.Module):
 
         xs: List[Tensor] = []
         # Contracting path
-        for encoder in self.encoders[:-1]:
+        for encoder in self.encoder:
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
-        x = self.encoders[-1](xs[-1])
+        x = self.bridge(xs[-1])
 
         # Expansive path
         for decoder in self.decoders:
+
             x = decoder(xs.pop(), x)
 
         # Classifier
@@ -218,8 +225,8 @@ class UNet(nn.Module):
 class UBlock(nn.Module):
     def __init__(
         self,
+        left_chan: int,
         up_chan: int,
-        in_chan: int,
         out_chan: int,
         padding: int = 0,
         act_layer: Optional[nn.Module] = None,
@@ -233,16 +240,16 @@ class UBlock(nn.Module):
             act_layer = nn.ReLU(inplace=True)
 
         self.upsample = nn.Sequential(
-            *conv_sequence(up_chan, up_chan // 2 * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer,
+            *conv_sequence(up_chan, up_chan * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=1),
             nn.PixelShuffle(upscale_factor=2)
         )
 
-        self.bn = nn.BatchNorm2d(in_chan) if norm_layer is None else norm_layer(in_chan)
+        self.bn = nn.BatchNorm2d(left_chan) if norm_layer is None else norm_layer(in_chan)
 
         self.block = nn.Sequential(
             act_layer,
-            *conv_sequence(in_chan + up_chan // 2, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
+            *conv_sequence(left_chan + up_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=padding),
             *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
                            kernel_size=3, padding=padding)
@@ -295,7 +302,7 @@ class DynamicUNet(nn.Module):
         # Determine all feature map shapes
         training_mode = self.encoder.training
         self.encoder.eval()
-        input_shape = (3, 224, 224) if input_shape is None else input_shape
+        input_shape = (3, 256, 256) if input_shape is None else input_shape
         with torch.no_grad():
             shapes = [v.shape[1:] for v in self.encoder(torch.zeros(1, *input_shape)).values()]
         chans = [s[0] for s in shapes]
@@ -314,27 +321,22 @@ class DynamicUNet(nn.Module):
 
         # Expansive path
         self.decoders = nn.ModuleList([])
-        up_chans = [chans[-1]]
-        for in_chan in chans[::-1][1:]:
-            up_chans.append(in_chan + up_chans[-1] // 2)
-        up_chans[-1] = up_chans[-1] // 2
-        for up_chan, in_chan, out_chan in zip(up_chans[:-1], chans[::-1][1:], up_chans[1:]):
-            self.decoders.append(UBlock(up_chan, in_chan, out_chan, int(same_padding),
+        _layout = chans[::-1][1:] + [chans[0]]
+        for up_chan, out_chan in zip(chans[::-1], _layout):
+            self.decoders.append(UBlock(up_chan, up_chan, out_chan, int(same_padding),
                                         act_layer, norm_layer, drop_layer, conv_layer))
 
         # Final upsampling if sizes don't match
-        _layers: List[nn.Module] = []
+        self.upsample: Optional[nn.Sequential] = None
         if final_upsampling:
-            _layers.extend([
-                *conv_sequence(up_chans[-1], up_chans[-1] * 2 ** 2,
+            self.upsample = nn.Sequential(
+                *conv_sequence(chans[0], chans[0] * 2 ** 2,
                                act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
                 nn.PixelShuffle(upscale_factor=2)
-            ])
-
-        _layers.append(nn.Conv2d(up_chans[-1], num_classes, 1))
+            )
 
         # Classifier
-        self.classifier = nn.Sequential(*_layers)
+        self.classifier = nn.Conv2d(chans[0], num_classes, 1)
 
         init_module(self, 'relu')
 
@@ -342,11 +344,14 @@ class DynamicUNet(nn.Module):
 
         # Contracting path
         xs: List[Tensor] = list(self.encoder(x).values())
-        x = self.bridge(xs.pop())
+        x = self.bridge(xs[-1])
 
         # Expansive path
         for decoder in self.decoders:
             x = decoder(xs.pop(), x)
+
+        if self.upsample is not None:
+            x = self.upsample(x)
 
         # Classifier
         x = self.classifier(x)
@@ -355,7 +360,7 @@ class DynamicUNet(nn.Module):
 
 def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> UNet:
     # Build the model
-    model = UNet(default_cfgs[arch]['layout'], **kwargs)
+    model = UNet(default_cfgs[arch]['encoder_layout'], **kwargs)
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -396,7 +401,7 @@ def _dynamic_unet(arch: str, backbone: nn.Module, pretrained: bool, progress: bo
     return model
 
 
-def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 1, **kwargs: Any) -> DynamicUNet:
+def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 3, **kwargs: Any) -> DynamicUNet:
     """U-Net from
     `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
 
@@ -411,7 +416,7 @@ def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 1,
         torch.nn.Module: semantic segmentation model
     """
 
-    backbone = UNetBackbone(default_cfgs['unet2']['layout'], in_channels=in_channels).features
+    backbone = UNetBackbone(default_cfgs['unet2']['encoder_layout'], in_channels=in_channels).features
 
     return _dynamic_unet('unet2', backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
 
