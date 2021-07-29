@@ -3,11 +3,10 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-import sys
 import torch
 from torch import Tensor
 import torch.nn as nn
-from typing import Dict, Any, Union, Optional, Callable, List
+from typing import Dict, Any, Optional, Callable, List
 
 from ...nn.init import init_module
 from ..utils import conv_sequence, load_pretrained_params
