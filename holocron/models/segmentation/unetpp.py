@@ -4,10 +4,9 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import sys
-import torch
 from torch import Tensor
 import torch.nn as nn
-from typing import Dict, Any, Union, Optional, Callable, List
+from typing import Dict, Any, Optional, Callable, List
 
 from ...nn.init import init_module
 from ..utils import conv_sequence, load_pretrained_params
@@ -19,10 +18,10 @@ __all__ = ['UNetp', 'unetp', 'UNetpp', 'unetpp']
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     'unetp': {'arch': 'UNetp',
-              'layout': [64, 128, 256, 512, 1024],
+              'layout': [64, 128, 256, 512],
               'url': None},
     'unetpp': {'arch': 'UNetpp',
-               'layout': [64, 128, 256, 512, 1024],
+               'layout': [64, 128, 256, 512],
                'url': None},
 }
 
@@ -63,13 +62,22 @@ class UNetp(nn.Module):
                                           act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
+        self.bridge = nn.Sequential(
+            nn.MaxPool2d((2, 2)),
+            *conv_sequence(layout[-1], 2 * layout[-1],
+                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+            *conv_sequence(2 * layout[-1], layout[-1],
+                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+        )
+
         # Expansive path
         self.decoder = nn.ModuleList([])
-        for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
+        _layout = [layout[-1]] + layout[1:][::-1]
+        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1)):
             self.decoder.append(nn.ModuleList([
-                UpPath(next_chan + row_chan, row_chan, True, 1,
+                UpPath(left_chan + up_chan, left_chan, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
-                for _ in range(num_cells + 1)
+                for _ in range(num_cells)
             ]))
 
         # Classifier
@@ -84,10 +92,13 @@ class UNetp(nn.Module):
         for encoder in self.encoder:
             xs.append(encoder(xs[-1] if len(xs) > 0 else x))
 
+        xs.append(self.bridge(xs[-1]))
+
         # Nested expansive path
         for j in range(len(self.decoder)):
-            for i in range(len(self.decoder) - j):
-                xs[i] = self.decoder[i][j](xs[i], xs[i + 1] if (i + 1) < (len(self.decoder) - j) else xs.pop())
+            for i in range(len(xs) - 1):
+                up_feat = xs[i + 1] if (i + 2) < len(xs) else xs.pop()
+                xs[i] = self.decoder[-1 - i][j](xs[i], up_feat)
 
         return self.classifier(xs.pop())
 
@@ -127,13 +138,22 @@ class UNetpp(nn.Module):
             self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
+        self.bridge = nn.Sequential(
+            nn.MaxPool2d((2, 2)),
+            *conv_sequence(layout[-1], 2 * layout[-1],
+                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+            *conv_sequence(2 * layout[-1], layout[-1],
+                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+        )
+
         # Expansive path
         self.decoder = nn.ModuleList([])
-        for next_chan, row_chan, num_cells in zip(layout[1:], layout[:-1], range(len(_layout) - 1, 0, -1)):
+        _layout = [layout[-1]] + layout[1:][::-1]
+        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1)):
             self.decoder.append(nn.ModuleList([
-                UpPath(next_chan + num_skips * row_chan, row_chan, True, 1,
+                UpPath(up_chan + (idx + 1) * left_chan, left_chan, True, 1,
                        act_layer, norm_layer, drop_layer, conv_layer)
-                for num_skips in range(1, num_cells + 2)
+                for idx in range(num_cells)
             ]))
 
         # Classifier
@@ -148,17 +168,16 @@ class UNetpp(nn.Module):
         for encoder in self.encoder:
             xs.append([encoder(xs[-1][0] if len(xs) > 0 else x)])
 
+        xs.append([self.bridge(xs[-1][-1])])
+
         # Nested expansive path
         for j in range(len(self.decoder)):
-            for i in range(len(self.decoder) - j):
-                xs[i].append(self.decoder[i][j](
-                    xs[i][:j + 1],
-                    xs[i + 1][j] if (i + 1) < (len(self.decoder) - j) else xs.pop()[-1]
-                ))
+            for i in range(len(xs) - 1):
+                up_feat = xs[i + 1][j] if (i + 2) < len(xs) else xs.pop()[-1]
+                xs[i].append(self.decoder[-1 - i][j](xs[i], up_feat))
 
         # Classifier
-        x = self.classifier(xs.pop()[-1])
-        return x
+        return self.classifier(xs.pop()[-1])
 
 
 def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> nn.Module:
