@@ -42,7 +42,7 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
     },
     'unet_rexnet13': {
         'backbone_layers': ['3', '5', '7', '13', '18'],
-        'url': None
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet_rexnet13_256-61f13b0d.pth',
     },
 }
 
