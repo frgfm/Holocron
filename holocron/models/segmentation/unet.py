@@ -398,7 +398,7 @@ def _dynamic_unet(
         {name: str(idx) for idx, name in enumerate(default_cfgs[arch]['backbone_layers'])}
     )
     # Build the model
-    model = DynamicUNet(encoder, **kwargs)
+    model = DynamicUNet(encoder, num_classes=num_classes, **kwargs)
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
