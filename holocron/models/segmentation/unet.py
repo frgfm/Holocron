@@ -384,7 +384,14 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
     return _unet('unet', pretrained, progress, **kwargs)
 
 
-def _dynamic_unet(arch: str, backbone: nn.Module, pretrained: bool, progress: bool, **kwargs: Any) -> DynamicUNet:
+def _dynamic_unet(
+    arch: str,
+    backbone: nn.Module,
+    pretrained: bool,
+    progress: bool,
+    num_classes: int = 21,
+    **kwargs: Any
+) -> DynamicUNet:
     # Build the encoder
     encoder = IntermediateLayerGetter(
         backbone,
