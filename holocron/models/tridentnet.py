@@ -8,7 +8,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 from .resnet import _ResBlock, ResNet
 from .utils import conv_sequence, load_pretrained_params
-from typing import Dict, Any, Optional, Callable
+from typing import Dict, Any, Optional, Callable, List
 
 
 __all__ = ['Tridentneck', 'tridentnet50']
@@ -40,7 +40,8 @@ class TridentConv2d(nn.Conv2d):
             dilations = [1 + idx for idx in range(self.num_branches)]
 
         # Use shared weight to apply the convolution
-        out = torch.cat([F.conv2d(_x, self.weight, self.bias, self.stride, tuple(dilation * p for p in self.padding),
+        out = torch.cat([F.conv2d(_x, self.weight, self.bias, self.stride,
+                                  tuple(dilation * p for p in self.padding),  # type: ignore[misc]
                                   (dilation,) * len(self.dilation), self.groups)
                          for _x, dilation in zip(torch.chunk(x, self.num_branches, 1), dilations)], 1)
 
