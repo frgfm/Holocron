@@ -155,8 +155,10 @@ def main(args):
     )
 
     # Loss setup
-    loss_weight = torch.ones(len(VOC_CLASSES))
-    # loss_weight[0] = 0.1
+    loss_weight = None
+    if isinstance(args.bg_factor, float):
+        loss_weight = torch.ones(len(VOC_CLASSES))
+        loss_weight[0] = args.bg_factor
     if args.loss == 'crossentropy':
         criterion = nn.CrossEntropyLoss(weight=loss_weight, ignore_index=255)
     elif args.loss == 'label_smoothing':
@@ -239,6 +241,8 @@ def parse_args():
     parser.add_argument('-j', '--workers', default=min(os.cpu_count(), 16), type=int,
                         help='number of data loading workers')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
+    parser.add_argument('--bg-factor', dest='bg_factor', default=1, type=float,
+                        help='Class weight of background in the loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
     parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')

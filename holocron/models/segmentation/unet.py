@@ -41,7 +41,7 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
     },
     'unet_rexnet13': {
         'backbone_layers': ['3', '5', '7', '13', '18'],
-        'url': None,
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet_rexnet13_256-38315ff3.pth',
     },
 }
 
@@ -384,14 +384,21 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
     return _unet('unet', pretrained, progress, **kwargs)
 
 
-def _dynamic_unet(arch: str, backbone: nn.Module, pretrained: bool, progress: bool, **kwargs: Any) -> DynamicUNet:
+def _dynamic_unet(
+    arch: str,
+    backbone: nn.Module,
+    pretrained: bool,
+    progress: bool,
+    num_classes: int = 21,
+    **kwargs: Any
+) -> DynamicUNet:
     # Build the encoder
     encoder = IntermediateLayerGetter(
         backbone,
         {name: str(idx) for idx, name in enumerate(default_cfgs[arch]['backbone_layers'])}
     )
     # Build the model
-    model = DynamicUNet(encoder, **kwargs)
+    model = DynamicUNet(encoder, num_classes=num_classes, **kwargs)
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
