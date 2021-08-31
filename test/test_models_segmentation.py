@@ -15,7 +15,10 @@ def _test_segmentation_model(name, input_shape):
     batch_size = 2
     num_channels = 3
     x = torch.rand((batch_size, num_channels, *input_shape))
-    model = segmentation.__dict__[name](pretrained=True, num_classes=num_classes).eval()
+    # Check pretrained version
+    model = segmentation.__dict__[name](pretrained=True).eval()
+    # Check custom number of output classes
+    model = segmentation.__dict__[name](pretrained=False, num_classes=num_classes).eval()
     with torch.no_grad():
         out = model(x)
 
