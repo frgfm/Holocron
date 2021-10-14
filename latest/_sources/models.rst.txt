@@ -134,6 +134,8 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
     yolov2 = models.yolov2(num_classes=10)
 
 
+.. currentmodule:: holocron.models.detection
+
 YOLO
 ----
 
@@ -154,6 +156,9 @@ tensor of size (N x K x Ho x Wo).
 
     import holocron.models as models
     unet = models.unet(num_classes=10)
+
+
+.. currentmodule:: holocron.models.segmentation
 
 
 U-Net

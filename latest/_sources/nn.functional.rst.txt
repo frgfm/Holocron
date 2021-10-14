@@ -50,8 +50,3 @@ Downsampling
 
 .. autofunction:: concat_downsample2d
 .. autofunction:: z_pool
-
-Upsampling
-----------
-
-.. autofunction:: stack_upsample2d
