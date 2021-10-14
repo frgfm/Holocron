@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer.core &mdash; holocron 0.1.4a0+e66f02e-git documentation</title>
+  <title>holocron.trainer.core &mdash; holocron 0.1.4a0+65e570f-git documentation</title>
   
 
   
@@ -510,7 +510,7 @@
         <span class="p">)</span>
         <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">smoothed_losses</span><span class="p">[</span><span class="n">data_slice</span><span class="p">])</span>
         <span class="n">min_idx</span> <span class="o">=</span> <span class="n">vals</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
-        <span class="n">max_val</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[:</span><span class="n">min_idx</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">vals</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">max_val</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[:</span><span class="n">min_idx</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">min_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">vals</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>  <span class="c1"># type: ignore[misc]</span>
         <span class="n">delta</span> <span class="o">=</span> <span class="n">max_val</span> <span class="o">-</span> <span class="n">vals</span><span class="p">[</span><span class="n">min_idx</span><span class="p">]</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">[</span><span class="n">data_slice</span><span class="p">],</span> <span class="n">smoothed_losses</span><span class="p">[</span><span class="n">data_slice</span><span class="p">])</span>
