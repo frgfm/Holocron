@@ -396,8 +396,8 @@ class Involution2d(nn.Module):
         self.k_size = kernel_size
 
         self.pool = nn.AvgPool2d(stride, stride) if stride > 1 else None
-        self.reduce = nn.Conv2d(in_channels, in_channels // reduction_ratio, 1)
-        self.span = nn.Conv2d(in_channels // reduction_ratio, kernel_size ** 2 * groups, 1)
+        self.reduce = nn.Conv2d(in_channels, int(in_channels // reduction_ratio), 1)
+        self.span = nn.Conv2d(int(in_channels // reduction_ratio), kernel_size ** 2 * groups, 1)
         self.unfold = nn.Unfold(kernel_size, dilation, padding, stride)
 
     def forward(self, x):
