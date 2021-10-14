@@ -51,6 +51,8 @@ Convolution layers
 
 .. autoclass:: PyConv2d
 
+.. autoclass:: Involution2d
+
 Regularization layers
 ---------------------
 
