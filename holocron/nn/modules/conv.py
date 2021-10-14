@@ -13,7 +13,7 @@ from torch.nn.functional import pad
 from typing import Optional, Tuple, List, Any
 from .. import functional as F
 
-__all__ = ['NormConv2d', 'Add2d', 'SlimConv2d', 'PyConv2d']
+__all__ = ['NormConv2d', 'Add2d', 'SlimConv2d', 'PyConv2d', 'Involution2d']
 
 
 class _NormConvNd(_ConvNd):
@@ -357,3 +357,68 @@ class PyConv2d(nn.ModuleList):
             return self[0].forward(x)
         else:
             return torch.cat([conv(x) for conv in self], dim=1)
+
+
+class Involution2d(nn.Module):
+    """Implements the convolution module from `"Involution: Inverting the Inherence of Convolution for Visual
+    Recognition" <https://arxiv.org/pdf/2103.06255.pdf>`_, adapted from the proposed PyTorch implementation in
+    the paper.
+
+    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/involutions.png
+        :align: center
+        :alt: Involution2d schema
+
+    Args:
+        in_channels (int): Number of channels in the input image
+        kernel_size (int): Size of the convolving kernel
+        padding (int or tuple, optional): Zero-padding added to both sides of
+            the input. Default: 0
+        stride: Stride of the convolution. Default: 1
+        groups: Number of blocked connections from input channels to output channels. Default: 1
+        dilation: Spacing between kernel elements. Default: 1
+        reduction_ratio: reduction ratio of the channels to generate the kernel
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        kernel_size: int,
+        padding: int = 0,
+        stride: int = 1,
+        groups: int = 1,
+        dilation: int = 1,
+        reduction_ratio: float = 1,
+    ) -> None:
+
+        super().__init__()
+
+        self.groups = groups
+        self.k_size = kernel_size
+
+        self.pool = nn.AvgPool2d(stride, stride) if stride > 1 else None
+        self.reduce = nn.Conv2d(in_channels, int(in_channels // reduction_ratio), 1)
+        self.span = nn.Conv2d(int(in_channels // reduction_ratio), kernel_size ** 2 * groups, 1)
+        self.unfold = nn.Unfold(kernel_size, dilation, padding, stride)
+
+    def forward(self, x):
+
+        # Kernel generation
+        # (N, C, H, W) --> (N, C, H // s, W // s)
+        kernel = self.pool(x) if isinstance(self.pool, nn.Module) else x
+        # --> (N, C // r, H // s, W // s)
+        kernel = self.reduce(kernel)
+        # --> (N, K * K * G, H // s, W // s)
+        kernel = self.span(kernel)
+        # --> (N, G, 1, K ** 2, H // s, W // s)
+        kernel = kernel.view(x.shape[0], self.groups, 1, self.k_size ** 2, *kernel.shape[-2:])
+
+        # --> (N, C * K ** 2, H * W // s ** 2)
+        x_unfolded = self.unfold(x)
+        # --> (N, G, C // G, K ** 2, H // s, W // s)
+        x_unfolded = x_unfolded.reshape(x.shape[0], self.groups, x.shape[1] // self.groups, -1, *kernel.shape[-2:])
+
+        # Multiply-Add operation
+        # --> (N, C, H // s, W // s)
+        out = (kernel * x_unfolded).sum(dim=3).view(*x.shape[:2], *kernel.shape[-2:])
+
+        return out

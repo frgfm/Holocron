@@ -47,3 +47,8 @@ def test_lambdalayer():
         nn.LambdaLayer(3, 32, 16, r=None, n=None)
 
     _test_conv2d(nn.LambdaLayer(8, 32, 16, r=13), (2, 8, 32, 32), (2, 32, 32, 32))
+
+
+def test_involution2d():
+    _test_conv2d(nn.Involution2d(8, 3, 1, reduction_ratio=2), (2, 8, 16, 16), (2, 8, 16, 16))
+    _test_conv2d(nn.Involution2d(8, 3, 1, 2, reduction_ratio=2), (2, 8, 16, 16), (2, 8, 8, 8))
