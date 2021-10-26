@@ -8,7 +8,10 @@ import torch
 import torch.nn as nn
 from holocron.nn import BlurPool2d
 from typing import List, Optional, Any, Callable, Tuple
-from torchvision.models.utils import load_state_dict_from_url
+if int(torch.__version__.split('.')[1]) >= 10:
+    from torch.hub import load_state_dict_from_url
+else:
+    from torchvision.models.utils import load_state_dict_from_url
 
 
 __all__ = ['conv_sequence', 'load_pretrained_params', 'fuse_conv_bn']
