@@ -293,7 +293,7 @@ class Trainer:
         )
         vals = np.array(smoothed_losses[data_slice])
         min_idx = vals.argmin()
-        max_val = vals[:min_idx].max() if isinstance(min_idx, int) else vals.max()  # type: ignore[misc]
+        max_val = vals.max() if min_idx is None else vals[:min_idx].max()  # type: ignore[misc]
         delta = max_val - vals[min_idx]
 
         plt.plot(self.lr_recorder[data_slice], smoothed_losses[data_slice])
