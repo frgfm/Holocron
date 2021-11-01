@@ -4,13 +4,15 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import math
+from typing import Any, List, Optional, Tuple
+
 import torch
-from torch import Tensor
 import torch.nn as nn
+from torch import Tensor
+from torch.nn.functional import pad
 from torch.nn.modules.conv import _ConvNd
 from torch.nn.modules.utils import _pair
-from torch.nn.functional import pad
-from typing import Optional, Tuple, List, Any
+
 from .. import functional as F
 
 __all__ = ['NormConv2d', 'Add2d', 'SlimConv2d', 'PyConv2d', 'Involution2d']

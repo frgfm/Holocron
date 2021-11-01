@@ -3,20 +3,22 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 import torch
-from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
 from torchvision.ops.boxes import box_iou, nms
 from torchvision.ops.misc import FrozenBatchNorm2d
-from typing import Dict, Any, Optional, Tuple, List, Union, Callable
 
-from ..utils import conv_sequence, load_pretrained_params
-from ..darknetv4 import DarknetBodyV4, default_cfgs as dark_cfgs
-from holocron.ops.boxes import ciou_loss
-from holocron.nn import Mish, DropBlock2d, SPP, SAM
+from holocron.nn import SAM, SPP, DropBlock2d, Mish
 from holocron.nn.init import init_module
+from holocron.ops.boxes import ciou_loss
 
+from ..darknetv4 import DarknetBodyV4
+from ..darknetv4 import default_cfgs as dark_cfgs
+from ..utils import conv_sequence, load_pretrained_params
 
 __all__ = ['YOLOv4', 'yolov4', 'SPP', 'PAN', 'Neck']
 

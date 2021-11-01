@@ -7,16 +7,16 @@
 Training script for image classification
 '''
 
+import datetime
+import math
 import os
 import time
-import math
-import datetime
 
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import RandomSampler, SequentialSampler
-from torchvision.datasets import ImageFolder, CIFAR10, CIFAR100
+from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
 from torchvision.transforms import transforms as T
 
 import holocron

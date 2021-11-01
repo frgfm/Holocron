@@ -4,9 +4,10 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import math
+from typing import Callable, Iterable, Optional, Tuple
+
 import torch
 from torch.optim.optimizer import Optimizer
-from typing import Iterable, Optional, Tuple, Callable
 
 
 class RaLars(Optimizer):

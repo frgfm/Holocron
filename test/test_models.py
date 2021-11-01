@@ -6,8 +6,9 @@
 import pytest
 import torch
 from torch import nn
-from holocron.nn import DropBlock2d, SAM, BlurPool2d
+
 from holocron.models import utils
+from holocron.nn import SAM, BlurPool2d, DropBlock2d
 
 
 def _test_conv_seq(conv_seq, expected_classes, expected_channels):

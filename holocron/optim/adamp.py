@@ -3,10 +3,12 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+from typing import Callable, Iterable, Optional, Tuple
+
 import torch
-from . import functional as F
 from torch.optim import Adam
-from typing import Iterable, Tuple, Optional, Callable
+
+from . import functional as F
 
 
 class AdamP(Adam):

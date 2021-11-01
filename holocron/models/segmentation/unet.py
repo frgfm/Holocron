@@ -4,19 +4,19 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 from collections import OrderedDict
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 import torch
-from torch import Tensor
 import torch.nn as nn
+from torch import Tensor
 from torch.nn import functional as F
-from typing import Dict, Any, Union, Optional, Callable, List, Tuple
-from torchvision.models import vgg11, resnet34
+from torchvision.models import resnet34, vgg11
 from torchvision.models._utils import IntermediateLayerGetter
 
+from ...nn import GlobalAvgPool2d, SiLU
 from ...nn.init import init_module
-from ...nn import SiLU, GlobalAvgPool2d
 from ..rexnet import rexnet1_3x
 from ..utils import conv_sequence, load_pretrained_params
-
 
 __all__ = ['UNet', 'unet', 'DynamicUNet', 'unet_tvvgg11', 'unet_tvresnet34', 'unet_rexnet13', 'unet2']
 

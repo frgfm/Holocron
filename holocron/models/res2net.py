@@ -9,12 +9,13 @@ based on https://github.com/rwightman/pytorch-image-models/blob/master/timm/mode
 """
 
 import math
+from typing import Any, Callable, Dict, Optional
+
 import torch
 import torch.nn as nn
-from .resnet import _ResBlock, ResNet
-from .utils import conv_sequence, load_pretrained_params
-from typing import Optional, Callable, Any, Dict
 
+from .resnet import ResNet, _ResBlock
+from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['Bottle2neck', 'res2net50_26w_4s']
 

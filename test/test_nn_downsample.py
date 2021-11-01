@@ -6,6 +6,7 @@
 import pytest
 import torch
 from torch import nn
+
 from holocron.nn import functional as F
 from holocron.nn.modules import downsample
 

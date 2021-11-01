@@ -3,10 +3,11 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-import torch
-from torch import nn, einsum
-import torch.nn.functional as F
 from typing import Optional
+
+import torch
+import torch.nn.functional as F
+from torch import einsum, nn
 
 __all__ = ['LambdaLayer']
 

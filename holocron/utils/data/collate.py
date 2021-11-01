@@ -3,12 +3,12 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+from typing import List, Tuple
+
 import numpy as np
 import torch
 from torch import Tensor
 from torch.utils.data._utils.collate import default_collate
-from typing import Tuple, List
-
 
 __all__ = ['mixup_collate']
 
