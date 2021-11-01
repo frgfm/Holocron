@@ -6,7 +6,7 @@ different tasks, including: image classification, pixelwise semantic
 segmentation, object detection, instance segmentation, person
 keypoint detection and video classification.
 
-The following models are available:
+The following datasets are available:
 
 .. contents:: Models
     :local:
@@ -43,32 +43,6 @@ ResNet
 
 .. autofunction:: resnext101_32x8d
 
-.. autofunction:: resnet50d
-
-
-Res2Net
--------
-
-.. autofunction:: res2net50_26w_4s
-
-
-TridentNet
-----------
-
-.. autofunction:: tridentnet50
-
-
-PyConvResNet
-------------
-
-.. autofunction:: pyconv_resnet50
-
-.. autofunction:: pyconvhg_resnet50
-
-
-ReXNet
--------
-
 .. autofunction:: rexnet1_0x
 
 .. autofunction:: rexnet1_3x
@@ -80,14 +54,17 @@ ReXNet
 .. autofunction:: rexnet2_2x
 
 
-SKNet
------
+Res2Net
+-------
 
-.. autofunction:: sknet50
+.. autoclass:: Res2Net
 
-.. autofunction:: sknet101
+.. autofunction:: res2net
 
-.. autofunction:: sknet152
+Res2NeXt
+--------
+
+.. autofunction:: res2next
 
 
 Darknet
@@ -98,28 +75,6 @@ Darknet
 .. autofunction:: darknet19
 
 .. autofunction:: darknet53
-
-.. autofunction:: cspdarknet53
-
-.. autofunction:: cspdarknet53_mish
-
-
-RepVGG
-------
-.. autofunction:: repvgg_a0
-
-.. autofunction:: repvgg_a1
-
-.. autofunction:: repvgg_a2
-
-.. autofunction:: repvgg_b0
-
-.. autofunction:: repvgg_b1
-
-.. autofunction:: repvgg_b2
-
-.. autofunction:: repvgg_b3
-
 
 
 Object Detection
@@ -134,16 +89,12 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
     yolov2 = models.yolov2(num_classes=10)
 
 
-.. currentmodule:: holocron.models.detection
-
 YOLO
 ----
 
 .. autofunction:: yolov1
 
 .. autofunction:: yolov2
-
-.. autofunction:: yolov4
 
 
 Semantic Segmentation
@@ -158,9 +109,6 @@ tensor of size (N x K x Ho x Wo).
     unet = models.unet(num_classes=10)
 
 
-.. currentmodule:: holocron.models.segmentation
-
-
 U-Net
 -----
 
@@ -171,11 +119,3 @@ U-Net
 .. autofunction:: unetpp
 
 .. autofunction:: unet3p
-
-.. autofunction:: unet2
-
-.. autofunction:: unet_tvvgg11
-
-.. autofunction:: unet_tvresnet34
-
-.. autofunction:: unet_rexnet13

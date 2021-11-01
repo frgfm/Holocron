@@ -23,10 +23,6 @@ Implementations of recent parameter optimizer for Pytorch modules.
 
 .. autoclass:: TAdam
 
-.. autoclass:: AdaBelief
-
-.. autoclass:: AdamP
-
 
 Optimizer wrappers
 ------------------
@@ -42,3 +38,23 @@ should write your code this way:
 .. autoclass:: holocron.optim.wrapper.Lookahead
 
 .. autoclass:: holocron.optim.wrapper.Scout
+
+
+Learning rate schedulers
+---------------------------
+
+:mod:`holocron.optim.lr_scheduler` provides several methods to adjust the learning
+rate based on the number of epochs. :class:`holocron.optim.lr_scheduler.OneCycleScheduler`
+allows dynamic learning rate reducing based on some validation measurements.
+
+Learning rate scheduling should be applied after optimizer's update; e.g., you
+should write your code this way:
+
+    >>> scheduler = ...
+    >>> for epoch in range(100):
+    >>>     train(...)
+    >>>     validate(...)
+    >>>     scheduler.step()
+
+.. autoclass:: holocron.optim.lr_scheduler.OneCycleScheduler
+

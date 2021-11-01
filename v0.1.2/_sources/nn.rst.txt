@@ -13,11 +13,7 @@ Non-linear activations
 
 .. autoclass:: Mish
 
-.. autoclass:: HardMish
-
 .. autoclass:: NLReLU
-
-.. autoclass:: FReLU
 
 Loss functions
 --------------
@@ -28,17 +24,10 @@ Loss functions
 
 .. autoclass:: LabelSmoothingCrossEntropy
 
-.. autoclass:: ComplementCrossEntropy
-
-.. autoclass:: MutualChannelLoss
-
-
 Loss wrappers
 --------------
 
 .. autoclass:: MixupLoss
-
-.. autoclass:: ClassBalancedWrapper
 
 Convolution layers
 ------------------
@@ -48,10 +37,6 @@ Convolution layers
 .. autoclass:: Add2d
 
 .. autoclass:: SlimConv2d
-
-.. autoclass:: PyConv2d
-
-.. autoclass:: Involution2d
 
 Regularization layers
 ---------------------
@@ -63,21 +48,3 @@ Downsampling
 ------------
 
 .. autoclass:: ConcatDownsample2d
-
-.. autoclass:: GlobalAvgPool2d
-
-.. autoclass:: BlurPool2d
-
-.. autoclass:: SPP
-
-.. autoclass:: ZPool
-
-
-Attention
----------
-
-.. autoclass:: SAM
-
-.. autoclass:: LambdaLayer
-
-.. autoclass:: TripletAttention
