@@ -3,10 +3,10 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-from torch.nn import Module
-from torch.nn.modules.batchnorm import _BatchNorm
 from typing import Optional
 
+from torch.nn import Module
+from torch.nn.modules.batchnorm import _BatchNorm
 
 __all__ = ['freeze_bn', 'freeze_model']
 

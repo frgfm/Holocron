@@ -7,29 +7,28 @@
 Training script for object detection
 '''
 
-import math
 import datetime
+import math
 import time
 from pathlib import Path
-from fastprogress import master_bar, progress_bar
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.utils.data
+from fastprogress import master_bar, progress_bar
+from matplotlib.patches import Rectangle
+from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
 from torchvision.ops.boxes import box_iou
 from torchvision.transforms import functional as F
-from torch.utils.data import RandomSampler, SequentialSampler
+from transforms import (CenterCrop, Compose, ImageTransform, RandomHorizontalFlip, RandomResizedCrop, Resize,
+                        VOCTargetTransform, convert_to_relative)
 
 import holocron
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
-from transforms import (Compose, VOCTargetTransform, Resize, ImageTransform, CenterCrop, RandomResizedCrop,
-                        RandomHorizontalFlip, convert_to_relative)
-
 
 VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
                'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train',

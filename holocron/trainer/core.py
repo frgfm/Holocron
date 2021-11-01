@@ -5,22 +5,20 @@
 
 import math
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torch import nn
-from torch import Tensor
-from torch.utils.data import DataLoader
-from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, MultiplicativeLR  # type: ignore[attr-defined]
-from torchvision.ops.boxes import box_iou
-from fastprogress.fastprogress import ConsoleMasterBar
-from fastprogress import master_bar, progress_bar
-from typing import Optional, Dict, Any, Union, List, Tuple
-
 from contiguous_params import ContiguousParams
+from fastprogress import master_bar, progress_bar
+from fastprogress.fastprogress import ConsoleMasterBar
+from torch import Tensor, nn
+from torch.optim.lr_scheduler import CosineAnnealingLR, MultiplicativeLR, OneCycleLR  # type: ignore[attr-defined]
+from torch.utils.data import DataLoader
+from torchvision.ops.boxes import box_iou
 
 from .utils import freeze_bn, freeze_model
-
 
 __all__ = ['Trainer', 'ClassificationTrainer', 'BinaryClassificationTrainer', 'SegmentationTrainer', 'DetectionTrainer']
 

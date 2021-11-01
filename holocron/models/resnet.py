@@ -5,12 +5,14 @@
 
 import sys
 from collections import OrderedDict
+from typing import Any, Callable, Dict, List, Optional, Type, Union
+
 import torch.nn as nn
 from torch import Tensor
-from holocron.nn import init, GlobalAvgPool2d
-from .utils import conv_sequence, load_pretrained_params
-from typing import Dict, Any, List, Optional, Callable, Union, Type
 
+from holocron.nn import GlobalAvgPool2d, init
+
+from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
            'resnext50_32x4d', 'resnext101_32x8d', 'resnet50d']

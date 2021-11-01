@@ -3,15 +3,15 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+from typing import Any, Callable, Dict, List, Optional
+
 import torch
-from torch import Tensor
 import torch.nn as nn
-from typing import Dict, Any, Optional, Callable, List
+from torch import Tensor
 
 from ...nn.init import init_module
 from ..utils import conv_sequence, load_pretrained_params
 from .unet import down_path
-
 
 __all__ = ['UNet3p', 'unet3p']
 

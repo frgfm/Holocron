@@ -3,15 +3,16 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+from typing import Optional
+
 import pytest
 import torch
 from torch import nn
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 from torchvision.models.detection import fasterrcnn_mobilenet_v3_large_320_fpn
-from typing import Optional
 
-from holocron.nn import GlobalAvgPool2d
 from holocron import trainer
+from holocron.nn import GlobalAvgPool2d
 
 
 class MockClassificationDataset(Dataset):

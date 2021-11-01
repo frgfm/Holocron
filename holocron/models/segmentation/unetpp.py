@@ -4,14 +4,14 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import sys
-from torch import Tensor
+from typing import Any, Callable, Dict, List, Optional
+
 import torch.nn as nn
-from typing import Dict, Any, Optional, Callable, List
+from torch import Tensor
 
 from ...nn.init import init_module
 from ..utils import conv_sequence, load_pretrained_params
-from .unet import down_path, UpPath
-
+from .unet import UpPath, down_path
 
 __all__ = ['UNetp', 'unetp', 'UNetpp', 'unetpp']
 

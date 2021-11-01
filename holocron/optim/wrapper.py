@@ -3,11 +3,11 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-import torch
 from collections import defaultdict
-from torch.optim.optimizer import Optimizer
-from typing import Dict, Any, Optional, Callable
+from typing import Any, Callable, Dict, Optional
 
+import torch
+from torch.optim.optimizer import Optimizer
 
 __all__ = ['Lookahead', 'Scout']
 

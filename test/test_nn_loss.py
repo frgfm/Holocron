@@ -7,8 +7,9 @@ import pytest
 import torch
 from torch.nn import Linear
 from torch.nn.functional import cross_entropy, log_softmax
-from holocron.nn import functional as F
+
 from holocron import nn
+from holocron.nn import functional as F
 
 
 def _test_loss_function(loss_fn, same_loss=0., multi_label=False):

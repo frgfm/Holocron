@@ -4,12 +4,14 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import sys
+from typing import Any, Callable, Dict, List, Optional
+
 from torch.nn import Module
+
 from holocron.nn import PyConv2d
+
 from .resnet import ResNet, _ResBlock
 from .utils import conv_sequence, load_pretrained_params
-from typing import Optional, Callable, Any, Dict, List
-
 
 __all__ = ['PyBottleneck', 'pyconv_resnet50', 'pyconvhg_resnet50']
 

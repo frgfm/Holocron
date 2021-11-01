@@ -4,11 +4,11 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import math
-import torch
-from torch import Tensor
-from torchvision.ops.boxes import box_iou, box_area
 from typing import Tuple
 
+import torch
+from torch import Tensor
+from torchvision.ops.boxes import box_area, box_iou
 
 __all__ = ['box_giou', 'diou_loss', 'ciou_loss']
 

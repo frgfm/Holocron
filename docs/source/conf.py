@@ -17,11 +17,13 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../..'))
-import holocron
-import sphinx_rtd_theme
 from datetime import datetime
 
+import sphinx_rtd_theme
+
+import holocron
 
 # -- Project information -----------------------------------------------------
 

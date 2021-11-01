@@ -7,26 +7,25 @@
 Training script for semantic segmentation
 '''
 
-import os
 import datetime
+import os
 import time
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.data
+from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
 from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.transforms import functional as F
-from torch.utils.data import RandomSampler, SequentialSampler
+from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 import holocron
 from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
-from transforms import Compose, Resize, RandomResize, RandomCrop, RandomHorizontalFlip, ImageTransform, ToTensor
-
 
 VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
                'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train',
