@@ -13,7 +13,8 @@ from setuptools import setup, find_packages
 
 version = '0.1.4a0'
 sha = 'Unknown'
-package_name = 'holocron'
+src_folder = 'holocron'
+package_index = 'pylocron'
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 
@@ -26,11 +27,11 @@ if os.getenv('BUILD_VERSION'):
     version = os.getenv('BUILD_VERSION')
 elif sha != 'Unknown':
     version += '+' + sha[:7]
-print("Building wheel {}-{}".format(package_name, version))
+print("Building wheel {}-{}".format(package_index, version))
 
 
 def write_version_file():
-    version_path = os.path.join(cwd, 'holocron', 'version.py')
+    version_path = os.path.join(cwd, src_folder, 'version.py')
     with open(version_path, 'w') as f:
         f.write("__version__ = '{}'\n".format(version))
 
@@ -51,7 +52,7 @@ requirements = [
 ]
 
 setup(
-    name=os.getenv('PKG_INDEX') if os.getenv('PKG_INDEX') else package_name,
+    name=package_index,
     version=version,
     author='François-Guillaume Fernandez',
     description='Modules, operations and models for computer vision in PyTorch',
