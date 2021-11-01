@@ -5,7 +5,13 @@ function deploy_doc(){
     fi
     COMMIT=$(git rev-parse --short HEAD)
     echo "Creating doc at commit" $COMMIT "and pushing to folder $2"
+    # Hotfix
+    sed -i "s/^torchvision.*/&,<0.11.0/" ../requirements.txt
+    sed -i "s/torchvision>=.*',/&,<0.11.0',/" ../setup.py
+    sed -i "s/',,/,/" ../setup.py
     pip install -U ..
+    git checkout ../setup.py
+    git checkout ../requirements.txt
     if [ ! -z "$2" ]
     then
         if [ "$2" == "latest" ]; then
