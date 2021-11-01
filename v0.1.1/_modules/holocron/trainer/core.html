@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer.core &mdash; holocron 0.1.4a0+bab813f-git documentation</title>
+  <title>holocron.trainer.core &mdash; holocron 0.1.4a0+df319d5-git documentation</title>
   
 
   
@@ -222,22 +222,20 @@
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">OneCycleLR</span><span class="p">,</span> <span class="n">CosineAnnealingLR</span><span class="p">,</span> <span class="n">MultiplicativeLR</span>  <span class="c1"># type: ignore[attr-defined]</span>
-<span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span>
-<span class="kn">from</span> <span class="nn">fastprogress.fastprogress</span> <span class="kn">import</span> <span class="n">ConsoleMasterBar</span>
-<span class="kn">from</span> <span class="nn">fastprogress</span> <span class="kn">import</span> <span class="n">master_bar</span><span class="p">,</span> <span class="n">progress_bar</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
-
 <span class="kn">from</span> <span class="nn">contiguous_params</span> <span class="kn">import</span> <span class="n">ContiguousParams</span>
+<span class="kn">from</span> <span class="nn">fastprogress</span> <span class="kn">import</span> <span class="n">master_bar</span><span class="p">,</span> <span class="n">progress_bar</span>
+<span class="kn">from</span> <span class="nn">fastprogress.fastprogress</span> <span class="kn">import</span> <span class="n">ConsoleMasterBar</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">CosineAnnealingLR</span><span class="p">,</span> <span class="n">MultiplicativeLR</span><span class="p">,</span> <span class="n">OneCycleLR</span>  <span class="c1"># type: ignore[attr-defined]</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span>
 
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">freeze_bn</span><span class="p">,</span> <span class="n">freeze_model</span>
-
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trainer&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;BinaryClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;SegmentationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;DetectionTrainer&#39;</span><span class="p">]</span>
 
