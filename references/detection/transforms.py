@@ -8,9 +8,10 @@ Transformation for object detection
 '''
 
 import random
+
 import torch
-from torchvision.transforms import transforms
 from torchvision.transforms import functional as F
+from torchvision.transforms import transforms
 
 
 class VOCTargetTransform:

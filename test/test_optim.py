@@ -3,11 +3,11 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-import unittest
 import torch
 from torch.nn import functional as F
 from torch.optim import SGD
 from torchvision.models import resnet18
+
 from holocron import optim
 
 

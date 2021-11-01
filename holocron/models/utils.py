@@ -4,12 +4,13 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import logging
+from typing import Any, Callable, List, Optional, Tuple
+
 import torch
 import torch.nn as nn
-from holocron.nn import BlurPool2d
-from typing import List, Optional, Any, Callable, Tuple
 from torchvision.models.utils import load_state_dict_from_url
 
+from holocron.nn import BlurPool2d
 
 __all__ = ['conv_sequence', 'load_pretrained_params', 'fuse_conv_bn']
 

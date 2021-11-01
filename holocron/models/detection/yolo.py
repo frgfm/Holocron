@@ -3,17 +3,19 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 import torch
-from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
 from torchvision.ops.boxes import box_iou, nms
-from typing import Dict, Optional, Any, Callable, List, Tuple, Union
 
-from ..utils import conv_sequence, load_pretrained_params
-from ..darknet import DarknetBodyV1, default_cfgs as dark_cfgs
 from holocron.nn.init import init_module
 
+from ..darknet import DarknetBodyV1
+from ..darknet import default_cfgs as dark_cfgs
+from ..utils import conv_sequence, load_pretrained_params
 
 __all__ = ['YOLOv1', 'yolov1']
 

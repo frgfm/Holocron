@@ -4,12 +4,13 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 from collections import OrderedDict
+from typing import Any, Callable, Dict, List, Optional
+
 import torch
 import torch.nn as nn
-from typing import Dict, Any, Optional, Callable, List
-from ..nn import GlobalAvgPool2d
-from .utils import load_pretrained_params, fuse_conv_bn
 
+from ..nn import GlobalAvgPool2d
+from .utils import fuse_conv_bn, load_pretrained_params
 
 __all__ = ['RepVGG', 'RepBlock', 'RepVGG', 'repvgg_a0', 'repvgg_a1', 'repvgg_a2',
            'repvgg_b0', 'repvgg_b1', 'repvgg_b2', 'repvgg_b3']

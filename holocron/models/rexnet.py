@@ -4,13 +4,15 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import sys
-from math import ceil
 from collections import OrderedDict
-import torch.nn as nn
-from holocron.nn import SiLU, init, GlobalAvgPool2d
-from .utils import conv_sequence, load_pretrained_params
-from typing import Dict, Any
+from math import ceil
+from typing import Any, Dict
 
+import torch.nn as nn
+
+from holocron.nn import GlobalAvgPool2d, SiLU, init
+
+from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']
 

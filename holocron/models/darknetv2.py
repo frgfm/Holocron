@@ -4,14 +4,15 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 from collections import OrderedDict
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 import torch
 import torch.nn as nn
 
+from holocron.nn import GlobalAvgPool2d
+
 from ..nn.init import init_module
 from .utils import conv_sequence, load_pretrained_params
-from holocron.nn import GlobalAvgPool2d
-from typing import Dict, Any, Optional, Callable, List, Tuple, Union
-
 
 __all__ = ['DarknetV2', 'darknet19']
 

@@ -4,11 +4,10 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import torch
-from torch import Tensor
 import torch.nn as nn
+from torch import Tensor
 
 from .downsample import ZPool
-
 
 __all__ = ['SAM', 'TripletAttention']
 
