@@ -37,7 +37,6 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
           BUILD_VERSION: ${{ steps.release_tag.outputs.VERSION }}
-          PKG_INDEX: pylocron
         run: |
           python setup.py sdist bdist_wheel
           twine check dist/*
