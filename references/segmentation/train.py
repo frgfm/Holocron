@@ -19,7 +19,6 @@ import torch.utils.data
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
-from torchvision.ops.misc import FrozenBatchNorm2d
 from torchvision.transforms import functional as F
 from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 

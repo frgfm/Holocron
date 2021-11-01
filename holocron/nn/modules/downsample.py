@@ -3,7 +3,7 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List
 
 import numpy as np
 import torch
@@ -64,8 +64,7 @@ class GlobalAvgPool2d(nn.Module):
         if self.flatten:
             in_size = x.size()
             return x.view((in_size[0], in_size[1], -1)).mean(dim=2)
-        else:
-            return x.view(x.size(0), x.size(1), -1).mean(-1).view(x.size(0), x.size(1), 1, 1)
+        return x.view(x.size(0), x.size(1), -1).mean(-1).view(x.size(0), x.size(1), 1, 1)
 
     def extra_repr(self) -> str:
         inplace_str = 'flatten=True' if self.flatten else ''

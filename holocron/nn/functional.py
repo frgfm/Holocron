@@ -4,7 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 from math import ceil, floor
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 import torch
 import torch.nn.functional as F
@@ -50,8 +50,7 @@ def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
 
     if inplace:
         return x.mul_(0.5 * (x + 2).clamp(min=0, max=2))
-    else:
-        return 0.5 * x * (x + 2).clamp(min=0, max=2)
+    return 0.5 * x * (x + 2).clamp(min=0, max=2)
 
 
 def nl_relu(x: Tensor, beta: float = 1., inplace: bool = False) -> Tensor:
@@ -67,8 +66,7 @@ def nl_relu(x: Tensor, beta: float = 1., inplace: bool = False) -> Tensor:
 
     if inplace:
         return torch.log(F.relu_(x).mul_(beta).add_(1), out=x)
-    else:
-        return torch.log(1 + beta * F.relu(x))
+    return torch.log(1 + beta * F.relu(x))
 
 
 def focal_loss(

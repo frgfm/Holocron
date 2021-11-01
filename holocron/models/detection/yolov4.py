@@ -12,7 +12,7 @@ from torch import Tensor
 from torchvision.ops.boxes import box_iou, nms
 from torchvision.ops.misc import FrozenBatchNorm2d
 
-from holocron.nn import SAM, SPP, DropBlock2d, Mish
+from holocron.nn import SPP, DropBlock2d, Mish
 from holocron.nn.init import init_module
 from holocron.ops.boxes import ciou_loss
 
@@ -314,9 +314,9 @@ class YoloLayer(nn.Module):
 
         if self.training:
             return self._compute_losses(pred_boxes, b_o, b_scores, target)  # type: ignore[arg-type]
-        else:
-            # cf. https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/tool/yolo_layer.py#L117
-            return self.post_process(pred_boxes, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
+
+        # cf. https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/tool/yolo_layer.py#L117
+        return self.post_process(pred_boxes, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
 class Yolov4Head(nn.Module):
@@ -429,9 +429,7 @@ class Yolov4Head(nn.Module):
                           for det1, det2, det3 in zip(y1, y2, y3)]
             return detections
 
-        else:
-
-            return {k: y1[k] + y2[k] + y3[k] for k in y1.keys()}
+        return {k: y1[k] + y2[k] + y3[k] for k in y1.keys()}
 
 
 class YOLOv4(nn.Module):
