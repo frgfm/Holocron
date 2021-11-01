@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.ops &mdash; holocron 0.1.2a0+59c3124-git documentation</title>
+  <title>holocron.ops &mdash; holocron 0.1.4a0+db8c5fe-git documentation</title>
   
 
   
@@ -98,8 +98,12 @@
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="models.html#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#res2net">Res2Net</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#res2next">Res2NeXt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#tridentnet">TridentNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#pyconvresnet">PyConvResNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#rexnet">ReXNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#object-detection">Object Detection</a><ul>
@@ -119,6 +123,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.html#convolution-layers">Convolution layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#attention">Attention</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
@@ -136,7 +141,11 @@
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="trainer.html#image-classification">Image classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trainer.html#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">holocron.utils</a><ul>
@@ -221,8 +230,36 @@
 <section id="boxes">
 <h2>Boxes<a class="headerlink" href="#boxes" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.ops.box_diou">
-<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">box_diou</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_diou"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.box_diou" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="holocron.ops.box_giou">
+<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">box_giou</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_giou"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.box_giou" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Generalized-IoU as described in <a class="reference external" href="https://arxiv.org/pdf/1902.09630.pdf">“Generalized Intersection over Union: A Metric and A Loss
+for Bounding Box Regression”</a>. This implementation was adapted
+from <a class="reference external" href="https://github.com/facebookresearch/detr/blob/master/util/box_ops.py">https://github.com/facebookresearch/detr/blob/master/util/box_ops.py</a></p>
+<p>The generalized IoU is defined as follows:</p>
+<div class="math notranslate nohighlight">
+\[GIoU = IoU - \frac{|C - A \cup B|}{|C|}\]</div>
+<p>where <span class="math notranslate nohighlight">\(IoU\)</span> is the Intersection over Union,
+<span class="math notranslate nohighlight">\(A \cup B\)</span> is the area of the boxes’ union,
+and <span class="math notranslate nohighlight">\(C\)</span> is the area of the smallest enclosing box covering the two boxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes1</strong> (<em>torch.Tensor</em><em>[</em><em>M</em><em>, </em><em>4</em><em>]</em>) – bounding boxes</p></li>
+<li><p><strong>boxes2</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>4</em><em>]</em>) – bounding boxes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Generalized-IoU</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor[M, N]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="holocron.ops.diou_loss">
+<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">diou_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/holocron/ops/boxes.html#diou_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.diou_loss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Distance-IoU loss as described in <a class="reference external" href="https://arxiv.org/pdf/1911.08287.pdf">“Distance-IoU Loss: Faster and Better Learning for
 Bounding Box Regression”</a>.</p>
 <p>The loss is defined as follows:</p>
@@ -232,6 +269,7 @@ Bounding Box Regression”</a>.</p>
 <span class="math notranslate nohighlight">\(b\)</span> and <span class="math notranslate nohighlight">\(b^{GT}\)</span> are the centers of the box and the ground truth box respectively,
 <span class="math notranslate nohighlight">\(c\)</span> c is the diagonal length of the smallest enclosing box covering the two boxes,
 and <span class="math notranslate nohighlight">\(\rho(.)\)</span> is the Euclidean distance.</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/diou_loss.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/diou_loss.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -249,8 +287,8 @@ and <span class="math notranslate nohighlight">\(\rho(.)\)</span> is the Euclide
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.ops.box_ciou">
-<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">box_ciou</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/ops/boxes.html#box_ciou"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.box_ciou" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="holocron.ops.ciou_loss">
+<span class="sig-prename descclassname"><span class="pre">holocron.ops.</span></span><span class="sig-name descname"><span class="pre">ciou_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxes2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/holocron/ops/boxes.html#ciou_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.ops.ciou_loss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Complete IoU loss as described in <a class="reference external" href="https://arxiv.org/pdf/1911.08287.pdf">“Distance-IoU Loss: Faster and Better Learning for
 Bounding Box Regression”</a>.</p>
 <p>The loss is defined as follows:</p>

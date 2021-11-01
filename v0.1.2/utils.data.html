@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils.data &mdash; holocron 0.1.2a0+59c3124-git documentation</title>
+  <title>holocron.utils.data &mdash; holocron 0.1.4a0+db8c5fe-git documentation</title>
   
 
   
@@ -96,8 +96,12 @@
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="models.html#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#res2net">Res2Net</a></li>
-<li class="toctree-l3"><a class="reference internal" href="models.html#res2next">Res2NeXt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#tridentnet">TridentNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#pyconvresnet">PyConvResNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#rexnet">ReXNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#object-detection">Object Detection</a><ul>
@@ -117,6 +121,7 @@
 <li class="toctree-l2"><a class="reference internal" href="nn.html#convolution-layers">Convolution layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#attention">Attention</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
@@ -134,7 +139,11 @@
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="trainer.html#image-classification">Image classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trainer.html#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">holocron.utils</a><ul>
@@ -215,15 +224,21 @@
 <h2>Batch collate<a class="headerlink" href="#batch-collate" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.utils.data.mixup_collate">
-<span class="sig-prename descclassname"><span class="pre">holocron.utils.data.</span></span><span class="sig-name descname"><span class="pre">mixup_collate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/data/collate.html#mixup_collate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.data.mixup_collate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">holocron.utils.data.</span></span><span class="sig-name descname"><span class="pre">mixup_collate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/holocron/utils/data/collate.html#mixup_collate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.data.mixup_collate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a batch collate function with MixUp strategy from
 <a class="reference external" href="https://arxiv.org/pdf/1710.09412.pdf">“mixup: Beyond Empirical Risk Minimization”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>list</em>) – list of elements</p></li>
-<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – mixup factor</p></li>
+<li><p><strong>data</strong> – list of elements</p></li>
+<li><p><strong>alpha</strong> – mixup factor</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>interpolated input
+original target
+resorted target
+interpolation factor</p>
 </dd>
 </dl>
 <dl>

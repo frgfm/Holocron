@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.segmentation.unet &mdash; holocron 0.1.2a0+59c3124-git documentation</title>
+  <title>holocron.models.segmentation.unet &mdash; holocron 0.1.4a0+db8c5fe-git documentation</title>
   
 
   
@@ -94,8 +94,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#res2net">Res2Net</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#res2next">Res2NeXt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#tridentnet">TridentNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#pyconvresnet">PyConvResNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#rexnet">ReXNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#object-detection">Object Detection</a><ul>
@@ -115,6 +119,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#convolution-layers">Convolution layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../nn.html#attention">Attention</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -132,7 +137,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../trainer.html">holocron.trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../trainer.html#image-classification">Image classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../trainer.html#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../utils.html">holocron.utils</a><ul>
@@ -206,402 +215,516 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.models.segmentation.unet</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Personal implementation of UNet models</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># This program is licensed under the Apache License version 2.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
 
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">torchvision.models.utils</span> <span class="kn">import</span> <span class="n">load_state_dict_from_url</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">torchvision.models</span> <span class="kn">import</span> <span class="n">vgg11</span><span class="p">,</span> <span class="n">resnet34</span>
+<span class="kn">from</span> <span class="nn">torchvision.models._utils</span> <span class="kn">import</span> <span class="n">IntermediateLayerGetter</span>
 
 <span class="kn">from</span> <span class="nn">...nn.init</span> <span class="kn">import</span> <span class="n">init_module</span>
+<span class="kn">from</span> <span class="nn">...nn</span> <span class="kn">import</span> <span class="n">SiLU</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span>
+<span class="kn">from</span> <span class="nn">..rexnet</span> <span class="kn">import</span> <span class="n">rexnet1_3x</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;UNet&#39;</span><span class="p">,</span> <span class="s1">&#39;unet&#39;</span><span class="p">,</span> <span class="s1">&#39;UNetp&#39;</span><span class="p">,</span> <span class="s1">&#39;unetp&#39;</span><span class="p">,</span> <span class="s1">&#39;UNetpp&#39;</span><span class="p">,</span> <span class="s1">&#39;unetpp&#39;</span><span class="p">,</span> <span class="s1">&#39;UNet3p&#39;</span><span class="p">,</span> <span class="s1">&#39;unet3p&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;UNet&#39;</span><span class="p">,</span> <span class="s1">&#39;unet&#39;</span><span class="p">,</span> <span class="s1">&#39;DynamicUNet&#39;</span><span class="p">,</span> <span class="s1">&#39;unet_tvvgg11&#39;</span><span class="p">,</span> <span class="s1">&#39;unet_tvresnet34&#39;</span><span class="p">,</span> <span class="s1">&#39;unet_rexnet13&#39;</span><span class="p">,</span> <span class="s1">&#39;unet2&#39;</span><span class="p">]</span>
 
 
-<span class="n">default_cfgs</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;unet&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;UNet&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span>
-             <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">&#39;unetp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;UNetp&#39;</span><span class="p">,</span>
-              <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span>
-              <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">&#39;unetpp&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;UNetpp&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span>
-               <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">&#39;unet3p&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;UNet3p&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span>
-               <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+<span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;unet&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;encoder_layout&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;unet2&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;encoder_layout&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
+        <span class="s1">&#39;backbone_layers&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;unet_vgg11&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;backbone_layers&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;9&#39;</span><span class="p">,</span> <span class="s1">&#39;14&#39;</span><span class="p">,</span> <span class="s1">&#39;19&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;unet_tvresnet34&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;backbone_layers&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;layer1&#39;</span><span class="p">,</span> <span class="s1">&#39;layer2&#39;</span><span class="p">,</span> <span class="s1">&#39;layer3&#39;</span><span class="p">,</span> <span class="s1">&#39;layer4&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;unet_rexnet13&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;backbone_layers&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;7&#39;</span><span class="p">,</span> <span class="s1">&#39;13&#39;</span><span class="p">,</span> <span class="s1">&#39;18&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet_rexnet13_256-38315ff3.pth&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
 <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">conv1x1</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">down_path</span><span class="p">(</span>
+    <span class="n">in_chan</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_chan</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">downsample</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">:</span>
 
-
-<span class="k">def</span> <span class="nf">conv3x3</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">conv_bn_act</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">act</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)]</span>
-    <span class="k">if</span> <span class="n">bn</span><span class="p">:</span>
-        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_chan</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">act</span><span class="p">:</span>
-        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">layers</span>
-
-
-<span class="k">class</span> <span class="nc">DownPath</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bn</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="k">if</span> <span class="n">downsample</span> <span class="k">else</span> <span class="p">[]</span>
-        <span class="n">layers</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="o">*</span><span class="n">conv_bn_act</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">bn</span><span class="p">),</span>
-                       <span class="o">*</span><span class="n">conv_bn_act</span><span class="p">(</span><span class="n">out_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">bn</span><span class="p">)])</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+    <span class="n">layers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="k">if</span> <span class="n">downsample</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">layers</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
+                                  <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">),</span>
+                   <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">out_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
+                                  <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">UpPath</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">num_skips</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">conv_transpose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bn</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_chan</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_chan</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">bilinear_upsampling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">conv_transpose</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">in_chan</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span>
+        <span class="k">if</span> <span class="n">bilinear_upsampling</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;bilinear&#39;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="c1"># Estimate the number of channels in the upsampled feature map</span>
-        <span class="n">up_chan</span> <span class="o">=</span> <span class="n">in_chan</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">conv_transpose</span> <span class="k">else</span> <span class="n">in_chan</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_bn_act</span><span class="p">(</span><span class="n">num_skips</span> <span class="o">*</span> <span class="n">in_chan</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">up_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">bn</span><span class="p">),</span>
-                                   <span class="o">*</span><span class="n">conv_bn_act</span><span class="p">(</span><span class="n">out_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">bn</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_skips</span> <span class="o">=</span> <span class="n">num_skips</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span>
+                                                  <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
+                                                  <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">),</span>
+                                   <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">out_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span>
+                                                  <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
+                                                  <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">downfeats</span><span class="p">,</span> <span class="n">upfeat</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">downfeats</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]],</span> <span class="n">upfeat</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">downfeats</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">downfeats</span> <span class="o">=</span> <span class="p">[</span><span class="n">downfeats</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">downfeats</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_skips</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_skips</span><span class="si">}</span><span class="s2"> encoding feats, received </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">downfeats</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># Upsample expansive features</span>
         <span class="n">_upfeat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span><span class="p">(</span><span class="n">upfeat</span><span class="p">)</span>
         <span class="c1"># Crop contracting path features</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">downfeat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">downfeats</span><span class="p">):</span>
-            <span class="n">delta_w</span> <span class="o">=</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">_upfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">w_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">delta_w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">delta_w</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">delta_w</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">delta_h</span> <span class="o">=</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">_upfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">h_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">delta_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">delta_h</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">delta_h</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
-            <span class="n">downfeats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">downfeat</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">h_slice</span><span class="p">,</span> <span class="n">w_slice</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">_upfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="n">delta_w</span> <span class="o">=</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">_upfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">w_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">delta_w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="p">(</span><span class="n">delta_w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">delta_w</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">delta_h</span> <span class="o">=</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">_upfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">h_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">delta_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="p">(</span><span class="n">delta_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">delta_h</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">downfeats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">downfeat</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">h_slice</span><span class="p">,</span> <span class="n">w_slice</span><span class="p">]</span>
         <span class="c1"># Concatenate both feature maps and forward them</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="o">*</span><span class="n">downfeats</span><span class="p">,</span> <span class="n">_upfeat</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">UNetBackbone</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">same_padding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">act_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Contracting path</span>
+        <span class="n">_layers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_channels</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span>
+        <span class="n">_pool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="n">_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">down_path</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">_pool</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">same_padding</span><span class="p">),</span>
+                                     <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">))</span>
+            <span class="n">_pool</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_layers</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;head&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">))]))</span>
+
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">UNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implements a U-Net architecture</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        layout (list&lt;int&gt;): number of channels after each contracting block</span>
-<span class="sd">        in_channels (int, optional): number of channels in the input tensor</span>
-<span class="sd">        num_classes (int, optional): number of output classes</span>
+<span class="sd">        layout: number of channels after each contracting block</span>
+<span class="sd">        in_channels: number of channels in the input tensor</span>
+<span class="sd">        num_classes: number of output classes</span>
+<span class="sd">        act_layer: activation layer</span>
+<span class="sd">        norm_layer: normalization layer</span>
+<span class="sd">        drop_layer: dropout layer</span>
+<span class="sd">        conv_layer: convolutional layer</span>
+<span class="sd">        same_padding: enforces same padding in convolutions</span>
+<span class="sd">        bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">same_padding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">bilinear_upsampling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
+        <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">act_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
         <span class="c1"># Contracting path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
         <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_channels</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span>
         <span class="n">_pool</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DownPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">_pool</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">down_path</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">_pool</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">same_padding</span><span class="p">),</span>
+                                          <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">))</span>
             <span class="n">_pool</span> <span class="o">=</span> <span class="kc">True</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridge</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                           <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                           <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+
         <span class="c1"># Expansive path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
-        <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UpPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
+        <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">chan</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">bilinear_upsampling</span> <span class="k">else</span> <span class="n">chan</span> <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">layout</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">layout</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="mi">2</span> <span class="o">*</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">layout</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UpPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">bilinear_upsampling</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">same_padding</span><span class="p">),</span>
+                                       <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">))</span>
 
         <span class="c1"># Classifier</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">conv1x1</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 
-        <span class="n">xs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">xs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># Contracting path</span>
-        <span class="k">for</span> <span class="n">encoder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">encoder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">:</span>
             <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">encoder</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">](</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="c1"># Expansive path</span>
-        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">[</span><span class="n">idx</span><span class="p">](</span><span class="n">xs</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">x</span><span class="p">)</span>
-            <span class="c1"># Release memory</span>
-            <span class="k">del</span> <span class="n">xs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">decoder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">decoder</span><span class="p">(</span><span class="n">xs</span><span class="o">.</span><span class="n">pop</span><span class="p">(),</span> <span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># Classifier</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
 
 
-<span class="k">class</span> <span class="nc">UNetp</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements a UNet+ architecture</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        layout (list&lt;int&gt;): number of channels after each contracting block</span>
-<span class="sd">        in_channels (int, optional): number of channels in the input tensor</span>
-<span class="sd">        num_classes (int, optional): number of output classes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">UBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">left_chan</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">up_chan</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_chan</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-        <span class="c1"># Contracting path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
-        <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_channels</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span>
-        <span class="n">_pool</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DownPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">_pool</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-            <span class="n">_pool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">act_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">up_chan</span><span class="p">,</span> <span class="n">up_chan</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
+                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">PixelShuffle</span><span class="p">(</span><span class="n">upscale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">left_chan</span><span class="p">)</span> <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">left_chan</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">act_layer</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">left_chan</span> <span class="o">+</span> <span class="n">up_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
+                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">out_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
+                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">downfeat</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">upfeat</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+
+        <span class="c1"># Upsample expansive features</span>
+        <span class="n">_upfeat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span><span class="p">(</span><span class="n">upfeat</span><span class="p">)</span>
+
+        <span class="c1"># Crop upsampled features</span>
+        <span class="k">if</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">!=</span> <span class="n">_upfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]:</span>
+            <span class="n">_upfeat</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">_upfeat</span><span class="p">,</span> <span class="n">downfeat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:],</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Concatenate both feature maps and forward them</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">bn</span><span class="p">(</span><span class="n">downfeat</span><span class="p">),</span> <span class="n">_upfeat</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">DynamicUNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements a dymanic U-Net architecture</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        encoder: feature extractor used for encoding</span>
+<span class="sd">        num_classes: number of output classes</span>
+<span class="sd">        act_layer: activation layer</span>
+<span class="sd">        norm_layer: normalization layer</span>
+<span class="sd">        drop_layer: dropout layer</span>
+<span class="sd">        conv_layer: convolutional layer</span>
+<span class="sd">        same_padding: enforces same padding in convolutions</span>
+<span class="sd">        bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">encoder</span><span class="p">:</span> <span class="n">IntermediateLayerGetter</span><span class="p">,</span>
+        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">same_padding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">input_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">final_upsampling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">act_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder</span>
+        <span class="c1"># Determine all feature map shapes</span>
+        <span class="n">training_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">training</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span> <span class="k">if</span> <span class="n">input_shape</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">input_shape</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">shapes</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">input_shape</span><span class="p">))</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="n">chans</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shapes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">training_mode</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+        <span class="c1"># Middle layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridge</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">chans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">act_layer</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">chans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">chans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                           <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">chans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">chans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                           <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="c1"># Expansive path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
-        <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">))):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">UpPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                                                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span> <span class="o">-</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
+        <span class="n">_layout</span> <span class="o">=</span> <span class="n">chans</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="p">[</span><span class="n">chans</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">up_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">chans</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UBlock</span><span class="p">(</span><span class="n">up_chan</span><span class="p">,</span> <span class="n">up_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">same_padding</span><span class="p">),</span>
+                                       <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">))</span>
+
+        <span class="c1"># Final upsampling if sizes don&#39;t match</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">final_upsampling</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">chans</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chans</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+                               <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">PixelShuffle</span><span class="p">(</span><span class="n">upscale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span>
 
         <span class="c1"># Classifier</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">conv1x1</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chans</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-
-        <span class="n">xs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># Contracting path</span>
-        <span class="k">for</span> <span class="n">encoder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="p">:</span>
-            <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">encoder</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">))</span>
-
-        <span class="c1"># Nested expansive path</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">)):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">):</span>
-                <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">](</span><span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">xs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="c1"># Release memory</span>
-            <span class="k">del</span> <span class="n">xs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">]</span>
-
-        <span class="c1"># Classifier</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">x</span>
-
-
-<span class="k">class</span> <span class="nc">UNetpp</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements a UNet++ architecture</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        layout (list&lt;int&gt;): number of channels after each contracting block</span>
-<span class="sd">        in_channels (int, optional): number of channels in the input tensor</span>
-<span class="sd">        num_classes (int, optional): number of output classes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 
         <span class="c1"># Contracting path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
-        <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_channels</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span>
-        <span class="n">_pool</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DownPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">_pool</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-            <span class="n">_pool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">xs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="c1"># Expansive path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
-        <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">))):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">UpPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">num_skips</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                                                <span class="k">for</span> <span class="n">num_skips</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span> <span class="o">-</span> <span class="n">idx</span><span class="p">)]))</span>
+        <span class="k">for</span> <span class="n">decoder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">decoder</span><span class="p">(</span><span class="n">xs</span><span class="o">.</span><span class="n">pop</span><span class="p">(),</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># Classifier</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">conv1x1</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">)</span>
-
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-
-        <span class="n">xs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># Contracting path</span>
-        <span class="k">for</span> <span class="n">encoder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="p">:</span>
-            <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">encoder</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">)])</span>
-
-        <span class="c1"># Nested expansive path</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">)):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">):</span>
-                <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">](</span><span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">xs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-            <span class="c1"># Release memory</span>
-            <span class="k">del</span> <span class="n">xs</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">]</span>
-
-        <span class="c1"># Classifier</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
 
 
-<span class="k">class</span> <span class="nc">FSAggreg</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e_chans</span><span class="p">,</span> <span class="n">skip_chan</span><span class="p">,</span> <span class="n">d_chans</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="c1"># Check stem conv channels</span>
-        <span class="n">base_chan</span> <span class="o">=</span> <span class="n">e_chans</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_chans</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">skip_chan</span>
-        <span class="c1"># Get UNet depth</span>
-        <span class="n">depth</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_chans</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">d_chans</span><span class="p">)</span>
-        <span class="c1"># Downsample = max pooling + conv for channel reduction</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">downsamples</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">e_chans</span><span class="p">)</span> <span class="o">-</span> <span class="n">idx</span><span class="p">)),</span>
-                                                        <span class="n">conv3x3</span><span class="p">(</span><span class="n">e_chan</span><span class="p">,</span> <span class="n">base_chan</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-                                          <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">e_chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">e_chans</span><span class="p">)])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">skip</span> <span class="o">=</span> <span class="n">conv3x3</span><span class="p">(</span><span class="n">skip_chan</span><span class="p">,</span> <span class="n">base_chan</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_chans</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
-        <span class="c1"># Upsample = bilinear interpolation + conv for channel reduction</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">upsamples</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                                                                  <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;bilinear&#39;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-                                                      <span class="n">conv3x3</span><span class="p">(</span><span class="n">d_chan</span><span class="p">,</span> <span class="n">base_chan</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-                                        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">d_chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">d_chans</span><span class="p">)])</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_bn_act</span><span class="p">(</span><span class="n">depth</span> <span class="o">*</span> <span class="n">base_chan</span><span class="p">,</span> <span class="n">depth</span> <span class="o">*</span> <span class="n">base_chan</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">downfeats</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">upfeats</span><span class="p">):</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">downfeats</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">downsamples</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">upfeats</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upsamples</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">downsamples</span><span class="p">)</span><span class="si">}</span><span class="s2"> encoding &amp; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upsamples</span><span class="p">)</span><span class="si">}</span><span class="s2"> decoding features, &quot;</span>
-                             <span class="sa">f</span><span class="s2">&quot;received: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">downfeats</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">upfeats</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Concatenate full-scale features</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="o">*</span><span class="p">[</span><span class="n">downsample</span><span class="p">(</span><span class="n">downfeat</span><span class="p">)</span> <span class="k">for</span> <span class="n">downsample</span><span class="p">,</span> <span class="n">downfeat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">downsamples</span><span class="p">,</span> <span class="n">downfeats</span><span class="p">)],</span>
-                       <span class="bp">self</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="n">feat</span><span class="p">),</span>
-                       <span class="o">*</span><span class="p">[</span><span class="n">upsample</span><span class="p">(</span><span class="n">upfeat</span><span class="p">)</span> <span class="k">for</span> <span class="n">upsample</span><span class="p">,</span> <span class="n">upfeat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upsamples</span><span class="p">,</span> <span class="n">upfeats</span><span class="p">)]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">UNet3p</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements a UNet3+ architecture</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        layout (list&lt;int&gt;): number of channels after each contracting block</span>
-<span class="sd">        in_channels (int, optional): number of channels in the input tensor</span>
-<span class="sd">        num_classes (int, optional): number of output classes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-
-        <span class="c1"># Contracting path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
-        <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_channels</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span>
-        <span class="n">_pool</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DownPath</span><span class="p">(</span><span class="n">in_chan</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">_pool</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
-            <span class="n">_pool</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="c1"># Expansive path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([])</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FSAggreg</span><span class="p">(</span><span class="n">layout</span><span class="p">[:</span><span class="n">row</span><span class="p">],</span>
-                                          <span class="n">layout</span><span class="p">[</span><span class="n">row</span><span class="p">],</span>
-                                          <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span> <span class="o">*</span> <span class="n">layout</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">row</span><span class="p">)</span> <span class="o">+</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]))</span>
-
-        <span class="c1"># Classifier</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">conv1x1</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span> <span class="o">*</span> <span class="n">layout</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">)</span>
-
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-
-        <span class="n">xs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># Contracting path</span>
-        <span class="k">for</span> <span class="n">encoder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoders</span><span class="p">:</span>
-            <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">encoder</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">))</span>
-
-        <span class="c1"># Full-scale expansive path</span>
-        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">xs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoders</span><span class="p">[</span><span class="n">idx</span><span class="p">](</span><span class="n">xs</span><span class="p">[:</span><span class="n">idx</span><span class="p">],</span> <span class="n">xs</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">xs</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])</span>
-
-        <span class="c1"># Classifier</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">x</span>
-
-
-<span class="k">def</span> <span class="nf">_unet</span><span class="p">(</span><span class="n">arch</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="c1"># Retrieve the correct Darknet layout type</span>
-    <span class="n">unet_type</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;arch&#39;</span><span class="p">]]</span>
+<span class="k">def</span> <span class="nf">_unet</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UNet</span><span class="p">:</span>
     <span class="c1"># Build the model</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">unet_type</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;layout&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">UNet</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;encoder_layout&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="c1"># Load pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid model URL for </span><span class="si">{</span><span class="n">arch</span><span class="si">}</span><span class="s2">, using default initialization.&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span>
-                                                  <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
+        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span>
 
 
-<div class="viewcode-block" id="unet"><a class="viewcode-back" href="../../../../models.html#holocron.models.unet">[docs]</a><span class="k">def</span> <span class="nf">unet</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="unet"><a class="viewcode-back" href="../../../../models.html#holocron.models.segmentation.unet">[docs]</a><span class="k">def</span> <span class="nf">unet</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UNet</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;U-Net from</span>
 <span class="sd">    `&quot;U-Net: Convolutional Networks for Biomedical Image Segmentation&quot; &lt;https://arxiv.org/pdf/1505.04597.pdf&gt;`_</span>
 
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png</span>
+<span class="sd">        :align: center</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on PASCAL VOC2012</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.nn.Module: semantic segmentation model</span>
+<span class="sd">        semantic segmentation model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">_unet</span><span class="p">(</span><span class="s1">&#39;unet&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="unetp"><a class="viewcode-back" href="../../../../models.html#holocron.models.unetp">[docs]</a><span class="k">def</span> <span class="nf">unetp</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;UNet+ from</span>
-<span class="sd">    `&quot;UNet++: A Nested U-Net Architecture for Medical Image Segmentation&quot; &lt;https://arxiv.org/pdf/1807.10165.pdf&gt;`_</span>
+<span class="k">def</span> <span class="nf">_dynamic_unet</span><span class="p">(</span>
+    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">backbone</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">21</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicUNet</span><span class="p">:</span>
+    <span class="c1"># Build the encoder</span>
+    <span class="n">encoder</span> <span class="o">=</span> <span class="n">IntermediateLayerGetter</span><span class="p">(</span>
+        <span class="n">backbone</span><span class="p">,</span>
+        <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;backbone_layers&#39;</span><span class="p">])}</span>
+    <span class="p">)</span>
+    <span class="c1"># Build the model</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">DynamicUNet</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># Load pretrained parameters</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+
+
+<div class="viewcode-block" id="unet2"><a class="viewcode-back" href="../../../../models.html#holocron.models.segmentation.unet2">[docs]</a><span class="k">def</span> <span class="nf">unet2</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicUNet</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Modified version of U-Net from</span>
+<span class="sd">    `&quot;U-Net: Convolutional Networks for Biomedical Image Segmentation&quot; &lt;https://arxiv.org/pdf/1505.04597.pdf&gt;`_</span>
+<span class="sd">    that includes a more advanced upscaling block inspired by `fastai</span>
+<span class="sd">    &lt;https://docs.fast.ai/vision.models.unet.html#DynamicUnet&gt;`_.</span>
+
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png</span>
+<span class="sd">        :align: center</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on PASCAL VOC2012</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        in_channels: number of input channels</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.nn.Module: semantic segmentation model</span>
+<span class="sd">        semantic segmentation model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_unet</span><span class="p">(</span><span class="s1">&#39;unetp&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="n">backbone</span> <span class="o">=</span> <span class="n">UNetBackbone</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="s1">&#39;unet2&#39;</span><span class="p">][</span><span class="s1">&#39;encoder_layout&#39;</span><span class="p">],</span> <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+
+    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s1">&#39;unet2&#39;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span></div>
 
 
-<div class="viewcode-block" id="unetpp"><a class="viewcode-back" href="../../../../models.html#holocron.models.unetpp">[docs]</a><span class="k">def</span> <span class="nf">unetpp</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;UNet++ from</span>
-<span class="sd">    `&quot;UNet++: A Nested U-Net Architecture for Medical Image Segmentation&quot; &lt;https://arxiv.org/pdf/1807.10165.pdf&gt;`_</span>
+<div class="viewcode-block" id="unet_tvvgg11"><a class="viewcode-back" href="../../../../models.html#holocron.models.segmentation.unet_tvvgg11">[docs]</a><span class="k">def</span> <span class="nf">unet_tvvgg11</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicUNet</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;U-Net from</span>
+<span class="sd">    `&quot;U-Net: Convolutional Networks for Biomedical Image Segmentation&quot; &lt;https://arxiv.org/pdf/1505.04597.pdf&gt;`_</span>
+<span class="sd">    with a VGG-11 backbone used as encoder, and more advanced upscaling blocks inspired by `fastai</span>
+<span class="sd">    &lt;https://docs.fast.ai/vision.models.unet.html#DynamicUnet&gt;`_.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on PASCAL VOC2012</span>
+<span class="sd">        pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.nn.Module: semantic segmentation model</span>
+<span class="sd">        semantic segmentation model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_unet</span><span class="p">(</span><span class="s1">&#39;unetpp&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="n">backbone</span> <span class="o">=</span> <span class="n">vgg11</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained_backbone</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pretrained</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+
+    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s1">&#39;unet_vgg11&#39;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="unet3p"><a class="viewcode-back" href="../../../../models.html#holocron.models.unet3p">[docs]</a><span class="k">def</span> <span class="nf">unet3p</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;UNet3+ from</span>
-<span class="sd">    `&quot;UNet 3+: A Full-Scale Connected UNet For Medical Image Segmentation&quot; &lt;https://arxiv.org/pdf/2004.08790.pdf&gt;`_</span>
+<div class="viewcode-block" id="unet_tvresnet34"><a class="viewcode-back" href="../../../../models.html#holocron.models.segmentation.unet_tvresnet34">[docs]</a><span class="k">def</span> <span class="nf">unet_tvresnet34</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicUNet</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;U-Net from</span>
+<span class="sd">    `&quot;U-Net: Convolutional Networks for Biomedical Image Segmentation&quot; &lt;https://arxiv.org/pdf/1505.04597.pdf&gt;`_</span>
+<span class="sd">    with a ResNet-34 backbone used as encoder, and more advanced upscaling blocks inspired by `fastai</span>
+<span class="sd">    &lt;https://docs.fast.ai/vision.models.unet.html#DynamicUnet&gt;`_.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on PASCAL VOC2012</span>
+<span class="sd">        pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        torch.nn.Module: semantic segmentation model</span>
+<span class="sd">        semantic segmentation model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_unet</span><span class="p">(</span><span class="s1">&#39;unet3p&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="n">backbone</span> <span class="o">=</span> <span class="n">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained_backbone</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pretrained</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;final_upsampling&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;final_upsampling&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s1">&#39;unet_tvresnet34&#39;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="unet_rexnet13"><a class="viewcode-back" href="../../../../models.html#holocron.models.segmentation.unet_rexnet13">[docs]</a><span class="k">def</span> <span class="nf">unet_rexnet13</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DynamicUNet</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;U-Net from</span>
+<span class="sd">    `&quot;U-Net: Convolutional Networks for Biomedical Image Segmentation&quot; &lt;https://arxiv.org/pdf/1505.04597.pdf&gt;`_</span>
+<span class="sd">    with a ReXNet-1.3x backbone used as encoder, and more advanced upscaling blocks inspired by `fastai</span>
+<span class="sd">    &lt;https://docs.fast.ai/vision.models.unet.html#DynamicUnet&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on PASCAL VOC2012</span>
+<span class="sd">        pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        semantic segmentation model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">backbone</span> <span class="o">=</span> <span class="n">rexnet1_3x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained_backbone</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;final_upsampling&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;final_upsampling&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;act_layer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;act_layer&#39;</span><span class="p">,</span> <span class="n">SiLU</span><span class="p">())</span>
+    <span class="c1"># hotfix of https://github.com/pytorch/vision/issues/3802</span>
+    <span class="n">backbone</span><span class="p">[</span><span class="mi">21</span><span class="p">]</span> <span class="o">=</span> <span class="n">SiLU</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s1">&#39;unet_rexnet13&#39;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

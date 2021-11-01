@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.wrapper &mdash; holocron 0.1.2a0+59c3124-git documentation</title>
+  <title>holocron.optim.wrapper &mdash; holocron 0.1.4a0+db8c5fe-git documentation</title>
   
 
   
@@ -94,8 +94,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#classification">Classification</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#res2net">Res2Net</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../models.html#res2next">Res2NeXt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#tridentnet">TridentNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#pyconvresnet">PyConvResNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#object-detection">Object Detection</a><ul>
@@ -115,6 +119,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#convolution-layers">Convolution layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#attention">Attention</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
@@ -132,7 +137,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../trainer.html">holocron.trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../trainer.html#image-classification">Image classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../trainer.html#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../utils.html">holocron.utils</a><ul>
@@ -206,15 +215,15 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.optim.wrapper</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Lookahead optimizer wrapper</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="c1"># This program is licensed under the Apache License version 2.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Lookahead&#39;</span><span class="p">,</span> <span class="s1">&#39;Scout&#39;</span><span class="p">]</span>
@@ -230,7 +239,12 @@
 <span class="sd">        sync_period (int, optional): number of step performed on fast weights before weight synchronization</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_optimizer</span><span class="p">,</span> <span class="n">sync_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base_optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span>
+        <span class="n">sync_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sync_rate</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">sync_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive float lower than 1 as sync_rate, received: </span><span class="si">{</span><span class="n">sync_rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sync_period</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sync_period</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -246,20 +260,20 @@
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_param_group</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;defaults&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">,</span>
             <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
-            <span class="s1">&#39;base_state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span>
+            <span class="s1">&#39;base_state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span>  <span class="c1"># type: ignore[attr-defined]</span>
             <span class="s1">&#39;fast_steps&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fast_steps</span><span class="p">,</span>
             <span class="s1">&#39;param_groups&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span>
         <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="nb">super</span><span class="p">(</span><span class="n">Lookahead</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
                     <span class="n">base_state_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="s1">&#39;base_state_dict&#39;</span><span class="p">])</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Lookahead</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
         <span class="c1"># Update last key of class dict</span>
@@ -268,7 +282,7 @@
     <span class="k">def</span> <span class="nf">zero_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Performs a single optimization step.</span>
 
 <span class="sd">        Arguments:</span>
@@ -284,7 +298,7 @@
 
         <span class="k">return</span> <span class="n">loss</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">format_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39; (&#39;</span>
         <span class="n">optimizer_repr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">base_optimizer=</span><span class="si">{</span><span class="n">optimizer_repr</span><span class="si">}</span><span class="s2">,&quot;</span>
@@ -293,7 +307,7 @@
         <span class="n">format_string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">)&#39;</span>
         <span class="k">return</span> <span class="n">format_string</span>
 
-    <span class="k">def</span> <span class="nf">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Adds a new slow parameter group</span>
 
 <span class="sd">        Args:</span>
@@ -309,7 +323,7 @@
             <span class="n">p</span><span class="o">.</span><span class="n">reguires_grad</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Adds a parameter group to base optimizer (fast weights) and its corresponding slow version</span>
 
 <span class="sd">        Args:</span>
@@ -322,7 +336,7 @@
         <span class="c1"># Add the corresponding slow param group</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">sync_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sync_rate</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">sync_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sync_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Synchronize parameters as follows:</span>
 <span class="sd">        slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</span>
 
@@ -349,7 +363,12 @@
 <span class="sd">        sync_period (int, optional): number of step performed on fast weights before weight synchronization</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_optimizer</span><span class="p">,</span> <span class="n">sync_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base_optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span>
+        <span class="n">sync_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sync_rate</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">sync_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive float lower than 1 as sync_rate, received: </span><span class="si">{</span><span class="n">sync_rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sync_period</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sync_period</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -370,20 +389,20 @@
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;defaults&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">,</span>
             <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
-            <span class="s1">&#39;base_state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span>
+            <span class="s1">&#39;base_state&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span>  <span class="c1"># type: ignore[attr-defined]</span>
             <span class="s1">&#39;fast_steps&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fast_steps</span><span class="p">,</span>
             <span class="s1">&#39;param_groups&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span>
         <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="nb">super</span><span class="p">(</span><span class="n">Scout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
                     <span class="n">base_state_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="s1">&#39;base_state_dict&#39;</span><span class="p">])</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Scout</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
         <span class="c1"># Update last key of class dict</span>
@@ -392,7 +411,7 @@
     <span class="k">def</span> <span class="nf">zero_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Performs a single optimization step.</span>
 
 <span class="sd">        Arguments:</span>
@@ -417,7 +436,7 @@
                 <span class="n">update</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">p</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">max_dev</span> <span class="o">=</span> <span class="p">(</span><span class="n">update</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
                 <span class="n">update_similarity</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">max_dev</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-            <span class="n">update_coherence</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">std_list</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">std_list</span><span class="p">)</span>
+            <span class="n">update_coherence</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">update_similarity</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">update_similarity</span><span class="p">)</span>
 
             <span class="n">sync_rate</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">update_coherence</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;sync_rate&#39;</span><span class="p">])</span>
             <span class="c1"># sync_rate = self.defaults[&#39;sync_rate&#39;]</span>
@@ -430,7 +449,7 @@
 
         <span class="k">return</span> <span class="n">loss</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">format_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39; (&#39;</span>
         <span class="n">optimizer_repr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">format_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">base_optimizer=</span><span class="si">{</span><span class="n">optimizer_repr</span><span class="si">}</span><span class="s2">,&quot;</span>
@@ -439,7 +458,7 @@
         <span class="n">format_string</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">)&#39;</span>
         <span class="k">return</span> <span class="n">format_string</span>
 
-    <span class="k">def</span> <span class="nf">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Adds a new slow parameter group</span>
 
 <span class="sd">        Args:</span>
@@ -455,7 +474,7 @@
             <span class="n">p</span><span class="o">.</span><span class="n">reguires_grad</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Adds a parameter group to base optimizer (fast weights) and its corresponding slow version</span>
 
 <span class="sd">        Args:</span>
@@ -468,7 +487,7 @@
         <span class="c1"># Add the corresponding slow param group</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">sync_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sync_rate</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">sync_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sync_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Synchronize parameters as follows:</span>
 <span class="sd">        slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</span>
 

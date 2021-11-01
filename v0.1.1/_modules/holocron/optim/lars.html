@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.lars &mdash; holocron 0.1.1a0+9b3f927-git documentation</title>
+  <title>holocron.optim.lars &mdash; holocron 0.1.4a0+db8c5fe-git documentation</title>
   
 
   
@@ -92,13 +92,22 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#classification">Classification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#resnet">ResNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#res2net">Res2Net</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../models.html#res2next">Res2NeXt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#tridentnet">TridentNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#pyconvresnet">PyConvResNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#object-detection">Object Detection</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#yolo">YOLO</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../models.html#semantic-segmentation">Semantic Segmentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#u-net">U-Net</a></li>
 </ul>
 </li>
 </ul>
@@ -107,12 +116,17 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#non-linear-activations">Non-linear activations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-functions">Loss functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#loss-wrappers">Loss wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#convolution-layers">Convolution layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.html#attention">Attention</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../nn.functional.html">holocron.nn.functional</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#non-linear-activations">Non-linear activations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#convolutions">Convolutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#regularization-layers">Regularization layers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../nn.functional.html#downsampling">Downsampling</a></li>
 </ul>
 </li>
@@ -123,7 +137,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../trainer.html">holocron.trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../trainer.html#image-classification">Image classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../trainer.html#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../utils.html">holocron.utils</a><ul>
@@ -197,10 +215,14 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.optim.lars</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
+
+<span class="c1"># This program is licensed under the Apache License version 2.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span>
 
 
 <div class="viewcode-block" id="Lars"><a class="viewcode-back" href="../../../optim.html#holocron.optim.Lars">[docs]</a><span class="k">class</span> <span class="nc">Lars</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
@@ -218,8 +240,16 @@
 <span class="sd">        scale_clip (tuple, optional): the lower and upper bounds for the weight norm in local LR of LARS</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dampening</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                 <span class="n">weight_decay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nesterov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scale_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">],</span>
+        <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
+        <span class="n">momentum</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+        <span class="n">dampening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+        <span class="n">weight_decay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+        <span class="n">nesterov</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">scale_clip</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="n">lr</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid learning rate: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lr</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">momentum</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
@@ -235,23 +265,24 @@
         <span class="c1"># LARS arguments</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_clip</span> <span class="o">=</span> <span class="n">scale_clip</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_clip</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scale_clip</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_clip</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Lars</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
             <span class="n">group</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;nesterov&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Performs a single optimization step.</span>
 
 <span class="sd">        Arguments:</span>
-<span class="sd">            closure (callable, optional): A closure that reevaluates the model</span>
-<span class="sd">                and returns the loss.</span>
+<span class="sd">            closure (callable, optional): A closure that reevaluates the model and returns the loss.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">closure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">closure</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">enable_grad</span><span class="p">():</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="n">closure</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
             <span class="n">weight_decay</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;weight_decay&#39;</span><span class="p">]</span>
@@ -264,16 +295,16 @@
                     <span class="k">continue</span>
                 <span class="n">d_p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span>
                 <span class="k">if</span> <span class="n">weight_decay</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">d_p</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">weight_decay</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">d_p</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">weight_decay</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">momentum</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">param_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
                     <span class="k">if</span> <span class="s1">&#39;momentum_buffer&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">param_state</span><span class="p">:</span>
                         <span class="n">buf</span> <span class="o">=</span> <span class="n">param_state</span><span class="p">[</span><span class="s1">&#39;momentum_buffer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">d_p</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">buf</span> <span class="o">=</span> <span class="n">param_state</span><span class="p">[</span><span class="s1">&#39;momentum_buffer&#39;</span><span class="p">]</span>
-                        <span class="n">buf</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">momentum</span><span class="p">)</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dampening</span><span class="p">,</span> <span class="n">d_p</span><span class="p">)</span>
+                        <span class="n">buf</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">momentum</span><span class="p">)</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">d_p</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dampening</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">nesterov</span><span class="p">:</span>
-                        <span class="n">d_p</span> <span class="o">=</span> <span class="n">d_p</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">momentum</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+                        <span class="n">d_p</span> <span class="o">=</span> <span class="n">d_p</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">momentum</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">d_p</span> <span class="o">=</span> <span class="n">buf</span>
 
@@ -286,7 +317,7 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">local_lr</span> <span class="o">=</span> <span class="n">p_norm</span> <span class="o">/</span> <span class="n">update_norm</span>
 
-                <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="o">-</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">local_lr</span><span class="p">,</span> <span class="n">d_p</span><span class="p">)</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">d_p</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=-</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">local_lr</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">loss</span></div>
 </pre></div>

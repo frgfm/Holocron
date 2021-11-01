@@ -11,5 +11,6 @@ holocron.ops
 Boxes
 -----
 
-.. autofunction:: box_diou
-.. autofunction:: box_ciou
+.. autofunction:: box_giou
+.. autofunction:: diou_loss
+.. autofunction:: ciou_loss
