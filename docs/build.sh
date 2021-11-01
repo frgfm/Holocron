@@ -7,6 +7,7 @@ function deploy_doc(){
     echo "Creating doc at commit" $COMMIT "and pushing to folder $2"
     # Hotfix
     sed -i "s/torchvision>=.*',/&,<0.11.0',/" ../setup.py
+    sed -i "s/',,/,/" ../setup.py
     pip install -U ..
     git checkout ../setup.py
     if [ ! -z "$2" ]
