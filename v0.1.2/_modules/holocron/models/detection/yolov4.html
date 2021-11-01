@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolov4 &mdash; holocron 0.1.4a0+df319d5-git documentation</title>
+  <title>holocron.models.detection.yolov4 &mdash; holocron 0.1.4a0+2b67bf7-git documentation</title>
   
 
   
@@ -229,7 +229,7 @@
 <span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span><span class="p">,</span> <span class="n">nms</span>
 <span class="kn">from</span> <span class="nn">torchvision.ops.misc</span> <span class="kn">import</span> <span class="n">FrozenBatchNorm2d</span>
 
-<span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">SAM</span><span class="p">,</span> <span class="n">SPP</span><span class="p">,</span> <span class="n">DropBlock2d</span><span class="p">,</span> <span class="n">Mish</span>
+<span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">SPP</span><span class="p">,</span> <span class="n">DropBlock2d</span><span class="p">,</span> <span class="n">Mish</span>
 <span class="kn">from</span> <span class="nn">holocron.nn.init</span> <span class="kn">import</span> <span class="n">init_module</span>
 <span class="kn">from</span> <span class="nn">holocron.ops.boxes</span> <span class="kn">import</span> <span class="n">ciou_loss</span>
 
@@ -531,9 +531,9 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_losses</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># cf. https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/tool/yolo_layer.py#L117</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span><span class="p">)</span>
+
+        <span class="c1"># cf. https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/tool/yolo_layer.py#L117</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">Yolov4Head</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -646,9 +646,7 @@
                           <span class="k">for</span> <span class="n">det1</span><span class="p">,</span> <span class="n">det2</span><span class="p">,</span> <span class="n">det3</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y3</span><span class="p">)]</span>
             <span class="k">return</span> <span class="n">detections</span>
 
-        <span class="k">else</span><span class="p">:</span>
-
-            <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">y1</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">y2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">y3</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">y1</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">y1</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">y2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">y3</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">y1</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
 
 
 <span class="k">class</span> <span class="nc">YOLOv4</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>

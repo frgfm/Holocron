@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.darknetv4 &mdash; holocron 0.1.4a0+df319d5-git documentation</title>
+  <title>holocron.models.darknetv4 &mdash; holocron 0.1.4a0+2b67bf7-git documentation</title>
   
 
   
@@ -321,17 +321,17 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stem</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-            <span class="n">features</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">stage</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">):</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="n">stage</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span><span class="p">):</span>
-                    <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-            <span class="k">return</span> <span class="n">features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stem</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">stage</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">stage</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stages</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span><span class="p">):</span>
+                <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">features</span>
 
 
 <span class="k">class</span> <span class="nc">DarknetV4</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
