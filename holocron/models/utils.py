@@ -8,7 +8,7 @@ from typing import Any, Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from torchvision.models.utils import load_state_dict_from_url
+from torch.hub import load_state_dict_from_url
 
 from holocron.nn import BlurPool2d
 
