@@ -104,17 +104,17 @@ class DarknetBodyV4(nn.Sequential):
 
         if self.num_features == 1:
             return super().forward(x)
-        else:
-            self.stem: nn.Sequential
-            self.stages: nn.Sequential
-            x = self.stem(x)
-            features = []
-            for idx, stage in enumerate(self.stages):
-                x = stage(x)
-                if idx >= (len(self.stages) - self.num_features):
-                    features.append(x)
 
-            return features
+        self.stem: nn.Sequential
+        self.stages: nn.Sequential
+        x = self.stem(x)
+        features = []
+        for idx, stage in enumerate(self.stages):
+            x = stage(x)
+            if idx >= (len(self.stages) - self.num_features):
+                features.append(x)
+
+        return features
 
 
 class DarknetV4(nn.Sequential):

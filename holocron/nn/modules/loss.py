@@ -38,8 +38,7 @@ class _Loss(nn.Module):
         # Set the reduction method
         if reduction not in ['none', 'mean', 'sum']:
             raise NotImplementedError("argument reduction received an incorrect input")
-        else:
-            self.reduction = reduction
+        self.reduction = reduction
 
 
 class FocalLoss(_Loss):

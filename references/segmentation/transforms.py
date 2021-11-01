@@ -11,7 +11,6 @@ import random
 
 import numpy as np
 import torch
-from PIL import Image
 from torchvision.transforms import InterpolationMode
 from torchvision.transforms import functional as F
 from torchvision.transforms import transforms

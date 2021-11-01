@@ -4,7 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import math
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional
 
 import torch
 import torch.nn as nn
@@ -357,8 +357,7 @@ class PyConv2d(nn.ModuleList):
 
         if self.num_levels == 1:
             return self[0].forward(x)
-        else:
-            return torch.cat([conv(x) for conv in self], dim=1)
+        return torch.cat([conv(x) for conv in self], dim=1)
 
 
 class Involution2d(nn.Module):

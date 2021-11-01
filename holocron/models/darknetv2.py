@@ -90,8 +90,7 @@ class DarknetBodyV2(nn.Sequential):
                     aux = x.clone()
 
             return x, aux
-        else:
-            return super().forward(x)
+        return super().forward(x)
 
 
 class DarknetV2(nn.Sequential):

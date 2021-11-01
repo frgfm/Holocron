@@ -30,14 +30,14 @@ class Lamb(Optimizer):
         weight_decay: float = 0.,
         scale_clip: Optional[Tuple[float, float]] = None
     ) -> None:
-        if not 0.0 <= lr:
-            raise ValueError("Invalid learning rate: {}".format(lr))
-        if not 0.0 <= eps:
-            raise ValueError("Invalid epsilon value: {}".format(eps))
+        if lr < 0.0:
+            raise ValueError(f"Invalid learning rate: {lr}")
+        if eps < 0.0:
+            raise ValueError(f"Invalid epsilon value: {eps}")
         if not 0.0 <= betas[0] < 1.0:
-            raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0]))
+            raise ValueError(f"Invalid beta parameter at index 0: {betas[0]}")
         if not 0.0 <= betas[1] < 1.0:
-            raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
+            raise ValueError(f"Invalid beta parameter at index 1: {betas[1]}")
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
         super(Lamb, self).__init__(params, defaults)
         # LARS arguments

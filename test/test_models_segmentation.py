@@ -5,7 +5,6 @@
 
 import pytest
 import torch
-from torch import nn
 
 from holocron.models import segmentation
 

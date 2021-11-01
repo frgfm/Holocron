@@ -325,16 +325,16 @@ class YOLOv1(_YOLO):
         if self.training:
             # Update losses
             return self._compute_losses(b_coords, b_o, b_scores, target)  # type: ignore[arg-type]
-        else:
-            # B * (H * W * num_anchors)
-            b_coords = b_coords.reshape(b_coords.shape[0], -1, 4)
-            b_o = b_o.reshape(b_o.shape[0], -1)
-            # Repeat for each anchor box
-            b_scores = b_scores.repeat_interleave(self.num_anchors, dim=3)
-            b_scores = b_scores.contiguous().reshape(b_scores.shape[0], -1, self.num_classes)
 
-            # Stack detections into a list
-            return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
+        # B * (H * W * num_anchors)
+        b_coords = b_coords.reshape(b_coords.shape[0], -1, 4)
+        b_o = b_o.reshape(b_o.shape[0], -1)
+        # Repeat for each anchor box
+        b_scores = b_scores.repeat_interleave(self.num_anchors, dim=3)
+        b_scores = b_scores.contiguous().reshape(b_scores.shape[0], -1, self.num_classes)
+
+        # Stack detections into a list
+        return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
 def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, **kwargs: Any) -> YOLOv1:
