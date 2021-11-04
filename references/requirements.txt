@@ -1,4 +1,2 @@
 pylocron
-tqdm
-fastprogress>=0.1.21
-matplotlib>=3.0.0
+wandb>=0.10.31
