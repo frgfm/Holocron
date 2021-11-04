@@ -38,7 +38,8 @@ def test_mixup():
     assert not torch.equal(img, mix_img)
     assert mix_target.dtype == torch.float32 and mix_target.shape == (batch_size, num_classes)
     assert torch.all(mix_target.sum(dim=1) == 1.)
-    assert torch.all((mix_target > 0).sum(dim=1) == 2.)
+    count = (mix_target > 0).sum(dim=1)
+    assert torch.all((count == 2.) | (count == 1.))
 
     # Alpha = 0 case
     mix = utils.data.Mixup(num_classes, alpha=0.)
