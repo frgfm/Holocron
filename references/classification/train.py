@@ -17,12 +17,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import RandomSampler, SequentialSampler
+from torch.utils.data._utils.collate import default_collate
 from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
 from torchvision.transforms import transforms as T
 from torchvision.transforms.functional import to_pil_image
 
 import holocron
 from holocron.trainer import ClassificationTrainer
+from holocron.utils.data import Mixup
 
 IMAGENETTE_CLASSES = [
     'tench', 'English springer', 'cassette player', 'chain saw', 'church', 'French horn', 'garbage truck', 'gas pump',
@@ -95,9 +97,20 @@ def main(args):
                     T.RandomErasing(p=0.9, value='random')
                 ]))
 
+        collate_fn = default_collate
+        if args.mixup_alpha > 0:
+            mix = Mixup(len(train_set.classes), alpha=0.2)
+            collate_fn = lambda batch: mix(*default_collate(batch))  # noqa: E731
         train_loader = torch.utils.data.DataLoader(
-            train_set, batch_size=args.batch_size, drop_last=True,
-            sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True, worker_init_fn=worker_init_fn)
+            train_set,
+            batch_size=args.batch_size,
+            drop_last=True,
+            sampler=RandomSampler(train_set),
+            num_workers=args.workers,
+            pin_memory=True,
+            worker_init_fn=worker_init_fn,
+            collate_fn=collate_fn,
+        )
 
         print(f"Training set loaded in {time.time() - st:.2f}s "
               f"({len(train_set)} samples in {len(train_loader)} batches)")
@@ -207,6 +220,7 @@ def parse_args():
     parser.add_argument('--sched', default='onecycle', type=str, help='Scheduler to be used')
     parser.add_argument('--lr', default=1e-3, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
+    parser.add_argument('--mixup-alpha', default=0, type=float, help='Mixup alpha factor')
     parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
     parser.add_argument("--check-setup", dest='check_setup', action='store_true', help="Check your training setup")
     parser.add_argument("--show-samples", dest='show_samples', action='store_true',
