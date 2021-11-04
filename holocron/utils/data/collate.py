@@ -8,45 +8,53 @@ from typing import List, Tuple
 import numpy as np
 import torch
 from torch import Tensor
-from torch.utils.data._utils.collate import default_collate
+from torch.nn.functional import one_hot
 
-__all__ = ['mixup_collate']
+__all__ = ['Mixup']
 
 
-def mixup_collate(data: List[Tuple[Tensor, int]], alpha: float = 0.1) -> Tuple[Tensor, Tensor, Tensor, float]:
+class Mixup(torch.nn.Module):
     """Implements a batch collate function with MixUp strategy from
     `"mixup: Beyond Empirical Risk Minimization" <https://arxiv.org/pdf/1710.09412.pdf>`_
 
     Args:
-        data: list of elements
+        num_classes: number of expected classes
         alpha: mixup factor
-
-    Returns:
-        interpolated input
-        original target
-        resorted target
-        interpolation factor
 
     Example::
         >>> import torch
-        >>> from holocron import utils
-        >>> loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=utils.data.mixup_collate)
+        >>> from torch.utils.data._utils.collate import default_collate
+        >>> from holocron.utils.data import Mixup
+        >>> mix = Mixup(num_classes=10, alpha=0.4)
+        >>> loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=lambda b: mix(*default_collate(b)))
     """
 
-    inputs, targets = default_collate(data)
+    def __init__(self, num_classes: int, alpha: float = 0.2) -> None:
+        super().__init__()
+        self.num_classes = num_classes
+        if alpha < 0:
+            raise ValueError("`alpha` only takes positive values")
+        self.alpha = alpha
 
-    # Sample lambda
-    if alpha > 0:
-        lam = np.random.beta(alpha, alpha)
-    else:
-        lam = 1
+    def forward(self, inputs: Tensor, targets: Tensor) -> Tuple[Tensor, Tensor]:
 
-    # Mix batch indices
-    batch_size = inputs.size()[0]
-    index = torch.randperm(batch_size)
+        # Convert target to one-hot
+        targets = one_hot(targets, num_classes=self.num_classes).to(dtype=inputs.dtype)
 
-    # Create the new input and targets
-    inputs = lam * inputs + (1 - lam) * inputs[index, :]
-    targets_a, targets_b = targets, targets[index]
+        # Sample lambda
+        if self.alpha == 0:
+            return inputs, targets
+        lam = np.random.beta(self.alpha, self.alpha)
 
-    return inputs, targets_a, targets_b, lam
+        # Mix batch indices
+        batch_size = inputs.size()[0]
+        index = torch.randperm(batch_size)
+
+        # Create the new input and targets
+        mixed_input, mixed_target = inputs[index, :], targets[index]
+        mixed_input.mul_(1 - lam)
+        inputs.mul_(lam).add_(mixed_input)
+        mixed_target.mul_(1 - lam)
+        targets.mul_(lam).add_(mixed_target)
+
+        return inputs, targets
