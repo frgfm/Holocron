@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+import wandb
 from torch.utils.data import RandomSampler, SequentialSampler
 from torch.utils.data._utils.collate import default_collate
 from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
@@ -174,8 +175,9 @@ def main(args):
         optimizer = holocron.optim.TAdam(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
+    log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = ClassificationTrainer(model, train_loader, val_loader, criterion, optimizer,
-                                    args.device, args.output_file, amp=args.amp)
+                                    args.device, args.output_file, amp=args.amp, on_epoch_end=log_wb)
     if args.resume:
         print(f"Resuming {args.resume}")
         checkpoint = torch.load(args.resume, map_location='cpu')
@@ -200,11 +202,39 @@ def main(args):
         print(is_ok)
         return
 
+    # Training monitoring
+    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    exp_name = f"{args.arch}-{current_time}" if args.name is None else args.name
+
+    # W&B
+    if args.wb:
+
+        run = wandb.init(
+            name=exp_name,
+            project="holocron-image-classification",
+            config={
+                "learning_rate": args.lr,
+                "scheduler": args.sched,
+                "weight_decay": args.weight_decay,
+                "epochs": args.epochs,
+                "batch_size": args.batch_size,
+                "architecture": args.arch,
+                "input_size": args.img_size,
+                "optimizer": args.opt,
+                "dataset": args.dataset,
+                "loss": args.loss,
+                "mixup_alpha": args.mixup_alpha,
+            }
+        )
+
     print("Start training")
     start_time = time.time()
     trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched)
     total_time_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     print(f"Training time {total_time_str}")
+
+    if args.wb:
+        run.finish()
 
 
 def parse_args():
@@ -213,6 +243,7 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
+    parser.add_argument('--name', type=str, default=None, help='Name of your training experiment')
     parser.add_argument('--arch', default='darknet19', type=str, help='architecture to use')
     parser.add_argument('--dataset', default='imagenette', type=str, help='dataset to train on')
     parser.add_argument('--freeze-until', default=None, type=str, help='Last layer to freeze')
@@ -238,6 +269,8 @@ def parse_args():
     parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
                         action="store_true")
     parser.add_argument("--amp", dest="amp", help="Use Automatic Mixed Precision", action="store_true")
+    parser.add_argument('--wb', dest='wb', action='store_true',
+                        help='Log to Weights & Biases')
 
     args = parser.parse_args()
 

@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.utils.data
+import wandb
 from matplotlib.patches import Rectangle
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
@@ -132,7 +133,7 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = detection.__dict__[args.model](args.pretrained, num_classes=len(VOC_CLASSES),
+    model = detection.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES),
                                            pretrained_backbone=True)
 
     model_params = [p for p in model.parameters() if p.requires_grad]
@@ -151,8 +152,9 @@ def main(args):
         optimizer = holocron.optim.TAdam(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
+    log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = DetectionTrainer(model, train_loader, val_loader, None, optimizer,
-                               args.device, args.output_file, amp=args.amp)
+                               args.device, args.output_file, amp=args.amp, on_epoch_end=log_wb)
 
     if args.resume:
         print(f"Resuming {args.resume}")
@@ -178,11 +180,37 @@ def main(args):
         print(is_ok)
         return
 
+    # Training monitoring
+    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    exp_name = f"{args.arch}-{current_time}" if args.name is None else args.name
+
+    # W&B
+    if args.wb:
+
+        run = wandb.init(
+            name=exp_name,
+            project="holocron-object-detection",
+            config={
+                "learning_rate": args.lr,
+                "scheduler": args.sched,
+                "weight_decay": args.weight_decay,
+                "epochs": args.epochs,
+                "batch_size": args.batch_size,
+                "architecture": args.arch,
+                "input_size": args.img_size,
+                "optimizer": args.opt,
+                "dataset": "PASCAL VOC2012 Detection",
+            }
+        )
+
     print("Start training")
     start_time = time.time()
     trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched)
     total_time_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     print(f"Training time {total_time_str}")
+
+    if args.wb:
+        run.finish()
 
 
 def parse_args():
@@ -191,7 +219,8 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
-    parser.add_argument('--model', default='yolov2', help='model')
+    parser.add_argument('--name', type=str, default=None, help='Name of your training experiment')
+    parser.add_argument('--arch', default='yolov2', help='architecture to use')
     parser.add_argument('--freeze-until', default='backbone', type=str, help='Last layer to freeze')
     parser.add_argument('--device', default=None, type=int, help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
@@ -213,6 +242,8 @@ def parse_args():
     parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
                         action="store_true")
     parser.add_argument("--amp", dest="amp", help="Use Automatic Mixed Precision", action="store_true")
+    parser.add_argument('--wb', dest='wb', action='store_true',
+                        help='Log to Weights & Biases')
 
     args = parser.parse_args()
 
