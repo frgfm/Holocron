@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.utils.data.collate &mdash; holocron 0.1.4a0+735e15a-git documentation</title>
+  <title>holocron.utils.data.collate &mdash; holocron 0.1.4a0+2ae9fd4-git documentation</title>
   
 
   
@@ -225,48 +225,56 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data._utils.collate</span> <span class="kn">import</span> <span class="n">default_collate</span>
+<span class="kn">from</span> <span class="nn">torch.nn.functional</span> <span class="kn">import</span> <span class="n">one_hot</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mixup_collate&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Mixup&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="mixup_collate"><a class="viewcode-back" href="../../../../utils.data.html#holocron.utils.data.mixup_collate">[docs]</a><span class="k">def</span> <span class="nf">mixup_collate</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="Mixup"><a class="viewcode-back" href="../../../../utils.data.html#holocron.utils.data.Mixup">[docs]</a><span class="k">class</span> <span class="nc">Mixup</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implements a batch collate function with MixUp strategy from</span>
 <span class="sd">    `&quot;mixup: Beyond Empirical Risk Minimization&quot; &lt;https://arxiv.org/pdf/1710.09412.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        data: list of elements</span>
+<span class="sd">        num_classes: number of expected classes</span>
 <span class="sd">        alpha: mixup factor</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        interpolated input</span>
-<span class="sd">        original target</span>
-<span class="sd">        resorted target</span>
-<span class="sd">        interpolation factor</span>
 
 <span class="sd">    Example::</span>
 <span class="sd">        &gt;&gt;&gt; import torch</span>
-<span class="sd">        &gt;&gt;&gt; from holocron import utils</span>
-<span class="sd">        &gt;&gt;&gt; loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=utils.data.mixup_collate)</span>
+<span class="sd">        &gt;&gt;&gt; from torch.utils.data._utils.collate import default_collate</span>
+<span class="sd">        &gt;&gt;&gt; from holocron.utils.data import Mixup</span>
+<span class="sd">        &gt;&gt;&gt; mix = Mixup(num_classes=10, alpha=0.4)</span>
+<span class="sd">        &gt;&gt;&gt; loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=lambda b: mix(*default_collate(b)))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">default_collate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`alpha` only takes positive values&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
 
-    <span class="c1"># Sample lambda</span>
-    <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">lam</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
 
-    <span class="c1"># Mix batch indices</span>
-    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="c1"># Convert target to one-hot</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">one_hot</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="c1"># Create the new input and targets</span>
-    <span class="n">inputs</span> <span class="o">=</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">inputs</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="n">inputs</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
-    <span class="n">targets_a</span><span class="p">,</span> <span class="n">targets_b</span> <span class="o">=</span> <span class="n">targets</span><span class="p">,</span> <span class="n">targets</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="c1"># Sample lambda</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span>
+        <span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets_a</span><span class="p">,</span> <span class="n">targets_b</span><span class="p">,</span> <span class="n">lam</span></div>
+        <span class="c1"># Mix batch indices</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+
+        <span class="c1"># Create the new input and targets</span>
+        <span class="n">mixed_input</span><span class="p">,</span> <span class="n">mixed_target</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:],</span> <span class="n">targets</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">mixed_input</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">lam</span><span class="p">)</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">mixed_input</span><span class="p">)</span>
+        <span class="n">mixed_target</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span>
+        <span class="n">targets</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">lam</span><span class="p">)</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">mixed_target</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span></div>
 </pre></div>
 
            </div>
