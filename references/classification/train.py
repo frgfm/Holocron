@@ -12,6 +12,7 @@ import math
 import os
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
@@ -22,9 +23,33 @@ from torchvision.transforms import transforms as T
 import holocron
 from holocron.trainer import ClassificationTrainer
 
+IMAGENETTE_CLASSES = ['tench', 'English springer', 'cassette player', 'chain saw', 'church', 'French horn', 'garbage truck', 'gas pump', 'golf ball', 'parachute']
+
 
 def worker_init_fn(worker_id: int) -> None:
     np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
+
+
+def plot_samples(images, targets, num_samples=4):
+    # Unnormalize image
+    nb_samples = min(num_samples, images.shape[0])
+    _, axes = plt.subplots(1, nb_samples, figsize=(20, 5))
+    for idx in range(nb_samples):
+        img = images[idx]
+        img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
+        img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
+        img = to_pil_image(img)
+
+        axes[idx].imshow(img)
+        axes[idx].axis('off')
+        if targets.ndim == 1:
+            axes[idx].set_title(IMAGENETTE_CLASSES[targets[idx].item()])
+        else:
+            class_idcs = torch.where(targets[idx] > 0)[0]
+            _info = [f"{IMAGENETTE_CLASSES[_idx.item()]} ({targets[idx, _idx]:.2f})" for _idx in class_idcs]
+            axes[idx].set_title(" ".join(_info))
+
+    plt.show()
 
 
 def main(args):
@@ -72,6 +97,11 @@ def main(args):
 
         print(f"Training set loaded in {time.time() - st:.2f}s "
               f"({len(train_set)} samples in {len(train_loader)} batches)")
+
+    if args.show_samples:
+        x, target = next(iter(train_loader))
+        plot_samples(x, target)
+        return
 
     if not (args.lr_finder or args.check_setup):
         st = time.time()
@@ -175,6 +205,8 @@ def parse_args():
     parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
     parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
     parser.add_argument("--check-setup", dest='check_setup', action='store_true', help="Check your training setup")
+    parser.add_argument("--show-samples", dest='show_samples', action='store_true',
+                        help="Whether training samples should be displayed")
     parser.add_argument('--output-file', default='./model.pth', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
