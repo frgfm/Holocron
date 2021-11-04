@@ -42,7 +42,7 @@ class Trainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.amp = amp
-        self.scaler = None
+        self.scaler: torch.cuda.amp.grad_scaler.GradScaler
 
         # Output file
         self.output_file = output_file
@@ -219,7 +219,8 @@ class Trainer:
         # Scheduler
         self._reset_scheduler(lr, num_epochs, sched_type)
 
-        self.scaler = torch.cuda.amp.GradScaler() if self.amp else None
+        if self.amp:
+            self.scaler = torch.cuda.amp.GradScaler()
 
         mb = master_bar(range(num_epochs))
         for _ in mb:
@@ -268,7 +269,8 @@ class Trainer:
         self.lr_recorder = [start_lr * gamma ** idx for idx in range(num_it)]
         self.loss_recorder = []
 
-        self.scaler = torch.cuda.amp.GradScaler() if self.amp else None
+        if self.amp:
+            self.scaler = torch.cuda.amp.GradScaler()
 
         for batch_idx, (x, target) in enumerate(self.train_loader):
             x, target = self.to_cuda(x, target)
@@ -339,7 +341,8 @@ class Trainer:
 
         _losses = []
 
-        self.scaler = torch.cuda.amp.GradScaler() if self.amp else None
+        if self.amp:
+            self.scaler = torch.cuda.amp.GradScaler()
 
         for _ in range(num_it):
             # Forward
@@ -602,14 +605,13 @@ class DetectionTrainer(Trainer):
             # Update the params
             self.optimizer.step()
 
-
     def _get_loss(self, x: List[Tensor], target: List[Dict[str, Tensor]]) -> Tensor:  # type: ignore[override]
         # AMP
         if self.amp:
             with torch.cuda.amp.autocast():
                 # Forward & loss computation
                 loss_dict = self.model(x, target)
-                return sum(loss_dict.values())
+                return sum(loss_dict.values())  # type: ignore[return-value]
         # Forward & loss computation
         loss_dict = self.model(x, target)
         return sum(loss_dict.values())  # type: ignore[return-value]

@@ -24,7 +24,10 @@ from torchvision.transforms.functional import to_pil_image
 import holocron
 from holocron.trainer import ClassificationTrainer
 
-IMAGENETTE_CLASSES = ['tench', 'English springer', 'cassette player', 'chain saw', 'church', 'French horn', 'garbage truck', 'gas pump', 'golf ball', 'parachute']
+IMAGENETTE_CLASSES = [
+    'tench', 'English springer', 'cassette player', 'chain saw', 'church', 'French horn', 'garbage truck', 'gas pump',
+    'golf ball', 'parachute',
+]
 
 
 def worker_init_fn(worker_id: int) -> None:
