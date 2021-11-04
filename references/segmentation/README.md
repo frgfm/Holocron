@@ -14,7 +14,7 @@ pip install -e Holocron/. --upgrade
 No need to download the dataset, torchvision will handle [this](https://pytorch.org/docs/stable/torchvision/datasets.html#torchvision.datasets.VOCSegmentation) for you! From there, you can run your training with the following command
 
 ```bash
-python train.py VOC2012 --model unet3p -b 4 -j 16 --opt radam --lr 1e-5 --sched onecycle --epochs 20
+python train.py VOC2012 --arch unet3p -b 4 -j 16 --opt radam --lr 1e-5 --sched onecycle --epochs 20
 ```
 
 
@@ -27,8 +27,8 @@ Performances are evaluated on the validation set of the dataset using the mean I
 
 | Size (px) | Epochs | args                                                         | mean IoU | # Runs |
 | --------- | ------ | ------------------------------------------------------------ | -------- | ------ |
-| 256       | 200    | VOC2012 --model unet_rexnet13 -b 16 --loss label_smoothing --opt adamp --device 0 --lr 2e-3 --epochs 200 | 32.14    | 1      |
-| 256       | 20     | VOC2012 --model unet3p -b 4 -j 16 --opt radam --lr 1e-5 --sched onecycle --epochs 20 | 14.17    | 1      |
+| 256       | 200    | VOC2012 --arch unet_rexnet13 -b 16 --loss label_smoothing --opt adamp --device 0 --lr 2e-3 --epochs 200 | 32.14    | 1      |
+| 256       | 20     | VOC2012 --arch unet3p -b 4 -j 16 --opt radam --lr 1e-5 --sched onecycle --epochs 20 | 14.17    | 1      |
 
 
 
