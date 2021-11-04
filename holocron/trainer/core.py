@@ -33,13 +33,16 @@ class Trainer:
         criterion: nn.Module,
         optimizer: torch.optim.Optimizer,
         gpu: Optional[int] = None,
-        output_file: str = './checkpoint.pth'
+        output_file: str = './checkpoint.pth',
+        amp: bool = False,
     ) -> None:
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.criterion = criterion
         self.optimizer = optimizer
+        self.amp = amp
+        self.scaler = None
 
         # Output file
         self.output_file = output_file
@@ -144,14 +147,27 @@ class Trainer:
         # Clean gradients
         self.optimizer.zero_grad()
         # Backpropate the loss
-        loss.backward()
-        # Update the params
-        self.optimizer.step()
+        if self.amp:
+            self.scaler.scale(loss).backward()
+            # Update the params
+            self.scaler.step(self.optimizer)
+            self.scaler.update()
+        else:
+            loss.backward()
+            # Update the params
+            self.optimizer.step()
 
     def _get_loss(self, x: Tensor, target: Tensor) -> Tensor:
+        # AMP
+        if self.amp:
+            with torch.cuda.amp.autocast():
+                # Forward
+                out = self.model(x)
+                # Loss computation
+                loss = self.criterion(out, target)
+            return loss
         # Forward
         out = self.model(x)
-        # Loss computation
         return self.criterion(out, target)
 
     def _set_params(self) -> None:
@@ -165,7 +181,7 @@ class Trainer:
         self._set_params()
         self.optimizer.add_param_group(dict(params=self._params.contiguous()))  # type: ignore[union-attr]
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def evaluate(self):
         raise NotImplementedError
 
@@ -202,6 +218,8 @@ class Trainer:
         self._reset_opt(lr)
         # Scheduler
         self._reset_scheduler(lr, num_epochs, sched_type)
+
+        self.scaler = torch.cuda.amp.GradScaler() if self.amp else None
 
         mb = master_bar(range(num_epochs))
         for _ in mb:
@@ -249,6 +267,8 @@ class Trainer:
 
         self.lr_recorder = [start_lr * gamma ** idx for idx in range(num_it)]
         self.loss_recorder = []
+
+        self.scaler = torch.cuda.amp.GradScaler() if self.amp else None
 
         for batch_idx, (x, target) in enumerate(self.train_loader):
             x, target = self.to_cuda(x, target)
@@ -319,6 +339,8 @@ class Trainer:
 
         _losses = []
 
+        self.scaler = torch.cuda.amp.GradScaler() if self.amp else None
+
         for _ in range(num_it):
             # Forward
             batch_loss = self._get_loss(x, target)
@@ -341,9 +363,10 @@ class ClassificationTrainer(Trainer):
         optimizer (torch.optim.Optimizer): parameter optimizer
         gpu (int, optional): index of the GPU to use
         output_file (str, optional): path where checkpoints will be saved
+        amp (bool, optional): whether to use automatic mixed precision
     """
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the model on the validation set
 
@@ -357,10 +380,17 @@ class ClassificationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            # Forward
-            out = self.model(x)
-            # Loss computation
-            val_loss += self.criterion(out, target).item()
+            if self.amp:
+                with torch.cuda.amp.autocast():
+                    # Forward
+                    out = self.model(x)
+                    # Loss computation
+                    val_loss += self.criterion(out, target).item()
+            else:
+                # Forward
+                out = self.model(x)
+                # Loss computation
+                val_loss += self.criterion(out, target).item()
 
             pred = out.topk(5, dim=1)[1] if out.shape[1] >= 5 else out.argmax(dim=1, keepdim=True)
             correct = pred.eq(target.view(-1, 1).expand_as(pred))
@@ -391,9 +421,10 @@ class BinaryClassificationTrainer(Trainer):
         optimizer (torch.optim.Optimizer): parameter optimizer
         gpu (int, optional): index of the GPU to use
         output_file (str, optional): path where checkpoints will be saved
+        amp (bool, optional): whether to use automatic mixed precision
     """
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the model on the validation set
 
@@ -407,14 +438,21 @@ class BinaryClassificationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            # Forward
-            out = self.model(x)
-
-            # Apply sigmoid
-            out = torch.sigmoid(out)
-
-            # Loss computation
-            val_loss += self.criterion(out, target).item()
+            if self.amp:
+                with torch.cuda.amp.autocast():
+                    # Forward
+                    out = self.model(x)
+                    # Apply sigmoid
+                    out = torch.sigmoid(out)
+                    # Loss computation
+                    val_loss += self.criterion(out, target).item()
+            else:
+                # Forward
+                out = self.model(x)
+                # Apply sigmoid
+                out = torch.sigmoid(out)
+                # Loss computation
+                val_loss += self.criterion(out, target).item()
 
             top1 += int(torch.sum((target >= 0.5) == (out >= 0.5)).item())
 
@@ -442,13 +480,14 @@ class SegmentationTrainer(Trainer):
         gpu (int, optional): index of the GPU to use
         output_file (str, optional): path where checkpoints will be saved
         num_classes (int): number of output classes
+        amp (bool, optional): whether to use automatic mixed precision
     """
 
     def __init__(self, *args: Any, num_classes: int = 10, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.num_classes = num_classes
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def evaluate(self, ignore_index: int = 255) -> Dict[str, float]:
         """Evaluate the model on the validation set
 
@@ -467,10 +506,17 @@ class SegmentationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            # Forward
-            out = self.model(x)
-            # Loss computation
-            val_loss += self.criterion(out, target).item()
+            if self.amp:
+                with torch.cuda.amp.autocast():
+                    # Forward
+                    out = self.model(x)
+                    # Loss computation
+                    val_loss += self.criterion(out, target).item()
+            else:
+                # Forward
+                out = self.model(x)
+                # Loss computation
+                val_loss += self.criterion(out, target).item()
 
             # borrowed from https://github.com/pytorch/vision/blob/master/references/segmentation/train.py
             pred = out.argmax(dim=1).flatten()
@@ -521,6 +567,7 @@ class DetectionTrainer(Trainer):
         optimizer (torch.optim.Optimizer): parameter optimizer
         gpu (int, optional): index of the GPU to use
         output_file (str, optional): path where checkpoints will be saved
+        amp (bool, optional): whether to use automatic mixed precision
     """
 
     @staticmethod
@@ -537,14 +584,32 @@ class DetectionTrainer(Trainer):
         # Clean gradients
         self.optimizer.zero_grad()
         # Backpropate the loss
-        loss.backward()
-        # Safeguard for Gradient explosion
-        if isinstance(grad_clip, float):
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
-        # Update the params
-        self.optimizer.step()
+        if self.amp:
+            self.scaler.scale(loss).backward()
+            # Safeguard for Gradient explosion
+            if isinstance(grad_clip, float):
+                self.scaler.unscale_(self.optimizer)
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
+
+            # Update the params
+            self.scaler.step(self.optimizer)
+            self.scaler.update()
+        else:
+            loss.backward()
+            # Safeguard for Gradient explosion
+            if isinstance(grad_clip, float):
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
+            # Update the params
+            self.optimizer.step()
+
 
     def _get_loss(self, x: List[Tensor], target: List[Dict[str, Tensor]]) -> Tensor:  # type: ignore[override]
+        # AMP
+        if self.amp:
+            with torch.cuda.amp.autocast():
+                # Forward & loss computation
+                loss_dict = self.model(x, target)
+                return sum(loss_dict.values())
         # Forward & loss computation
         loss_dict = self.model(x, target)
         return sum(loss_dict.values())  # type: ignore[return-value]
@@ -554,7 +619,7 @@ class DetectionTrainer(Trainer):
         return (f"Loc error: {eval_metrics['loc_err']:.2%} | Clf error: {eval_metrics['clf_err']:.2%} | "
                 f"Det error: {eval_metrics['det_err']:.2%}")
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def evaluate(self, iou_threshold: float = 0.5) -> Dict[str, float]:
         """Evaluate the model on the validation set
 
@@ -571,7 +636,12 @@ class DetectionTrainer(Trainer):
 
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
-            detections = self.model(x)
+
+            if self.amp:
+                with torch.cuda.amp.autocast():
+                    detections = self.model(x)
+            else:
+                detections = self.model(x)
 
             for dets, t in zip(detections, target):
                 if t['boxes'].shape[0] > 0 and dets['boxes'].shape[0] > 0:
