@@ -112,7 +112,7 @@ def convert_to_relative(image, target):
 class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
     def __call__(self, image, target):
         if random.random() < self.p:
-            height, width = image.size
+            _, width = image.size
             image = F.hflip(image)
             target['boxes'][:, [0, 2]] = width - target['boxes'][:, [0, 2]]
             # Reorder them correctly

@@ -67,7 +67,7 @@ class LambdaLayer(nn.Module):
             self.pos_emb = nn.Parameter(torch.randn(n, n, dim_k, dim_u))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, c, h, w = x.shape
+        b, _, h, w = x.shape
 
         # Project inputs & context to retrieve queries, keys and values
         q = self.to_q(x)

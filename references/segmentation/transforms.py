@@ -75,7 +75,7 @@ class RandomHorizontalFlip(object):
 
     def __call__(self, image, target):
         if random.random() < self.prob:
-            height, width = image.size
+            _, width = image.size
             image = F.hflip(image)
             # Flip the segmentation
             target = F.hflip(target)
