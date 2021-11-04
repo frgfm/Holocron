@@ -19,6 +19,7 @@ import torch.nn as nn
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
 from torchvision.transforms import transforms as T
+from torchvision.transforms.functional import to_pil_image
 
 import holocron
 from holocron.trainer import ClassificationTrainer
