@@ -5,7 +5,7 @@
 
 import math
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,6 +35,7 @@ class Trainer:
         gpu: Optional[int] = None,
         output_file: str = './checkpoint.pth',
         amp: bool = False,
+        on_epoch_end: Optional[Callable[[Dict[str, float]], Any]] = None,
     ) -> None:
         self.model = model
         self.train_loader = train_loader
@@ -43,6 +44,7 @@ class Trainer:
         self.optimizer = optimizer
         self.amp = amp
         self.scaler: torch.cuda.amp.grad_scaler.GradScaler
+        self.on_epoch_end = on_epoch_end
 
         # Output file
         self.output_file = output_file
@@ -202,7 +204,7 @@ class Trainer:
         num_epochs: int,
         lr: float,
         freeze_until: Optional[str] = None,
-        sched_type: str = 'onecycle'
+        sched_type: str = 'onecycle',
     ) -> None:
         """Train the model for a given number of epochs
 
@@ -240,6 +242,9 @@ class Trainer:
                       f"{eval_metrics['val_loss']:.4}: saving state...")
                 self.min_loss = eval_metrics['val_loss']
                 self.save(self.output_file)
+
+            if self.on_epoch_end is not None:
+                self.on_epoch_end(eval_metrics)
 
     def lr_find(
         self,
