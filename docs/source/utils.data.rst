@@ -10,4 +10,4 @@ holocron.utils.data
 Batch collate
 -------------
 
-.. autofunction:: mixup_collate
+.. autofunction:: Mixup

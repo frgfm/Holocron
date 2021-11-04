@@ -3,6 +3,7 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+import pytest
 import torch
 from torch.utils.data import DataLoader, Dataset
 
@@ -24,14 +25,29 @@ class MockDataset(Dataset):
 
 def test_mixup():
 
-    num_it = 10
-    batch_size = 2
-    # Generate all dependencies
-    loader = DataLoader(MockDataset(num_it * batch_size), batch_size=batch_size, collate_fn=utils.data.mixup_collate)
+    batch_size = 8
+    num_classes = 10
+    shape = (3, 32, 32)
+    with pytest.raises(ValueError):
+        utils.data.Mixup(num_classes, alpha=-1.)
+    # Generate all dependencies
+    mix = utils.data.Mixup(num_classes, alpha=0.2)
+    img, target = torch.rand((batch_size, *shape)), torch.arange(num_classes)[:batch_size]
+    mix_img, mix_target = mix(img.clone(), target.clone())
+    assert img.shape == (batch_size, *shape)
+    assert not torch.equal(img, mix_img)
+    assert mix_target.dtype == torch.float32 and mix_target.shape == (batch_size, num_classes)
+    assert torch.all(mix_target.sum(dim=1) == 1.)
+    count = (mix_target > 0).sum(dim=1)
+    assert torch.all((count == 2.) | (count == 1.))
 
-    inputs, targets_a, targets_b, lam = next(iter(loader))
-    assert inputs.shape == (batch_size, 32)
-    assert targets_a.shape == targets_b.shape
+    # Alpha = 0 case
+    mix = utils.data.Mixup(num_classes, alpha=0.)
+    mix_img, mix_target = mix(img.clone(), target.clone())
+    assert torch.equal(img, mix_img)
+    assert mix_target.dtype == torch.float32 and mix_target.shape == (batch_size, num_classes)
+    assert torch.all(mix_target.sum(dim=1) == 1.)
+    assert torch.all((mix_target > 0).sum(dim=1) == 1.)
 
 
 def _train_one_batch(model, x, target, optimizer, criterion, device):
