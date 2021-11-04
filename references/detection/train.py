@@ -152,7 +152,7 @@ def main(args):
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     trainer = DetectionTrainer(model, train_loader, val_loader, None, optimizer,
-                               args.device, args.output_file)
+                               args.device, args.output_file, amp=args.amp)
 
     if args.resume:
         print(f"Resuming {args.resume}")
@@ -212,6 +212,7 @@ def parse_args():
     parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
     parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
                         action="store_true")
+    parser.add_argument("--amp", dest="amp", help="Use Automatic Mixed Precision", action="store_true")
 
     args = parser.parse_args()
 

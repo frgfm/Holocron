@@ -43,8 +43,8 @@ with open('README.md') as f:
     readme = f.read()
 
 requirements = [
-    'torch>=1.5.1',
-    'torchvision>=0.6.1',
+    'torch>=1.9.1',
+    'torchvision>=0.10.1',
     'tqdm>=4.1.0',
     'numpy>=1.17.2',
     'fastprogress>=1.0.0',

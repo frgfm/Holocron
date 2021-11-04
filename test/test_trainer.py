@@ -62,7 +62,7 @@ class MockDetDataset(Dataset):
 
     def __getitem__(self, idx):
         boxes = torch.tensor([[0, 0, 1, 1], [0.25, 0.25, 0.75, 0.75]], dtype=torch.float32)
-        return torch.rand((3, 320, 320)), dict(boxes=boxes, labels=torch.zeros(2, dtype=torch.long))
+        return torch.rand((3, 320, 320)), dict(boxes=boxes, labels=torch.ones(2, dtype=torch.long))
 
     def __len__(self):
         return self.n
@@ -87,7 +87,7 @@ def _test_trainer(
     # Check setup
     assert learner.check_setup(freeze_until, num_it=num_it)
 
-    # LR Find
+    # LR Find
     learner.load(checkpoint)
 
     with pytest.raises(AssertionError):
@@ -121,7 +121,7 @@ def test_classification_trainer(tmpdir_factory):
 
     num_it = 100
     batch_size = 8
-    # Generate all dependencies
+    # Generate all dependencies
     model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
                           GlobalAvgPool2d(flatten=True), nn.Linear(32, 5))
     train_loader = DataLoader(MockClassificationDataset(num_it * batch_size), batch_size=batch_size)
@@ -134,6 +134,11 @@ def test_classification_trainer(tmpdir_factory):
     learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer,
                                             output_file=file_path, gpu=0 if torch.cuda.is_available() else None)
 
+    _test_trainer(learner, num_it, '3.weight', None)
+    # AMP
+    learner = trainer.ClassificationTrainer(
+        model, train_loader, train_loader, criterion, optimizer,
+        output_file=file_path, gpu=0 if torch.cuda.is_available() else None, amp=True)
     _test_trainer(learner, num_it, '3.weight', None)
 
 
@@ -186,6 +191,11 @@ def test_segmentation_trainer(tmpdir_factory):
                                           output_file=file_path, gpu=0 if torch.cuda.is_available() else None)
 
     _test_trainer(learner, num_it, '2.weight', None)
+    # AMP
+    learner = trainer.SegmentationTrainer(
+        model, train_loader, train_loader, criterion, optimizer, num_classes=5,
+        output_file=file_path, gpu=0 if torch.cuda.is_available() else None, amp=True)
+    _test_trainer(learner, num_it, '2.weight', None)
 
 
 def test_detection_trainer(tmpdir_factory):
@@ -195,7 +205,7 @@ def test_detection_trainer(tmpdir_factory):
 
     num_it = 10
     batch_size = 2
-    # Generate all dependencies
+    # Generate all dependencies
     model = fasterrcnn_mobilenet_v3_large_320_fpn(pretrained_backbone=True, num_classes=10)
     train_loader = DataLoader(MockDetDataset(num_it * batch_size), batch_size=batch_size, collate_fn=collate_fn)
     optimizer = torch.optim.Adam(model.parameters())
@@ -203,4 +213,9 @@ def test_detection_trainer(tmpdir_factory):
     learner = trainer.DetectionTrainer(model, train_loader, train_loader, None, optimizer,
                                        output_file=file_path, gpu=0 if torch.cuda.is_available() else None)
 
+    _test_trainer(learner, num_it, 'roi_heads.box_predictor.cls_score.weight', 'backbone', 5e-4)
+    # AMP
+    learner = trainer.DetectionTrainer(
+        model, train_loader, train_loader, None, optimizer,
+        output_file=file_path, gpu=0 if torch.cuda.is_available() else None, amp=True)
     _test_trainer(learner, num_it, 'roi_heads.box_predictor.cls_score.weight', 'backbone', 5e-4)
