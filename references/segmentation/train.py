@@ -184,7 +184,7 @@ def main(args):
                                              betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     trainer = SegmentationTrainer(model, train_loader, val_loader, criterion, optimizer,
-                                  args.device, args.output_file, num_classes=len(VOC_CLASSES))
+                                  args.device, args.output_file, num_classes=len(VOC_CLASSES), amp=args.amp)
     if args.resume:
         print(f"Resuming {args.resume}")
         checkpoint = torch.load(args.resume, map_location='cpu')
@@ -256,6 +256,7 @@ def parse_args():
     parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
     parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
                         action="store_true")
+    parser.add_argument("--amp", dest="amp", help="Use Automatic Mixed Precision", action="store_true")
 
     args = parser.parse_args()
     return args
