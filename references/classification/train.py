@@ -19,8 +19,9 @@ import torch.nn as nn
 from torch.utils.data import RandomSampler, SequentialSampler
 from torch.utils.data._utils.collate import default_collate
 from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
+from torchvision.transforms import autoaugment as A
 from torchvision.transforms import transforms as T
-from torchvision.transforms.functional import to_pil_image
+from torchvision.transforms.functional import InterpolationMode, to_pil_image
 
 import holocron
 from holocron.trainer import ClassificationTrainer
@@ -72,6 +73,8 @@ def main(args):
         std=[0.229, 0.224, 0.225] if args.dataset.lower() == "imagenette" else [0.2673, 0.2564, 0.2761]
     )
 
+    interpolation = InterpolationMode.BILINEAR
+
     if not args.test_only:
         st = time.time()
         if args.dataset.lower() == "imagenette":
@@ -79,11 +82,13 @@ def main(args):
             train_set = ImageFolder(
                 os.path.join(args.data_path, 'train'),
                 T.Compose([
-                    T.RandomResizedCrop(args.img_size, scale=(0.3, 1.0)),
+                    T.RandomResizedCrop(args.img_size, scale=(0.3, 1.0), interpolation=interpolation),
                     T.RandomHorizontalFlip(),
-                    T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02),
-                    T.ToTensor(), normalize,
-                    T.RandomErasing(p=0.9, value='random')
+                    A.TrivialAugmentWide(interpolation=interpolation),
+                    T.PILToTensor(),
+                    T.ConvertImageDtype(torch.float32),
+                    normalize,
+                    T.RandomErasing(p=0.9, scale=(0.02, 0.2), value='random'),
                 ]))
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
@@ -92,8 +97,10 @@ def main(args):
                 True,
                 T.Compose([
                     T.RandomHorizontalFlip(),
-                    T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02),
-                    T.ToTensor(), normalize,
+                    A.TrivialAugmentWide(interpolation=interpolation),
+                    T.PILToTensor(),
+                    T.ConvertImageDtype(torch.float32),
+                    normalize,
                     T.RandomErasing(p=0.9, value='random')
                 ]))
 
@@ -143,7 +150,7 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = holocron.models.__dict__[args.model](args.pretrained, num_classes=len(train_set.classes))
+    model = holocron.models.__dict__[args.arch](args.pretrained, num_classes=len(train_set.classes))
 
     if args.loss == 'crossentropy':
         criterion = nn.CrossEntropyLoss()
@@ -206,7 +213,7 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
-    parser.add_argument('--model', default='darknet19', type=str, help='model')
+    parser.add_argument('--arch', default='darknet19', type=str, help='architecture to use')
     parser.add_argument('--dataset', default='imagenette', type=str, help='dataset to train on')
     parser.add_argument('--freeze-until', default=None, type=str, help='Last layer to freeze')
     parser.add_argument('--device', default=None, type=int, help='device')
