@@ -287,6 +287,8 @@ class Trainer:
             scheduler.step()
 
             # Record
+            if torch.isnan(batch_loss) or torch.isinf(batch_loss):
+                raise ValueError("loss value is NaN or inf.")
             self.loss_recorder.append(batch_loss.item())
             # Stop after the number of iterations
             if batch_idx + 1 == num_it:
