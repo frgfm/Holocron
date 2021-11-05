@@ -76,6 +76,7 @@ def main(args):
 
     interpolation = InterpolationMode.BILINEAR
 
+    num_classes = None
     if not args.test_only:
         st = time.time()
         if args.dataset.lower() == "imagenette":
@@ -105,6 +106,7 @@ def main(args):
                     T.RandomErasing(p=0.9, value='random')
                 ]))
 
+        num_classes = len(train_set.classes)
         collate_fn = default_collate
         if args.mixup_alpha > 0:
             mix = Mixup(len(train_set.classes), alpha=0.2)
@@ -143,6 +145,7 @@ def main(args):
             )
         else:
             val_set = CIFAR100(data_dir, False, T.Compose([T.ToTensor(), normalize]))
+        num_classes = len(val_set.classes)
 
         val_loader = torch.utils.data.DataLoader(
             val_set, batch_size=args.batch_size, drop_last=False,
@@ -151,12 +154,9 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = holocron.models.__dict__[args.arch](args.pretrained, num_classes=len(train_set.classes))
+    model = holocron.models.__dict__[args.arch](args.pretrained, num_classes=num_classes)
 
-    if args.loss == 'crossentropy':
-        criterion = nn.CrossEntropyLoss()
-    elif args.loss == 'label_smoothing':
-        criterion = holocron.nn.LabelSmoothingCrossEntropy()
+    criterion = nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
 
     # Create the contiguous parameters.
     model_params = [p for p in model.parameters() if p.requires_grad]
@@ -222,7 +222,8 @@ def main(args):
                 "input_size": args.img_size,
                 "optimizer": args.opt,
                 "dataset": args.dataset,
-                "loss": args.loss,
+                "loss": "crossentropy",
+                "label_smoothing": args.label_smoothing,
                 "mixup_alpha": args.mixup_alpha,
             }
         )
@@ -253,7 +254,7 @@ def parse_args():
     parser.add_argument('-j', '--workers', default=min(os.cpu_count(), 16), type=int,
                         help='number of data loading workers')
     parser.add_argument('--img-size', default=224, type=int, help='image size')
-    parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
+    parser.add_argument('--label-smoothing', default=0.1, type=float, help='label smoothing to apply')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
     parser.add_argument('--sched', default='onecycle', type=str, help='Scheduler to be used')
     parser.add_argument('--lr', default=1e-3, type=float, help='initial learning rate')
