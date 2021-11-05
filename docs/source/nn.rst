@@ -36,8 +36,6 @@ Loss functions
 Loss wrappers
 --------------
 
-.. autoclass:: MixupLoss
-
 .. autoclass:: ClassBalancedWrapper
 
 Convolution layers
