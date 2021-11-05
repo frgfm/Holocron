@@ -12,7 +12,7 @@ from torch import Tensor
 from .. import functional as F
 
 __all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'LabelSmoothingCrossEntropy', 'ComplementCrossEntropy',
-           'MixupLoss', 'ClassBalancedWrapper', 'MutualChannelLoss']
+           'ClassBalancedWrapper', 'MutualChannelLoss']
 
 
 class _Loss(nn.Module):
@@ -139,34 +139,6 @@ class ComplementCrossEntropy(_Loss):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(gamma={self.gamma}, reduction='{self.reduction}')"
-
-
-class MixupLoss(_Loss):
-    """Implements a Mixup wrapper as described in
-    `"mixup: Beyond Empirical Risk Minimization" <https://arxiv.org/pdf/1710.09412.pdf>`_
-
-    Args:
-        criterion (callable): initial criterion to be used on normal sample & targets
-    """
-    def __init__(self, criterion: nn.Module) -> None:
-        super().__init__()
-        self.criterion = criterion
-
-    def forward(self, x: Tensor, target_a: Tensor, target_b: Tensor, lam: float) -> Tensor:
-        """Computes the mixed-up loss
-
-        Args:
-            x (torch.Tensor): predictions
-            target_a (torch.Tensor): target for first sample
-            target_b (torch.Tensor): target for second sample
-            lam (float): lambda factor
-        Returns:
-            torch.Tensor: loss
-        """
-        return lam * self.criterion(x, target_a) + (1 - lam) * self.criterion(x, target_b)
-
-    def __repr__(self) -> str:
-        return f"Mixup_{self.criterion.__repr__()}"
 
 
 class ClassBalancedWrapper(nn.Module):

@@ -181,30 +181,6 @@ def test_mc_loss():
     assert repr(criterion) == f"MutualChannelLoss(reduction='mean', chi={chi}, alpha=1)"
 
 
-def test_mixuploss():
-
-    num_batches = 8
-    num_classes = 10
-    # Generate inputs
-    x = torch.rand((num_batches, num_classes, 20, 20))
-    target_a = torch.rand((num_batches, num_classes, 20, 20))
-    target_b = torch.rand((num_batches, num_classes, 20, 20))
-    lam = 0.9
-
-    # Take a criterion compatible with one-hot encoded targets
-    criterion = nn.MultiLabelCrossEntropy()
-    mixup_criterion = nn.MixupLoss(criterion)
-
-    # Check the repr
-    assert repr(mixup_criterion) == f"Mixup_{repr(criterion)}"
-
-    # Check the forward
-    out = mixup_criterion(x, target_a, target_b, lam)
-    assert out.item() == (lam * criterion(x, target_a) + (1 - lam) * criterion(x, target_b))
-    assert mixup_criterion(x, target_a, target_b, 1).item() == criterion(x, target_a)
-    assert mixup_criterion(x, target_a, target_b, 0).item() == criterion(x, target_b)
-
-
 def test_cb_loss():
 
     num_batches = 2
