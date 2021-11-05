@@ -9,13 +9,13 @@ Training script for object detection
 
 import datetime
 import math
+import os
 import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.utils.data
-import wandb
 from matplotlib.patches import Rectangle
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
@@ -25,6 +25,7 @@ from transforms import (CenterCrop, Compose, ImageTransform, RandomHorizontalFli
                         VOCTargetTransform, convert_to_relative)
 
 import holocron
+import wandb
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 
@@ -84,7 +85,7 @@ def main(args):
     if not args.test_only:
         st = time.time()
         train_set = VOCDetection(
-            datadir,
+            args.data_path,
             image_set='train',
             download=True,
             transforms=Compose([
@@ -113,7 +114,7 @@ def main(args):
     if not (args.lr_finder or args.check_setup):
         st = time.time()
         val_set = VOCDetection(
-            datadir,
+            args.data_path,
             image_set='val',
             download=True,
             transforms=Compose([
