@@ -28,8 +28,6 @@ Loss functions
 
 .. autofunction:: multilabel_cross_entropy
 
-.. autofunction:: ls_cross_entropy
-
 .. autofunction:: complement_cross_entropy
 
 Convolutions
