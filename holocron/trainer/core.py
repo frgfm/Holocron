@@ -166,8 +166,8 @@ class Trainer:
                 # Forward
                 out = self.model(x)
                 # Loss computation
-                loss = self.criterion(out, target)
-            return loss
+                return self.criterion(out, target)
+
         # Forward
         out = self.model(x)
         return self.criterion(out, target)
@@ -384,7 +384,7 @@ class ClassificationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, top1, top5, num_samples = 0., 0, 0, 0
+        val_loss, top1, top5, num_samples, num_valid_batches = 0., 0, 0, 0, 0
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
@@ -393,12 +393,17 @@ class ClassificationTrainer(Trainer):
                     # Forward
                     out = self.model(x)
                     # Loss computation
-                    val_loss += self.criterion(out, target).item()
+                    _loss = self.criterion(out, target)
             else:
                 # Forward
                 out = self.model(x)
                 # Loss computation
-                val_loss += self.criterion(out, target).item()
+                _loss = self.criterion(out, target)
+
+            # Safeguard for NaN loss
+            if not torch.isnan(_loss) and not torch.isinf(_loss):
+                val_loss += _loss.item()
+                num_valid_batches += 1
 
             pred = out.topk(5, dim=1)[1] if out.shape[1] >= 5 else out.argmax(dim=1, keepdim=True)
             correct = pred.eq(target.view(-1, 1).expand_as(pred))
@@ -408,7 +413,7 @@ class ClassificationTrainer(Trainer):
 
             num_samples += x.shape[0]
 
-        val_loss /= len(self.val_loader)
+        val_loss /= num_valid_batches
 
         return dict(val_loss=val_loss, acc1=top1 / num_samples, acc5=top5 / num_samples)
 
@@ -442,7 +447,7 @@ class BinaryClassificationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, top1, num_samples = 0., 0, 0
+        val_loss, top1, num_samples, num_valid_batches = 0., 0, 0, 0
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
@@ -453,20 +458,25 @@ class BinaryClassificationTrainer(Trainer):
                     # Apply sigmoid
                     out = torch.sigmoid(out)
                     # Loss computation
-                    val_loss += self.criterion(out, target).item()
+                    _loss = self.criterion(out, target)
             else:
                 # Forward
                 out = self.model(x)
                 # Apply sigmoid
                 out = torch.sigmoid(out)
                 # Loss computation
-                val_loss += self.criterion(out, target).item()
+                _loss = self.criterion(out, target)
+
+            # Safeguard for NaN loss
+            if not torch.isnan(_loss) and not torch.isinf(_loss):
+                val_loss += _loss.item()
+                num_valid_batches += 1
 
             top1 += int(torch.sum((target >= 0.5) == (out >= 0.5)).item())
 
             num_samples += x.shape[0]
 
-        val_loss /= len(self.val_loader)
+        val_loss /= num_valid_batches
 
         return dict(val_loss=val_loss, acc=top1 / num_samples)
 
@@ -508,7 +518,7 @@ class SegmentationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, mean_iou = 0., 0.
+        val_loss, mean_iou, num_valid_batches = 0., 0., 0
         conf_mat = torch.zeros((self.num_classes, self.num_classes), dtype=torch.int64,
                                device=next(self.model.parameters()).device)
         for x, target in self.val_loader:
@@ -519,12 +529,17 @@ class SegmentationTrainer(Trainer):
                     # Forward
                     out = self.model(x)
                     # Loss computation
-                    val_loss += self.criterion(out, target).item()
+                    _loss = self.criterion(out, target)
             else:
                 # Forward
                 out = self.model(x)
                 # Loss computation
-                val_loss += self.criterion(out, target).item()
+                _loss = self.criterion(out, target)
+
+            # Safeguard for NaN loss
+            if not torch.isnan(_loss) and not torch.isinf(_loss):
+                val_loss += _loss.item()
+                num_valid_batches += 1
 
             # borrowed from https://github.com/pytorch/vision/blob/master/references/segmentation/train.py
             pred = out.argmax(dim=1).flatten()
@@ -534,7 +549,7 @@ class SegmentationTrainer(Trainer):
             nc = self.num_classes
             conf_mat += torch.bincount(inds, minlength=nc ** 2).reshape(nc, nc)
 
-        val_loss /= len(self.val_loader)
+        val_loss /= num_valid_batches
         acc_global = (torch.diag(conf_mat).sum() / conf_mat.sum()).item()
         mean_iou = (torch.diag(conf_mat) / (conf_mat.sum(1) + conf_mat.sum(0) - torch.diag(conf_mat))).mean().item()
 
