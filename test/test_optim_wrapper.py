@@ -6,7 +6,7 @@
 import torch
 from torch.nn import functional as F
 from torch.optim import SGD
-from torchvision.models import resnet18
+from torchvision.models import mobilenet_v3_small
 
 from holocron.optim import wrapper
 
@@ -17,15 +17,15 @@ def _test_wrapper(name: str) -> None:
     input_shape = (3, 224, 224)
     num_batches = 4
     # Get model, optimizer and criterion
-    model = resnet18(num_classes=10)
+    model = mobilenet_v3_small(num_classes=10)
     for n, m in model.named_children():
-        if n != 'fc':
+        if not n.startswith("classifier"):
             for p in m.parameters():
                 p.requires_grad_(False)
     # Pick an optimizer whose update is easy to verify
     optimizer = SGD(model.fc.parameters(), lr=lr)
 
-    # Wrap the optimizer
+    # Wrap the optimizer
     opt_wrapper = wrapper.__dict__[name](optimizer)
 
     # Check gradient reset

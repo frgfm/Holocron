@@ -5,7 +5,7 @@
 
 import torch
 from torch.nn import functional as F
-from torchvision.models import resnet18
+from torchvision.models import mobilenet_v3_small
 
 from holocron import optim
 
@@ -16,9 +16,9 @@ def _test_optimizer(name: str, **kwargs: Any) -> None:
     input_shape = (3, 224, 224)
     num_batches = 4
     # Get model and optimizer
-    model = resnet18(num_classes=10)
+    model = mobilenet_v3_small(num_classes=10)
     for n, m in model.named_children():
-        if n != 'fc':
+        if not n.startswith("classifier"):
             for p in m.parameters():
                 p.requires_grad_(False)
     optimizer = optim.__dict__[name](model.fc.parameters(), lr=lr, **kwargs)
