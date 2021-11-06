@@ -18,12 +18,12 @@ def _test_wrapper(name: str) -> None:
     num_batches = 4
     # Get model, optimizer and criterion
     model = mobilenet_v3_small(num_classes=10)
-    for n, m in model.named_children():
-        if not n.startswith("classifier"):
-            for p in m.parameters():
-                p.requires_grad_(False)
+    for p in model.parameters():
+        p.requires_grad_(False)
+    for p in model.classifier[3].parameters():
+        p.requires_grad_(True)
     # Pick an optimizer whose update is easy to verify
-    optimizer = SGD(model.fc.parameters(), lr=lr)
+    optimizer = SGD(model.classifier[3].parameters(), lr=lr)
 
     # Wrap the optimizer
     opt_wrapper = wrapper.__dict__[name](optimizer)
@@ -36,7 +36,7 @@ def _test_wrapper(name: str) -> None:
                 assert torch.all(p.grad == 0.)
 
     # Check update step
-    _p = model.fc.weight
+    _p = model.classifier[3].weight
     p_val = _p.data.clone()
 
     # Random inputs

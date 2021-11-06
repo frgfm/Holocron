@@ -19,14 +19,14 @@ def _test_optimizer(name: str, **kwargs: Any) -> None:
     num_batches = 4
     # Get model and optimizer
     model = mobilenet_v3_small(num_classes=10)
-    for n, m in model.named_children():
-        if not n.startswith("classifier"):
-            for p in m.parameters():
-                p.requires_grad_(False)
-    optimizer = optim.__dict__[name](model.fc.parameters(), lr=lr, **kwargs)
+    for p in model.parameters():
+        p.requires_grad_(False)
+    for p in model.classifier[3].parameters():
+        p.requires_grad_(True)
+    optimizer = optim.__dict__[name](model.classifier[3].parameters(), lr=lr, **kwargs)
 
     # Save param value
-    _p = model.fc.weight
+    _p = model.classifier[3].weight
     p_val = _p.data.clone()
 
     # Random inputs
