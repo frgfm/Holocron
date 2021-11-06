@@ -6,7 +6,7 @@
 import torch
 from torch.nn import functional as F
 from torch.optim import SGD
-from torchvision.models import resnet18
+from torchvision.models import mobilenet_v3_small
 
 from holocron.optim import wrapper
 
@@ -17,15 +17,15 @@ def _test_wrapper(name: str) -> None:
     input_shape = (3, 224, 224)
     num_batches = 4
     # Get model, optimizer and criterion
-    model = resnet18(num_classes=10)
-    for n, m in model.named_children():
-        if n != 'fc':
-            for p in m.parameters():
-                p.requires_grad_(False)
+    model = mobilenet_v3_small(num_classes=10)
+    for p in model.parameters():
+        p.requires_grad_(False)
+    for p in model.classifier[3].parameters():
+        p.requires_grad_(True)
     # Pick an optimizer whose update is easy to verify
-    optimizer = SGD(model.fc.parameters(), lr=lr)
+    optimizer = SGD(model.classifier[3].parameters(), lr=lr)
 
-    # Wrap the optimizer
+    # Wrap the optimizer
     opt_wrapper = wrapper.__dict__[name](optimizer)
 
     # Check gradient reset
@@ -36,7 +36,7 @@ def _test_wrapper(name: str) -> None:
                 assert torch.all(p.grad == 0.)
 
     # Check update step
-    _p = model.fc.weight
+    _p = model.classifier[3].weight
     p_val = _p.data.clone()
 
     # Random inputs
@@ -44,13 +44,16 @@ def _test_wrapper(name: str) -> None:
     target = torch.zeros(num_batches, dtype=torch.long)
 
     # Update
-    output = model(input_t)
-    loss = F.cross_entropy(output, target)
-    loss.backward()
-    opt_wrapper.step()
-
+    for _ in range(10):
+        output = model(input_t)
+        loss = F.cross_entropy(output, target)
+        loss.backward()
+        opt_wrapper.step()
     # Check update rule
-    assert not torch.equal(_p.data, p_val - lr * _p.grad)
+    assert not torch.equal(_p.data, p_val) and not torch.equal(_p.data, p_val - lr * _p.grad)
+
+    # Repr
+    assert len(repr(opt_wrapper).split('\n')) == len(repr(optimizer).split('\n')) + 4
 
 
 def test_lookahead():
