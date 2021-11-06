@@ -12,7 +12,7 @@ from torch import Tensor
 from torchvision.ops.boxes import box_iou, nms
 from torchvision.ops.misc import FrozenBatchNorm2d
 
-from holocron.nn import SPP, Mish
+from holocron.nn import SPP
 from holocron.nn.init import init_module
 from holocron.ops.boxes import ciou_loss
 
