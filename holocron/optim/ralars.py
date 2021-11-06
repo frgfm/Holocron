@@ -77,7 +77,7 @@ class RaLars(Optimizer):
                     continue
                 grad = p.grad.data
                 if grad.is_sparse:
-                    raise RuntimeError('RAdam does not support sparse gradients')
+                    raise RuntimeError(f"{self.__class__.__name__} does not support sparse gradients")
 
                 state = self.state[p]
 
