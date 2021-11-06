@@ -33,16 +33,6 @@ def _test_activation_function(fn, input_shape):
             assert x.data_ptr() == out.data_ptr()
 
 
-def test_silu():
-    _test_activation_function(F.silu, (4, 3, 32, 32))
-    assert repr(activation.SiLU()) == "SiLU()"
-
-
-def test_mish():
-    _test_activation_function(F.mish, (4, 3, 32, 32))
-    assert repr(activation.Mish()) == "Mish()"
-
-
 def test_hard_mish():
     _test_activation_function(F.hard_mish, (4, 3, 32, 32))
     assert repr(activation.HardMish()) == "HardMish()"

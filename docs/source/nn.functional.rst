@@ -11,10 +11,6 @@ holocron.nn.functional
 Non-linear activations
 ----------------------
 
-.. autofunction:: silu
-
-.. autofunction:: mish
-
 .. autofunction:: hard_mish
 
 .. autofunction:: nl_relu

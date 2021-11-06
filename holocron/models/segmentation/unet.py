@@ -13,7 +13,7 @@ from torch.nn import functional as F
 from torchvision.models import resnet34, vgg11
 from torchvision.models._utils import IntermediateLayerGetter
 
-from ...nn import GlobalAvgPool2d, SiLU
+from ...nn import GlobalAvgPool2d
 from ...nn.init import init_module
 from ..rexnet import rexnet1_3x
 from ..utils import conv_sequence, load_pretrained_params
@@ -503,8 +503,8 @@ def unet_rexnet13(
 
     backbone = rexnet1_3x(pretrained=pretrained_backbone and not pretrained, in_channels=in_channels).features
     kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
-    kwargs['act_layer'] = kwargs.get('act_layer', SiLU())
+    kwargs['act_layer'] = kwargs.get('act_layer', nn.SiLU(inplace=True))
     # hotfix of https://github.com/pytorch/vision/issues/3802
-    backbone[21] = SiLU()
+    backbone[21] = nn.SiLU(inplace=True)
 
     return _dynamic_unet('unet_rexnet13', backbone, pretrained, progress, **kwargs)
