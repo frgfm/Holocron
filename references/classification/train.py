@@ -162,18 +162,16 @@ def main(args):
     model_params = [p for p in model.parameters() if p.requires_grad]
     if args.opt == 'sgd':
         optimizer = torch.optim.SGD(model_params, args.lr, momentum=0.9, weight_decay=args.weight_decay)
-    elif args.opt == 'adam':
-        optimizer = torch.optim.Adam(model_params, args.lr,
-                                     betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
         optimizer = torch.optim.RAdam(model_params, args.lr,
                                       betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
-    elif args.opt == 'ranger':
-        optimizer = Lookahead(torch.optim.RAdam(model_params, args.lr,
-                                                betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
-    elif args.opt == 'tadam':
-        optimizer = holocron.optim.TAdam(model_params, args.lr,
+    elif args.opt == 'adamp':
+        optimizer = holocron.optim.AdamP(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+    elif args.opt == 'adabelief':
+        optimizer = holocron.optim.AdaBelief(model_params, args.lr,
+                                             betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+
 
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = ClassificationTrainer(model, train_loader, val_loader, criterion, optimizer,
