@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolov4 &mdash; holocron 0.1.4a0+d45e30e-git documentation</title>
+  <title>holocron.models.detection.yolov4 &mdash; holocron 0.1.4a0+229d90b-git documentation</title>
   
 
   
@@ -229,7 +229,7 @@
 <span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span><span class="p">,</span> <span class="n">nms</span>
 <span class="kn">from</span> <span class="nn">torchvision.ops.misc</span> <span class="kn">import</span> <span class="n">FrozenBatchNorm2d</span>
 
-<span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">SPP</span><span class="p">,</span> <span class="n">Mish</span>
+<span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">SPP</span>
 <span class="kn">from</span> <span class="nn">holocron.nn.init</span> <span class="kn">import</span> <span class="n">init_module</span>
 <span class="kn">from</span> <span class="nn">holocron.ops.boxes</span> <span class="kn">import</span> <span class="n">ciou_loss</span>
 
@@ -673,7 +673,7 @@
             <span class="n">backbone_norm_layer</span> <span class="o">=</span> <span class="n">norm_layer</span>
 
         <span class="c1"># backbone</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV4</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">Mish</span><span class="p">(),</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV4</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Mish</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
                                       <span class="n">backbone_norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
         <span class="c1"># neck</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neck</span> <span class="o">=</span> <span class="n">Neck</span><span class="p">([</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>

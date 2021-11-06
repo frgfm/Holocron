@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.4a0+d45e30e-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.1.4a0+229d90b-git documentation</title>
   
 
   
@@ -225,24 +225,6 @@
 <p>An addition to the <code class="xref py py-mod docutils literal notranslate"><span class="pre">torch.nn</span></code> module of Pytorch to extend the range of neural networks building blocks.</p>
 <section id="non-linear-activations">
 <h2>Non-linear activations<a class="headerlink" href="#non-linear-activations" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="holocron.nn.SiLU">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">SiLU</span></span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#SiLU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.SiLU" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the SiLU activation from <a class="reference external" href="https://arxiv.org/pdf/1606.08415.pdf">“Gaussian Error Linear Units (GELUs)”</a> (also known as Swish).</p>
-<p>This activation is computed as follows:</p>
-<div class="math notranslate nohighlight">
-\[f(x) = x \cdot \sigma(x)\]</div>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="holocron.nn.Mish">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">Mish</span></span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#Mish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.Mish" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the Mish activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">“Mish: A Self Regularized Non-Monotonic Neural Activation Function”</a></p>
-<p>This activation is computed as follows:</p>
-<div class="math notranslate nohighlight">
-\[f(x) = x \cdot \tanh(ln(1 + e^x))\]</div>
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.nn.HardMish">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">HardMish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#HardMish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.HardMish" title="Permalink to this definition">¶</a></dt>
