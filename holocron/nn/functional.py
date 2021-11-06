@@ -10,9 +10,8 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 
-__all__ = ['hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy',
-           'complement_cross_entropy', 'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool',
-           'concat_downsample2d']
+__all__ = ['hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'complement_cross_entropy',
+           'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool', 'concat_downsample2d']
 
 
 def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
