@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim &mdash; holocron 0.1.4a0+229d90b-git documentation</title>
+  <title>holocron.optim &mdash; holocron 0.1.4a0+3967027-git documentation</title>
   
 
   
@@ -259,23 +259,6 @@ parameter groups</p></li>
 <li><p><strong>dampening</strong> (<em>float</em><em>, </em><em>optional</em>) – dampening for momentum (default: 0)</p></li>
 <li><p><strong>nesterov</strong> (<em>bool</em><em>, </em><em>optional</em>) – enables Nesterov momentum (default: False)</p></li>
 <li><p><strong>scale_clip</strong> (<em>tuple</em><em>, </em><em>optional</em>) – the lower and upper bounds for the weight norm in local LR of LARS</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="holocron.optim.RAdam">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">RAdam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.parameter.Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/radam.html#RAdam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.RAdam" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the RAdam optimizer from <a class="reference external" href="https://arxiv.org/pdf/1908.03265.pdf">“On the variance of the Adaptive Learning Rate and Beyond”</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – coefficients used for running averages (default: (0.9, 0.999))</p></li>
-<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
-<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
 </ul>
 </dd>
 </dl>
