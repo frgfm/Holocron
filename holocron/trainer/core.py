@@ -16,6 +16,7 @@ from fastprogress.fastprogress import ConsoleMasterBar
 from torch import Tensor, nn
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiplicativeLR, OneCycleLR  # type: ignore[attr-defined]
 from torch.utils.data import DataLoader
+from torchvision.ops._utils import split_normalization_params
 from torchvision.ops.boxes import box_iou
 
 from .utils import freeze_bn, freeze_model
@@ -171,15 +172,27 @@ class Trainer:
         return self.criterion(out, target)
 
     def _set_params(self) -> None:
-        self._params = ContiguousParams([p for p in self.model.parameters() if p.requires_grad])
+        self._params = [p for p in self.model.parameters() if p.requires_grad]
 
-    def _reset_opt(self, lr: float) -> None:
+    def _reset_opt(self, lr: float, norm_weight_decay: Optional[float] = None) -> None:
         """Reset the target params of the optimizer"""
         self.optimizer.defaults['lr'] = lr
         self.optimizer.state = defaultdict(dict)
         self.optimizer.param_groups = []
-        self._set_params()
-        self.optimizer.add_param_group(dict(params=self._params.contiguous()))  # type: ignore[union-attr]
+        # Split it if norm layers needs custom WD
+        if norm_weight_decay is None:
+            self._set_params()
+            self.optimizer.add_param_group(
+                dict(params=ContiguousParams(self._params).contiguous())
+            )
+        else:
+            param_groups = split_normalization_params(self.model)
+            wd_groups = [norm_weight_decay, self.optimizer.defaults.get('weight_decay', 0)]
+            for _params, _wd in zip(param_groups, wd_groups):
+                if _params:
+                    self.optimizer.add_param_group(
+                        dict(params=ContiguousParams(_params).contiguous(), weight_decay=_wd)
+                    )
 
     @torch.inference_mode()
     def evaluate(self):
@@ -202,7 +215,8 @@ class Trainer:
         num_epochs: int,
         lr: float,
         freeze_until: Optional[str] = None,
-        sched_type: str = 'onecycle'
+        sched_type: str = 'onecycle',
+        norm_weight_decay: Optional[float] = None,
     ) -> None:
         """Train the model for a given number of epochs
 
@@ -211,11 +225,12 @@ class Trainer:
             lr (float): learning rate to be used by the scheduler
             freeze_until (str, optional): last layer to freeze
             sched_type (str, optional): type of scheduler to use
+            norm_weight_decay (float, optional): weight decay to apply to normalization parameters
         """
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
-        self._reset_opt(lr)
+        self._reset_opt(lr, norm_weight_decay)
         # Scheduler
         self._reset_scheduler(lr, num_epochs, sched_type)
 
@@ -246,7 +261,8 @@ class Trainer:
         freeze_until: Optional[str] = None,
         start_lr: float = 1e-7,
         end_lr: float = 1,
-        num_it: int = 100
+        norm_weight_decay: Optional[float] = None,
+        num_it: int = 100,
     ) -> None:
         """Gridsearch the optimal learning rate for the training
 
@@ -254,6 +270,7 @@ class Trainer:
            freeze_until (str, optional): last layer to freeze
            start_lr (float, optional): initial learning rate
            end_lr (float, optional): final learning rate
+           norm_weight_decay (float, optional): weight decay to apply to normalization parameters
            num_it (int, optional): number of iterations to perform
         """
 
@@ -262,7 +279,7 @@ class Trainer:
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
-        self._reset_opt(start_lr)
+        self._reset_opt(start_lr, norm_weight_decay)
         gamma = (end_lr / start_lr) ** (1 / (num_it - 1))
         scheduler = MultiplicativeLR(self.optimizer, lambda step: gamma)
 
@@ -323,18 +340,25 @@ class Trainer:
         plt.grid(True, linestyle='--', axis='x')
         plt.show(block=block)
 
-    def check_setup(self, freeze_until: Optional[str] = None, lr: float = 3e-4, num_it: int = 100) -> bool:
+    def check_setup(
+        self,
+        freeze_until: Optional[str] = None,
+        lr: float = 3e-4,
+        norm_weight_decay: Optional[float] = None,
+        num_it: int = 100,
+    ) -> bool:
         """Check whether you can overfit one batch
 
         Args:
             freeze_until (str, optional): last layer to freeze
             lr (float, optional): learning rate to be used for training
+            norm_weight_decay (float, optional): weight decay to apply to normalization parameters
             num_it (int, optional): number of iterations to perform
         """
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
-        self._reset_opt(lr)
+        self._reset_opt(lr, norm_weight_decay)
 
         x, target = next(iter(self.train_loader))
         x, target = self.to_cuda(x, target)
