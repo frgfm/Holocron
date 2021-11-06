@@ -29,7 +29,7 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 - boxes: [Distance-IoU & Complete-IoU losses](https://arxiv.org/abs/1911.08287)
 
 ### Trying something else than Adam
-- Optimizer: [LARS](https://arxiv.org/abs/1708.03888), [Lamb](https://arxiv.org/abs/1904.00962), [RAdam](https://arxiv.org/abs/1908.03265), [TAdam](https://arxiv.org/pdf/2003.00179.pdf), [AdamP](https://arxiv.org/pdf/2006.08217), [AdaBelief](https://arxiv.org/abs/2010.07468), and customized versions (RaLars)
+- Optimizer: [LARS](https://arxiv.org/abs/1708.03888), [Lamb](https://arxiv.org/abs/1904.00962), [TAdam](https://arxiv.org/pdf/2003.00179.pdf), [AdamP](https://arxiv.org/pdf/2006.08217), [AdaBelief](https://arxiv.org/abs/2010.07468), and customized versions (RaLars)
 - Optimizer wrapper: [Lookahead](https://arxiv.org/abs/1907.08610), Scout (experimental)
 
 

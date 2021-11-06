@@ -51,10 +51,6 @@ def test_lamb():
     _test_optimizer('Lamb')
 
 
-def test_radam():
-    _test_optimizer('RAdam')
-
-
 def test_ralars():
     _test_optimizer('RaLars')
 
