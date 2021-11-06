@@ -16,10 +16,9 @@ from fastprogress.fastprogress import ConsoleMasterBar
 from torch import Tensor, nn
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiplicativeLR, OneCycleLR  # type: ignore[attr-defined]
 from torch.utils.data import DataLoader
-from torchvision.ops._utils import split_normalization_params
 from torchvision.ops.boxes import box_iou
 
-from .utils import freeze_bn, freeze_model
+from .utils import freeze_bn, freeze_model, split_normalization_params
 
 __all__ = ['Trainer', 'ClassificationTrainer', 'BinaryClassificationTrainer', 'SegmentationTrainer', 'DetectionTrainer']
 
