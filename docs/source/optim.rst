@@ -17,8 +17,6 @@ Implementations of recent parameter optimizer for Pytorch modules.
 
 .. autoclass:: Lars
 
-.. autoclass:: RAdam
-
 .. autoclass:: RaLars
 
 .. autoclass:: TAdam
