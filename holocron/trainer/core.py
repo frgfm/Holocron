@@ -183,7 +183,7 @@ class Trainer:
         self.optimizer.defaults['lr'] = lr
         self.optimizer.state = defaultdict(dict)
         self.optimizer.param_groups = []
-        self._set_params()
+        self._set_params(norm_weight_decay)
         # Split it if norm layers needs custom WD
         if norm_weight_decay is None:
             self.optimizer.add_param_group(
