@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+2ae9fd4-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+d45e30e-git documentation</title>
   
 
   
@@ -770,7 +770,7 @@
 <span class="sd">    &lt;https://arxiv.org/pdf/1810.12890.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        x (torch.Tensor): input tensor</span>
+<span class="sd">        x (torch.Tensor): input tensor of shape (N, C, H, W)</span>
 <span class="sd">        drop_prob (float): probability of dropping activation value</span>
 <span class="sd">        block_size (int): size of each block that is expended from the sampled mask</span>
 <span class="sd">        inplace (bool, optional): whether the operation should be done inplace</span>
@@ -780,10 +780,13 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">training</span> <span class="ow">or</span> <span class="n">drop_prob</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">x</span>
 
-    <span class="c1"># Sample a mask for the centers of blocks that will be dropped</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]),</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">drop_prob</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="c1"># cf. Eq (1) from the paper</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">drop_prob</span> <span class="o">/</span> <span class="n">block_size</span> <span class="o">**</span> <span class="mi">2</span>
 
-    <span class="c1"># Expand zero positions to block size</span>
+    <span class="c1"># Sample a mask for the centers of blocks that will be dropped</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]),</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">gamma</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="c1"># Expand zero positions to block size</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="n">block_size</span><span class="p">,</span> <span class="n">block_size</span><span class="p">),</span>
                             <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="n">block_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
 
