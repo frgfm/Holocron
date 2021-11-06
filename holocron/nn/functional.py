@@ -553,7 +553,7 @@ def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = Fa
     <https://arxiv.org/pdf/1810.12890.pdf>`_
 
     Args:
-        x (torch.Tensor): input tensor
+        x (torch.Tensor): input tensor of shape (N, C, H, W)
         drop_prob (float): probability of dropping activation value
         block_size (int): size of each block that is expended from the sampled mask
         inplace (bool, optional): whether the operation should be done inplace
@@ -563,10 +563,13 @@ def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = Fa
     if not training or drop_prob == 0:
         return x
 
-    # Sample a mask for the centers of blocks that will be dropped
-    mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= drop_prob).to(dtype=torch.float32)
+    # cf. Eq (1) from the paper
+    gamma = drop_prob / block_size ** 2
 
-    # Expand zero positions to block size
+    # Sample a mask for the centers of blocks that will be dropped
+    mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= gamma).to(dtype=x.dtype)
+
+    # Expand zero positions to block size
     mask = 1 - F.max_pool2d(mask, kernel_size=(block_size, block_size),
                             stride=(1, 1), padding=block_size // 2)
 
