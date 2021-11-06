@@ -53,7 +53,7 @@ class Trainer:
         self.epoch = 0
         self.min_loss = math.inf
         self.gpu = gpu
-        self._params: Optional[ContiguousParams] = None
+        self._params: Optional[List[ContiguousParams]] = None
         self.lr_recorder: List[float] = []
         self.loss_recorder: List[float] = []
         self.set_device(gpu)
@@ -170,27 +170,31 @@ class Trainer:
         out = self.model(x)
         return self.criterion(out, target)
 
-    def _set_params(self) -> None:
-        self._params = [p for p in self.model.parameters() if p.requires_grad]
+    def _set_params(self, norm_weight_decay: Optional[float] = None) -> None:
+        if norm_weight_decay is None:
+            self._params = [ContiguousParams([p for p in self.model.parameters() if p.requires_grad])]
+        else:
+            self._params = [
+                ContiguousParams(_params) for _params in split_normalization_params(self.model)
+            ]
 
     def _reset_opt(self, lr: float, norm_weight_decay: Optional[float] = None) -> None:
         """Reset the target params of the optimizer"""
         self.optimizer.defaults['lr'] = lr
         self.optimizer.state = defaultdict(dict)
         self.optimizer.param_groups = []
+        self._set_params()
         # Split it if norm layers needs custom WD
         if norm_weight_decay is None:
-            self._set_params()
             self.optimizer.add_param_group(
-                dict(params=ContiguousParams(self._params).contiguous())
+                dict(params=self._params[0].contiguous())  # type: ignore[index]
             )
         else:
-            param_groups = split_normalization_params(self.model)
             wd_groups = [norm_weight_decay, self.optimizer.defaults.get('weight_decay', 0)]
-            for _params, _wd in zip(param_groups, wd_groups):
+            for _params, _wd in zip(self._params, wd_groups):  # type: ignore[arg-type]
                 if _params:
                     self.optimizer.add_param_group(
-                        dict(params=ContiguousParams(_params).contiguous(), weight_decay=_wd)
+                        dict(params=_params.contiguous(), weight_decay=_wd)
                     )
 
     @torch.inference_mode()
@@ -241,7 +245,8 @@ class Trainer:
 
             self._fit_epoch(mb)
             # Check whether ops invalidated the buffer
-            self._params.assert_buffer_is_valid()  # type: ignore[union-attr]
+            for _group in self._params:  # type: ignore[union-attr]
+                _group.assert_buffer_is_valid()
             eval_metrics = self.evaluate()
 
             # master bar
