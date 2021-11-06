@@ -175,7 +175,8 @@ class Trainer:
             self._params = [ContiguousParams([p for p in self.model.parameters() if p.requires_grad])]
         else:
             self._params = [
-                ContiguousParams(_params) for _params in split_normalization_params(self.model)
+                ContiguousParams(_params) if len(_params) > 0 else None
+                for _params in split_normalization_params(self.model)
             ]
 
     def _reset_opt(self, lr: float, norm_weight_decay: Optional[float] = None) -> None:
