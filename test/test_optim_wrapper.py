@@ -45,13 +45,12 @@ def _test_wrapper(name: str) -> None:
 
     # Update
     for _ in range(10):
-        p_val = _p.data.clone()
         output = model(input_t)
         loss = F.cross_entropy(output, target)
         loss.backward()
         opt_wrapper.step()
-        # Check update rule
-        assert not torch.equal(_p.data, p_val - lr * _p.grad)
+    # Check update rule
+    assert not torch.equal(_p.data, p_val) and not torch.equal(_p.data, p_val - lr * _p.grad)
 
     # Repr
     assert len(repr(opt_wrapper).split('\n')) == len(repr(optimizer).split('\n')) + 4
