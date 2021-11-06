@@ -3,6 +3,8 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+from typing import Any
+
 import torch
 from torch.nn import functional as F
 from torchvision.models import mobilenet_v3_small
