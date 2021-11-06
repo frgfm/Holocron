@@ -5,7 +5,7 @@
 
 from typing import List, Optional, Tuple
 
-from torch import Tensor, nn
+from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 __all__ = ['freeze_bn', 'freeze_model', 'split_normalization_params']
