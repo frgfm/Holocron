@@ -54,7 +54,7 @@ def _test_wrapper(name: str) -> None:
         assert not torch.equal(_p.data, p_val - lr * _p.grad)
 
     # Repr
-    assert len(repr(opt_wrapper).split('\n')) == len(repr(opt).split('\n')) + 4
+    assert len(repr(opt_wrapper).split('\n')) == len(repr(optimizer).split('\n')) + 4
 
 
 def test_lookahead():
