@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim &mdash; holocron 0.1.4a0+7d6e415-git documentation</title>
+  <title>holocron.optim &mdash; holocron 0.1.4a0+ee903c4-git documentation</title>
   
 
   
@@ -355,6 +355,16 @@ should write your code this way:</p>
 <dt class="sig sig-object py" id="holocron.optim.wrapper.Lookahead">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.optim.wrapper.</span></span><span class="sig-name descname"><span class="pre">Lookahead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_optimizer</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.optim.optimizer.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Lookahead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.wrapper.Lookahead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Lookahead optimizer wrapper from <a class="reference external" href="https://arxiv.org/pdf/1907.08610.pdf">“Lookahead Optimizer: k steps forward, 1 step back”</a>.</p>
+<dl>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">AdamW</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">holocron.optim.wrapper</span> <span class="kn">import</span> <span class="n">Lookahead</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_wrapper</span> <span class="o">=</span> <span class="n">Lookahead</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -370,6 +380,16 @@ should write your code this way:</p>
 <dt class="sig sig-object py" id="holocron.optim.wrapper.Scout">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">holocron.optim.wrapper.</span></span><span class="sig-name descname"><span class="pre">Scout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_optimizer</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.optim.optimizer.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a new optimizer wrapper based on <a class="reference external" href="https://arxiv.org/pdf/1907.08610.pdf">“Lookahead Optimizer: k steps forward, 1 step back”</a>.</p>
+<dl>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">AdamW</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">holocron.optim.wrapper</span> <span class="kn">import</span> <span class="n">Scout</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_wrapper</span> <span class="o">=</span> <span class="n">Scout</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

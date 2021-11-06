@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.optim.wrapper &mdash; holocron 0.1.4a0+7d6e415-git documentation</title>
+  <title>holocron.optim.wrapper &mdash; holocron 0.1.4a0+ee903c4-git documentation</title>
   
 
   
@@ -233,6 +233,13 @@
     <span class="sd">&quot;&quot;&quot;Implements the Lookahead optimizer wrapper from `&quot;Lookahead Optimizer: k steps forward, 1 step back&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1907.08610.pdf&gt;`_.</span>
 
+<span class="sd">    Example::</span>
+<span class="sd">        &gt;&gt;&gt; from torch.optim import AdamW</span>
+<span class="sd">        &gt;&gt;&gt; from holocron.optim.wrapper import Lookahead</span>
+<span class="sd">        &gt;&gt;&gt; model = ...</span>
+<span class="sd">        &gt;&gt;&gt; opt = AdamW(model.parameters(), lr=3e-4)</span>
+<span class="sd">        &gt;&gt;&gt; opt_wrapper = Lookahead(opt)</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        base_optimizer (torch.optim.optimizer.Optimizer): base parameter optimizer</span>
 <span class="sd">        sync_rate (int, optional): rate of weight synchronization</span>
@@ -243,7 +250,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">base_optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span>
         <span class="n">sync_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span>
+        <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sync_rate</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">sync_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive float lower than 1 as sync_rate, received: </span><span class="si">{</span><span class="n">sync_rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -357,6 +364,13 @@
     <span class="sd">&quot;&quot;&quot;Implements a new optimizer wrapper based on `&quot;Lookahead Optimizer: k steps forward, 1 step back&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1907.08610.pdf&gt;`_.</span>
 
+<span class="sd">    Example::</span>
+<span class="sd">        &gt;&gt;&gt; from torch.optim import AdamW</span>
+<span class="sd">        &gt;&gt;&gt; from holocron.optim.wrapper import Scout</span>
+<span class="sd">        &gt;&gt;&gt; model = ...</span>
+<span class="sd">        &gt;&gt;&gt; opt = AdamW(model.parameters(), lr=3e-4)</span>
+<span class="sd">        &gt;&gt;&gt; opt_wrapper = Scout(opt)</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        base_optimizer (torch.optim.optimizer.Optimizer): base parameter optimizer</span>
 <span class="sd">        sync_rate (int, optional): rate of weight synchronization</span>
@@ -367,7 +381,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">base_optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span>
         <span class="n">sync_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span>
+        <span class="n">sync_period</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sync_rate</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">sync_rate</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;expected positive float lower than 1 as sync_rate, received: </span><span class="si">{</span><span class="n">sync_rate</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
