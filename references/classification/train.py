@@ -166,11 +166,11 @@ def main(args):
         optimizer = torch.optim.Adam(model_params, args.lr,
                                      betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
-        optimizer = holocron.optim.RAdam(model_params, args.lr,
-                                         betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+        optimizer = torch.optim.RAdam(model_params, args.lr,
+                                      betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'ranger':
-        optimizer = Lookahead(holocron.optim.RAdam(model_params, args.lr,
-                                                   betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
+        optimizer = Lookahead(torch.optim.RAdam(model_params, args.lr,
+                                                betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
     elif args.opt == 'tadam':
         optimizer = holocron.optim.TAdam(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)

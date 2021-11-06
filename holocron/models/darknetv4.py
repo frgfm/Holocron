@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 
-from holocron.nn import DropBlock2d, GlobalAvgPool2d, Mish
+from holocron.nn import DropBlock2d, GlobalAvgPool2d
 
 from ..nn.init import init_module
 from .darknetv3 import ResBlock
@@ -178,7 +178,7 @@ def cspdarknet53_mish(pretrained: bool = False, progress: bool = True, **kwargs:
         torch.nn.Module: classification model
     """
 
-    kwargs['act_layer'] = Mish()
+    kwargs['act_layer'] = nn.Mish(inplace=True)
     kwargs['drop_layer'] = DropBlock2d
 
     return _darknet('cspdarknet53_mish', pretrained, progress, **kwargs)  # type: ignore[return-value]

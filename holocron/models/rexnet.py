@@ -9,7 +9,7 @@ from typing import Any, Dict
 
 import torch.nn as nn
 
-from holocron.nn import GlobalAvgPool2d, SiLU, init
+from holocron.nn import GlobalAvgPool2d, init
 
 from .utils import conv_sequence, load_pretrained_params
 
@@ -66,8 +66,8 @@ class ReXBlock(nn.Module):
         _layers = []
         if t != 1:
             dw_channels = in_channels * t
-            _layers.extend(conv_sequence(in_channels, dw_channels, SiLU(), norm_layer, drop_layer, kernel_size=1,
-                                         stride=1, bias=False))
+            _layers.extend(conv_sequence(in_channels, dw_channels, nn.SiLU(inplace=True), norm_layer, drop_layer,
+                                         kernel_size=1, stride=1, bias=False))
         else:
             dw_channels = in_channels
 
@@ -98,7 +98,7 @@ class ReXNet(nn.Sequential):
         super().__init__()
 
         if act_layer is None:
-            act_layer = SiLU()
+            act_layer = nn.SiLU(inplace=True)
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 

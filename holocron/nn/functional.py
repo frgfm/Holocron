@@ -10,33 +10,9 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 
-__all__ = ['silu', 'mish', 'hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy',
+__all__ = ['hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy',
            'complement_cross_entropy', 'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool',
            'concat_downsample2d']
-
-
-def silu(x: Tensor) -> Tensor:
-    """Implements the SiLU activation function
-
-    Args:
-        x: input tensor
-    Returns:
-        output tensor
-    """
-
-    return x * torch.sigmoid(x)
-
-
-def mish(x: Tensor) -> Tensor:
-    """Implements the Mish activation function
-
-    Args:
-        x: input tensor
-    Returns:
-        output tensor
-    """
-
-    return x * torch.tanh(F.softplus(x))
 
 
 def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
@@ -499,7 +475,7 @@ def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = Fa
     <https://arxiv.org/pdf/1810.12890.pdf>`_
 
     Args:
-        x (torch.Tensor): input tensor
+        x (torch.Tensor): input tensor of shape (N, C, H, W)
         drop_prob (float): probability of dropping activation value
         block_size (int): size of each block that is expended from the sampled mask
         inplace (bool, optional): whether the operation should be done inplace
@@ -509,10 +485,13 @@ def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = Fa
     if not training or drop_prob == 0:
         return x
 
-    # Sample a mask for the centers of blocks that will be dropped
-    mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= drop_prob).to(dtype=torch.float32)
+    # cf. Eq (1) from the paper
+    gamma = drop_prob / block_size ** 2
 
-    # Expand zero positions to block size
+    # Sample a mask for the centers of blocks that will be dropped
+    mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= gamma).to(dtype=x.dtype)
+
+    # Expand zero positions to block size
     mask = 1 - F.max_pool2d(mask, kernel_size=(block_size, block_size),
                             stride=(1, 1), padding=block_size // 2)
 
