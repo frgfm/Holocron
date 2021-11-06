@@ -48,7 +48,7 @@ class AdaBelief(Adam):
                 if p.grad is not None:
                     params_with_grad.append(p)
                     if p.grad.is_sparse:
-                        raise RuntimeError('AdaBelief does not support sparse gradients')
+                        raise RuntimeError(f"{self.__class__.__name__} does not support sparse gradients")
                     grads.append(p.grad)
 
                     state = self.state[p]
