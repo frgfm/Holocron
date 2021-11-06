@@ -10,7 +10,7 @@ from torchvision.models import resnet18
 from holocron import optim
 
 
-def _test_optimizer(name: str) -> None:
+def _test_optimizer(name: str, **kwargs: Any) -> None:
 
     lr = 1e-4
     input_shape = (3, 224, 224)
@@ -21,7 +21,7 @@ def _test_optimizer(name: str) -> None:
         if n != 'fc':
             for p in m.parameters():
                 p.requires_grad_(False)
-    optimizer = optim.__dict__[name](model.fc.parameters(), lr=lr)
+    optimizer = optim.__dict__[name](model.fc.parameters(), lr=lr, **kwargs)
 
     # Save param value
     _p = model.fc.weight
@@ -44,15 +44,15 @@ def _test_optimizer(name: str) -> None:
 
 
 def test_lars():
-    _test_optimizer('Lars')
+    _test_optimizer('Lars', momentum=0.9, weight_decay=2e-5)
 
 
 def test_lamb():
-    _test_optimizer('Lamb')
+    _test_optimizer('Lamb', weight_decay=2e-5)
 
 
 def test_ralars():
-    _test_optimizer('RaLars')
+    _test_optimizer('RaLars', weight_decay=2e-5)
 
 
 def test_tadam():
