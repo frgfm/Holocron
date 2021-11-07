@@ -19,7 +19,7 @@ import torch.utils.data
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
-from torchvision.transforms import functional as F
+from torchvision.transforms.functional import to_pil_image
 from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 import holocron
@@ -44,7 +44,7 @@ def plot_samples(images, targets, ignore_index=None):
         img = images[idx]
         img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
         img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
-        img = F.to_pil_image(img)
+        img = to_pil_image(img)
         target = targets[idx]
         if isinstance(ignore_index, int):
             target[target == ignore_index] = 0
@@ -66,7 +66,7 @@ def plot_predictions(images, preds, targets, ignore_index=None):
         img = images[idx]
         img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
         img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
-        img = F.to_pil_image(img)
+        img = to_pil_image(img)
         # Target
         target = targets[idx]
         if isinstance(ignore_index, int):
@@ -98,6 +98,8 @@ def main(args):
     crop_size = 256
     min_size, max_size = int(0.5 * base_size), int(2.0 * base_size)
 
+    interpolation_mode = InterpolationMode.BILINEAR
+
     train_loader, val_loader = None, None
     if not args.test_only:
         st = time.time()
@@ -106,7 +108,7 @@ def main(args):
             image_set='train',
             download=True,
             transforms=Compose([
-                RandomResize(min_size, max_size),
+                RandomResize(min_size, max_size, interpolation_mode),
                 RandomCrop(crop_size),
                 RandomHorizontalFlip(0.5),
                 ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
@@ -134,7 +136,7 @@ def main(args):
             image_set='val',
             download=True,
             transforms=Compose([
-                Resize((crop_size, crop_size)),
+                Resize((crop_size, crop_size), _interpolation_mode),
                 ToTensor(),
                 ImageTransform(normalize)
             ])
@@ -169,9 +171,6 @@ def main(args):
     model_params = [p for p in model.parameters() if p.requires_grad]
     if args.opt == 'sgd':
         optimizer = torch.optim.SGD(model_params, args.lr, momentum=0.9, weight_decay=args.weight_decay)
-    elif args.opt == 'adam':
-        optimizer = torch.optim.Adam(model_params, args.lr,
-                                     betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
         optimizer = holocron.optim.RAdam(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)

@@ -20,7 +20,7 @@ from matplotlib.patches import Rectangle
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
-from torchvision.transforms import functional as F
+from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from transforms import (CenterCrop, Compose, ImageTransform, RandomHorizontalFlip, RandomResizedCrop, Resize,
                         VOCTargetTransform, convert_to_relative)
 
@@ -44,14 +44,14 @@ def collate_fn(batch):
 
 
 def plot_samples(images, targets):
-    # Unnormalize image
+    # Unnormalize image
     nb_samples = 4
     _, axes = plt.subplots(1, nb_samples, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
         img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
         img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
-        img = F.to_pil_image(img)
+        img = to_pil_image(img)
 
         axes[idx].imshow(img)
         axes[idx].axis('off')
@@ -82,6 +82,8 @@ def main(args):
 
     train_loader, val_loader = None, None
 
+    interpolation_mode = InterpolationMode.BILINEAR
+
     if not args.test_only:
         st = time.time()
         train_set = VOCDetection(
@@ -90,11 +92,12 @@ def main(args):
             download=True,
             transforms=Compose([
                 VOCTargetTransform(VOC_CLASSES),
-                RandomResizedCrop((args.img_size, args.img_size), scale=(0.3, 1.0)),
+                RandomResizedCrop((args.img_size, args.img_size), scale=(0.3, 1.0), interpolation=interpolation_mode),
                 RandomHorizontalFlip(),
                 convert_to_relative,
                 ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
-                ImageTransform(T.ToTensor()),
+                ImageTransform(T.PILToTensor()),
+                ImageTransform(T.ConvertImageDtype(torch.float32)),
                 ImageTransform(normalize)
             ])
         )
@@ -119,10 +122,11 @@ def main(args):
             download=True,
             transforms=Compose([
                 VOCTargetTransform(VOC_CLASSES),
-                Resize(scale_size),
+                Resize(scale_size, interpolation=interpolation_mode),
                 CenterCrop(args.img_size),
                 convert_to_relative,
-                ImageTransform(T.ToTensor()),
+                ImageTransform(T.PILToTensor()),
+                ImageTransform(T.ConvertImageDtype(torch.float32)),
                 ImageTransform(normalize)
             ])
         )
@@ -139,18 +143,15 @@ def main(args):
     model_params = [p for p in model.parameters() if p.requires_grad]
     if args.opt == 'sgd':
         optimizer = torch.optim.SGD(model_params, args.lr, momentum=0.9, weight_decay=args.weight_decay)
-    elif args.opt == 'adam':
-        optimizer = torch.optim.Adam(model_params, args.lr,
-                                     betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
         optimizer = holocron.optim.RAdam(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
-    elif args.opt == 'ranger':
-        optimizer = Lookahead(holocron.optim.RAdam(model_params, args.lr,
-                                                   betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay))
-    elif args.opt == 'tadam':
-        optimizer = holocron.optim.TAdam(model_params, args.lr,
+    elif args.opt == 'adamp':
+        optimizer = holocron.optim.AdamP(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+    elif args.opt == 'adabelief':
+        optimizer = holocron.optim.AdaBelief(model_params, args.lr,
+                                             betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = DetectionTrainer(model, train_loader, val_loader, None, optimizer,
