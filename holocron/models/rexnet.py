@@ -18,9 +18,9 @@ __all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     'rexnet1_0x': {'width_mult': 1.0, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth'},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/rexnet1_0x_224-13aacc5d.pt'},
     'rexnet1_3x': {'width_mult': 1.3, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth'},
+                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/rexnet1_3x_224-888c70c5.pt'},
     'rexnet1_5x': {'width_mult': 1.5, 'depth_mult': 1.0,
                    'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth'},
     'rexnet2_0x': {'width_mult': 2.0, 'depth_mult': 1.0,

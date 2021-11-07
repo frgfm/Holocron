@@ -17,9 +17,9 @@ __all__ = ['RepVGG', 'RepBlock', 'RepVGG', 'repvgg_a0', 'repvgg_a1', 'repvgg_a2'
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     'repvgg_a0': {'num_blocks': [1, 2, 4, 14, 1], 'a': 0.75, 'b': 2.5,
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a0_224-64cb5b95.pth'},
+                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a0_224-150f4b9d.pt'},
     'repvgg_a1': {'num_blocks': [1, 2, 4, 14, 1], 'a': 1, 'b': 2.5,
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a1_224-20f3e0da.pth'},
+                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a1_224-870b9e4b.pt'},
     'repvgg_a2': {'num_blocks': [1, 2, 4, 14, 1], 'a': 1.5, 'b': 2.75,
                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a2_224-7051289a.pth'},
     'repvgg_b0': {'num_blocks': [1, 4, 6, 16, 1], 'a': 1, 'b': 2.5,

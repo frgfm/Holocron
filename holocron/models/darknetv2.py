@@ -20,7 +20,7 @@ __all__ = ['DarknetV2', 'darknet19']
 default_cfgs: Dict[str, Dict[str, Any]] = {
     'darknet19': {'arch': 'DarknetV2',
                   'layout': [(64, 0), (128, 1), (256, 1), (512, 2), (1024, 2)],
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet19_224-a48304cd.pth'},
+                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/darknet19_224-b1ce16a5.pt'},
 }
 
 

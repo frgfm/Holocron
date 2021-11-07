@@ -19,12 +19,16 @@ __all__ = ['DarknetV4', 'cspdarknet53', 'cspdarknet53_mish']
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'cspdarknet53': {'arch': 'DarknetV4',
-                     'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-                     'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/cspdarknet53_256-3ef96818.pth'},
-    'cspdarknet53_mish': {'arch': 'DarknetV4',
-                          'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-                          'url': None},
+    'cspdarknet53': {
+        'arch': 'DarknetV4',
+        'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_224-d2a17b18.pt'
+    },
+    'cspdarknet53_mish': {
+        'arch': 'DarknetV4',
+        'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_mish_256-32d8ec68.pt'
+    },
 }
 
 
