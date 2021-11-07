@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+cd3a624-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+b103d1b-git documentation</title>
   
 
   
@@ -295,31 +295,6 @@
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>loss reduced with <cite>reduction</cite> method</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.Tensor</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.ls_cross_entropy">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">ls_cross_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="_modules/holocron/nn/functional.html#ls_cross_entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.ls_cross_entropy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the label smoothing cross entropy loss from
-<a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">“Attention Is All You Need”</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
-<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>...</em><em>]</em>) – target tensor</p></li>
-<li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
-<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
-<li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
-<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

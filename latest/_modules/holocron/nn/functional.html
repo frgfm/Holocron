@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+cd3a624-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.1.4a0+b103d1b-git documentation</title>
   
 
   
@@ -227,9 +227,8 @@
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hard_mish&#39;</span><span class="p">,</span> <span class="s1">&#39;nl_relu&#39;</span><span class="p">,</span> <span class="s1">&#39;focal_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;multilabel_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ls_cross_entropy&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;complement_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;mutual_channel_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;dropblock2d&#39;</span><span class="p">,</span> <span class="s1">&#39;z_pool&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;concat_downsample2d&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hard_mish&#39;</span><span class="p">,</span> <span class="s1">&#39;nl_relu&#39;</span><span class="p">,</span> <span class="s1">&#39;focal_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;multilabel_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;complement_cross_entropy&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;mutual_channel_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_conv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;dropblock2d&#39;</span><span class="p">,</span> <span class="s1">&#39;z_pool&#39;</span><span class="p">,</span> <span class="s1">&#39;concat_downsample2d&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="hard_mish"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.hard_mish">[docs]</a><span class="k">def</span> <span class="nf">hard_mish</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -405,60 +404,6 @@
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">loss</span></div>
-
-
-<div class="viewcode-block" id="ls_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.ls_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">ls_cross_entropy</span><span class="p">(</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
-    <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the label smoothing cross entropy loss from</span>
-<span class="sd">    `&quot;Attention Is All You Need&quot; &lt;https://arxiv.org/pdf/1706.03762.pdf&gt;`_</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        x (torch.Tensor[N, K, ...]): input tensor</span>
-<span class="sd">        target (torch.Tensor[N, ...]): target tensor</span>
-<span class="sd">        weight (torch.Tensor[K], optional): manual rescaling of each class</span>
-<span class="sd">        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient</span>
-<span class="sd">        reduction (str, optional): reduction method</span>
-<span class="sd">        eps (float, optional): smoothing factor</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        torch.Tensor: loss reduced with `reduction` method</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="n">eps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">)</span>
-
-    <span class="c1"># log(P[class]) = log_softmax(score)[class]</span>
-    <span class="n">logpt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="c1"># Ignore index (set loss contribution to 0)</span>
-    <span class="n">valid_idxs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">logpt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">ignore_index</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">ignore_index</span> <span class="o">&lt;</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="n">valid_idxs</span><span class="p">[</span><span class="n">ignore_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="c1"># Weight</span>
-    <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Tensor type</span>
-        <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">type</span><span class="p">()</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">type</span><span class="p">():</span>
-            <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">logpt</span> <span class="o">=</span> <span class="n">logpt</span> <span class="o">*</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">logpt</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>  <span class="c1"># type: ignore[attr-defined]</span>
-
-    <span class="c1"># Loss reduction</span>
-    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">logpt</span><span class="p">[:,</span> <span class="n">valid_idxs</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">logpt</span><span class="p">[:,</span> <span class="n">valid_idxs</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-
-    <span class="c1"># Smooth the labels</span>
-    <span class="k">return</span> <span class="n">eps</span> <span class="o">/</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">loss</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">eps</span><span class="p">)</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">logpt</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span>
-                                                            <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="complement_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.complement_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">complement_cross_entropy</span><span class="p">(</span>

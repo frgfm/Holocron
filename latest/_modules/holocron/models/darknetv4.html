@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.darknetv4 &mdash; holocron 0.1.4a0+cd3a624-git documentation</title>
+  <title>holocron.models.darknetv4 &mdash; holocron 0.1.4a0+b103d1b-git documentation</title>
   
 
   
@@ -236,12 +236,16 @@
 
 
 <span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;cspdarknet53&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;DarknetV4&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span>
-                     <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/cspdarknet53_256-3ef96818.pth&#39;</span><span class="p">},</span>
-    <span class="s1">&#39;cspdarknet53_mish&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;DarknetV4&#39;</span><span class="p">,</span>
-                          <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span>
-                          <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;cspdarknet53&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;DarknetV4&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_224-d2a17b18.pt&#39;</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;cspdarknet53_mish&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;DarknetV4&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_mish_256-32d8ec68.pt&#39;</span>
+    <span class="p">},</span>
 <span class="p">}</span>
 
 
