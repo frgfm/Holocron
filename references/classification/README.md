@@ -45,7 +45,7 @@ python train.py imagenette2-320/ --arch darknet53 --lr 5e-3 -b 32 -j 16 --epochs
 | Model            | Accuracy@1 (Err) | Param # | MACs  | Interpolation | Image size |
 | ---------------- | ---------------- | ------- | ----- | ------------- | ---------- |
 | cspdarknet53     | 92.54 (7.46)     | 26.63M  | 5.03G | bilinear      | 256        |
-| cspdarknet53_mish| 92.43 (7.57)     | 26.63M  | 5.03G | bilinear      | 256        |
+| cspdarknet53_mish| 94.14 (5.86)     | 26.63M  | 5.03G | bilinear      | 256        |
 | rexnet2_2x       | 91.75 (8.25)     | 19.49M  | 1.88G | bilinear      | 224        |
 | rexnet50d        | 92.18 (7.82)     | 23.55M  | 4.35G | bilinear      | 224        |
 | darknet53        | 91.46 (8.54)     | 40.60M  | 9.31G | bilinear      | 256        |
