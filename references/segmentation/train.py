@@ -19,7 +19,7 @@ import torch.utils.data
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
-from torchvision.transforms.functional import to_pil_image
+from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 import holocron
