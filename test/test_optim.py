@@ -3,28 +3,30 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+from typing import Any
+
 import torch
 from torch.nn import functional as F
-from torchvision.models import resnet18
+from torchvision.models import mobilenet_v3_small
 
 from holocron import optim
 
 
-def _test_optimizer(name: str) -> None:
+def _test_optimizer(name: str, **kwargs: Any) -> None:
 
     lr = 1e-4
     input_shape = (3, 224, 224)
     num_batches = 4
     # Get model and optimizer
-    model = resnet18(num_classes=10)
-    for n, m in model.named_children():
-        if n != 'fc':
-            for p in m.parameters():
-                p.requires_grad_(False)
-    optimizer = optim.__dict__[name](model.fc.parameters(), lr=lr)
+    model = mobilenet_v3_small(num_classes=10)
+    for p in model.parameters():
+        p.requires_grad_(False)
+    for p in model.classifier[3].parameters():
+        p.requires_grad_(True)
+    optimizer = optim.__dict__[name](model.classifier[3].parameters(), lr=lr, **kwargs)
 
     # Save param value
-    _p = model.fc.weight
+    _p = model.classifier[3].weight
     p_val = _p.data.clone()
 
     # Random inputs
@@ -44,15 +46,15 @@ def _test_optimizer(name: str) -> None:
 
 
 def test_lars():
-    _test_optimizer('Lars')
+    _test_optimizer('Lars', momentum=0.9, weight_decay=2e-5)
 
 
 def test_lamb():
-    _test_optimizer('Lamb')
+    _test_optimizer('Lamb', weight_decay=2e-5)
 
 
 def test_ralars():
-    _test_optimizer('RaLars')
+    _test_optimizer('RaLars', weight_decay=2e-5)
 
 
 def test_tadam():

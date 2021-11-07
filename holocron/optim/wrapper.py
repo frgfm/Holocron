@@ -16,6 +16,13 @@ class Lookahead(Optimizer):
     """Implements the Lookahead optimizer wrapper from `"Lookahead Optimizer: k steps forward, 1 step back"
     <https://arxiv.org/pdf/1907.08610.pdf>`_.
 
+    Example::
+        >>> from torch.optim import AdamW
+        >>> from holocron.optim.wrapper import Lookahead
+        >>> model = ...
+        >>> opt = AdamW(model.parameters(), lr=3e-4)
+        >>> opt_wrapper = Lookahead(opt)
+
     Args:
         base_optimizer (torch.optim.optimizer.Optimizer): base parameter optimizer
         sync_rate (int, optional): rate of weight synchronization
@@ -26,7 +33,7 @@ class Lookahead(Optimizer):
         self,
         base_optimizer: torch.optim.Optimizer,
         sync_rate=0.5,
-        sync_period=6
+        sync_period=6,
     ) -> None:
         if sync_rate < 0 or sync_rate > 1:
             raise ValueError(f'expected positive float lower than 1 as sync_rate, received: {sync_rate}')
@@ -140,6 +147,13 @@ class Scout(Optimizer):
     """Implements a new optimizer wrapper based on `"Lookahead Optimizer: k steps forward, 1 step back"
     <https://arxiv.org/pdf/1907.08610.pdf>`_.
 
+    Example::
+        >>> from torch.optim import AdamW
+        >>> from holocron.optim.wrapper import Scout
+        >>> model = ...
+        >>> opt = AdamW(model.parameters(), lr=3e-4)
+        >>> opt_wrapper = Scout(opt)
+
     Args:
         base_optimizer (torch.optim.optimizer.Optimizer): base parameter optimizer
         sync_rate (int, optional): rate of weight synchronization
@@ -150,7 +164,7 @@ class Scout(Optimizer):
         self,
         base_optimizer: torch.optim.Optimizer,
         sync_rate=0.5,
-        sync_period=6
+        sync_period=6,
     ) -> None:
         if sync_rate < 0 or sync_rate > 1:
             raise ValueError(f'expected positive float lower than 1 as sync_rate, received: {sync_rate}')

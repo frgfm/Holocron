@@ -18,7 +18,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, MultiplicativeLR, OneCyc
 from torch.utils.data import DataLoader
 from torchvision.ops.boxes import box_iou
 
-from .utils import freeze_bn, freeze_model
+from .utils import freeze_bn, freeze_model, split_normalization_params
 
 __all__ = ['Trainer', 'ClassificationTrainer', 'BinaryClassificationTrainer', 'SegmentationTrainer', 'DetectionTrainer']
 
@@ -55,7 +55,7 @@ class Trainer:
         self.epoch = 0
         self.min_loss = math.inf
         self.gpu = gpu
-        self._params: Optional[ContiguousParams] = None
+        self._params: Optional[List[ContiguousParams]] = None
         self.lr_recorder: List[float] = []
         self.loss_recorder: List[float] = []
         self.set_device(gpu)
@@ -172,16 +172,33 @@ class Trainer:
         out = self.model(x)
         return self.criterion(out, target)
 
-    def _set_params(self) -> None:
-        self._params = ContiguousParams([p for p in self.model.parameters() if p.requires_grad])
+    def _set_params(self, norm_weight_decay: Optional[float] = None) -> None:
+        if norm_weight_decay is None:
+            self._params = [ContiguousParams([p for p in self.model.parameters() if p.requires_grad])]
+        else:
+            self._params = [
+                ContiguousParams(_params) if len(_params) > 0 else None
+                for _params in split_normalization_params(self.model)
+            ]
 
-    def _reset_opt(self, lr: float) -> None:
+    def _reset_opt(self, lr: float, norm_weight_decay: Optional[float] = None) -> None:
         """Reset the target params of the optimizer"""
         self.optimizer.defaults['lr'] = lr
         self.optimizer.state = defaultdict(dict)
         self.optimizer.param_groups = []
-        self._set_params()
-        self.optimizer.add_param_group(dict(params=self._params.contiguous()))  # type: ignore[union-attr]
+        self._set_params(norm_weight_decay)
+        # Split it if norm layers needs custom WD
+        if norm_weight_decay is None:
+            self.optimizer.add_param_group(
+                dict(params=self._params[0].contiguous())  # type: ignore[index]
+            )
+        else:
+            wd_groups = [norm_weight_decay, self.optimizer.defaults.get('weight_decay', 0)]
+            for _params, _wd in zip(self._params, wd_groups):  # type: ignore[arg-type]
+                if _params:
+                    self.optimizer.add_param_group(
+                        dict(params=_params.contiguous(), weight_decay=_wd)
+                    )
 
     @torch.inference_mode()
     def evaluate(self):
@@ -205,6 +222,7 @@ class Trainer:
         lr: float,
         freeze_until: Optional[str] = None,
         sched_type: str = 'onecycle',
+        norm_weight_decay: Optional[float] = None,
     ) -> None:
         """Train the model for a given number of epochs
 
@@ -213,11 +231,12 @@ class Trainer:
             lr (float): learning rate to be used by the scheduler
             freeze_until (str, optional): last layer to freeze
             sched_type (str, optional): type of scheduler to use
+            norm_weight_decay (float, optional): weight decay to apply to normalization parameters
         """
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
-        self._reset_opt(lr)
+        self._reset_opt(lr, norm_weight_decay)
         # Scheduler
         self._reset_scheduler(lr, num_epochs, sched_type)
 
@@ -229,7 +248,8 @@ class Trainer:
 
             self._fit_epoch(mb)
             # Check whether ops invalidated the buffer
-            self._params.assert_buffer_is_valid()  # type: ignore[union-attr]
+            for _group in self._params:  # type: ignore[union-attr]
+                _group.assert_buffer_is_valid()
             eval_metrics = self.evaluate()
 
             # master bar
@@ -251,7 +271,8 @@ class Trainer:
         freeze_until: Optional[str] = None,
         start_lr: float = 1e-7,
         end_lr: float = 1,
-        num_it: int = 100
+        norm_weight_decay: Optional[float] = None,
+        num_it: int = 100,
     ) -> None:
         """Gridsearch the optimal learning rate for the training
 
@@ -259,6 +280,7 @@ class Trainer:
            freeze_until (str, optional): last layer to freeze
            start_lr (float, optional): initial learning rate
            end_lr (float, optional): final learning rate
+           norm_weight_decay (float, optional): weight decay to apply to normalization parameters
            num_it (int, optional): number of iterations to perform
         """
 
@@ -267,7 +289,7 @@ class Trainer:
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
-        self._reset_opt(start_lr)
+        self._reset_opt(start_lr, norm_weight_decay)
         gamma = (end_lr / start_lr) ** (1 / (num_it - 1))
         scheduler = MultiplicativeLR(self.optimizer, lambda step: gamma)
 
@@ -330,18 +352,25 @@ class Trainer:
         plt.grid(True, linestyle='--', axis='x')
         plt.show(block=block)
 
-    def check_setup(self, freeze_until: Optional[str] = None, lr: float = 3e-4, num_it: int = 100) -> bool:
+    def check_setup(
+        self,
+        freeze_until: Optional[str] = None,
+        lr: float = 3e-4,
+        norm_weight_decay: Optional[float] = None,
+        num_it: int = 100,
+    ) -> bool:
         """Check whether you can overfit one batch
 
         Args:
             freeze_until (str, optional): last layer to freeze
             lr (float, optional): learning rate to be used for training
+            norm_weight_decay (float, optional): weight decay to apply to normalization parameters
             num_it (int, optional): number of iterations to perform
         """
 
         self.model = freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
-        self._reset_opt(lr)
+        self._reset_opt(lr, norm_weight_decay)
 
         x, target = next(iter(self.train_loader))
         x, target = self.to_cuda(x, target)
