@@ -30,7 +30,7 @@ else:
         pass
     if sha != 'Unknown':
         version += '+' + sha[:7]
-print(f"Building wheel {package_name}-{version}")
+print(f"Building wheel {package_index}-{version}")
 
 with open(cwd.joinpath(src_folder, 'version.py'), 'w') as f:
     f.write(f"__version__ = '{version}'\n")
