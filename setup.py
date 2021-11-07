@@ -8,82 +8,138 @@ Package installation setup
 """
 
 import os
+import re
 import subprocess
+from pathlib import Path
 
 from setuptools import find_packages, setup
 
-version = '0.1.4a0'
+version = '0.2.0.dev0'
 sha = 'Unknown'
 src_folder = 'holocron'
 package_index = 'pylocron'
 
-cwd = os.path.dirname(os.path.abspath(__file__))
-
-try:
-    sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=cwd).decode('ascii').strip()
-except Exception:
-    pass
+cwd = Path(__file__).parent.absolute()
 
 if os.getenv('BUILD_VERSION'):
     version = os.getenv('BUILD_VERSION')
-elif sha != 'Unknown':
-    version += '+' + sha[:7]
-print("Building wheel {}-{}".format(package_index, version))
+else:
+    try:
+        sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=cwd).decode('ascii').strip()
+    except Exception:
+        pass
+    if sha != 'Unknown':
+        version += '+' + sha[:7]
+print(f"Building wheel {package_index}-{version}")
 
-
-def write_version_file():
-    version_path = os.path.join(cwd, src_folder, 'version.py')
-    with open(version_path, 'w') as f:
-        f.write("__version__ = '{}'\n".format(version))
-
-
-write_version_file()
+with open(cwd.joinpath(src_folder, 'version.py'), 'w') as f:
+    f.write(f"__version__ = '{version}'\n")
 
 with open('README.md') as f:
     readme = f.read()
 
-requirements = [
-    'torch>=1.9.1',
-    'torchvision>=0.10.1',
-    'tqdm>=4.1.0',
-    'numpy>=1.17.2',
-    'fastprogress>=1.0.0',
-    'matplotlib>=3.0.0',
-    'contiguous-params==1.0.0',
+
+_deps = [
+    "torch>=1.9.1",
+    "torchvision>=0.10.1",
+    "tqdm>=4.1.0",
+    "numpy>=1.17.2",
+    "fastprogress>=1.0.0",
+    "matplotlib>=3.0.0",
+    "contiguous-params==1.0.0",
+    # Testing
+    "pytest>=5.3.2",
+    "coverage>=4.5.4",
+    # Quality
+    "flake8>=3.9.0",
+    "isort>=5.7.0",
+    "mypy>=0.812",
+    # Docs
+    "sphinx<=3.4.3",
+    "sphinx-rtd-theme==0.4.3",
+    "sphinxemoji>=0.1.8",
+    "sphinx-copybutton>=0.3.1",
+    "docutils<0.18",
 ]
+
+# Borrowed from https://github.com/huggingface/transformers/blob/master/setup.py
+deps = {b: a for a, b in (re.findall(r"^(([^!=<>]+)(?:[!=<>].*)?$)", x)[0] for x in _deps)}
+
+
+def deps_list(*pkgs):
+    return [deps[pkg] for pkg in pkgs]
+
+
+install_requires = [
+    deps["torch"],
+    deps["torchvision"],
+    deps["tqdm"],
+    deps["numpy"],
+    deps["fastprogress"],
+    deps["matplotlib"],
+    deps["contiguous-params"],
+]
+
+extras = {}
+
+extras["testing"] = deps_list(
+    "pytest",
+    "coverage",
+)
+
+extras["quality"] = deps_list(
+    "flake8",
+    "isort",
+    "mypy"
+)
+
+extras["docs"] = deps_list(
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinxemoji",
+    "sphinx-copybutton",
+    "docutils",
+)
+
+extras["dev"] = (
+    extras["testing"]
+    + extras["quality"]
+    + extras["docs"]
+)
+
 
 setup(
     name=package_index,
     version=version,
     author='François-Guillaume Fernandez',
+    author_email='fg-feedback@protonmail.com',
     description='Modules, operations and models for computer vision in PyTorch',
     long_description=readme,
     long_description_content_type="text/markdown",
     url='https://github.com/frgfm/Holocron',
     download_url='https://github.com/frgfm/Holocron/tags',
-    license='MIT',
+    license='Apache',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
-        'Topic :: Software Development',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     keywords=['pytorch', 'deep learning', 'vision', 'models'],
     packages=find_packages(exclude=('test',)),
     zip_safe=True,
     python_requires='>=3.6.0',
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=install_requires,
+    extras_require=extras,
     package_data={'': ['LICENSE']},
 )
