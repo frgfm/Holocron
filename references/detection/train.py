@@ -134,8 +134,7 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = detection.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES),
-                                           pretrained_backbone=True)
+    model = detection.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES), pretrained_backbone=True)
 
     model_params = [p for p in model.parameters() if p.requires_grad]
     if args.opt == 'sgd':

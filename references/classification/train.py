@@ -172,7 +172,6 @@ def main(args):
         optimizer = holocron.optim.AdaBelief(model_params, args.lr,
                                              betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
-
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = ClassificationTrainer(model, train_loader, val_loader, criterion, optimizer,
                                     args.device, args.output_file, amp=args.amp, on_epoch_end=log_wb)
