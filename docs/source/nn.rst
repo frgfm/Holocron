@@ -22,8 +22,6 @@ Loss functions
 
 .. autoclass:: MultiLabelCrossEntropy
 
-.. autoclass:: LabelSmoothingCrossEntropy
-
 .. autoclass:: ComplementCrossEntropy
 
 .. autoclass:: MutualChannelLoss
@@ -31,8 +29,6 @@ Loss functions
 
 Loss wrappers
 --------------
-
-.. autoclass:: MixupLoss
 
 .. autoclass:: ClassBalancedWrapper
 

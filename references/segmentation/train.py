@@ -19,10 +19,11 @@ import torch.utils.data
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
-from torchvision.transforms import functional as F
+from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 import holocron
+import wandb
 from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
 
@@ -43,7 +44,7 @@ def plot_samples(images, targets, ignore_index=None):
         img = images[idx]
         img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
         img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
-        img = F.to_pil_image(img)
+        img = to_pil_image(img)
         target = targets[idx]
         if isinstance(ignore_index, int):
             target[target == ignore_index] = 0
@@ -65,7 +66,7 @@ def plot_predictions(images, preds, targets, ignore_index=None):
         img = images[idx]
         img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
         img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
-        img = F.to_pil_image(img)
+        img = to_pil_image(img)
         # Target
         target = targets[idx]
         if isinstance(ignore_index, int):
@@ -97,6 +98,8 @@ def main(args):
     crop_size = 256
     min_size, max_size = int(0.5 * base_size), int(2.0 * base_size)
 
+    interpolation_mode = InterpolationMode.BILINEAR
+
     train_loader, val_loader = None, None
     if not args.test_only:
         st = time.time()
@@ -105,7 +108,7 @@ def main(args):
             image_set='train',
             download=True,
             transforms=Compose([
-                RandomResize(min_size, max_size),
+                RandomResize(min_size, max_size, interpolation_mode),
                 RandomCrop(crop_size),
                 RandomHorizontalFlip(0.5),
                 ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
@@ -133,7 +136,7 @@ def main(args):
             image_set='val',
             download=True,
             transforms=Compose([
-                Resize((crop_size, crop_size)),
+                Resize((crop_size, crop_size), _interpolation_mode),
                 ToTensor(),
                 ImageTransform(normalize)
             ])
@@ -146,7 +149,7 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = segmentation.__dict__[args.model](
+    model = segmentation.__dict__[args.arch](
         args.pretrained,
         not(args.pretrained),
         num_classes=len(VOC_CLASSES),
@@ -158,9 +161,7 @@ def main(args):
         loss_weight = torch.ones(len(VOC_CLASSES))
         loss_weight[0] = args.bg_factor
     if args.loss == 'crossentropy':
-        criterion = nn.CrossEntropyLoss(weight=loss_weight, ignore_index=255)
-    elif args.loss == 'label_smoothing':
-        criterion = holocron.nn.LabelSmoothingCrossEntropy(weight=loss_weight, ignore_index=255)
+        criterion = nn.CrossEntropyLoss(weight=loss_weight, ignore_index=255, label_smoothing=args.label_smoothing)
     elif args.loss == 'focal':
         criterion = holocron.nn.FocalLoss(weight=loss_weight, ignore_index=255)
     elif args.loss == 'mc':
@@ -170,9 +171,6 @@ def main(args):
     model_params = [p for p in model.parameters() if p.requires_grad]
     if args.opt == 'sgd':
         optimizer = torch.optim.SGD(model_params, args.lr, momentum=0.9, weight_decay=args.weight_decay)
-    elif args.opt == 'adam':
-        optimizer = torch.optim.Adam(model_params, args.lr,
-                                     betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'radam':
         optimizer = holocron.optim.RAdam(model_params, args.lr,
                                          betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
@@ -183,8 +181,9 @@ def main(args):
         optimizer = holocron.optim.AdaBelief(model_params, args.lr,
                                              betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
-    trainer = SegmentationTrainer(model, train_loader, val_loader, criterion, optimizer,
-                                  args.device, args.output_file, num_classes=len(VOC_CLASSES), amp=args.amp)
+    log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
+    trainer = SegmentationTrainer(model, train_loader, val_loader, criterion, optimizer, args.device,
+                                  args.output_file, num_classes=len(VOC_CLASSES), amp=args.amp, on_epoch_end=log_wb)
     if args.resume:
         print(f"Resuming {args.resume}")
         checkpoint = torch.load(args.resume, map_location='cpu')
@@ -219,11 +218,38 @@ def main(args):
         print(is_ok)
         return
 
+    # Training monitoring
+    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    exp_name = f"{args.arch}-{current_time}" if args.name is None else args.name
+
+    # W&B
+    if args.wb:
+
+        run = wandb.init(
+            name=exp_name,
+            project="holocron-semantic-segmentation",
+            config={
+                "learning_rate": args.lr,
+                "scheduler": args.sched,
+                "weight_decay": args.weight_decay,
+                "epochs": args.epochs,
+                "batch_size": args.batch_size,
+                "architecture": args.arch,
+                "input_size": 256,
+                "optimizer": args.opt,
+                "dataset": "Pascal VOC2012 Segmentation",
+                "loss": args.loss,
+            }
+        )
+
     print("Start training")
     start_time = time.time()
     trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched, norm_weight_decay=args.norm_weight_decay)
     total_time_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     print(f"Training time {total_time_str}")
+
+    if args.wb:
+        run.finish()
 
 
 def parse_args():
@@ -232,7 +258,8 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
-    parser.add_argument('--model', default='unet3p', help='model')
+    parser.add_argument('--name', type=str, default=None, help='Name of your training experiment')
+    parser.add_argument('--arch', default='unet3p', help='architecture to use')
     parser.add_argument('--freeze-until', default=None, type=str, help='Last layer to freeze')
     parser.add_argument('--device', default=None, type=int, help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
@@ -240,6 +267,7 @@ def parse_args():
     parser.add_argument('-j', '--workers', default=min(os.cpu_count(), 16), type=int,
                         help='number of data loading workers')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
+    parser.add_argument('--label-smoothing', default=0.1, type=float, help='label smoothing')
     parser.add_argument('--bg-factor', dest='bg_factor', default=1, type=float,
                         help='Class weight of background in the loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
@@ -260,6 +288,8 @@ def parse_args():
     parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
                         action="store_true")
     parser.add_argument("--amp", dest="amp", help="Use Automatic Mixed Precision", action="store_true")
+    parser.add_argument('--wb', dest='wb', action='store_true',
+                        help='Log to Weights & Biases')
 
     args = parser.parse_args()
     return args

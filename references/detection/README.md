@@ -2,7 +2,7 @@
 
 The sample training script was made to train object detection models on [PASCAL VOC 2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/).
 
-## Getting started
+## Getting started
 
 Ensure that you have holocron installed
 
@@ -14,7 +14,7 @@ pip install -e Holocron/. --upgrade
 No need to download the dataset, torchvision will handle [this](https://pytorch.org/docs/stable/torchvision/datasets.html#torchvision.datasets.VOCDetection) for you! From there, you can run your training with the following command
 
 ```bash
-python train.py VOC2012 --model yolov2 --lr 1e-5 -b 32 -j 16 --epochs 20 --opt radam --sched onecycle
+python train.py VOC2012 --arch yolov2 --lr 1e-5 -b 32 -j 16 --epochs 20 --opt radam --sched onecycle
 ```
 
 
@@ -40,11 +40,11 @@ Here, the recall being the ratio of correctly predicted ground truth predictions
 
 | Size (px) | Epochs | args                                                         | Loc@.5 | Clf@.5 | Det@.5 | # Runs |
 | --------- | ------ | ------------------------------------------------------------ | ------ | ------ | ------ | ------ |
-| 416       | 40     | VOC2012 --model yolov2 --img-size 416 --lr 5e-4 -b 64 -j 16 --epochs 40 --opt tadam --freeze-backbone --sched onecycle | 83.09  | 52.82  | 92.02  | 1      |
+| 416       | 40     | VOC2012 --arch yolov2 --img-size 416 --lr 5e-4 -b 64 -j 16 --epochs 40 --opt tadam --freeze-backbone --sched onecycle | 83.09  | 52.82  | 92.02  | 1      |
 
 
 
-## Model zoo
+## Model zoo
 
 | Model  | Loc@.5 | Clf@.5 | Det@.5 | Param # | MACs | Interpolation | Image size |
 | ------ | ------ | ------ | ------ | ------- | ---- | ------------- | ---------- |
