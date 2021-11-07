@@ -33,7 +33,7 @@ python train.py imagenette2-320/ --arch darknet53 --lr 5e-3 -b 32 -j 16 --epochs
 
 | Model            | Accuracy@1 (Err) | Param # | MACs  | Interpolation | Image size |
 | ---------------- | ---------------- | ------- | ----- | ------------- | ---------- |
-| cspdarknet53     | 92.54 (7.46)     | 26.63M  | 5.03G | bilinear      | 256        |
+| cspdarknet53     | 92.54 (7.46)     | 26.63M  | 5.03G | bilinear      | 224        |
 | cspdarknet53_mish| 94.14 (5.86)     | 26.63M  | 5.03G | bilinear      | 256        |
 | rexnet2_2x       | 91.75 (8.25)     | 19.49M  | 1.88G | bilinear      | 224        |
 | rexnet50d        | 92.18 (7.82)     | 23.55M  | 4.35G | bilinear      | 224        |
@@ -42,7 +42,7 @@ python train.py imagenette2-320/ --arch darknet53 --lr 5e-3 -b 32 -j 16 --epochs
 | darknet19        | 91.87 (8.13)     | 19.83M  | 2.75G | bilinear      | 224        |
 | tridentresnet50  | 91.01 (8.99)     | 45.83M  | 35.9G | bilinear      | 224        |
 | sknet50          | 90.42 (9.58)     | 35.22M  | 5.96G | bilinear      | 224        |
-| rexnet1_3x       | 93.45 (6.55)     | 7.56M   | 0.68G | bilinear      | 224        |
+| rexnet1_3x       | 94.06 (5.94)     | 7.56M   | 0.68G | bilinear      | 224        |
 | repvgg_a1        | 90.97 (9.03)     | 30.12M  |       | bilinear      | 224        |
 | rexnet1_0x       | 92.99 (7.01)     | 4.80M   | 0.42G | bilinear      | 224        |
 | repvgg_a0        | 91.18 (8.82)     | 24.74M  |       | bilinear      | 224        |
