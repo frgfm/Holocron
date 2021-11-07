@@ -170,13 +170,15 @@ def test_cb_loss():
     # Identical target
     target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
     base_criterion = CrossEntropyLoss()
-    base_loss = base_criterion(x, target).item()
+    base_loss = base_criterion(x, target)
     criterion = nn.ClassBalancedWrapper(base_criterion, num_samples, beta=beta)
 
     assert isinstance(criterion.criterion, CrossEntropyLoss)
     assert criterion.criterion.weight is not None
 
     # Value tests
+    loss_value = criterion(x, target)
+    assert loss_value.shape == base_loss.shape
     # assert torch.allclose(criterion(x, target), (1 - beta) / (1 - beta ** num_samples[0]) * base_loss, atol=1e-5)
     # With pre-existing weights
     base_criterion = CrossEntropyLoss(weight=torch.ones(num_classes, dtype=torch.float32))
