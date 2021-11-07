@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer.core &mdash; holocron 0.1.4a0+ee903c4-git documentation</title>
+  <title>holocron.trainer.core &mdash; holocron 0.1.4a0+cd3a624-git documentation</title>
   
 
   
@@ -235,7 +235,7 @@
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 <span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">freeze_bn</span><span class="p">,</span> <span class="n">freeze_model</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">freeze_bn</span><span class="p">,</span> <span class="n">freeze_model</span><span class="p">,</span> <span class="n">split_normalization_params</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trainer&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;BinaryClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;SegmentationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;DetectionTrainer&#39;</span><span class="p">]</span>
 
@@ -270,7 +270,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gpu</span> <span class="o">=</span> <span class="n">gpu</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ContiguousParams</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ContiguousParams</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">gpu</span><span class="p">)</span>
@@ -387,16 +387,33 @@
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="n">ContiguousParams</span><span class="p">([</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">_set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">norm_weight_decay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">ContiguousParams</span><span class="p">([</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">])]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">ContiguousParams</span><span class="p">(</span><span class="n">_params</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_params</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">_params</span> <span class="ow">in</span> <span class="n">split_normalization_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+            <span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_reset_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_reset_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Reset the target params of the optimizer&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_params</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()))</span>  <span class="c1"># type: ignore[union-attr]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_params</span><span class="p">(</span><span class="n">norm_weight_decay</span><span class="p">)</span>
+        <span class="c1"># Split it if norm layers needs custom WD</span>
+        <span class="k">if</span> <span class="n">norm_weight_decay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">(</span>
+                <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">())</span>  <span class="c1"># type: ignore[index]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">wd_groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">norm_weight_decay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;weight_decay&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">_params</span><span class="p">,</span> <span class="n">_wd</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">,</span> <span class="n">wd_groups</span><span class="p">):</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="k">if</span> <span class="n">_params</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">(</span>
+                        <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">_params</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">_wd</span><span class="p">)</span>
+                    <span class="p">)</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -419,7 +436,8 @@
         <span class="n">num_epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">sched_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;onecycle&#39;</span>
+        <span class="n">sched_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;onecycle&#39;</span><span class="p">,</span>
+        <span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Train the model for a given number of epochs</span>
 
@@ -428,11 +446,12 @@
 <span class="sd">            lr (float): learning rate to be used by the scheduler</span>
 <span class="sd">            freeze_until (str, optional): last layer to freeze</span>
 <span class="sd">            sched_type (str, optional): type of scheduler to use</span>
+<span class="sd">            norm_weight_decay (float, optional): weight decay to apply to normalization parameters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">)</span>
         <span class="c1"># Scheduler</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_scheduler</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">num_epochs</span><span class="p">,</span> <span class="n">sched_type</span><span class="p">)</span>
 
@@ -444,7 +463,8 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_fit_epoch</span><span class="p">(</span><span class="n">mb</span><span class="p">)</span>
             <span class="c1"># Check whether ops invalidated the buffer</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="o">.</span><span class="n">assert_buffer_is_valid</span><span class="p">()</span>  <span class="c1"># type: ignore[union-attr]</span>
+            <span class="k">for</span> <span class="n">_group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">:</span>  <span class="c1"># type: ignore[union-attr]</span>
+                <span class="n">_group</span><span class="o">.</span><span class="n">assert_buffer_is_valid</span><span class="p">()</span>
             <span class="n">eval_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
 
             <span class="c1"># master bar</span>
@@ -463,7 +483,8 @@
         <span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">start_lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
         <span class="n">end_lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">num_it</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_it</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Gridsearch the optimal learning rate for the training</span>
 
@@ -471,6 +492,7 @@
 <span class="sd">           freeze_until (str, optional): last layer to freeze</span>
 <span class="sd">           start_lr (float, optional): initial learning rate</span>
 <span class="sd">           end_lr (float, optional): final learning rate</span>
+<span class="sd">           norm_weight_decay (float, optional): weight decay to apply to normalization parameters</span>
 <span class="sd">           num_it (int, optional): number of iterations to perform</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -479,7 +501,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">start_lr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">start_lr</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">)</span>
         <span class="n">gamma</span> <span class="o">=</span> <span class="p">(</span><span class="n">end_lr</span> <span class="o">/</span> <span class="n">start_lr</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_it</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">scheduler</span> <span class="o">=</span> <span class="n">MultiplicativeLR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">step</span><span class="p">:</span> <span class="n">gamma</span><span class="p">)</span>
 
@@ -540,18 +562,25 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trainer.check_setup"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.check_setup">[docs]</a>    <span class="k">def</span> <span class="nf">check_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3e-4</span><span class="p">,</span> <span class="n">num_it</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="Trainer.check_setup"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.check_setup">[docs]</a>    <span class="k">def</span> <span class="nf">check_setup</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3e-4</span><span class="p">,</span>
+        <span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_it</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Check whether you can overfit one batch</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            freeze_until (str, optional): last layer to freeze</span>
 <span class="sd">            lr (float, optional): learning rate to be used for training</span>
+<span class="sd">            norm_weight_decay (float, optional): weight decay to apply to normalization parameters</span>
 <span class="sd">            num_it (int, optional): number of iterations to perform</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">)</span>
 
         <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span><span class="p">))</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
