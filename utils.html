@@ -22,11 +22,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
         <script src="_static/js/custom.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,8 +37,7 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -82,7 +83,7 @@
               
             
             
-              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+              <p><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installing.html#via-python-package">Via Python Package</a></li>
@@ -91,7 +92,7 @@
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Package Documentation</span></p>
+<p><span class="caption-text">Package Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
@@ -225,8 +226,8 @@
 <section id="miscellaneous">
 <h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.utils.lr_finder">
-<span class="sig-prename descclassname"><span class="pre">holocron.utils.</span></span><span class="sig-name descname"><span class="pre">lr_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_training_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_it</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_div</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/misc.html#lr_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.lr_finder" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.utils.lr_finder">
+<code class="sig-prename descclassname">holocron.utils.</code><code class="sig-name descname">lr_finder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">batch_training_fn</span></em>, <em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">train_loader</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">criterion</span></em>, <em class="sig-param"><span class="n">device</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start_lr</span><span class="o">=</span><span class="default_value">1e-07</span></em>, <em class="sig-param"><span class="n">end_lr</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">num_it</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">stop_div</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">stop_threshold</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">0.9</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/misc.html#lr_finder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.lr_finder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Learning rate finder as described in
 <a class="reference external" href="https://arxiv.org/pdf/1506.01186.pdf">“Cyclical Learning Rates for Training Neural Networks”</a></p>
 <dl class="field-list simple">

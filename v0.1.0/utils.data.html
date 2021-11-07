@@ -22,10 +22,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
         <script src="_static/js/custom.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
@@ -35,8 +36,7 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -81,7 +81,7 @@
               
             
             
-              <p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+              <p><span class="caption-text">Package Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
@@ -193,8 +193,8 @@
 <section id="batch-collate">
 <h2>Batch collate<a class="headerlink" href="#batch-collate" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.utils.data.mixup_collate">
-<span class="sig-prename descclassname"><span class="pre">holocron.utils.data.</span></span><span class="sig-name descname"><span class="pre">mixup_collate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/data/collate.html#mixup_collate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.data.mixup_collate" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.utils.data.mixup_collate">
+<code class="sig-prename descclassname">holocron.utils.data.</code><code class="sig-name descname">mixup_collate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">0.1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/data/collate.html#mixup_collate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.utils.data.mixup_collate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a batch collate function with MixUp strategy from
 <a class="reference external" href="https://arxiv.org/pdf/1710.09412.pdf">“mixup: Beyond Empirical Risk Minimization”</a></p>
 <dl class="field-list simple">

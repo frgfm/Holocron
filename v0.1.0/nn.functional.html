@@ -22,10 +22,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
         <script src="_static/js/custom.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
@@ -35,8 +36,7 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/custom_theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -82,7 +82,7 @@
               
             
             
-              <p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+              <p><span class="caption-text">Package Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
@@ -194,8 +194,8 @@
 <section id="non-linear-activations">
 <h2>Non-linear activations<a class="headerlink" href="#non-linear-activations" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.mish">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">mish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#mish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.mish" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.nn.functional.mish">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">mish</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#mish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.mish" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the Mish activation function</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -211,8 +211,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.nl_relu">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">nl_relu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#nl_relu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.nl_relu" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.nn.functional.nl_relu">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">nl_relu</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">inplace</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#nl_relu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.nl_relu" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the natural logarithm ReLU activation function</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -235,15 +235,15 @@
 <section id="loss-functions">
 <h2>Loss functions<a class="headerlink" href="#loss-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.focal_loss">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">focal_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#focal_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.focal_loss" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.nn.functional.focal_loss">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">focal_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="o">=</span><span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="o">=</span><span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#focal_loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.focal_loss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the focal loss from
 <a class="reference external" href="https://arxiv.org/pdf/1708.02002.pdf">“Focal Loss for Dense Object Detection”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
-<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>...</em><em>]</em>) – hard target tensor</p></li>
+<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>..</em><em>]</em>) – input tensor</p></li>
+<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>..</em><em>]</em>) – hard target tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
@@ -260,14 +260,14 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.multilabel_cross_entropy">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">multilabel_cross_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#multilabel_cross_entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.multilabel_cross_entropy" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.nn.functional.multilabel_cross_entropy">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">multilabel_cross_entropy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="o">=</span><span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="o">=</span><span class="default_value">'mean'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#multilabel_cross_entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.multilabel_cross_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the cross entropy loss for multi-label targets</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
-<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – target tensor</p></li>
+<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>..</em><em>]</em>) – input tensor</p></li>
+<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>..</em><em>]</em>) – target tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
@@ -283,15 +283,15 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.ls_cross_entropy">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">ls_cross_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#ls_cross_entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.ls_cross_entropy" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.nn.functional.ls_cross_entropy">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">ls_cross_entropy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">weight</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="o">=</span><span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="o">=</span><span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">0.1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#ls_cross_entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.ls_cross_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the label smoothing cross entropy loss from
 <a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">“Attention Is All You Need”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
-<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>...</em><em>]</em>) – target tensor</p></li>
+<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>..</em><em>]</em>) – input tensor</p></li>
+<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>..</em><em>]</em>) – target tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
@@ -311,8 +311,8 @@
 <section id="downsampling">
 <h2>Downsampling<a class="headerlink" href="#downsampling" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.nn.functional.concat_downsample2d">
-<span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">concat_downsample2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#concat_downsample2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.concat_downsample2d" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.nn.functional.concat_downsample2d">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">concat_downsample2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">scale_factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#concat_downsample2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.concat_downsample2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a loss-less downsampling operation described in
 <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a>
 by stacking adjacent information on the channel dimension.</p>
