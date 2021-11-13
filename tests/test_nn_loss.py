@@ -1,6 +1,6 @@
 import torch
 from torch.nn import CrossEntropyLoss, Linear
-from torch.nn.functional import cross_entropy, log_softmax
+from torch.nn.functional import cross_entropy
 
 from holocron import nn
 from holocron.nn import functional as F
