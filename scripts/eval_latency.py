@@ -36,8 +36,7 @@ def main(args):
 
     # Warmup
     for _ in range(10):
-        with torch.no_grad():
-            _ = model(img_tensor)
+        _ = model(img_tensor)
 
     timings = []
 
