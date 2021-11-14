@@ -91,6 +91,12 @@ def _test_trainer(
     with pytest.raises(ValueError):
         learner.lr_find(freeze_until, num_it=num_it + 1)
 
+    # All params are frozen
+    for p in learner.model.parameters():
+        p.requires_grad_(False)
+    with pytest.raises(AssertionError):
+        learner._set_params()
+
     # Test norm weight decay
     learner.lr_find(freeze_until, norm_weight_decay=5e-4, num_it=num_it)
     assert len(learner.lr_recorder) == len(learner.loss_recorder)
@@ -157,7 +163,7 @@ def test_binary_classification_trainer():
 
     num_it = 10
     batch_size = 8
-    # Generate all dependencies
+    # Generate all dependencies
     model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True),
                           GlobalAvgPool2d(flatten=True), nn.Linear(32, 1))
     train_loader = DataLoader(MockBinaryClassificationDataset(num_it * batch_size), batch_size=batch_size)
@@ -177,7 +183,7 @@ def test_segmentation_trainer(tmpdir_factory):
 
     num_it = 100
     batch_size = 8
-    # Generate all dependencies
+    # Generate all dependencies
     model = nn.Sequential(nn.Conv2d(3, 32, 3, padding=1), nn.ReLU(inplace=True), nn.Conv2d(32, 5, 3, padding=1))
     train_loader = DataLoader(MockSegDataset(num_it * batch_size), batch_size=batch_size)
     optimizer = torch.optim.Adam(model.parameters())
