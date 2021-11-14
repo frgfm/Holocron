@@ -16,11 +16,10 @@ from fastprogress.fastprogress import ConsoleMasterBar
 from torch import Tensor, nn
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiplicativeLR, OneCycleLR  # type: ignore[attr-defined]
 from torch.utils.data import DataLoader
-from torchvision.ops.boxes import box_iou
 
 from .utils import freeze_bn, freeze_model, split_normalization_params
 
-__all__ = ['Trainer', 'ClassificationTrainer', 'BinaryClassificationTrainer', 'SegmentationTrainer', 'DetectionTrainer']
+__all__ = ['Trainer']
 
 
 class Trainer:
@@ -321,12 +320,11 @@ class Trainer:
 
         self.lr_recorder = self.lr_recorder[:len(self.loss_recorder)]
 
-    def plot_recorder(self, beta: float = 0.95, block: bool = True) -> None:
+    def plot_recorder(self, beta: float = 0.95, **kwargs: Any) -> None:
         """Display the results of the LR grid search
 
         Args:
             beta (float, optional): smoothing factor
-            block (bool, optional): whether the plot should block execution
         """
 
         if len(self.lr_recorder) != len(self.loss_recorder) or len(self.lr_recorder) == 0:
@@ -355,7 +353,7 @@ class Trainer:
         plt.ylabel('Training loss')
         plt.ylim(vals[min_idx] - 0.1 * delta, max_val + 0.2 * delta)
         plt.grid(True, linestyle='--', axis='x')
-        plt.show(block=block)
+        plt.show(**kwargs)
 
     def check_setup(
         self,
@@ -391,335 +389,9 @@ class Trainer:
             # Backprop
             self._backprop_step(batch_loss)
 
+            if torch.isnan(batch_loss) or torch.isinf(batch_loss):
+                raise ValueError("loss value is NaN or inf.")
+
             _losses.append(batch_loss.item())
 
         return _losses[-1] < _losses[0]
-
-
-class ClassificationTrainer(Trainer):
-    """Image classification trainer class
-
-    Args:
-        model (torch.nn.Module): model to train
-        train_loader (torch.utils.data.DataLoader): training loader
-        val_loader (torch.utils.data.DataLoader): validation loader
-        criterion (torch.nn.Module): loss criterion
-        optimizer (torch.optim.Optimizer): parameter optimizer
-        gpu (int, optional): index of the GPU to use
-        output_file (str, optional): path where checkpoints will be saved
-        amp (bool, optional): whether to use automatic mixed precision
-    """
-
-    @torch.inference_mode()
-    def evaluate(self) -> Dict[str, float]:
-        """Evaluate the model on the validation set
-
-        Returns:
-            dict: evaluation metrics
-        """
-
-        self.model.eval()
-
-        val_loss, top1, top5, num_samples, num_valid_batches = 0., 0, 0, 0, 0
-        for x, target in self.val_loader:
-            x, target = self.to_cuda(x, target)
-
-            if self.amp:
-                with torch.cuda.amp.autocast():
-                    # Forward
-                    out = self.model(x)
-                    # Loss computation
-                    _loss = self.criterion(out, target)
-            else:
-                # Forward
-                out = self.model(x)
-                # Loss computation
-                _loss = self.criterion(out, target)
-
-            # Safeguard for NaN loss
-            if not torch.isnan(_loss) and not torch.isinf(_loss):
-                val_loss += _loss.item()
-                num_valid_batches += 1
-
-            pred = out.topk(5, dim=1)[1] if out.shape[1] >= 5 else out.argmax(dim=1, keepdim=True)
-            correct = pred.eq(target.view(-1, 1).expand_as(pred))
-            top1 += correct[:, 0].sum().item()
-            if out.shape[1] >= 5:
-                top5 += correct.any(dim=1).sum().item()
-
-            num_samples += x.shape[0]
-
-        val_loss /= num_valid_batches
-
-        return dict(val_loss=val_loss, acc1=top1 / num_samples, acc5=top5 / num_samples)
-
-    @staticmethod
-    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return (f"Validation loss: {eval_metrics['val_loss']:.4} "
-                f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})")
-
-
-class BinaryClassificationTrainer(Trainer):
-    """Image binary classification trainer class
-
-    Args:
-        model (torch.nn.Module): model to train
-        train_loader (torch.utils.data.DataLoader): training loader
-        val_loader (torch.utils.data.DataLoader): validation loader
-        criterion (torch.nn.Module): loss criterion
-        optimizer (torch.optim.Optimizer): parameter optimizer
-        gpu (int, optional): index of the GPU to use
-        output_file (str, optional): path where checkpoints will be saved
-        amp (bool, optional): whether to use automatic mixed precision
-    """
-
-    @torch.inference_mode()
-    def evaluate(self) -> Dict[str, float]:
-        """Evaluate the model on the validation set
-
-        Returns:
-            dict: evaluation metrics
-        """
-
-        self.model.eval()
-
-        val_loss, top1, num_samples, num_valid_batches = 0., 0, 0, 0
-        for x, target in self.val_loader:
-            x, target = self.to_cuda(x, target)
-
-            if self.amp:
-                with torch.cuda.amp.autocast():
-                    # Forward
-                    out = self.model(x)
-                    # Apply sigmoid
-                    out = torch.sigmoid(out)
-                    # Loss computation
-                    _loss = self.criterion(out, target)
-            else:
-                # Forward
-                out = self.model(x)
-                # Apply sigmoid
-                out = torch.sigmoid(out)
-                # Loss computation
-                _loss = self.criterion(out, target)
-
-            # Safeguard for NaN loss
-            if not torch.isnan(_loss) and not torch.isinf(_loss):
-                val_loss += _loss.item()
-                num_valid_batches += 1
-
-            top1 += int(torch.sum((target >= 0.5) == (out >= 0.5)).item())
-
-            num_samples += x.shape[0]
-
-        val_loss /= num_valid_batches
-
-        return dict(val_loss=val_loss, acc=top1 / num_samples)
-
-    @staticmethod
-    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return (f"Validation loss: {eval_metrics['val_loss']:.4} "
-                f"(Acc: {eval_metrics['acc']:.2%})")
-
-
-class SegmentationTrainer(Trainer):
-    """Semantic segmentation trainer class
-
-    Args:
-        model (torch.nn.Module): model to train
-        train_loader (torch.utils.data.DataLoader): training loader
-        val_loader (torch.utils.data.DataLoader): validation loader
-        criterion (torch.nn.Module): loss criterion
-        optimizer (torch.optim.Optimizer): parameter optimizer
-        gpu (int, optional): index of the GPU to use
-        output_file (str, optional): path where checkpoints will be saved
-        num_classes (int): number of output classes
-        amp (bool, optional): whether to use automatic mixed precision
-    """
-
-    def __init__(self, *args: Any, num_classes: int = 10, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.num_classes = num_classes
-
-    @torch.inference_mode()
-    def evaluate(self, ignore_index: int = 255) -> Dict[str, float]:
-        """Evaluate the model on the validation set
-
-        Args:
-            ignore_index (int, optional): index of the class to ignore in evaluation
-
-        Returns:
-            dict: evaluation metrics
-        """
-
-        self.model.eval()
-
-        val_loss, mean_iou, num_valid_batches = 0., 0., 0
-        conf_mat = torch.zeros((self.num_classes, self.num_classes), dtype=torch.int64,
-                               device=next(self.model.parameters()).device)
-        for x, target in self.val_loader:
-            x, target = self.to_cuda(x, target)
-
-            if self.amp:
-                with torch.cuda.amp.autocast():
-                    # Forward
-                    out = self.model(x)
-                    # Loss computation
-                    _loss = self.criterion(out, target)
-            else:
-                # Forward
-                out = self.model(x)
-                # Loss computation
-                _loss = self.criterion(out, target)
-
-            # Safeguard for NaN loss
-            if not torch.isnan(_loss) and not torch.isinf(_loss):
-                val_loss += _loss.item()
-                num_valid_batches += 1
-
-            # borrowed from https://github.com/pytorch/vision/blob/master/references/segmentation/train.py
-            pred = out.argmax(dim=1).flatten()
-            target = target.flatten()
-            k = (target >= 0) & (target < self.num_classes)
-            inds = self.num_classes * target[k].to(torch.int64) + pred[k]
-            nc = self.num_classes
-            conf_mat += torch.bincount(inds, minlength=nc ** 2).reshape(nc, nc)
-
-        val_loss /= num_valid_batches
-        acc_global = (torch.diag(conf_mat).sum() / conf_mat.sum()).item()
-        mean_iou = (torch.diag(conf_mat) / (conf_mat.sum(1) + conf_mat.sum(0) - torch.diag(conf_mat))).mean().item()
-
-        return dict(val_loss=val_loss, acc_global=acc_global, mean_iou=mean_iou)
-
-    @staticmethod
-    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return (f"Validation loss: {eval_metrics['val_loss']:.4} "
-                f"(Acc: {eval_metrics['acc_global']:.2%} | Mean IoU: {eval_metrics['mean_iou']:.2%})")
-
-
-def assign_iou(gt_boxes: Tensor, pred_boxes: Tensor, iou_threshold: float = 0.5) -> Tuple[List[int], List[int]]:
-    """Assigns boxes by IoU"""
-    iou = box_iou(gt_boxes, pred_boxes)
-    iou = iou.max(dim=1)
-    gt_kept = iou.values >= iou_threshold
-    assign_unique = torch.unique(iou.indices[gt_kept])
-    # Filter
-    if iou.indices[gt_kept].shape[0] == assign_unique.shape[0]:
-        return torch.arange(gt_boxes.shape[0])[gt_kept], iou.indices[gt_kept]  # type: ignore[return-value]
-
-    gt_indices, pred_indices = [], []
-    for pred_idx in assign_unique:
-        selection = iou.values[gt_kept][iou.indices[gt_kept] == pred_idx].argmax()
-        gt_indices.append(torch.arange(gt_boxes.shape[0])[gt_kept][selection].item())
-        pred_indices.append(iou.indices[gt_kept][selection].item())
-    return gt_indices, pred_indices  # type: ignore[return-value]
-
-
-class DetectionTrainer(Trainer):
-    """Object detection trainer class
-
-    Args:
-        model (torch.nn.Module): model to train
-        train_loader (torch.utils.data.DataLoader): training loader
-        val_loader (torch.utils.data.DataLoader): validation loader
-        criterion (None): loss criterion
-        optimizer (torch.optim.Optimizer): parameter optimizer
-        gpu (int, optional): index of the GPU to use
-        output_file (str, optional): path where checkpoints will be saved
-        amp (bool, optional): whether to use automatic mixed precision
-    """
-
-    @staticmethod
-    def _to_cuda(  # type: ignore[override]
-        x: List[Tensor],
-        target: List[Dict[str, Tensor]]
-    ) -> Tuple[List[Tensor], List[Dict[str, Tensor]]]:
-        """Move input and target to GPU"""
-        x = [_x.cuda(non_blocking=True) for _x in x]
-        target = [{k: v.cuda(non_blocking=True) for k, v in t.items()} for t in target]
-        return x, target
-
-    def _backprop_step(self, loss: Tensor, grad_clip: float = .1) -> None:
-        # Clean gradients
-        self.optimizer.zero_grad()
-        # Backpropate the loss
-        if self.amp:
-            self.scaler.scale(loss).backward()
-            # Safeguard for Gradient explosion
-            if isinstance(grad_clip, float):
-                self.scaler.unscale_(self.optimizer)
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
-
-            # Update the params
-            self.scaler.step(self.optimizer)
-            self.scaler.update()
-        else:
-            loss.backward()
-            # Safeguard for Gradient explosion
-            if isinstance(grad_clip, float):
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
-            # Update the params
-            self.optimizer.step()
-
-    def _get_loss(self, x: List[Tensor], target: List[Dict[str, Tensor]]) -> Tensor:  # type: ignore[override]
-        # AMP
-        if self.amp:
-            with torch.cuda.amp.autocast():
-                # Forward & loss computation
-                loss_dict = self.model(x, target)
-                return sum(loss_dict.values())  # type: ignore[return-value]
-        # Forward & loss computation
-        loss_dict = self.model(x, target)
-        return sum(loss_dict.values())  # type: ignore[return-value]
-
-    @staticmethod
-    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return (f"Loc error: {eval_metrics['loc_err']:.2%} | Clf error: {eval_metrics['clf_err']:.2%} | "
-                f"Det error: {eval_metrics['det_err']:.2%}")
-
-    @torch.inference_mode()
-    def evaluate(self, iou_threshold: float = 0.5) -> Dict[str, float]:
-        """Evaluate the model on the validation set
-
-        Args:
-            iou_threshold (float, optional): IoU threshold for pair assignment
-
-        Returns:
-            dict: evaluation metrics
-        """
-        self.model.eval()
-
-        loc_assigns = 0
-        correct, clf_error, loc_fn, loc_fp, num_samples = 0, 0, 0, 0, 0
-
-        for x, target in self.val_loader:
-            x, target = self.to_cuda(x, target)
-
-            if self.amp:
-                with torch.cuda.amp.autocast():
-                    detections = self.model(x)
-            else:
-                detections = self.model(x)
-
-            for dets, t in zip(detections, target):
-                if t['boxes'].shape[0] > 0 and dets['boxes'].shape[0] > 0:
-                    gt_indices, pred_indices = assign_iou(t['boxes'], dets['boxes'], iou_threshold)
-                    loc_assigns += len(gt_indices)
-                    _correct = (t['labels'][gt_indices] == dets['labels'][pred_indices]).sum().item()
-                else:
-                    gt_indices, pred_indices = [], []
-                    _correct = 0
-                correct += _correct
-                clf_error += len(gt_indices) - _correct
-                loc_fn += t['boxes'].shape[0] - len(gt_indices)
-                loc_fp += dets['boxes'].shape[0] - len(pred_indices)
-            num_samples += sum(t['boxes'].shape[0] for t in target)
-
-        nb_preds = num_samples - loc_fn + loc_fp
-        # Localization
-        loc_err = 1 - 2 * loc_assigns / (nb_preds + num_samples) if nb_preds + num_samples > 0 else 1.
-        # Classification
-        clf_err = 1 - correct / loc_assigns if loc_assigns > 0 else 1.
-        # End-to-end
-        det_err = 1 - 2 * correct / (nb_preds + num_samples) if nb_preds + num_samples > 0 else 1.
-        return dict(loc_err=loc_err, clf_err=clf_err, det_err=det_err, val_loss=loc_err)
