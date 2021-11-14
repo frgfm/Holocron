@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.2.0.dev0+97feac4-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.2.0.dev0+d2bc315-git documentation</title>
   
 
   
@@ -338,7 +338,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 
 <dl class="py class">
 <dt id="holocron.nn.MutualChannelLoss">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">MutualChannelLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weight</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>float<span class="p">, </span>List<span class="p">[</span>float<span class="p">]</span><span class="p">, </span>torch.Tensor<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">chi</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MutualChannelLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.MutualChannelLoss" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">MutualChannelLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weight</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>float<span class="p">, </span>List<span class="p">[</span>float<span class="p">]</span><span class="p">, </span>torch.Tensor<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">xi</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MutualChannelLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.MutualChannelLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the mutual channel loss from
 <a class="reference external" href="https://arxiv.org/pdf/2002.04264.pdf">“The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification”</a>.</p>
 <dl class="field-list simple">
@@ -347,7 +347,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
-<li><p><strong>chi</strong> (<em>in</em><em>, </em><em>optional</em>) – num of features per class</p></li>
+<li><p><strong>xi</strong> (<em>in</em><em>, </em><em>optional</em>) – num of features per class</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – diversity factor</p></li>
 </ul>
 </dd>

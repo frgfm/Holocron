@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.2.0.dev0+97feac4-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.2.0.dev0+d2bc315-git documentation</title>
   
 
   
@@ -488,7 +488,7 @@
     <span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
     <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
-    <span class="n">chi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">xi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Implements the mutual channel loss from</span>
@@ -501,7 +501,7 @@
 <span class="sd">        weight (torch.Tensor[K], optional): manual rescaling of each class</span>
 <span class="sd">        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient</span>
 <span class="sd">        reduction (str, optional): reduction method</span>
-<span class="sd">        chi (int, optional): num of features per class</span>
+<span class="sd">        xi (int, optional): num of features per class</span>
 <span class="sd">        alpha (float, optional): diversity factor</span>
 
 <span class="sd">    Returns:</span>
@@ -511,16 +511,16 @@
     <span class="c1"># Flatten spatial dimension</span>
     <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">spatial_dims</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
-    <span class="n">cnum</span> <span class="o">=</span> <span class="n">c</span> <span class="o">//</span> <span class="n">chi</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">cnum</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">cnum</span> <span class="o">=</span> <span class="n">c</span> <span class="o">//</span> <span class="n">xi</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">cnum</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># CWA</span>
-    <span class="n">base_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">chi</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-    <span class="n">base_mask</span><span class="p">[:</span><span class="n">ceil</span><span class="p">(</span><span class="n">chi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">chan_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">cnum</span><span class="p">,</span> <span class="n">chi</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">base_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">base_mask</span><span class="p">[:</span><span class="n">ceil</span><span class="p">(</span><span class="n">xi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">chan_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">cnum</span><span class="p">,</span> <span class="n">xi</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cnum</span><span class="p">):</span>
-        <span class="n">chan_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_mask</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">chi</span><span class="p">)]</span>
-    <span class="n">discr_out</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">chan_mask</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cnum</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">chan_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_mask</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">xi</span><span class="p">)]</span>
+    <span class="n">discr_out</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">chan_mask</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">cnum</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="c1"># CCMP</span>
     <span class="n">discr_out</span> <span class="o">=</span> <span class="n">discr_out</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
     <span class="n">discr_out</span> <span class="o">=</span> <span class="n">discr_out</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">cnum</span><span class="p">,</span> <span class="o">*</span><span class="n">spatial_dims</span><span class="p">)</span>
