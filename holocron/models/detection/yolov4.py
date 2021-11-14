@@ -12,7 +12,7 @@ from torch import Tensor
 from torchvision.ops.boxes import box_iou, nms
 from torchvision.ops.misc import FrozenBatchNorm2d
 
-from holocron.nn import SPP
+from holocron.nn import SPP, DropBlock2d
 from holocron.nn.init import init_module
 from holocron.ops.boxes import ciou_loss
 
@@ -24,7 +24,7 @@ __all__ = ['YOLOv4', 'yolov4', 'SPP', 'PAN', 'Neck']
 
 
 default_cfgs = {
-    'yolov4': {'arch': 'YOLOv4', 'backbone': dark_cfgs['cspdarknet53'],
+    'yolov4': {'arch': 'YOLOv4', 'backbone': dark_cfgs['cspdarknet53_mish'],
                'url': None},
 }
 
@@ -449,11 +449,13 @@ class YOLOv4(nn.Module):
         super().__init__()
 
         if act_layer is None:
-            act_layer = nn.LeakyReLU(0.1, inplace=True)
+            act_layer = nn.Mish(inplace=True)
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if backbone_norm_layer is None:
             backbone_norm_layer = norm_layer
+        if drop_layer is None:
+            drop_layer = DropBlock2d
 
         # backbone
         self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, nn.Mish(inplace=True),
