@@ -172,6 +172,9 @@ class Trainer:
         return self.criterion(out, target)
 
     def _set_params(self, norm_weight_decay: Optional[float] = None) -> None:
+        if not any(p.requires_grad for p in self.model.parameters()):
+            raise AssertionError("All parameters are frozen")
+
         if norm_weight_decay is None:
             self._params = [ContiguousParams([p for p in self.model.parameters() if p.requires_grad])]
         else:
