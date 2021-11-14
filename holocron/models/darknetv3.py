@@ -38,9 +38,9 @@ class ResBlock(_ResBlock):
     ) -> None:
         super().__init__(
             conv_sequence(planes, mid_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                          kernel_size=1, bias=False) +
+                          kernel_size=1, bias=(norm_layer is None)) +
             conv_sequence(mid_planes, planes, act_layer, norm_layer, drop_layer, conv_layer,
-                          kernel_size=3, padding=1, bias=False),
+                          kernel_size=3, padding=1, bias=(norm_layer is None)),
             None, None)
         if drop_layer is not None:
             self.dropblock = DropBlock2d(0.1, 7, inplace=True)
@@ -80,7 +80,7 @@ class DarknetBodyV3(nn.Sequential):
         super().__init__(OrderedDict([
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=1, bias=False))),
+                                                  kernel_size=3, padding=1, bias=(norm_layer is None)))),
             ('layers', nn.Sequential(*[self._make_layer(num_blocks, _in_chans, out_chans,
                                                         act_layer, norm_layer, drop_layer, conv_layer)
                                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
@@ -98,7 +98,7 @@ class DarknetBodyV3(nn.Sequential):
     ) -> nn.Sequential:
 
         layers = conv_sequence(in_planes, out_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                               kernel_size=3, padding=1, stride=2, bias=False)
+                               kernel_size=3, padding=1, stride=2, bias=(norm_layer is None))
         layers.extend([ResBlock(out_planes, out_planes // 2, act_layer, norm_layer, drop_layer, conv_layer)
                        for _ in range(num_blocks)])
 

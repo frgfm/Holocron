@@ -77,13 +77,13 @@ class Tridentneck(_ResBlock):
         # Concatenate along the channel axis and enlarge BN to leverage parallelization
         super().__init__(
             [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, TridentConv2d, bn_channels=3 * width,
-                            kernel_size=1, stride=1, bias=False, dilation=1),
+                            kernel_size=1, stride=1, bias=(norm_layer is None), dilation=1),
              *conv_sequence(width, width, act_layer, norm_layer, drop_layer, TridentConv2d, bn_channels=3 * width,
                             kernel_size=3, stride=stride,
-                            padding=1, groups=groups, bias=False, dilation=3),
+                            padding=1, groups=groups, bias=(norm_layer is None), dilation=3),
              *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, TridentConv2d,
                             bn_channels=3 * planes * self.expansion,
-                            kernel_size=1, stride=1, bias=False, dilation=1)],
+                            kernel_size=1, stride=1, bias=(norm_layer is None), dilation=1)],
             downsample, act_layer)
 
 

@@ -37,6 +37,9 @@ def conv_sequence(
     if blurpool and conv_stride > 1:
         kwargs['stride'] = 1
 
+    # Avoid bias if there is batch normalization
+    kwargs['bias'] = kwargs.get('bias', norm_layer is None)
+
     conv_seq = [conv_layer(in_channels, out_channels, **kwargs)]
 
     if callable(norm_layer):

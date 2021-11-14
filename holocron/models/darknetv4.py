@@ -48,21 +48,21 @@ class CSPStage(nn.Module):
         compression = 2 if num_blocks > 1 else 1
         self.base_layer = nn.Sequential(*conv_sequence(in_channels, out_channels,
                                                        act_layer, norm_layer, drop_layer, conv_layer,
-                                                       kernel_size=3, padding=1, stride=2, bias=False),
+                                                       kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)),
                                         # Share the conv
                                         *conv_sequence(out_channels, 2 * out_channels // compression,
                                                        act_layer, norm_layer, drop_layer, conv_layer,
-                                                       kernel_size=1, bias=False))
+                                                       kernel_size=1, bias=(norm_layer is None)))
         self.main = nn.Sequential(*[ResBlock(out_channels // compression,
                                              out_channels // compression if num_blocks > 1 else in_channels,
                                              act_layer, norm_layer, drop_layer, conv_layer)
                                     for _ in range(num_blocks)],
                                   *conv_sequence(out_channels // compression, out_channels // compression,
                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                 kernel_size=1, bias=False))
+                                                 kernel_size=1, bias=(norm_layer is None)))
         self.transition = nn.Sequential(*conv_sequence(2 * out_channels // compression, out_channels,
                                                        act_layer, norm_layer, drop_layer, conv_layer,
-                                                       kernel_size=1, bias=False))
+                                                       kernel_size=1, bias=(norm_layer is None)))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.base_layer(x)
@@ -96,7 +96,7 @@ class DarknetBodyV4(nn.Sequential):
         super().__init__(OrderedDict([
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=1, bias=False))),
+                                                  kernel_size=3, padding=1, bias=(norm_layer is None)))),
             ('stages', nn.Sequential(*[CSPStage(_in_chans, out_chans, num_blocks,
                                                 act_layer, norm_layer, drop_layer, conv_layer)
                                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
