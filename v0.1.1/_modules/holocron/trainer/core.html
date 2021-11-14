@@ -215,11 +215,10 @@
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">CosineAnnealingLR</span><span class="p">,</span> <span class="n">MultiplicativeLR</span><span class="p">,</span> <span class="n">OneCycleLR</span>  <span class="c1"># type: ignore[attr-defined]</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-<span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span>
 
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">freeze_bn</span><span class="p">,</span> <span class="n">freeze_model</span><span class="p">,</span> <span class="n">split_normalization_params</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trainer&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;BinaryClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;SegmentationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;DetectionTrainer&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trainer&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Trainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer">[docs]</a><span class="k">class</span> <span class="nc">Trainer</span><span class="p">:</span>
@@ -520,12 +519,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">)]</span></div>
 
-<div class="viewcode-block" id="Trainer.plot_recorder"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.plot_recorder">[docs]</a>    <span class="k">def</span> <span class="nf">plot_recorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">block</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Trainer.plot_recorder"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.plot_recorder">[docs]</a>    <span class="k">def</span> <span class="nf">plot_recorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Display the results of the LR grid search</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            beta (float, optional): smoothing factor</span>
-<span class="sd">            block (bool, optional): whether the plot should block execution</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -554,7 +552,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Training loss&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="n">min_idx</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">delta</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">+</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">delta</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span></div>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Trainer.check_setup"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.check_setup">[docs]</a>    <span class="k">def</span> <span class="nf">check_setup</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -590,338 +588,12 @@
             <span class="c1"># Backprop</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_backprop_step</span><span class="p">(</span><span class="n">batch_loss</span><span class="p">)</span>
 
+            <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">batch_loss</span><span class="p">)</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">batch_loss</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;loss value is NaN or inf.&quot;</span><span class="p">)</span>
+
             <span class="n">_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 
         <span class="k">return</span> <span class="n">_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">_losses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div></div>
-
-
-<div class="viewcode-block" id="ClassificationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer">[docs]</a><span class="k">class</span> <span class="nc">ClassificationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Image classification trainer class</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model (torch.nn.Module): model to train</span>
-<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
-<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
-<span class="sd">        criterion (torch.nn.Module): loss criterion</span>
-<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
-<span class="sd">        gpu (int, optional): index of the GPU to use</span>
-<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
-<span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="ClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict: evaluation metrics</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-        <span class="n">val_loss</span><span class="p">,</span> <span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_valid_batches</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">:</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
-                    <span class="c1"># Forward</span>
-                    <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                    <span class="c1"># Loss computation</span>
-                    <span class="n">_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Forward</span>
-                <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                <span class="c1"># Loss computation</span>
-                <span class="n">_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="c1"># Safeguard for NaN loss</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">_loss</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">_loss</span><span class="p">):</span>
-                <span class="n">val_loss</span> <span class="o">+=</span> <span class="n">_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-                <span class="n">num_valid_batches</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="n">pred</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">5</span> <span class="k">else</span> <span class="n">out</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">correct</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span>
-            <span class="n">top1</span> <span class="o">+=</span> <span class="n">correct</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
-                <span class="n">top5</span> <span class="o">+=</span> <span class="n">correct</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-            <span class="n">num_samples</span> <span class="o">+=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="n">val_loss</span> <span class="o">/=</span> <span class="n">num_valid_batches</span>
-
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">acc1</span><span class="o">=</span><span class="n">top1</span> <span class="o">/</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">acc5</span><span class="o">=</span><span class="n">top5</span> <span class="o">/</span> <span class="n">num_samples</span><span class="p">)</span></div>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;(Acc@1: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc1&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">, Acc@5: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc5&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="BinaryClassificationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.BinaryClassificationTrainer">[docs]</a><span class="k">class</span> <span class="nc">BinaryClassificationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Image binary classification trainer class</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model (torch.nn.Module): model to train</span>
-<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
-<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
-<span class="sd">        criterion (torch.nn.Module): loss criterion</span>
-<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
-<span class="sd">        gpu (int, optional): index of the GPU to use</span>
-<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
-<span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="BinaryClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.BinaryClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict: evaluation metrics</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-        <span class="n">val_loss</span><span class="p">,</span> <span class="n">top1</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_valid_batches</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">:</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
-                    <span class="c1"># Forward</span>
-                    <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                    <span class="c1"># Apply sigmoid</span>
-                    <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-                    <span class="c1"># Loss computation</span>
-                    <span class="n">_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Forward</span>
-                <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                <span class="c1"># Apply sigmoid</span>
-                <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-                <span class="c1"># Loss computation</span>
-                <span class="n">_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="c1"># Safeguard for NaN loss</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">_loss</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">_loss</span><span class="p">):</span>
-                <span class="n">val_loss</span> <span class="o">+=</span> <span class="n">_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-                <span class="n">num_valid_batches</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="n">top1</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">target</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">out</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-
-            <span class="n">num_samples</span> <span class="o">+=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="n">val_loss</span> <span class="o">/=</span> <span class="n">num_valid_batches</span>
-
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">acc</span><span class="o">=</span><span class="n">top1</span> <span class="o">/</span> <span class="n">num_samples</span><span class="p">)</span></div>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;(Acc: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="SegmentationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.SegmentationTrainer">[docs]</a><span class="k">class</span> <span class="nc">SegmentationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Semantic segmentation trainer class</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model (torch.nn.Module): model to train</span>
-<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
-<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
-<span class="sd">        criterion (torch.nn.Module): loss criterion</span>
-<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
-<span class="sd">        gpu (int, optional): index of the GPU to use</span>
-<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
-<span class="sd">        num_classes (int): number of output classes</span>
-<span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
-
-<div class="viewcode-block" id="SegmentationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.SegmentationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            ignore_index (int, optional): index of the class to ignore in evaluation</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict: evaluation metrics</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-        <span class="n">val_loss</span><span class="p">,</span> <span class="n">mean_iou</span><span class="p">,</span> <span class="n">num_valid_batches</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mi">0</span>
-        <span class="n">conf_mat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span>
-                               <span class="n">device</span><span class="o">=</span><span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">:</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
-                    <span class="c1"># Forward</span>
-                    <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                    <span class="c1"># Loss computation</span>
-                    <span class="n">_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Forward</span>
-                <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                <span class="c1"># Loss computation</span>
-                <span class="n">_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="c1"># Safeguard for NaN loss</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">_loss</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">_loss</span><span class="p">):</span>
-                <span class="n">val_loss</span> <span class="o">+=</span> <span class="n">_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-                <span class="n">num_valid_batches</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="c1"># borrowed from https://github.com/pytorch/vision/blob/master/references/segmentation/train.py</span>
-            <span class="n">pred</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-            <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="n">target</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">target</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
-            <span class="n">inds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">*</span> <span class="n">target</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="o">+</span> <span class="n">pred</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-            <span class="n">nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span>
-            <span class="n">conf_mat</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">inds</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">nc</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nc</span><span class="p">,</span> <span class="n">nc</span><span class="p">)</span>
-
-        <span class="n">val_loss</span> <span class="o">/=</span> <span class="n">num_valid_batches</span>
-        <span class="n">acc_global</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">conf_mat</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">conf_mat</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-        <span class="n">mean_iou</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">conf_mat</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">conf_mat</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">conf_mat</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">conf_mat</span><span class="p">)))</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val_loss</span><span class="o">=</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">acc_global</span><span class="o">=</span><span class="n">acc_global</span><span class="p">,</span> <span class="n">mean_iou</span><span class="o">=</span><span class="n">mean_iou</span><span class="p">)</span></div>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;(Acc: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc_global&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2"> | Mean IoU: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;mean_iou&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
-
-
-<span class="k">def</span> <span class="nf">assign_iou</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="sd">&quot;&quot;&quot;Assigns boxes by IoU&quot;&quot;&quot;</span>
-    <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">)</span>
-    <span class="n">iou</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">gt_kept</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;=</span> <span class="n">iou_threshold</span>
-    <span class="n">assign_unique</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">])</span>
-    <span class="c1"># Filter</span>
-    <span class="k">if</span> <span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">assign_unique</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">gt_kept</span><span class="p">],</span> <span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span>  <span class="c1"># type: ignore[return-value]</span>
-
-    <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">pred_idx</span> <span class="ow">in</span> <span class="n">assign_unique</span><span class="p">:</span>
-        <span class="n">selection</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span> <span class="o">==</span> <span class="n">pred_idx</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
-        <span class="n">gt_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">selection</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">pred_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">selection</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="k">return</span> <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span>  <span class="c1"># type: ignore[return-value]</span>
-
-
-<div class="viewcode-block" id="DetectionTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer">[docs]</a><span class="k">class</span> <span class="nc">DetectionTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Object detection trainer class</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        model (torch.nn.Module): model to train</span>
-<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
-<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
-<span class="sd">        criterion (None): loss criterion</span>
-<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
-<span class="sd">        gpu (int, optional): index of the GPU to use</span>
-<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
-<span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_to_cuda</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
-        <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
-        <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]:</span>
-        <span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">_x</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">_x</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span>
-
-    <span class="k">def</span> <span class="nf">_backprop_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">grad_clip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Clean gradients</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="c1"># Backpropate the loss</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-            <span class="c1"># Safeguard for Gradient explosion</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grad_clip</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">unscale_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">grad_clip</span><span class="p">)</span>
-
-            <span class="c1"># Update the params</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-            <span class="c1"># Safeguard for Gradient explosion</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grad_clip</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">grad_clip</span><span class="p">)</span>
-            <span class="c1"># Update the params</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>  <span class="c1"># type: ignore[override]</span>
-        <span class="c1"># AMP</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
-                <span class="c1"># Forward &amp; loss computation</span>
-                <span class="n">loss_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-                <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>  <span class="c1"># type: ignore[return-value]</span>
-        <span class="c1"># Forward &amp; loss computation</span>
-        <span class="n">loss_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>  <span class="c1"># type: ignore[return-value]</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loc error: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;loc_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2"> | Clf error: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;clf_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2"> | &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Det error: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;det_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="DetectionTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            iou_threshold (float, optional): IoU threshold for pair assignment</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            dict: evaluation metrics</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-        <span class="n">loc_assigns</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">correct</span><span class="p">,</span> <span class="n">clf_error</span><span class="p">,</span> <span class="n">loc_fn</span><span class="p">,</span> <span class="n">loc_fp</span><span class="p">,</span> <span class="n">num_samples</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
-
-        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span><span class="p">:</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
-                    <span class="n">detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">dets</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detections</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dets</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span> <span class="o">=</span> <span class="n">assign_iou</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">],</span> <span class="n">dets</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">],</span> <span class="n">iou_threshold</span><span class="p">)</span>
-                    <span class="n">loc_assigns</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_indices</span><span class="p">)</span>
-                    <span class="n">_correct</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">][</span><span class="n">gt_indices</span><span class="p">]</span> <span class="o">==</span> <span class="n">dets</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">][</span><span class="n">pred_indices</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-                    <span class="n">_correct</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="n">correct</span> <span class="o">+=</span> <span class="n">_correct</span>
-                <span class="n">clf_error</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_indices</span><span class="p">)</span> <span class="o">-</span> <span class="n">_correct</span>
-                <span class="n">loc_fn</span> <span class="o">+=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_indices</span><span class="p">)</span>
-                <span class="n">loc_fp</span> <span class="o">+=</span> <span class="n">dets</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred_indices</span><span class="p">)</span>
-            <span class="n">num_samples</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">)</span>
-
-        <span class="n">nb_preds</span> <span class="o">=</span> <span class="n">num_samples</span> <span class="o">-</span> <span class="n">loc_fn</span> <span class="o">+</span> <span class="n">loc_fp</span>
-        <span class="c1"># Localization</span>
-        <span class="n">loc_err</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">loc_assigns</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_preds</span> <span class="o">+</span> <span class="n">num_samples</span><span class="p">)</span> <span class="k">if</span> <span class="n">nb_preds</span> <span class="o">+</span> <span class="n">num_samples</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.</span>
-        <span class="c1"># Classification</span>
-        <span class="n">clf_err</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">correct</span> <span class="o">/</span> <span class="n">loc_assigns</span> <span class="k">if</span> <span class="n">loc_assigns</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.</span>
-        <span class="c1"># End-to-end</span>
-        <span class="n">det_err</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">correct</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_preds</span> <span class="o">+</span> <span class="n">num_samples</span><span class="p">)</span> <span class="k">if</span> <span class="n">nb_preds</span> <span class="o">+</span> <span class="n">num_samples</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loc_err</span><span class="o">=</span><span class="n">loc_err</span><span class="p">,</span> <span class="n">clf_err</span><span class="o">=</span><span class="n">clf_err</span><span class="p">,</span> <span class="n">det_err</span><span class="o">=</span><span class="n">det_err</span><span class="p">,</span> <span class="n">val_loss</span><span class="o">=</span><span class="n">loc_err</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>
