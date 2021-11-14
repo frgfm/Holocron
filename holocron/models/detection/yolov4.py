@@ -153,10 +153,10 @@ class YoloLayer(nn.Module):
         b, _, h, w = output.shape
 
         self.anchors: Tensor
-        # B x (num_anchors * (5 + num_classes)) x H x W --> B x H x W x num_anchors x (5 + num_classes)
+        # B x (num_anchors * (5 + num_classes)) x H x W --> B x H x W x num_anchors x (5 + num_classes)
         output = output.reshape(b, len(self.anchors), 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
 
-        # Box center
+        # Box center
         c_x = torch.arange(w, dtype=torch.float32, device=output.device).reshape(1, 1, -1, 1)
         c_y = torch.arange(h, dtype=torch.float32, device=output.device).reshape(1, -1, 1, 1)
 
@@ -199,7 +199,7 @@ class YoloLayer(nn.Module):
             scores = torch.zeros(0, dtype=torch.float32, device=b_o.device)
             labels = torch.zeros(0, dtype=torch.long, device=b_o.device)
 
-            # Objectness filter
+            # Objectness filter
             if torch.any(b_o[idx] >= 0.5):
                 coords = boxes[idx, b_o[idx] >= 0.5]
                 scores, labels = b_scores[idx, b_o[idx] >= 0.5].max(dim=-1)
@@ -259,7 +259,7 @@ class YoloLayer(nn.Module):
             # Assign boxes
             obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = True
             noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = False
-            # B * cells * predictors * info
+            # B * cells * predictors * info
             for idx in range(b):
                 if gt_boxes[idx].shape[0] > 0:
                     # IoU with cells that enclose the GT centers
@@ -416,7 +416,7 @@ class Yolov4Head(nn.Module):
         h3 = torch.cat([h3, feats[2]], dim=1)
         o3 = self.head3(h3)
 
-        # YOLO output
+        # YOLO output
         y1 = self.yolo1(o1, target)
         y2 = self.yolo2(o2, target)
         y3 = self.yolo3(o3, target)
