@@ -260,7 +260,7 @@ def mutual_channel_loss(
     weight: Optional[Tensor] = None,
     ignore_index: int = -100,
     reduction: str = 'mean',
-    chi: int = 2,
+    xi: int = 2,
     alpha: float = 1.
 ) -> Tensor:
     """Implements the mutual channel loss from
@@ -273,7 +273,7 @@ def mutual_channel_loss(
         weight (torch.Tensor[K], optional): manual rescaling of each class
         ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
         reduction (str, optional): reduction method
-        chi (int, optional): num of features per class
+        xi (int, optional): num of features per class
         alpha (float, optional): diversity factor
 
     Returns:
@@ -283,16 +283,16 @@ def mutual_channel_loss(
     # Flatten spatial dimension
     b, c = x.shape[:2]
     spatial_dims = x.shape[2:]
-    cnum = c // chi
-    x = x.view(b, cnum, chi, -1)
+    cnum = c // xi
+    x = x.view(b, cnum, xi, -1)
 
     # CWA
-    base_mask = torch.zeros(chi, device=x.device)
-    base_mask[:ceil(chi / 2)] = 1
-    chan_mask = torch.zeros((cnum, chi), device=x.device)
+    base_mask = torch.zeros(xi, device=x.device)
+    base_mask[:ceil(xi / 2)] = 1
+    chan_mask = torch.zeros((cnum, xi), device=x.device)
     for idx in range(cnum):
-        chan_mask[idx] = base_mask[torch.randperm(chi)]
-    discr_out = x * chan_mask.view(1, cnum, chi, 1)
+        chan_mask[idx] = base_mask[torch.randperm(xi)]
+    discr_out = x * chan_mask.view(1, cnum, xi, 1)
     # CCMP
     discr_out = discr_out.max(dim=2).values
     discr_out = discr_out.view(b, cnum, *spatial_dims)

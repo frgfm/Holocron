@@ -163,7 +163,7 @@ class MutualChannelLoss(_Loss):
         weight (torch.Tensor[K], optional): class weight for loss computation
         ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient
         reduction (str, optional): type of reduction to apply to the final loss
-        chi (in, optional): num of features per class
+        xi (in, optional): num of features per class
         alpha (float, optional): diversity factor
     """
 
@@ -172,15 +172,15 @@ class MutualChannelLoss(_Loss):
         weight: Optional[Union[float, List[float], Tensor]] = None,
         ignore_index: int = -100,
         reduction: str = 'mean',
-        chi: int = 2,
+        xi: int = 2,
         alpha: float = 1,
     ) -> None:
         super().__init__(weight, ignore_index, reduction)
-        self.chi = chi
+        self.xi = xi
         self.alpha = alpha
 
     def forward(self, x: Tensor, target: Tensor) -> Tensor:
-        return F.mutual_channel_loss(x, target, self.weight, self.ignore_index, self.reduction, self.chi, self.alpha)
+        return F.mutual_channel_loss(x, target, self.weight, self.ignore_index, self.reduction, self.xi, self.alpha)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(reduction='{self.reduction}', chi={self.chi}, alpha={self.alpha})"
+        return f"{self.__class__.__name__}(reduction='{self.reduction}', xi={self.xi}, alpha={self.alpha})"
