@@ -140,7 +140,12 @@ def main(args):
             scale_size = min(int(math.floor(args.img_size / crop_pct)), 320)
             if scale_size < 320:
                 eval_tf.append(T.Resize(scale_size))
-            eval_tf.extend([T.CenterCrop(args.img_size), T.PILToTensor(), T.ConvertImageDtype(torch.float32), normalize])
+            eval_tf.extend([
+                T.CenterCrop(args.img_size),
+                T.PILToTensor(),
+                T.ConvertImageDtype(torch.float32),
+                normalize
+            ])
             val_set = ImageFolder(
                 os.path.join(args.data_path, 'val'),
                 T.Compose(eval_tf)
