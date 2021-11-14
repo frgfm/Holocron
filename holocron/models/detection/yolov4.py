@@ -458,7 +458,7 @@ class YOLOv4(nn.Module):
             drop_layer = DropBlock2d
 
         # backbone
-        self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, nn.Mish(inplace=True),
+        self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, act_layer,
                                       backbone_norm_layer, drop_layer, conv_layer)
         # neck
         self.neck = Neck([1024, 512, 256], act_layer, norm_layer, drop_layer, conv_layer)
