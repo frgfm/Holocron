@@ -53,11 +53,11 @@ class RepBlock(nn.Module):
 
         self.branches = nn.ModuleList([
             nn.Sequential(
-                nn.Conv2d(inplanes, planes, 3, padding=1, bias=False, stride=stride),
+                nn.Conv2d(inplanes, planes, 3, padding=1, bias=(norm_layer is None), stride=stride),
                 norm_layer(planes),
             ),
             nn.Sequential(
-                nn.Conv2d(inplanes, planes, 1, padding=0, bias=False, stride=stride),
+                nn.Conv2d(inplanes, planes, 1, padding=0, bias=(norm_layer is None), stride=stride),
                 norm_layer(planes),
             ),
         ])

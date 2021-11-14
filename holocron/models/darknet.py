@@ -42,7 +42,7 @@ class DarknetBodyV1(nn.Sequential):
         super().__init__(OrderedDict([
             ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=7, padding=3, stride=2, bias=False))),
+                                                  kernel_size=7, padding=3, stride=2, bias=(norm_layer is None)))),
             ('layers', nn.Sequential(*[self._make_layer([_in_chans] + planes,
                                                         act_layer, norm_layer, drop_layer, conv_layer)
                                        for _in_chans, planes in zip(in_chans, layout)]))])
@@ -61,7 +61,7 @@ class DarknetBodyV1(nn.Sequential):
         for in_planes, out_planes in zip(planes[:-1], planes[1:]):
             _layers.extend(conv_sequence(in_planes, out_planes, act_layer, norm_layer, drop_layer, conv_layer,
                                          kernel_size=3 if out_planes > in_planes else 1,
-                                         padding=1 if out_planes > in_planes else 0, bias=False))
+                                         padding=1 if out_planes > in_planes else 0, bias=(norm_layer is None)))
             k1 = not k1
 
         return nn.Sequential(*_layers)

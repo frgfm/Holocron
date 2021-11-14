@@ -51,24 +51,24 @@ class PAN(nn.Module):
 
         self.conv1 = nn.Sequential(*conv_sequence(in_channels, in_channels // 2,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=1, bias=False))
+                                                  kernel_size=1, bias=(norm_layer is None)))
         self.up = nn.Upsample(scale_factor=2, mode='nearest')
 
         self.conv2 = nn.Sequential(*conv_sequence(in_channels, in_channels // 2,
                                                   act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=1, bias=False))
+                                                  kernel_size=1, bias=(norm_layer is None)))
 
         self.convs = nn.Sequential(
             *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(in_channels // 2, in_channels, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(in_channels // 2, in_channels, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False))
+                           kernel_size=1, bias=(norm_layer is None)))
 
     def forward(self, x: Tensor, up: Tensor) -> Tensor:
         out = self.conv1(x)
@@ -91,18 +91,18 @@ class Neck(nn.Module):
 
         self.fpn = nn.Sequential(
             *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(in_planes[0] // 2, in_planes[0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             SPP([5, 9, 13]),
             *conv_sequence(4 * in_planes[0] // 2, in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(in_planes[0] // 2, in_planes[0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False)
+                           kernel_size=1, bias=(norm_layer is None))
         )
 
         self.pan1 = PAN(in_planes[1], act_layer, norm_layer, drop_layer, conv_layer)
@@ -345,48 +345,48 @@ class Yolov4Head(nn.Module):
 
         self.head1 = nn.Sequential(
             *conv_sequence(128, 256, act_layer, norm_layer, None, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(256, (5 + num_classes) * 3, None, None, None, conv_layer,
                            kernel_size=1, bias=True))
 
         self.yolo1 = YoloLayer(anchors[0], num_classes=num_classes, scale_xy=1.2)
 
         self.pre_head2 = nn.Sequential(*conv_sequence(128, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                                                      kernel_size=3, padding=1, stride=2, bias=False))
+                                                      kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)))
         self.head2_1 = nn.Sequential(
             *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False))
+                           kernel_size=1, bias=(norm_layer is None)))
         self.head2_2 = nn.Sequential(
             *conv_sequence(256, 512, act_layer, norm_layer, None, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(512, (5 + num_classes) * 3, None, None, None, conv_layer,
                            kernel_size=1, bias=True))
 
         self.yolo2 = YoloLayer(anchors[1], num_classes=num_classes, scale_xy=1.1)
 
         self.pre_head3 = nn.Sequential(*conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                                                      kernel_size=3, padding=1, stride=2, bias=False))
+                                                      kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)))
         self.head3 = nn.Sequential(
             *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=False),
+                           kernel_size=1, bias=(norm_layer is None)),
             *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(1024, (5 + num_classes) * 3, None, None, None, conv_layer,
                            kernel_size=1, bias=True))
 

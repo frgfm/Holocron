@@ -69,19 +69,19 @@ class YOLOv2(_YOLO):
 
         self.block5 = nn.Sequential(
             *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False))
+                           kernel_size=3, padding=1, bias=(norm_layer is None)))
 
         self.passthrough_layer = nn.Sequential(*conv_sequence(layout[-2][0], layout[-2][0] // passthrough_ratio,
                                                               act_layer, norm_layer, drop_layer, conv_layer,
-                                                              kernel_size=1, bias=False),
+                                                              kernel_size=1, bias=(norm_layer is None)),
                                                ConcatDownsample2d(scale_factor=2))
 
         self.block6 = nn.Sequential(
             *conv_sequence(layout[-1][0] + layout[-2][0] // passthrough_ratio * 2 ** 2, layout[-1][0],
                            act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False))
+                           kernel_size=3, padding=1, bias=(norm_layer is None)))
 
         # Each box has P_objectness, 4 coords, and score for each class
         self.head = nn.Conv2d(layout[-1][0], anchors.shape[0] * (5 + num_classes), 1)

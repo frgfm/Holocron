@@ -39,7 +39,7 @@ class SoftAttentionLayer(nn.Sequential):
     ) -> None:
         super().__init__(GlobalAvgPool2d(flatten=False),
                          *conv_sequence(channels, max(channels // sa_ratio, 32), act_layer, norm_layer, drop_layer,
-                                        kernel_size=1, stride=1, bias=False),
+                                        kernel_size=1, stride=1, bias=(norm_layer is None)),
                          *conv_sequence(max(channels // sa_ratio, 32), channels * out_multiplier,
                                         nn.Sigmoid(), None, drop_layer, kernel_size=1, stride=1))
 
@@ -60,8 +60,8 @@ class SKConv2d(nn.Module):
         super().__init__()
         self.path_convs = nn.ModuleList([nn.Sequential(*conv_sequence(in_channels, out_channels,
                                                                       act_layer, norm_layer, drop_layer,
-                                                                      kernel_size=3, bias=False, dilation=idx + 1,
-                                                                      padding=idx + 1, **kwargs))
+                                                                      kernel_size=3, bias=(norm_layer is None),
+                                                                      dilation=idx + 1, padding=idx + 1, **kwargs))
                                          for idx in range(m)])
         self.sa = SoftAttentionLayer(out_channels, sa_ratio, m, act_layer, norm_layer, drop_layer)
 
@@ -100,10 +100,10 @@ class SKBottleneck(_ResBlock):
         width = int(planes * (base_width / 64.)) * groups
         super().__init__(
             [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1,
-                            stride=1, bias=False, **kwargs),
+                            stride=1, bias=(norm_layer is None), **kwargs),
              SKConv2d(width, width, 2, 16, act_layer, norm_layer, drop_layer, groups=groups, stride=stride),
              *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, conv_layer, kernel_size=1,
-                            stride=1, bias=False, **kwargs)],
+                            stride=1, bias=(norm_layer is None), **kwargs)],
             downsample, act_layer)
 
 

@@ -51,12 +51,12 @@ class PyBottleneck(_ResBlock):
 
         super().__init__(
             [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=False, **kwargs),
+                            stride=1, bias=(norm_layer is None), **kwargs),
              *conv_sequence(width, width, act_layer, norm_layer, drop_layer, conv_layer=PyConv2d, kernel_size=3,
-                            stride=stride, padding=dilation, groups=groups, bias=False, dilation=dilation,
-                            num_levels=num_levels, **kwargs),
+                            stride=stride, padding=dilation, groups=groups, bias=(norm_layer is None),
+                            dilation=dilation, num_levels=num_levels, **kwargs),
              *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=False, **kwargs)],
+                            stride=1, bias=(norm_layer is None), **kwargs)],
             downsample, act_layer)
 
 

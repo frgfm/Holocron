@@ -229,13 +229,13 @@ class YOLOv1(_YOLO):
 
         self.block4 = nn.Sequential(
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, stride=2, bias=False),
+                           kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)),
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False),
+                           kernel_size=3, padding=1, bias=(norm_layer is None)),
             *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=False))
+                           kernel_size=3, padding=1, bias=(norm_layer is None)))
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
