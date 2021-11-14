@@ -5,3 +5,4 @@ numpy>=1.17.2
 fastprogress>=1.0.0
 matplotlib>=3.0.0
 contiguous-params==1.0.0
+Pillow>=8.4.0
