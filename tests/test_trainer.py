@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision.models.detection import fasterrcnn_mobilenet_v3_large_320_fpn
 
 from holocron import trainer
+from holocron.trainer.core import Trainer
 from holocron.nn import GlobalAvgPool2d
 
 
@@ -69,7 +70,7 @@ def collate_fn(batch):
 
 
 def _test_trainer(
-    learner: trainer.Trainer,
+    learner: Trainer,
     num_it: int,
     ref_param: str,
     freeze_until: Optional[str] = None,
