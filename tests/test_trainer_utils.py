@@ -34,3 +34,10 @@ def test_freeze_model():
     assert all(p.requires_grad for p in mod[2].parameters())
     with pytest.raises(ValueError):
         trainer.freeze_model(mod, "wrong_layer")
+
+    # Freeze last layer
+    for p in mod[-1].parameters():
+        p.requires_grad_(False)
+    mod = trainer.freeze_model(mod, '0')
+    # Ensure the last layer is now unfrozen
+    assert all(p.requires_grad for p in mod[-1].parameters())

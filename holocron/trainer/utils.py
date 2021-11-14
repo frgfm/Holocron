@@ -47,15 +47,21 @@ def freeze_model(
         torch.nn.Module: model
     """
 
+    # Unfreeze everything
+    for p in model.parameters():
+        p.requires_grad_(True)
+
     # Loop on parameters
     if isinstance(last_frozen_layer, str):
         layer_reached = False
         for n, p in model.named_parameters():
+            if not layer_reached or n.startswith(last_frozen_layer):
+                p.requires_grad_(False)
             if n.startswith(last_frozen_layer):
                 layer_reached = True
-                p.requires_grad_(False)
-            elif not layer_reached:
-                p.requires_grad_(False)
+            # Once the last param of the layer is frozen, we break
+            elif layer_reached:
+                break
         if not layer_reached:
             raise ValueError(f"Unable to locate child module {last_frozen_layer}")
 
