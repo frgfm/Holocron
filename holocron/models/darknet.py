@@ -17,8 +17,10 @@ __all__ = ['DarknetV1', 'darknet24']
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'darknet24': {'layout': [[192], [128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024] * 2],
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet24_224-55729a5c.pth'},
+    'darknet24': {
+        'layout': [[192], [128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024] * 2],
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/darknet24_224-816d72cb.pt'
+    },
 }
 
 
