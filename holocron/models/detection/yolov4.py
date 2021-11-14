@@ -176,9 +176,9 @@ class YoloLayer(nn.Module):
         boxes = torch.cat((top_left, bot_right), dim=-1)
 
         # Objectness
-        b_o = torch.sigmoid(output[..., 4])
+        b_o = output[..., 4]
         # Classification scores
-        b_scores = torch.sigmoid(output[..., 5:])
+        b_scores = output[..., 5:]
 
         return boxes, b_o, b_scores
 
@@ -190,6 +190,9 @@ class YoloLayer(nn.Module):
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05
     ) -> List[Dict[str, Tensor]]:
+
+        b_o = torch.sigmoid(b_o)
+        b_scores = torch.sigmoid(b_scores)
 
         boxes = boxes.clamp_(0, 1)
         detections = []
@@ -288,10 +291,18 @@ class YoloLayer(nn.Module):
             if _target['boxes'].shape[0] > 0 and torch.any(obj_mask[idx]):
                 bbox_loss += ciou_loss(pred_boxes[idx, obj_mask[idx]], _target['boxes']).min(dim=1).values.sum()
 
-        return dict(obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum'),
-                    noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum(),
-                    bbox_loss=self.lambda_coords * bbox_loss,
-                    clf_loss=F.binary_cross_entropy(b_scores[obj_mask], target_scores[obj_mask], reduction='sum'))
+        b_o = torch.sigmoid(b_o)
+
+        return dict(
+            obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum') / b_o.shape[0],
+            noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum() / b_o.shape[0],
+            bbox_loss=self.lambda_coords * bbox_loss / b_o.shape[0],
+            clf_loss=F.binary_cross_entropy_with_logits(
+                b_scores[obj_mask],
+                target_scores[obj_mask],
+                reduction='sum',
+            ) / b_o.shape[0],
+        )
 
     def forward(
         self,
