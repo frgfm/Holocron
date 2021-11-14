@@ -20,6 +20,7 @@ from matplotlib.patches import Rectangle
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
+from torchvision.models import detection as tv_detection
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from transforms import (CenterCrop, Compose, ImageTransform, RandomHorizontalFlip, RandomResizedCrop, Resize,
                         VOCTargetTransform, convert_to_relative)
@@ -138,7 +139,10 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = detection.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES), pretrained_backbone=True)
+    if args.source.lower() == 'holocron':
+        model = detection.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES))
+    elif args.source.lower() == 'torchvision':
+        model = tv_detection.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES))
 
     model_params = [p for p in model.parameters() if p.requires_grad]
     if args.opt == 'sgd':
@@ -199,6 +203,7 @@ def main(args):
                 "epochs": args.epochs,
                 "batch_size": args.batch_size,
                 "architecture": args.arch,
+                "source": args.source,
                 "input_size": args.img_size,
                 "optimizer": args.opt,
                 "dataset": "PASCAL VOC2012 Detection",
@@ -222,7 +227,8 @@ def parse_args():
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
     parser.add_argument('--name', type=str, default=None, help='Name of your training experiment')
-    parser.add_argument('--arch', default='yolov2', help='architecture to use')
+    parser.add_argument('--arch', type=str, default='yolov2', help='architecture to use')
+    parser.add_argument('--source', type=str, default='holocron', help='where should the architecture be taken from')
     parser.add_argument('--freeze-until', default='backbone', type=str, help='Last layer to freeze')
     parser.add_argument('--device', default=None, type=int, help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')

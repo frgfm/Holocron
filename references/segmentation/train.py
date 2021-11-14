@@ -19,6 +19,7 @@ import torch.utils.data
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
+from torchvision.models import segmentation as tv_segmentation
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
@@ -149,11 +150,10 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = segmentation.__dict__[args.arch](
-        args.pretrained,
-        not(args.pretrained),
-        num_classes=len(VOC_CLASSES),
-    )
+    if args.source.lower() == 'holocron':
+        model = segmentation.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES))
+    elif args.source.lower() == 'torchvision':
+        model = tv_segmentation.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES))
 
     # Loss setup
     loss_weight = None
@@ -235,6 +235,7 @@ def main(args):
                 "epochs": args.epochs,
                 "batch_size": args.batch_size,
                 "architecture": args.arch,
+                "source": args.source,
                 "input_size": 256,
                 "optimizer": args.opt,
                 "dataset": "Pascal VOC2012 Segmentation",
@@ -259,7 +260,8 @@ def parse_args():
 
     parser.add_argument('data_path', type=str, help='path to dataset folder')
     parser.add_argument('--name', type=str, default=None, help='Name of your training experiment')
-    parser.add_argument('--arch', default='unet3p', help='architecture to use')
+    parser.add_argument('--arch', type=str, default='unet3p', help='architecture to use')
+    parser.add_argument('--source', type=str, default='holocron', help='where should the architecture be taken from')
     parser.add_argument('--freeze-until', default=None, type=str, help='Last layer to freeze')
     parser.add_argument('--device', default=None, type=int, help='device')
     parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
