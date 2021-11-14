@@ -32,6 +32,10 @@ def test_conv_sequence():
     assert mod[0].kernel_size == (3, 3)
     assert mod[0].stride == (1, 1)
     assert mod[3].stride == 2
+    assert mod[0].bias is None
+    # Ensures that bias is added when there is no BN
+    mod = utils.conv_sequence(3, 32, kernel_size=3, stride=2, act_layer=nn.ReLU(inplace=True))
+    assert isinstance(getattr(mod[0], 'bias'), nn.Parameter)
 
 
 def test_fuse_conv_bn():
