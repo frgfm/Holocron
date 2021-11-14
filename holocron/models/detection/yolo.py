@@ -357,7 +357,7 @@ def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool
 
 
 def yolov1(pretrained: bool = False, progress: bool = True, pretrained_backbone: bool = True, **kwargs: Any) -> YOLOv1:
-    """YOLO model from
+    r"""YOLO model from
     `"You Only Look Once: Unified, Real-Time Object Detection" <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_.
 
     YOLO's particularity is to make predictions in a grid (same size as last feature map). For each grid cell,
@@ -369,49 +369,49 @@ def yolov1(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     For training, YOLO uses a multi-part loss whose components are computed by:
 
     .. math::
-        \\mathcal{L}_{coords} = \\sum\\limits_{i=0}^{S^2} \\sum\\limits_{j=0}^{B}
-        \\mathbb{1}_{ij}^{obj} \\Big[
-        (x_{ij} - \\hat{x}_{ij})² + (y_{ij} - \\hat{y}_{ij})² +
-        (\\sqrt{w_{ij}} - \\sqrt{\\hat{w}_{ij}})² + (\\sqrt{h_{ij}} - \\sqrt{\\hat{h}_{ij}})²
-        \\Big]
+        \mathcal{L}_{coords} = \sum\limits_{i=0}^{S^2} \sum\limits_{j=0}^{B}
+        \mathbb{1}_{ij}^{obj} \Big[
+        (x_{ij} - \hat{x}_{ij})² + (y_{ij} - \hat{y}_{ij})² +
+        (\sqrt{w_{ij}} - \sqrt{\hat{w}_{ij}})² + (\sqrt{h_{ij}} - \sqrt{\hat{h}_{ij}})²
+        \Big]
 
     where :math:`S` is size of the output feature map (7 for an input size :math:`(448, 448)`),
     :math:`B` is the number of anchor boxes per grid cell (default: 2),
-    :math:`\\mathbb{1}_{ij}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell and among the
+    :math:`\mathbb{1}_{ij}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell and among the
     anchor boxes of that cell, has the highest IoU with the j-th box else 0,
     :math:`(x_{ij}, y_{ij}, w_{ij}, h_{ij})` are the coordinates of the ground truth assigned to
     the j-th anchor box of the i-th grid cell,
-    and :math:`(\\hat{x}_{ij}, \\hat{y}_{ij}, \\hat{w}_{ij}, \\hat{h}_{ij})` are the coordinate predictions
+    and :math:`(\hat{x}_{ij}, \hat{y}_{ij}, \hat{w}_{ij}, \hat{h}_{ij})` are the coordinate predictions
     for the j-th anchor box of the i-th grid cell.
 
     .. math::
-        \\mathcal{L}_{objectness} = \\sum\\limits_{i=0}^{S^2} \\sum\\limits_{j=0}^{B}
-        \\Big[ \\mathbb{1}_{ij}^{obj} \\Big(C_{ij} - \\hat{C}_{ij} \\Big)^2
-        + \\lambda_{noobj} \\mathbb{1}_{ij}^{noobj} \\Big(C_{ij} - \\hat{C}_{ij} \\Big)^2
-        \\Big]
+        \mathcal{L}_{objectness} = \sum\limits_{i=0}^{S^2} \sum\limits_{j=0}^{B}
+        \Big[ \mathbb{1}_{ij}^{obj} \Big(C_{ij} - \hat{C}_{ij} \Big)^2
+        + \lambda_{noobj} \mathbb{1}_{ij}^{noobj} \Big(C_{ij} - \hat{C}_{ij} \Big)^2
+        \Big]
 
-    where :math:`\\lambda_{noobj}` is a positive coefficient (default: 0.5),
-    :math:`\\mathbb{1}_{ij}^{noobj} = 1 - \\mathbb{1}_{ij}^{obj}`,
+    where :math:`\lambda_{noobj}` is a positive coefficient (default: 0.5),
+    :math:`\mathbb{1}_{ij}^{noobj} = 1 - \mathbb{1}_{ij}^{obj}`,
     :math:`C_{ij}` equals the Intersection Over Union between the j-th anchor box in the i-th grid cell and its
     matched ground truth box if that box is matched with a ground truth else 0,
-    and :math:`\\hat{C}_{ij}` is the objectness score of the j-th anchor box in the i-th grid cell..
+    and :math:`\hat{C}_{ij}` is the objectness score of the j-th anchor box in the i-th grid cell..
 
     .. math::
-        \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}
-        \\mathbb{1}_{i}^{obj} \\sum\\limits_{c \\in classes}
-        (p_i(c) - \\hat{p}_i(c))^2
+        \mathcal{L}_{classification} = \sum\limits_{i=0}^{S^2}
+        \mathbb{1}_{i}^{obj} \sum\limits_{c \in classes}
+        (p_i(c) - \hat{p}_i(c))^2
 
-    where :math:`\\mathbb{1}_{i}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell else 0,
+    where :math:`\mathbb{1}_{i}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell else 0,
     :math:`p_i(c)` equals 1 if the assigned ground truth to the i-th cell is classified as class :math:`c`,
-    and :math:`\\hat{p}_i(c)` is the predicted probability of class :math:`c` in the i-th cell.
+    and :math:`\hat{p}_i(c)` is the predicted probability of class :math:`c` in the i-th cell.
 
     And the full loss is given by:
 
     .. math::
-        \\mathcal{L}_{YOLOv1} = \\lambda_{coords} \\cdot \\mathcal{L}_{coords} +
-        \\mathcal{L}_{objectness} + \\mathcal{L}_{classification}
+        \mathcal{L}_{YOLOv1} = \lambda_{coords} \cdot \mathcal{L}_{coords} +
+        \mathcal{L}_{objectness} + \mathcal{L}_{classification}
 
-    where :math:`\\lambda_{coords}` is a positive coefficient (default: 5).
+    where :math:`\lambda_{coords}` is a positive coefficient (default: 5).
 
     Args:
         pretrained (bool, optional): If True, returns a model pre-trained on ImageNet

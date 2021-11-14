@@ -28,25 +28,25 @@ class _Activation(nn.Module):
 
 
 class HardMish(_Activation):
-    """Implements the Had Mish activation module from `"H-Mish" <https://github.com/digantamisra98/H-Mish>`_
+    r"""Implements the Had Mish activation module from `"H-Mish" <https://github.com/digantamisra98/H-Mish>`_
 
     This activation is computed as follows:
 
     .. math::
-        f(x) = \\frac{x}{2} \\cdot \\min(2, \\max(0, x + 2))
+        f(x) = \frac{x}{2} \cdot \min(2, \max(0, x + 2))
     """
     def forward(self, x: Tensor) -> Tensor:
         return F.hard_mish(x, inplace=self.inplace)
 
 
 class NLReLU(_Activation):
-    """Implements the Natural-Logarithm ReLU activation module from `"Natural-Logarithm-Rectified Activation
+    r"""Implements the Natural-Logarithm ReLU activation module from `"Natural-Logarithm-Rectified Activation
     Function in Convolutional Neural Networks" <https://arxiv.org/pdf/1908.03682.pdf>`_
 
     This activation is computed as follows:
 
     .. math::
-        f(x) = ln(1 + \\beta \\cdot max(0, x))
+        f(x) = ln(1 + \beta \cdot max(0, x))
 
     Args:
         inplace (bool): should the operation be performed inplace
@@ -56,15 +56,15 @@ class NLReLU(_Activation):
 
 
 class FReLU(nn.Module):
-    """Implements the Funnel activation module from `"Funnel Activation for Visual Recognition"
+    r"""Implements the Funnel activation module from `"Funnel Activation for Visual Recognition"
     <https://arxiv.org/pdf/2007.11824.pdf>`_
 
     This activation is computed as follows:
 
     .. math::
-        f(x) = max(\\mathbb{T}(x), x)
+        f(x) = max(\mathbb{T}(x), x)
 
-    where the :math:`\\mathbb{T}` is the spatial contextual feature extraction. It is a convolution filter of size
+    where the :math:`\mathbb{T}` is the spatial contextual feature extraction. It is a convolution filter of size
     `kernel_size`, same padding and groups equal to the number of input channels, followed by a batch normalization.
 
     Args:
