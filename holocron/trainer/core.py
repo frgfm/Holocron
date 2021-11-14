@@ -320,12 +320,11 @@ class Trainer:
 
         self.lr_recorder = self.lr_recorder[:len(self.loss_recorder)]
 
-    def plot_recorder(self, beta: float = 0.95, block: bool = True) -> None:
+    def plot_recorder(self, beta: float = 0.95, **kwargs: Any) -> None:
         """Display the results of the LR grid search
 
         Args:
             beta (float, optional): smoothing factor
-            block (bool, optional): whether the plot should block execution
         """
 
         if len(self.lr_recorder) != len(self.loss_recorder) or len(self.lr_recorder) == 0:
@@ -354,7 +353,7 @@ class Trainer:
         plt.ylabel('Training loss')
         plt.ylim(vals[min_idx] - 0.1 * delta, max_val + 0.2 * delta)
         plt.grid(True, linestyle='--', axis='x')
-        plt.show(block=block)
+        plt.show(**kwargs)
 
     def check_setup(
         self,
