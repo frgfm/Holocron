@@ -136,7 +136,7 @@ def main(args):
             image_set='val',
             download=True,
             transforms=Compose([
-                Resize((crop_size, crop_size), _interpolation_mode),
+                Resize((crop_size, crop_size), interpolation_mode),
                 ToTensor(),
                 ImageTransform(normalize)
             ])

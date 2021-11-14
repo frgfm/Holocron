@@ -31,17 +31,17 @@ def _box_iou(boxes1: Tensor, boxes2: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def box_giou(boxes1: Tensor, boxes2: Tensor) -> Tensor:
-    """Computes the Generalized-IoU as described in `"Generalized Intersection over Union: A Metric and A Loss
+    r"""Computes the Generalized-IoU as described in `"Generalized Intersection over Union: A Metric and A Loss
     for Bounding Box Regression" <https://arxiv.org/pdf/1902.09630.pdf>`_. This implementation was adapted
     from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py
 
     The generalized IoU is defined as follows:
 
     .. math::
-        GIoU = IoU - \\frac{|C - A \\cup B|}{|C|}
+        GIoU = IoU - \frac{|C - A \cup B|}{|C|}
 
     where :math:`IoU` is the Intersection over Union,
-    :math:`A \\cup B` is the area of the boxes' union,
+    :math:`A \cup B` is the area of the boxes' union,
     and :math:`C` is the area of the smallest enclosing box covering the two boxes.
 
     Args:
@@ -105,18 +105,18 @@ def iou_penalty(boxes1: Tensor, boxes2: Tensor) -> Tensor:
 
 
 def diou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
-    """Computes the Distance-IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
+    r"""Computes the Distance-IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
     Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_.
 
     The loss is defined as follows:
 
     .. math::
-        \\mathcal{L}_{DIoU} = 1 - IoU + \\frac{\\rho^2(b, b^{GT})}{c^2}
+        \mathcal{L}_{DIoU} = 1 - IoU + \frac{\rho^2(b, b^{GT})}{c^2}
 
     where :math:`IoU` is the Intersection over Union,
     :math:`b` and :math:`b^{GT}` are the centers of the box and the ground truth box respectively,
     :math:`c` c is the diagonal length of the smallest enclosing box covering the two boxes,
-    and :math:`\\rho(.)` is the Euclidean distance.
+    and :math:`\rho(.)` is the Euclidean distance.
 
     .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/diou_loss.png
         :align: center
@@ -164,30 +164,30 @@ def aspect_ratio_consistency(boxes1: Tensor, boxes2: Tensor) -> Tensor:
 
 
 def ciou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
-    """Computes the Complete IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
+    r"""Computes the Complete IoU loss as described in `"Distance-IoU Loss: Faster and Better Learning for
     Bounding Box Regression" <https://arxiv.org/pdf/1911.08287.pdf>`_.
 
     The loss is defined as follows:
 
     .. math::
-        \\mathcal{L}_{CIoU} = 1 - IoU + \\frac{\\rho^2(b, b^{GT})}{c^2} + \\alpha v
+        \mathcal{L}_{CIoU} = 1 - IoU + \frac{\rho^2(b, b^{GT})}{c^2} + \alpha v
 
     where :math:`IoU` is the Intersection over Union,
     :math:`b` and :math:`b^{GT}` are the centers of the box and the ground truth box respectively,
     :math:`c` c is the diagonal length of the smallest enclosing box covering the two boxes,
-    :math:`\\rho(.)` is the Euclidean distance,
-    :math:`\\alpha` is a positive trade-off parameter,
+    :math:`\rho(.)` is the Euclidean distance,
+    :math:`\alpha` is a positive trade-off parameter,
     and :math:`v` is the aspect ratio consistency.
 
     More specifically:
 
     .. math::
-        v = \\frac{4}{\\pi^2} \\Big(\\arctan{\\frac{w^{GT}}{h^{GT}}} - \\arctan{\\frac{w}{h}}\\Big)^2
+        v = \frac{4}{\pi^2} \Big(\arctan{\frac{w^{GT}}{h^{GT}}} - \arctan{\frac{w}{h}}\Big)^2
 
     and
 
     .. math::
-        \\alpha = \\frac{v}{(1 - IoU) + v}
+        \alpha = \frac{v}{(1 - IoU) + v}
 
     Args:
         boxes1 (torch.Tensor[M, 4]): bounding boxes

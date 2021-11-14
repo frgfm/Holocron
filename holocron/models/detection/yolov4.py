@@ -514,7 +514,7 @@ def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool
 
 
 def yolov4(pretrained: bool = False, progress: bool = True, pretrained_backbone: bool = True, **kwargs: Any) -> YOLOv4:
-    """YOLOv4 model from
+    r"""YOLOv4 model from
     `"YOLOv4: Optimal Speed and Accuracy of Object Detection" <https://arxiv.org/pdf/2004.10934.pdf>`_.
 
     The architecture improves upon YOLOv3 by including: the usage of `DropBlock
@@ -526,14 +526,14 @@ def yolov4(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     For training, YOLOv4 uses the same multi-part loss as YOLOv3 apart from its box coordinate loss:
 
     .. math::
-        \\mathcal{L}_{coords} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}
-        \\min\\limits_{k \\in [1, M]} C_{IoU}(\\hat{loc}_{ij}, loc^{GT}_k)
+        \mathcal{L}_{coords} = \sum\limits_{i=0}^{S^2}  \sum\limits_{j=0}^{B}
+        \min\limits_{k \in [1, M]} C_{IoU}(\hat{loc}_{ij}, loc^{GT}_k)
 
     where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),
     :math:`B` is the number of anchor boxes per grid cell (default: 3),
     :math:`M` is the number of ground truth boxes,
     :math:`C_{IoU}` is the complete IoU loss,
-    :math:`\\hat{loc}_{ij}` is the predicted bounding box for grid cell :math:`i` at anchor :math:`j`,
+    :math:`\hat{loc}_{ij}` is the predicted bounding box for grid cell :math:`i` at anchor :math:`j`,
     and :math:`loc^{GT}_k` is the k-th ground truth bounding box.
 
     Args:

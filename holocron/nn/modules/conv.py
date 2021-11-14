@@ -43,7 +43,7 @@ class _NormConvNd(_ConvNd):
 
 
 class NormConv2d(_NormConvNd):
-    """Implements the normalized convolution module from `"Normalized Convolutional Neural Network"
+    r"""Implements the normalized convolution module from `"Normalized Convolutional Neural Network"
     <https://arxiv.org/pdf/2005.05274v2.pdf>`_.
 
     In the simplest case, the output value of the layer with input size
@@ -53,7 +53,7 @@ class NormConv2d(_NormConvNd):
     .. math::
         out(N_i, C_{out_j}) = bias(C_{out_j}) +
         \sum_{k = 0}^{C_{in} - 1} weight(C_{out_j}, k) \star
-        \\frac{input(N_i, k) - \mu(N_i, k)}{\sqrt{\sigma^2(N_i, k) + \epsilon}}
+        \frac{input(N_i, k) - \mu(N_i, k)}{\sqrt{\sigma^2(N_i, k) + \epsilon}}
 
     where :math:`\star` is the valid 2D cross-correlation operator,
     :math:`\mu(N_i, k)` and :math:`\sigma²(N_i, k)` are the mean and variance of :math:`input(N_i, k)` over all slices,
@@ -111,7 +111,7 @@ class NormConv2d(_NormConvNd):
 
 
 class Add2d(_NormConvNd):
-    """Implements the adder module from `"AdderNet: Do We Really Need Multiplications in Deep Learning?"
+    r"""Implements the adder module from `"AdderNet: Do We Really Need Multiplications in Deep Learning?"
     <https://arxiv.org/pdf/1912.13200.pdf>`_.
 
     In the simplest case, the output value of the layer at position :math:`(m, n)` in channel :math:`c`
@@ -119,7 +119,7 @@ class Add2d(_NormConvNd):
     can be precisely described as:
 
     .. math::
-        out(m, n, c) = - \\sum\\limits_{i=0}^d \\sum\\limits_{j=0}^d \\sum\\limits_{k=0}^{C_{in}}
+        out(m, n, c) = - \sum\limits_{i=0}^d \sum\limits_{j=0}^d \sum\limits_{k=0}^{C_{in}}
         |X(m + i, n + j, k) - F(i, j, k, c)|
 
     where :math:`C` denotes a number of channels,
@@ -183,24 +183,24 @@ class Add2d(_NormConvNd):
 
 
 class SlimConv2d(nn.Module):
-    """Implements the convolution module from `"SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
+    r"""Implements the convolution module from `"SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks
     by Weights Flipping" <https://arxiv.org/pdf/2003.07469.pdf>`_.
 
     First, we compute channel-wise weights as follows:
 
     .. math::
-        z(c) = \\frac{1}{H \\cdot W} \\sum\\limits_{i=1}^H \\sum\\limits_{j=1}^W X_{c,i,j}
+        z(c) = \frac{1}{H \cdot W} \sum\limits_{i=1}^H \sum\limits_{j=1}^W X_{c,i,j}
 
-    where :math:`X \\in \\mathbb{R}^{C \\times H \\times W}` is the input tensor,
+    where :math:`X \in \mathbb{R}^{C \times H \times W}` is the input tensor,
     :math:`H` is height in pixels, and :math:`W` is
     width in pixels.
 
     .. math::
-        w = \\sigma(F_{fc2}(\\delta(F_{fc1}(z))))
+        w = \sigma(F_{fc2}(\delta(F_{fc1}(z))))
 
-    where :math:`z \\in \\mathbb{R}^{C}` contains channel-wise statistics,
-    :math:`\\sigma` refers to the sigmoid function,
-    :math:`\\delta` refers to the ReLU function,
+    where :math:`z \in \mathbb{R}^{C}` contains channel-wise statistics,
+    :math:`\sigma` refers to the sigmoid function,
+    :math:`\delta` refers to the ReLU function,
     :math:`F_{fc1}` is a convolution operation with kernel of size :math:`(1, 1)`
     with :math:`max(C/r, L)` output channels followed by batch normalization,
     and :math:`F_{fc2}` is a plain convolution operation with kernel of size :math:`(1, 1)`
@@ -209,12 +209,12 @@ class SlimConv2d(nn.Module):
     We then proceed with reconstructing and transforming both pathways:
 
     .. math::
-        X_{top} = X \\odot w
+        X_{top} = X \odot w
 
     .. math::
-        X_{bot} = X \\odot \\check{w}
+        X_{bot} = X \odot \check{w}
 
-    where :math:`\\odot` refers to the element-wise multiplication and :math:`\\check{w}` is
+    where :math:`\odot` refers to the element-wise multiplication and :math:`\check{w}` is
     the channel-wise reverse-flip of :math:`w`.
 
     .. math::
@@ -231,9 +231,9 @@ class SlimConv2d(nn.Module):
     Finally we fuse both pathways to yield the output:
 
     .. math::
-        Y = T_{top} \\oplus T_{bot}
+        Y = T_{top} \oplus T_{bot}
 
-    where :math:`\\oplus` is the channel-wise concatenation.
+    where :math:`\oplus` is the channel-wise concatenation.
 
     .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/slimconv2d.png
         :align: center
