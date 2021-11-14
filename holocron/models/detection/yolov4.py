@@ -12,7 +12,7 @@ from torch import Tensor
 from torchvision.ops.boxes import box_iou, nms
 from torchvision.ops.misc import FrozenBatchNorm2d
 
-from holocron.nn import SPP
+from holocron.nn import SPP, DropBlock2d
 from holocron.nn.init import init_module
 from holocron.ops.boxes import ciou_loss
 
@@ -20,11 +20,11 @@ from ..darknetv4 import DarknetBodyV4
 from ..darknetv4 import default_cfgs as dark_cfgs
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ['YOLOv4', 'yolov4', 'SPP', 'PAN', 'Neck']
+__all__ = ['YOLOv4', 'yolov4', 'PAN', 'Neck']
 
 
 default_cfgs = {
-    'yolov4': {'arch': 'YOLOv4', 'backbone': dark_cfgs['cspdarknet53'],
+    'yolov4': {'arch': 'YOLOv4', 'backbone': dark_cfgs['cspdarknet53_mish'],
                'url': None},
 }
 
@@ -153,10 +153,10 @@ class YoloLayer(nn.Module):
         b, _, h, w = output.shape
 
         self.anchors: Tensor
-        # B x (num_anchors * (5 + num_classes)) x H x W --> B x H x W x num_anchors x (5 + num_classes)
+        # B x (num_anchors * (5 + num_classes)) x H x W --> B x H x W x num_anchors x (5 + num_classes)
         output = output.reshape(b, len(self.anchors), 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
 
-        # Box center
+        # Box center
         c_x = torch.arange(w, dtype=torch.float32, device=output.device).reshape(1, 1, -1, 1)
         c_y = torch.arange(h, dtype=torch.float32, device=output.device).reshape(1, -1, 1, 1)
 
@@ -176,9 +176,9 @@ class YoloLayer(nn.Module):
         boxes = torch.cat((top_left, bot_right), dim=-1)
 
         # Objectness
-        b_o = torch.sigmoid(output[..., 4])
+        b_o = output[..., 4]
         # Classification scores
-        b_scores = torch.sigmoid(output[..., 5:])
+        b_scores = output[..., 5:]
 
         return boxes, b_o, b_scores
 
@@ -191,6 +191,9 @@ class YoloLayer(nn.Module):
         box_score_thresh: float = 0.05
     ) -> List[Dict[str, Tensor]]:
 
+        b_o = torch.sigmoid(b_o)
+        b_scores = torch.sigmoid(b_scores)
+
         boxes = boxes.clamp_(0, 1)
         detections = []
         for idx in range(b_o.shape[0]):
@@ -199,7 +202,7 @@ class YoloLayer(nn.Module):
             scores = torch.zeros(0, dtype=torch.float32, device=b_o.device)
             labels = torch.zeros(0, dtype=torch.long, device=b_o.device)
 
-            # Objectness filter
+            # Objectness filter
             if torch.any(b_o[idx] >= 0.5):
                 coords = boxes[idx, b_o[idx] >= 0.5]
                 scores, labels = b_scores[idx, b_o[idx] >= 0.5].max(dim=-1)
@@ -259,7 +262,7 @@ class YoloLayer(nn.Module):
             # Assign boxes
             obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = True
             noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = False
-            # B * cells * predictors * info
+            # B * cells * predictors * info
             for idx in range(b):
                 if gt_boxes[idx].shape[0] > 0:
                     # IoU with cells that enclose the GT centers
@@ -288,10 +291,18 @@ class YoloLayer(nn.Module):
             if _target['boxes'].shape[0] > 0 and torch.any(obj_mask[idx]):
                 bbox_loss += ciou_loss(pred_boxes[idx, obj_mask[idx]], _target['boxes']).min(dim=1).values.sum()
 
-        return dict(obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum'),
-                    noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum(),
-                    bbox_loss=self.lambda_coords * bbox_loss,
-                    clf_loss=F.binary_cross_entropy(b_scores[obj_mask], target_scores[obj_mask], reduction='sum'))
+        b_o = torch.sigmoid(b_o)
+
+        return dict(
+            obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum') / b_o.shape[0],
+            noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum() / b_o.shape[0],
+            bbox_loss=self.lambda_coords * bbox_loss / b_o.shape[0],
+            clf_loss=F.binary_cross_entropy_with_logits(
+                b_scores[obj_mask],
+                target_scores[obj_mask],
+                reduction='sum',
+            ) / b_o.shape[0],
+        )
 
     def forward(
         self,
@@ -416,7 +427,7 @@ class Yolov4Head(nn.Module):
         h3 = torch.cat([h3, feats[2]], dim=1)
         o3 = self.head3(h3)
 
-        # YOLO output
+        # YOLO output
         y1 = self.yolo1(o1, target)
         y2 = self.yolo2(o2, target)
         y3 = self.yolo3(o3, target)
@@ -449,14 +460,16 @@ class YOLOv4(nn.Module):
         super().__init__()
 
         if act_layer is None:
-            act_layer = nn.LeakyReLU(0.1, inplace=True)
+            act_layer = nn.Mish(inplace=True)
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if backbone_norm_layer is None:
             backbone_norm_layer = norm_layer
+        if drop_layer is None:
+            drop_layer = DropBlock2d
 
         # backbone
-        self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, nn.Mish(inplace=True),
+        self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, act_layer,
                                       backbone_norm_layer, drop_layer, conv_layer)
         # neck
         self.neck = Neck([1024, 512, 256], act_layer, norm_layer, drop_layer, conv_layer)
@@ -504,11 +517,24 @@ def yolov4(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     """YOLOv4 model from
     `"YOLOv4: Optimal Speed and Accuracy of Object Detection" <https://arxiv.org/pdf/2004.10934.pdf>`_.
 
-    YOLOv4 is an improvement on YOLOv3 that includes many changes including: the usage of `DropBlock
+    The architecture improves upon YOLOv3 by including: the usage of `DropBlock
     <https://arxiv.org/pdf/1810.12890.pdf>`_ regularization, `Mish <https://arxiv.org/pdf/1908.08681.pdf>`_ activation,
     `CSP <https://arxiv.org/pdf/2004.10934.pdf>`_ and `SAM <https://arxiv.org/pdf/1807.06521.pdf>`_ in the
     backbone, `SPP <https://arxiv.org/pdf/1406.4729.pdf>`_ and `PAN <https://arxiv.org/pdf/1803.01534.pdf>`_ in the
     neck.
+
+    For training, YOLOv4 uses the same multi-part loss as YOLOv3 apart from its box coordinate loss:
+
+    .. math::
+        \\mathcal{L}_{coords} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}
+        \\min\\limits_{k \\in [1, M]} C_{IoU}(\\hat{loc}_{ij}, loc^{GT}_k)
+
+    where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),
+    :math:`B` is the number of anchor boxes per grid cell (default: 3),
+    :math:`M` is the number of ground truth boxes,
+    :math:`C_{IoU}` is the complete IoU loss,
+    :math:`\\hat{loc}_{ij}` is the predicted bounding box for grid cell :math:`i` at anchor :math:`j`,
+    and :math:`loc^{GT}_k` is the k-th ground truth bounding box.
 
     Args:
         pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
