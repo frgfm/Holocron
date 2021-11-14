@@ -122,13 +122,13 @@ def test_mc_loss():
 
     num_batches = 2
     num_classes = 4
-    chi = 2
+    xi = 2
     # 4 classes
-    x = torch.ones(num_batches, chi * num_classes)
+    x = torch.ones(num_batches, xi * num_classes)
     x[:, 0, ...] = 10
     target = torch.zeros(num_batches, dtype=torch.long)
 
-    mod = Linear(chi * num_classes, chi * num_classes)
+    mod = Linear(xi * num_classes, xi * num_classes)
 
     # Check backprop
     for reduction in ['mean', 'sum', 'none']:
@@ -147,11 +147,11 @@ def test_mc_loss():
     class_weights = torch.ones(num_classes, dtype=torch.float16)
     ignore_index = 0
 
-    criterion = nn.MutualChannelLoss(weight=class_weights, ignore_index=ignore_index, chi=chi)
+    criterion = nn.MutualChannelLoss(weight=class_weights, ignore_index=ignore_index, xi=xi)
     train_loss = criterion(mod(x), target)
     train_loss.backward()
     assert isinstance(mod.weight.grad, torch.Tensor)
-    assert repr(criterion) == f"MutualChannelLoss(reduction='mean', chi={chi}, alpha=1)"
+    assert repr(criterion) == f"MutualChannelLoss(reduction='mean', xi={xi}, alpha=1)"
 
 
 def test_cb_loss():
