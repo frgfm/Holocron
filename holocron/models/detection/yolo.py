@@ -210,6 +210,7 @@ class YOLOv1(_YOLO):
         lambda_coords: float = 5.,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05,
+        head_hidden_nodes: int = 512,  # In the original paper, 4096
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
@@ -239,10 +240,10 @@ class YOLOv1(_YOLO):
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(1024 * 7 ** 2, 4096),
-            nn.LeakyReLU(inplace=True),
+            nn.Linear(1024 * 7 ** 2, head_hidden_nodes),
+            act_layer,
             nn.Dropout(0.5),
-            nn.Linear(4096, 7 ** 2 * (num_anchors * 5 + num_classes)))
+            nn.Linear(head_hidden_nodes, 7 ** 2 * (num_anchors * 5 + num_classes)))
         self.num_anchors = num_anchors
         self.num_classes = num_classes
         # Loss coefficients
