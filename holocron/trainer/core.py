@@ -310,11 +310,16 @@ class Trainer:
 
             # Record
             if torch.isnan(batch_loss) or torch.isinf(batch_loss):
-                raise ValueError("loss value is NaN or inf.")
+                if batch_idx == 0:
+                    raise ValueError("loss value is NaN or inf.")
+                else:
+                    break
             self.loss_recorder.append(batch_loss.item())
             # Stop after the number of iterations
             if batch_idx + 1 == num_it:
                 break
+
+        self.lr_recorder = self.lr_recorder[:len(self.loss_recorder)]
 
     def plot_recorder(self, beta: float = 0.95, block: bool = True) -> None:
         """Display the results of the LR grid search
