@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.loss &mdash; holocron 0.2.0.dev0+f7c50eb-git documentation</title>
+  <title>holocron.nn.modules.loss &mdash; holocron 0.2.0.dev0+1f000bd-git documentation</title>
   
 
   
@@ -270,23 +270,23 @@
 
 
 <div class="viewcode-block" id="FocalLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.FocalLoss">[docs]</a><span class="k">class</span> <span class="nc">FocalLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implementation of Focal Loss as described in</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of Focal Loss as described in</span>
 <span class="sd">    `&quot;Focal Loss for Dense Object Detection&quot; &lt;https://arxiv.org/pdf/1708.02002.pdf&gt;`_.</span>
 
 <span class="sd">    While the weighted cross-entropy is described by:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        CE(p_t) = -\\alpha_t log(p_t)</span>
+<span class="sd">        CE(p_t) = -\alpha_t log(p_t)</span>
 
-<span class="sd">    where :math:`\\alpha_t` is the loss weight of class :math:`t`,</span>
+<span class="sd">    where :math:`\alpha_t` is the loss weight of class :math:`t`,</span>
 <span class="sd">    and :math:`p_t` is the predicted probability of class :math:`t`.</span>
 
 <span class="sd">    the focal loss introduces a modulating factor</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        FL(p_t) = -\\alpha_t (1 - p_t)^\\gamma log(p_t)</span>
+<span class="sd">        FL(p_t) = -\alpha_t (1 - p_t)^\gamma log(p_t)</span>
 
-<span class="sd">    where :math:`\\gamma` is a positive focusing parameter.</span>
+<span class="sd">    where :math:`\gamma` is a positive focusing parameter.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        gamma (float, optional): exponent parameter of the focal loss</span>
@@ -348,16 +348,16 @@
 
 
 <div class="viewcode-block" id="ClassBalancedWrapper"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ClassBalancedWrapper">[docs]</a><span class="k">class</span> <span class="nc">ClassBalancedWrapper</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implementation of the class-balanced loss as described in `&quot;Class-Balanced Loss Based on Effective Number</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of the class-balanced loss as described in `&quot;Class-Balanced Loss Based on Effective Number</span>
 <span class="sd">    of Samples&quot; &lt;https://arxiv.org/pdf/1901.05555.pdf&gt;`_.</span>
 
-<span class="sd">    Given a loss function :math:`\\mathcal{L}`, the class-balanced loss is described by:</span>
+<span class="sd">    Given a loss function :math:`\mathcal{L}`, the class-balanced loss is described by:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        CB(p, y) = \\frac{1 - \\beta}{1 - \\beta^{n_y}} \\mathcal{L}(p, y)</span>
+<span class="sd">        CB(p, y) = \frac{1 - \beta}{1 - \beta^{n_y}} \mathcal{L}(p, y)</span>
 
 <span class="sd">    where :math:`p` is the predicted probability for class :math:`y`, :math:`n_y` is the number of training</span>
-<span class="sd">    samples for class :math:`y`, and :math:`\\beta` is exponential factor.</span>
+<span class="sd">    samples for class :math:`y`, and :math:`\beta` is exponential factor.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        criterion (torch.nn.Module): loss module</span>

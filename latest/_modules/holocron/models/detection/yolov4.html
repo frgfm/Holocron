@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolov4 &mdash; holocron 0.2.0.dev0+f7c50eb-git documentation</title>
+  <title>holocron.models.detection.yolov4 &mdash; holocron 0.2.0.dev0+1f000bd-git documentation</title>
   
 
   
@@ -742,7 +742,7 @@
 
 
 <div class="viewcode-block" id="yolov4"><a class="viewcode-back" href="../../../../models.html#holocron.models.detection.yolov4">[docs]</a><span class="k">def</span> <span class="nf">yolov4</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv4</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;YOLOv4 model from</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;YOLOv4 model from</span>
 <span class="sd">    `&quot;YOLOv4: Optimal Speed and Accuracy of Object Detection&quot; &lt;https://arxiv.org/pdf/2004.10934.pdf&gt;`_.</span>
 
 <span class="sd">    The architecture improves upon YOLOv3 by including: the usage of `DropBlock</span>
@@ -754,14 +754,14 @@
 <span class="sd">    For training, YOLOv4 uses the same multi-part loss as YOLOv3 apart from its box coordinate loss:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \\mathcal{L}_{coords} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}</span>
-<span class="sd">        \\min\\limits_{k \\in [1, M]} C_{IoU}(\\hat{loc}_{ij}, loc^{GT}_k)</span>
+<span class="sd">        \mathcal{L}_{coords} = \sum\limits_{i=0}^{S^2}  \sum\limits_{j=0}^{B}</span>
+<span class="sd">        \min\limits_{k \in [1, M]} C_{IoU}(\hat{loc}_{ij}, loc^{GT}_k)</span>
 
 <span class="sd">    where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),</span>
 <span class="sd">    :math:`B` is the number of anchor boxes per grid cell (default: 3),</span>
 <span class="sd">    :math:`M` is the number of ground truth boxes,</span>
 <span class="sd">    :math:`C_{IoU}` is the complete IoU loss,</span>
-<span class="sd">    :math:`\\hat{loc}_{ij}` is the predicted bounding box for grid cell :math:`i` at anchor :math:`j`,</span>
+<span class="sd">    :math:`\hat{loc}_{ij}` is the predicted bounding box for grid cell :math:`i` at anchor :math:`j`,</span>
 <span class="sd">    and :math:`loc^{GT}_k` is the k-th ground truth bounding box.</span>
 
 <span class="sd">    Args:</span>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.activation &mdash; holocron 0.2.0.dev0+f7c50eb-git documentation</title>
+  <title>holocron.nn.modules.activation &mdash; holocron 0.2.0.dev0+1f000bd-git documentation</title>
   
 
   
@@ -256,25 +256,25 @@
 
 
 <div class="viewcode-block" id="HardMish"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.HardMish">[docs]</a><span class="k">class</span> <span class="nc">HardMish</span><span class="p">(</span><span class="n">_Activation</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Had Mish activation module from `&quot;H-Mish&quot; &lt;https://github.com/digantamisra98/H-Mish&gt;`_</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the Had Mish activation module from `&quot;H-Mish&quot; &lt;https://github.com/digantamisra98/H-Mish&gt;`_</span>
 
 <span class="sd">    This activation is computed as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        f(x) = \\frac{x}{2} \\cdot \\min(2, \\max(0, x + 2))</span>
+<span class="sd">        f(x) = \frac{x}{2} \cdot \min(2, \max(0, x + 2))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hard_mish</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="NLReLU"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NLReLU">[docs]</a><span class="k">class</span> <span class="nc">NLReLU</span><span class="p">(</span><span class="n">_Activation</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Natural-Logarithm ReLU activation module from `&quot;Natural-Logarithm-Rectified Activation</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the Natural-Logarithm ReLU activation module from `&quot;Natural-Logarithm-Rectified Activation</span>
 <span class="sd">    Function in Convolutional Neural Networks&quot; &lt;https://arxiv.org/pdf/1908.03682.pdf&gt;`_</span>
 
 <span class="sd">    This activation is computed as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        f(x) = ln(1 + \\beta \\cdot max(0, x))</span>
+<span class="sd">        f(x) = ln(1 + \beta \cdot max(0, x))</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        inplace (bool): should the operation be performed inplace</span>
@@ -284,15 +284,15 @@
 
 
 <div class="viewcode-block" id="FReLU"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.FReLU">[docs]</a><span class="k">class</span> <span class="nc">FReLU</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Funnel activation module from `&quot;Funnel Activation for Visual Recognition&quot;</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the Funnel activation module from `&quot;Funnel Activation for Visual Recognition&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.11824.pdf&gt;`_</span>
 
 <span class="sd">    This activation is computed as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        f(x) = max(\\mathbb{T}(x), x)</span>
+<span class="sd">        f(x) = max(\mathbb{T}(x), x)</span>
 
-<span class="sd">    where the :math:`\\mathbb{T}` is the spatial contextual feature extraction. It is a convolution filter of size</span>
+<span class="sd">    where the :math:`\mathbb{T}` is the spatial contextual feature extraction. It is a convolution filter of size</span>
 <span class="sd">    `kernel_size`, same padding and groups equal to the number of input channels, followed by a batch normalization.</span>
 
 <span class="sd">    Args:</span>
