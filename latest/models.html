@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models &mdash; holocron 0.2.0.dev0+7e06517-git documentation</title>
+  <title>holocron.models &mdash; holocron 0.2.0.dev0+f7c50eb-git documentation</title>
   
 
   
@@ -1086,10 +1086,20 @@ in the i-th cell.</p>
 <code class="sig-prename descclassname">holocron.models.detection.</code><code class="sig-name descname">yolov4</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.detection.yolov4.YOLOv4<a class="reference internal" href="_modules/holocron/models/detection/yolov4.html#yolov4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.detection.yolov4" title="Permalink to this definition">¶</a></dt>
 <dd><p>YOLOv4 model from
 <a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">“YOLOv4: Optimal Speed and Accuracy of Object Detection”</a>.</p>
-<p>YOLOv4 is an improvement on YOLOv3 that includes many changes including: the usage of <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">DropBlock</a> regularization, <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">Mish</a> activation,
+<p>The architecture improves upon YOLOv3 by including: the usage of <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">DropBlock</a> regularization, <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">Mish</a> activation,
 <a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">CSP</a> and <a class="reference external" href="https://arxiv.org/pdf/1807.06521.pdf">SAM</a> in the
 backbone, <a class="reference external" href="https://arxiv.org/pdf/1406.4729.pdf">SPP</a> and <a class="reference external" href="https://arxiv.org/pdf/1803.01534.pdf">PAN</a> in the
 neck.</p>
+<p>For training, YOLOv4 uses the same multi-part loss as YOLOv3 apart from its box coordinate loss:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L}_{coords} = \sum\limits_{i=0}^{S^2}  \sum\limits_{j=0}^{B}
+\min\limits_{k \in [1, M]} C_{IoU}(\hat{loc}_{ij}, loc^{GT}_k)\]</div>
+<p>where <span class="math notranslate nohighlight">\(S\)</span> is size of the output feature map (13 for an input size <span class="math notranslate nohighlight">\((416, 416)\)</span>),
+<span class="math notranslate nohighlight">\(B\)</span> is the number of anchor boxes per grid cell (default: 3),
+<span class="math notranslate nohighlight">\(M\)</span> is the number of ground truth boxes,
+<span class="math notranslate nohighlight">\(C_{IoU}\)</span> is the complete IoU loss,
+<span class="math notranslate nohighlight">\(\hat{loc}_{ij}\)</span> is the predicted bounding box for grid cell <span class="math notranslate nohighlight">\(i\)</span> at anchor <span class="math notranslate nohighlight">\(j\)</span>,
+and <span class="math notranslate nohighlight">\(loc^{GT}_k\)</span> is the k-th ground truth bounding box.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
