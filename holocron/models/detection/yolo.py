@@ -76,7 +76,7 @@ class _YOLO(nn.Module):
         wh = pred_boxes[..., 2:]
         pred_xyxy = torch.cat((pred_boxes[..., :2] - wh / 2, pred_boxes[..., :2] + wh / 2), dim=-1)
 
-        # B * cells * predictors * info
+        # B * cells * predictors * info
         for idx in range(b):
 
             # Match the anchor boxes
@@ -171,7 +171,7 @@ class _YOLO(nn.Module):
             scores = torch.zeros(0, dtype=torch.float, device=b_o.device)
             labels = torch.zeros(0, dtype=torch.long, device=b_o.device)
 
-            # Objectness filter
+            # Objectness filter
             if torch.any(b_o[idx] >= 0.5):
                 coords = b_coords[idx, b_o[idx] >= 0.5]
                 scores, labels = b_scores[idx, b_o[idx] >= 0.5].max(dim=-1)
@@ -266,18 +266,18 @@ class YOLOv1(_YOLO):
 
         b, _ = x.shape
         h, w = 7, 7
-        # B * (H * W * (num_anchors * 5 + num_classes)) --> B * H * W * (num_anchors * 5 + num_classes)
+        # B * (H * W * (num_anchors * 5 + num_classes)) --> B * H * W * (num_anchors * 5 + num_classes)
         x = x.reshape(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
         b_scores = x[..., -self.num_classes:]
-        # Repeat for anchors to keep compatibility across YOLO versions
+        # Repeat for anchors to keep compatibility across YOLO versions
         b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
         #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
         x = x[..., :self.num_anchors * 5].reshape(b, h, w, self.num_anchors, 5)
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
         c_y = torch.arange(h, dtype=torch.float, device=x.device)
-        # Box coordinates
+        # Box coordinates
         b_x = (torch.sigmoid(x[..., 0]) + c_x.reshape(1, 1, -1, 1)) / w
         b_y = (torch.sigmoid(x[..., 1]) + c_y.reshape(1, -1, 1, 1)) / h
         b_w = torch.sigmoid(x[..., 2])
@@ -319,7 +319,7 @@ class YOLOv1(_YOLO):
 
         out = self._forward(x)
 
-        # B * (H * W) * num_anchors
+        # B * (H * W) * num_anchors
         b_coords, b_o, b_scores = self._format_outputs(out)
 
         if self.training:
@@ -333,7 +333,7 @@ class YOLOv1(_YOLO):
         b_scores = b_scores.repeat_interleave(self.num_anchors, dim=3)
         b_scores = b_scores.contiguous().reshape(b_scores.shape[0], -1, self.num_classes)
 
-        # Stack detections into a list
+        # Stack detections into a list
         return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
