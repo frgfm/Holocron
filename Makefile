@@ -6,7 +6,7 @@ quality:
 
 # this target runs checks on all files and potentially modifies some of them
 style:
-    isort **/*.py
+    isort **/*.py --skip "**/__init_.py" --filter-file
 
 # Run tests for the library
 test:
