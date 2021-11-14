@@ -157,7 +157,7 @@ def main(args):
 
     # Loss setup
     loss_weight = None
-    if isinstance(args.bg_factor, float):
+    if isinstance(args.bg_factor, float) and args.bg_factor != 1:
         loss_weight = torch.ones(len(VOC_CLASSES))
         loss_weight[0] = args.bg_factor
     if args.loss == 'crossentropy':
