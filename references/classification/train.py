@@ -95,7 +95,7 @@ def main(args):
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
             train_set = cifar_version(
-                data_dir,
+                args.data_path,
                 True,
                 T.Compose([
                     T.RandomHorizontalFlip(),
@@ -104,7 +104,9 @@ def main(args):
                     T.ConvertImageDtype(torch.float32),
                     normalize,
                     T.RandomErasing(p=0.9, value='random')
-                ]))
+                ]),
+                download=True,
+            )
 
         num_classes = len(train_set.classes)
         collate_fn = default_collate
@@ -138,13 +140,19 @@ def main(args):
             scale_size = min(int(math.floor(args.img_size / crop_pct)), 320)
             if scale_size < 320:
                 eval_tf.append(T.Resize(scale_size))
-            eval_tf.extend([T.CenterCrop(args.img_size), T.ToTensor(), normalize])
+            eval_tf.extend([T.CenterCrop(args.img_size), T.PILToTensor(), T.ConvertImageDtype(torch.float32), normalize])
             val_set = ImageFolder(
                 os.path.join(args.data_path, 'val'),
                 T.Compose(eval_tf)
             )
         else:
-            val_set = CIFAR100(data_dir, False, T.Compose([T.ToTensor(), normalize]))
+            cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
+            val_set = cifar_version(
+                args.data_path,
+                False,
+                T.Compose([T.PILToTensor(), T.ConvertImageDtype(torch.float32), normalize]),
+                download=True
+            )
         num_classes = len(val_set.classes)
 
         val_loader = torch.utils.data.DataLoader(
