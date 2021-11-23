@@ -80,7 +80,7 @@ Reference scripts are provided to train your models using holocron on famous pub
 
 You crave for SOTA performances, but you don't know whether it fits your needs in terms of latency?
 
-In the table below, you will find a latency benchmark (forward pass not included) for all supported models:
+In the table below, you will find a latency benchmark for all supported models:
 
 | Arch                                                         | GPU mean (std)    | CPU mean (std)     |
 | ------------------------------------------------------------ | ----------------- | ------------------ |
