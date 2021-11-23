@@ -114,7 +114,7 @@ In the table below, you will find a latency benchmark for all supported models:
 
 This benchmark was performed over 100 iterations on (224, 224) inputs, on a laptop to better reflect performances that can be expected by common users. The hardware setup includes an [Intel(R) Core(TM) i7-10750H](https://ark.intel.com/content/www/us/en/ark/products/201837/intel-core-i710750h-processor-12m-cache-up-to-5-00-ghz.html) for the CPU, and a [NVIDIA GeForce RTX 2070 with Max-Q Design](https://www.nvidia.com/fr-fr/geforce/graphics-cards/rtx-2070/) for the GPU.
 
-You can run this latency benchmark for any CAM method  on your hardware as follows:
+You can run this latency benchmark for any model on your hardware as follows:
 
 ```bash
 python scripts/eval_latency.py rexnet1_0x
