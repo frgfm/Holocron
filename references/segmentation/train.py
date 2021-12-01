@@ -16,6 +16,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.data
+import wandb
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
@@ -24,7 +25,6 @@ from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 import holocron
-import wandb
 from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
 

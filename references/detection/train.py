@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.utils.data
+import wandb
 from matplotlib.patches import Rectangle
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
@@ -26,7 +27,6 @@ from transforms import (CenterCrop, Compose, ImageTransform, RandomHorizontalFli
                         VOCTargetTransform, convert_to_relative)
 
 import holocron
-import wandb
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 

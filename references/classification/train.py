@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+import wandb
 from torch.utils.data import RandomSampler, SequentialSampler
 from torch.utils.data._utils.collate import default_collate
 from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
@@ -24,7 +25,6 @@ from torchvision.transforms import transforms as T
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
 
 import holocron
-import wandb
 from holocron.trainer import ClassificationTrainer
 from holocron.utils.data import Mixup
 
