@@ -1,5 +1,5 @@
 from .core import *
 from .classification import *
-from .segmentation import *
 from .detection import *
+from .segmentation import *
 from .utils import *
