@@ -34,6 +34,7 @@ class Trainer:
         gpu: Optional[int] = None,
         output_file: str = './checkpoint.pth',
         amp: bool = False,
+        skip_nan_loss: bool = False,
         on_epoch_end: Optional[Callable[[Dict[str, float]], Any]] = None,
     ) -> None:
         self.model = model
@@ -44,6 +45,7 @@ class Trainer:
         self.amp = amp
         self.scaler: torch.cuda.amp.grad_scaler.GradScaler
         self.on_epoch_end = on_epoch_end
+        self.skip_nan_loss = skip_nan_loss
 
         # Output file
         self.output_file = output_file
@@ -117,7 +119,8 @@ class Trainer:
             batch_loss = self._get_loss(x, target)
 
             # Backprop
-            self._backprop_step(batch_loss)
+            if not self.skip_nan_loss or torch.isfinite(batch_loss):
+                self._backprop_step(batch_loss)
             # Update LR
             self.scheduler.step()
             pb.comment = f"Training loss: {batch_loss.item():.4}"
