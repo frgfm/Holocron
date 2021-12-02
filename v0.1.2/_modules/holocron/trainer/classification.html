@@ -233,6 +233,8 @@
 <span class="sd">        gpu (int, optional): index of the GPU to use</span>
 <span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
 <span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
+<span class="sd">        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN</span>
+<span class="sd">        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
