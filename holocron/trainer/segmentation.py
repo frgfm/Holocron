@@ -25,6 +25,8 @@ class SegmentationTrainer(Trainer):
         output_file (str, optional): path where checkpoints will be saved
         num_classes (int): number of output classes
         amp (bool, optional): whether to use automatic mixed precision
+        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN
+        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch
     """
 
     def __init__(self, *args: Any, num_classes: int = 10, **kwargs: Any) -> None:

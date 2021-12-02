@@ -24,6 +24,8 @@ class ClassificationTrainer(Trainer):
         gpu (int, optional): index of the GPU to use
         output_file (str, optional): path where checkpoints will be saved
         amp (bool, optional): whether to use automatic mixed precision
+        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN
+        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch
     """
 
     @torch.inference_mode()
