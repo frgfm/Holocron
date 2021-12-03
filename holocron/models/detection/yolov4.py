@@ -127,10 +127,12 @@ class YoloLayer(nn.Module):
         num_classes: int = 80,
         scale_xy: float = 1.,
         iou_thresh: float = 0.213,
-        lambda_noobj: float = 0.5,
-        lambda_coords: float = 5.,
+        lambda_obj: float = 1,
+        lambda_noobj: float = 0.001,
+        lambda_class: float = .1,
+        lambda_coords: float = 1.,
         rpn_nms_thresh: float = 0.7,
-        box_score_thresh: float = 0.05
+        box_score_thresh: float = 0.05,
         ignore_thresh: float = 0.5,
     ) -> None:
         super().__init__()
@@ -140,7 +142,9 @@ class YoloLayer(nn.Module):
         self.rpn_nms_thresh = rpn_nms_thresh
         self.box_score_thresh = box_score_thresh
         self.ignore_thresh = ignore_thresh
+        self.lambda_obj = lambda_obj
         self.lambda_noobj = lambda_noobj
+        self.lambda_class = lambda_class
         self.lambda_coords = lambda_coords
 
         # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1150
@@ -298,14 +302,14 @@ class YoloLayer(nn.Module):
         b_o = torch.sigmoid(b_o)
 
         return dict(
-            obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum') / b_o.shape[0],
+            obj_loss=self.lambda_obj * F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum') / b_o.shape[0],
             noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum() / b_o.shape[0],
             bbox_loss=self.lambda_coords * bbox_loss / b_o.shape[0],
-            clf_loss=F.binary_cross_entropy_with_logits(
+            clf_loss=self.lambda_class * F.binary_cross_entropy_with_logits(
                 b_scores[obj_mask],
                 target_scores[obj_mask],
-                reduction='sum',
-            ) / b_o.shape[0],
+                reduction='none',
+            ).mean(1).sum(0) / b_o.shape[0],
         )
 
     def forward(
