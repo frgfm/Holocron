@@ -20,7 +20,7 @@ from ..darknetv4 import DarknetBodyV4
 from ..darknetv4 import default_cfgs as dark_cfgs
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ['YOLOv4', 'yolov4', 'PAN', 'Neck']
+__all__ = ['YOLOv4', 'yolov4', 'PAN']
 
 
 default_cfgs = {
