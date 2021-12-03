@@ -267,7 +267,8 @@ class YoloLayer(nn.Module):
 
             # Assign boxes
             obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = True
-            noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = False
+            noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], :] = False
+
             # B * cells * predictors * info
             for idx in range(b):
                 if gt_boxes[idx].shape[0] > 0:
