@@ -3,7 +3,7 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -92,12 +92,14 @@ class DetectionTrainer(Trainer):
         return sum(loss_dict.values())  # type: ignore[return-value]
 
     @staticmethod
-    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return (f"Loc error: {eval_metrics['loc_err']:.2%} | Clf error: {eval_metrics['clf_err']:.2%} | "
-                f"Det error: {eval_metrics['det_err']:.2%}")
+    def _eval_metrics_str(eval_metrics: Dict[str, Optional[float]]) -> str:
+        loc_str = f"{eval_metrics['loc_err']:.2%}" if isinstance(eval_metrics['loc_err'], float) else "N/A"
+        clf_str = f"{eval_metrics['clf_err']:.2%}" if isinstance(eval_metrics['clf_err'], float) else "N/A"
+        det_str = f"{eval_metrics['det_err']:.2%}" if isinstance(eval_metrics['det_err'], float) else "N/A"
+        return f"Loc error: {loc_str} | Clf error: {clf_str} | Det error: {det_str}"
 
     @torch.inference_mode()
-    def evaluate(self, iou_threshold: float = 0.5) -> Dict[str, float]:
+    def evaluate(self, iou_threshold: float = 0.5) -> Dict[str, Optional[float]]:
         """Evaluate the model on the validation set
 
         Args:
@@ -136,9 +138,9 @@ class DetectionTrainer(Trainer):
 
         nb_preds = num_samples - loc_fn + loc_fp
         # Localization
-        loc_err = 1 - 2 * loc_assigns / (nb_preds + num_samples) if nb_preds + num_samples > 0 else 1.
+        loc_err = 1 - 2 * loc_assigns / (nb_preds + num_samples) if nb_preds + num_samples > 0 else None
         # Classification
-        clf_err = 1 - correct / loc_assigns if loc_assigns > 0 else 1.
+        clf_err = 1 - correct / loc_assigns if loc_assigns > 0 else None
         # End-to-end
-        det_err = 1 - 2 * correct / (nb_preds + num_samples) if nb_preds + num_samples > 0 else 1.
+        det_err = 1 - 2 * correct / (nb_preds + num_samples) if nb_preds + num_samples > 0 else None
         return dict(loc_err=loc_err, clf_err=clf_err, det_err=det_err, val_loss=loc_err)

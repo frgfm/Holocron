@@ -168,8 +168,7 @@ def main(args):
     if args.test_only:
         print("Running evaluation")
         eval_metrics = trainer.evaluate()
-        print(f"Loc error: {eval_metrics['loc_err']:.2%} | Clf error: {eval_metrics['clf_err']:.2%} | "
-              f"Det error: {eval_metrics['det_err']:.2%}")
+        print(trainer._eval_metrics_str(eval_metrics))
         return
 
     if args.lr_finder:
