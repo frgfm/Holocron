@@ -137,7 +137,7 @@ class DarknetV3(nn.Sequential):
     ) -> None:
 
         super().__init__(OrderedDict([
-            ('features', DarknetBodyV3(layout, in_channels, stem_channels,
+            ('features', DarknetBodyV3(layout, in_channels, stem_channels, 1,
                                        act_layer, norm_layer, drop_layer, conv_layer)),
             ('pool', GlobalAvgPool2d(flatten=True)),
             ('classifier', nn.Linear(layout[-1][0], num_classes))]))
