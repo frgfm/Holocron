@@ -38,8 +38,10 @@ class YOLOv2(_YOLO):
         stem_chanels: int = 32,
         anchors: Optional[Tensor] = None,
         passthrough_ratio: int = 8,
-        lambda_noobj: float = 0.5,
-        lambda_coords: float = 5.,
+        lambda_obj: float = 5,
+        lambda_noobj: float = 1,
+        lambda_class: float = 1,
+        lambda_coords: float = 1,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05,
         act_layer: Optional[nn.Module] = None,
@@ -49,7 +51,15 @@ class YOLOv2(_YOLO):
         backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None
     ) -> None:
 
-        super().__init__(rpn_nms_thresh, box_score_thresh)
+        super().__init__(
+            num_classes,
+            rpn_nms_thresh,
+            box_score_thresh,
+            lambda_obj,
+            lambda_noobj,
+            lambda_class,
+            lambda_coords
+        )
 
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
@@ -62,7 +72,6 @@ class YOLOv2(_YOLO):
         if anchors is None:
             anchors = torch.tensor([[1.3221, 1.73145], [3.19275, 4.00944], [5.05587, 8.09892],
                                     [9.47112, 4.84053], [11.2364, 10.0071]])
-        self.num_classes = num_classes
 
         self.backbone = DarknetBodyV2(layout, in_channels, stem_chanels, True, act_layer,
                                       backbone_norm_layer, drop_layer, conv_layer)
@@ -88,10 +97,6 @@ class YOLOv2(_YOLO):
 
         # Register losses
         self.register_buffer('anchors', anchors)
-
-        # Loss coefficients
-        self.lambda_noobj = lambda_noobj
-        self.lambda_coords = lambda_coords
 
         init_module(self.block5, 'leaky_relu')
         init_module(self.passthrough_layer, 'leaky_relu')
