@@ -35,6 +35,7 @@ class Trainer:
         output_file: str = './checkpoint.pth',
         amp: bool = False,
         skip_nan_loss: bool = False,
+        nan_tolerance: int = 5,
         on_epoch_end: Optional[Callable[[Dict[str, float]], Any]] = None,
     ) -> None:
         self.model = model
@@ -46,6 +47,7 @@ class Trainer:
         self.scaler: torch.cuda.amp.grad_scaler.GradScaler
         self.on_epoch_end = on_epoch_end
         self.skip_nan_loss = skip_nan_loss
+        self.nan_tolerance = nan_tolerance
 
         # Output file
         self.output_file = output_file
@@ -111,6 +113,8 @@ class Trainer:
         """
         self.model = freeze_bn(self.model.train())
 
+        nan_cnt = 0
+
         pb = progress_bar(self.train_loader, parent=mb)
         for x, target in pb:
             x, target = self.to_cuda(x, target)
@@ -120,7 +124,12 @@ class Trainer:
 
             # Backprop
             if not self.skip_nan_loss or torch.isfinite(batch_loss):
+                nan_cnt = 0
                 self._backprop_step(batch_loss)
+            else:
+                nan_cnt += 1
+                if nan_cnt > self.nan_tolerance:
+                    raise ValueError(f"loss value has been NaN or inf for more than {self.nan_tolerance} steps.")
             # Update LR
             self.scheduler.step()
             pb.comment = f"Training loss: {batch_loss.item():.4}"
