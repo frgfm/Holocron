@@ -158,7 +158,7 @@ def main(args):
 
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = DetectionTrainer(model, train_loader, val_loader, None, optimizer,
-                               args.device, args.output_file, amp=args.amp, on_epoch_end=log_wb)
+                               args.device, args.output_file, amp=args.amp, skip_nan_loss=True, on_epoch_end=log_wb)
 
     if args.resume:
         print(f"Resuming {args.resume}")
