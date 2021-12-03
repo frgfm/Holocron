@@ -20,7 +20,7 @@ from ..darknetv4 import DarknetBodyV4
 from ..darknetv4 import default_cfgs as dark_cfgs
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ['YOLOv4', 'yolov4', 'PAN', 'Neck']
+__all__ = ['YOLOv4', 'yolov4', 'PAN']
 
 
 default_cfgs = {
@@ -127,10 +127,13 @@ class YoloLayer(nn.Module):
         num_classes: int = 80,
         scale_xy: float = 1.,
         iou_thresh: float = 0.213,
-        lambda_noobj: float = 0.5,
-        lambda_coords: float = 5.,
+        lambda_obj: float = 1,
+        lambda_noobj: float = 0.001,
+        lambda_class: float = .1,
+        lambda_coords: float = 1.,
         rpn_nms_thresh: float = 0.7,
-        box_score_thresh: float = 0.05
+        box_score_thresh: float = 0.05,
+        ignore_thresh: float = 0.5,
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
@@ -138,7 +141,10 @@ class YoloLayer(nn.Module):
 
         self.rpn_nms_thresh = rpn_nms_thresh
         self.box_score_thresh = box_score_thresh
+        self.ignore_thresh = ignore_thresh
+        self.lambda_obj = lambda_obj
         self.lambda_noobj = lambda_noobj
+        self.lambda_class = lambda_class
         self.lambda_coords = lambda_coords
 
         # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1150
@@ -261,7 +267,8 @@ class YoloLayer(nn.Module):
 
             # Assign boxes
             obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = True
-            noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = False
+            noobj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], :] = False
+
             # B * cells * predictors * info
             for idx in range(b):
                 if gt_boxes[idx].shape[0] > 0:
@@ -271,6 +278,9 @@ class YoloLayer(nn.Module):
                     target_o[idx, obj_mask[idx]] = gt_ious
                     # Classification target
                     target_scores[idx, obj_mask[idx], gt_labels[idx][gt_idxs]] = 1.
+                    # Ignore predictions
+                    gt_ious = box_iou(pred_boxes[idx, noobj_mask[idx]], gt_boxes[idx]).max(dim=1).values
+                    noobj_mask[idx, noobj_mask[idx]][gt_ious >= self.ignore_thresh] = False
 
         return target_o, target_scores, obj_mask, noobj_mask
 
@@ -280,7 +290,6 @@ class YoloLayer(nn.Module):
         b_o: Tensor,
         b_scores: Tensor,
         target: List[Dict[str, Tensor]],
-        ignore_high_iou: bool = False
     ) -> Dict[str, Tensor]:
 
         target_o, target_scores, obj_mask, noobj_mask = self._build_targets(pred_boxes, b_o, b_scores, target)
@@ -294,14 +303,14 @@ class YoloLayer(nn.Module):
         b_o = torch.sigmoid(b_o)
 
         return dict(
-            obj_loss=F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum') / b_o.shape[0],
+            obj_loss=self.lambda_obj * F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum') / b_o.shape[0],
             noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum() / b_o.shape[0],
             bbox_loss=self.lambda_coords * bbox_loss / b_o.shape[0],
-            clf_loss=F.binary_cross_entropy_with_logits(
+            clf_loss=self.lambda_class * F.binary_cross_entropy_with_logits(
                 b_scores[obj_mask],
                 target_scores[obj_mask],
-                reduction='sum',
-            ) / b_o.shape[0],
+                reduction='none',
+            ).mean(1).sum(0) / b_o.shape[0],
         )
 
     def forward(

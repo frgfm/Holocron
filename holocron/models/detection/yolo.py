@@ -29,12 +29,22 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
 class _YOLO(nn.Module):
     def __init__(
         self,
+        num_classes: int = 20,
         rpn_nms_thresh: float = 0.7,
-        box_score_thresh: float = 0.05
+        box_score_thresh: float = 0.05,
+        lambda_obj: float = 1,
+        lambda_noobj: float = 0.5,
+        lambda_class: float = 1,
+        lambda_coords: float = 5,
     ) -> None:
         super().__init__()
+        self.num_classes = num_classes
         self.rpn_nms_thresh = rpn_nms_thresh
         self.box_score_thresh = box_score_thresh
+        self.lambda_obj = lambda_obj
+        self.lambda_noobj = lambda_noobj
+        self.lambda_class = lambda_class
+        self.lambda_coords = lambda_coords
 
     def _compute_losses(
         self,
@@ -138,10 +148,10 @@ class _YOLO(nn.Module):
                 # Classification
                 clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
 
-        return dict(obj_loss=obj_loss / pred_boxes.shape[0],
+        return dict(obj_loss=self.lambda_obj * obj_loss / pred_boxes.shape[0],
                     noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
                     bbox_loss=self.lambda_coords * bbox_loss / pred_boxes.shape[0],
-                    clf_loss=clf_loss / pred_boxes.shape[0])
+                    clf_loss=self.lambda_class * clf_loss / pred_boxes.shape[0])
 
     @staticmethod
     def post_process(
@@ -206,7 +216,9 @@ class YOLOv1(_YOLO):
         in_channels: int = 3,
         stem_channels: int = 64,
         num_anchors: int = 2,
+        lambda_obj: float = 1,
         lambda_noobj: float = 0.5,
+        lambda_class: float = 1,
         lambda_coords: float = 5.,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05,
@@ -218,7 +230,15 @@ class YOLOv1(_YOLO):
         backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None
     ) -> None:
 
-        super().__init__(rpn_nms_thresh, box_score_thresh)
+        super().__init__(
+            num_classes,
+            rpn_nms_thresh,
+            box_score_thresh,
+            lambda_obj,
+            lambda_noobj,
+            lambda_class,
+            lambda_coords
+        )
 
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
@@ -245,10 +265,6 @@ class YOLOv1(_YOLO):
             nn.Dropout(0.5),
             nn.Linear(head_hidden_nodes, 7 ** 2 * (num_anchors * 5 + num_classes)))
         self.num_anchors = num_anchors
-        self.num_classes = num_classes
-        # Loss coefficients
-        self.lambda_noobj = lambda_noobj
-        self.lambda_coords = lambda_coords
 
         init_module(self.block4, 'leaky_relu')
         init_module(self.classifier, 'leaky_relu')
@@ -267,13 +283,13 @@ class YOLOv1(_YOLO):
 
         b, _ = x.shape
         h, w = 7, 7
-        # B * (H * W * (num_anchors * 5 + num_classes)) --> B * H * W * (num_anchors * 5 + num_classes)
+        # (B, H * W * (num_anchors * 5 + num_classes)) --> (B, H, W, num_anchors * 5 + num_classes)
         x = x.reshape(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
         b_scores = x[..., -self.num_classes:]
         # Repeat for anchors to keep compatibility across YOLO versions
         b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
-        #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
+        #  (B, H, W, num_anchors * 5 + num_classes) -->  (B, H, W, num_anchors, 5)
         x = x[..., :self.num_anchors * 5].reshape(b, h, w, self.num_anchors, 5)
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
@@ -283,7 +299,7 @@ class YOLOv1(_YOLO):
         b_y = (torch.sigmoid(x[..., 1]) + c_y.reshape(1, -1, 1, 1)) / h
         b_w = torch.sigmoid(x[..., 2])
         b_h = torch.sigmoid(x[..., 3])
-        # B * H * W * num_anchors * 4
+        # (B, H, W, num_anchors, 4)
         b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
         b_o = torch.sigmoid(x[..., 4])
@@ -320,14 +336,14 @@ class YOLOv1(_YOLO):
 
         out = self._forward(x)
 
-        # B * (H * W) * num_anchors
+        # (B, H * W, num_anchors)
         b_coords, b_o, b_scores = self._format_outputs(out)
 
         if self.training:
             # Update losses
             return self._compute_losses(b_coords, b_o, b_scores, target)  # type: ignore[arg-type]
 
-        # B * (H * W * num_anchors)
+        # (B, H * W * num_anchors)
         b_coords = b_coords.reshape(b_coords.shape[0], -1, 4)
         b_o = b_o.reshape(b_o.shape[0], -1)
         # Repeat for each anchor box

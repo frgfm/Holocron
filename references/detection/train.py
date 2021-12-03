@@ -30,9 +30,8 @@ import holocron
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 
-VOC_CLASSES = ['background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow',
-               'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train',
-               'tvmonitor']
+VOC_CLASSES = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable',
+               'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
 
 
 def worker_init_fn(worker_id: int) -> None:
@@ -95,7 +94,7 @@ def main(args):
                 VOCTargetTransform(VOC_CLASSES),
                 RandomResizedCrop((args.img_size, args.img_size), scale=(0.3, 1.0), interpolation=interpolation_mode),
                 RandomHorizontalFlip(),
-                convert_to_relative,
+                convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
                 ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
                 ImageTransform(T.PILToTensor()),
                 ImageTransform(T.ConvertImageDtype(torch.float32)),
@@ -125,7 +124,7 @@ def main(args):
                 VOCTargetTransform(VOC_CLASSES),
                 Resize(scale_size, interpolation=interpolation_mode),
                 CenterCrop(args.img_size),
-                convert_to_relative,
+                convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
                 ImageTransform(T.PILToTensor()),
                 ImageTransform(T.ConvertImageDtype(torch.float32)),
                 ImageTransform(normalize)
@@ -159,7 +158,7 @@ def main(args):
 
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = DetectionTrainer(model, train_loader, val_loader, None, optimizer,
-                               args.device, args.output_file, amp=args.amp, on_epoch_end=log_wb)
+                               args.device, args.output_file, amp=args.amp, skip_nan_loss=True, on_epoch_end=log_wb)
 
     if args.resume:
         print(f"Resuming {args.resume}")
@@ -169,8 +168,7 @@ def main(args):
     if args.test_only:
         print("Running evaluation")
         eval_metrics = trainer.evaluate()
-        print(f"Loc error: {eval_metrics['loc_err']:.2%} | Clf error: {eval_metrics['clf_err']:.2%} | "
-              f"Det error: {eval_metrics['det_err']:.2%}")
+        print(trainer._eval_metrics_str(eval_metrics))
         return
 
     if args.lr_finder:

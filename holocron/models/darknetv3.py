@@ -4,7 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -45,7 +45,7 @@ class ResBlock(_ResBlock):
         if drop_layer is not None:
             self.dropblock = DropBlock2d(0.1, 7, inplace=True)
 
-        # The backpropagation does not seem to appreciate inplace activation on the residual branch
+        # The backpropagation does not seem to appreciate inplace activation on the residual branch
         if hasattr(self.conv[-1], 'inplace'):
             self.conv[-1].inplace = False
 
@@ -64,6 +64,7 @@ class DarknetBodyV3(nn.Sequential):
         layout: List[Tuple[int, int]],
         in_channels: int = 3,
         stem_channels: int = 32,
+        num_features: int = 1,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
@@ -85,6 +86,7 @@ class DarknetBodyV3(nn.Sequential):
                                                         act_layer, norm_layer, drop_layer, conv_layer)
                                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
         )
+        self.num_features = num_features
 
     @staticmethod
     def _make_layer(
@@ -104,6 +106,22 @@ class DarknetBodyV3(nn.Sequential):
 
         return nn.Sequential(*layers)
 
+    def forward(self, x: torch.Tensor) -> Union[torch.Tensor, List[torch.Tensor]]:
+
+        if self.num_features == 1:
+            return super().forward(x)
+
+        self.stem: nn.Sequential
+        self.layers: nn.Sequential
+        x = self.stem(x)
+        features = []
+        for idx, stage in enumerate(self.layers):
+            x = stage(x)
+            if idx >= (len(self.layers) - self.num_features):
+                features.append(x)
+
+        return features
+
 
 class DarknetV3(nn.Sequential):
     def __init__(
@@ -119,7 +137,7 @@ class DarknetV3(nn.Sequential):
     ) -> None:
 
         super().__init__(OrderedDict([
-            ('features', DarknetBodyV3(layout, in_channels, stem_channels,
+            ('features', DarknetBodyV3(layout, in_channels, stem_channels, 1,
                                        act_layer, norm_layer, drop_layer, conv_layer)),
             ('pool', GlobalAvgPool2d(flatten=True)),
             ('classifier', nn.Linear(layout[-1][0], num_classes))]))
