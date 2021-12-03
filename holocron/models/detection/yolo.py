@@ -283,13 +283,13 @@ class YOLOv1(_YOLO):
 
         b, _ = x.shape
         h, w = 7, 7
-        # B * (H * W * (num_anchors * 5 + num_classes)) --> B * H * W * (num_anchors * 5 + num_classes)
+        # (B, H * W * (num_anchors * 5 + num_classes)) --> (B, H, W, num_anchors * 5 + num_classes)
         x = x.reshape(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
         b_scores = x[..., -self.num_classes:]
         # Repeat for anchors to keep compatibility across YOLO versions
         b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
-        #  B * H * W * (num_anchors * 5 + num_classes) -->  B * H * W * num_anchors * 5
+        #  (B, H, W, num_anchors * 5 + num_classes) -->  (B, H, W, num_anchors, 5)
         x = x[..., :self.num_anchors * 5].reshape(b, h, w, self.num_anchors, 5)
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
@@ -299,7 +299,7 @@ class YOLOv1(_YOLO):
         b_y = (torch.sigmoid(x[..., 1]) + c_y.reshape(1, -1, 1, 1)) / h
         b_w = torch.sigmoid(x[..., 2])
         b_h = torch.sigmoid(x[..., 3])
-        # B * H * W * num_anchors * 4
+        # (B, H, W, num_anchors, 4)
         b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
         b_o = torch.sigmoid(x[..., 4])
@@ -336,14 +336,14 @@ class YOLOv1(_YOLO):
 
         out = self._forward(x)
 
-        # B * (H * W) * num_anchors
+        # (B, H * W, num_anchors)
         b_coords, b_o, b_scores = self._format_outputs(out)
 
         if self.training:
             # Update losses
             return self._compute_losses(b_coords, b_o, b_scores, target)  # type: ignore[arg-type]
 
-        # B * (H * W * num_anchors)
+        # (B, H * W * num_anchors)
         b_coords = b_coords.reshape(b_coords.shape[0], -1, 4)
         b_o = b_o.reshape(b_o.shape[0], -1)
         # Repeat for each anchor box

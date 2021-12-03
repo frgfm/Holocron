@@ -70,6 +70,7 @@ class YOLOv2(_YOLO):
 
         # Priors computed using K-means
         if anchors is None:
+            # cf. https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-voc.cfg#L242
             anchors = torch.tensor([[1.3221, 1.73145], [3.19275, 4.00944], [5.05587, 8.09892],
                                     [9.47112, 4.84053], [11.2364, 10.0071]])
 
@@ -120,17 +121,17 @@ class YOLOv2(_YOLO):
         """
 
         b, _, h, w = x.shape
-        # B * C * H * W --> B * H * W * num_anchors * (5 + num_classes)
+        # (B, C, H, W) --> (B, H, W, num_anchors, 5 + num_classes)
         x = x.reshape(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
         c_y = torch.arange(h, dtype=torch.float, device=x.device)
-        # Box coordinates
+        # Box coordinates
         b_x = (torch.sigmoid(x[..., 0]) + c_x.reshape(1, 1, -1, 1)) / w
         b_y = (torch.sigmoid(x[..., 1]) + c_y.reshape(1, -1, 1, 1)) / h
         b_w = self.anchors[:, 0].reshape(1, 1, 1, -1) / w * torch.exp(x[..., 2])  # type: ignore[index]
         b_h = self.anchors[:, 1].reshape(1, 1, 1, -1) / h * torch.exp(x[..., 3])  # type: ignore[index]
-        # B * H * W * num_anchors * 4
+        # (B, H, W, num_anchors, 4)
         b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
         b_o = torch.sigmoid(x[..., 4])
@@ -176,14 +177,14 @@ class YOLOv2(_YOLO):
 
         out = self._forward(x)
 
-        # B * H * W * num_anchors
+        # (B, H, W, num_anchors)
         b_coords, b_o, b_scores = self._format_outputs(out)
 
         if self.training:
             # Update losses
             return self._compute_losses(b_coords, b_o, b_scores, target)  # type: ignore[arg-type]
 
-        # B * (H * W * num_anchors)
+        # (B, H * W * num_anchors)
         b_coords = b_coords.reshape(b_coords.shape[0], -1, 4)
         b_o = b_o.reshape(b_o.shape[0], -1)
         b_scores = b_scores.reshape(b_scores.shape[0], -1, self.num_classes)
