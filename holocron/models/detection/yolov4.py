@@ -131,6 +131,7 @@ class YoloLayer(nn.Module):
         lambda_coords: float = 5.,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05
+        ignore_thresh: float = 0.5,
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
@@ -138,6 +139,7 @@ class YoloLayer(nn.Module):
 
         self.rpn_nms_thresh = rpn_nms_thresh
         self.box_score_thresh = box_score_thresh
+        self.ignore_thresh = ignore_thresh
         self.lambda_noobj = lambda_noobj
         self.lambda_coords = lambda_coords
 
@@ -271,6 +273,9 @@ class YoloLayer(nn.Module):
                     target_o[idx, obj_mask[idx]] = gt_ious
                     # Classification target
                     target_scores[idx, obj_mask[idx], gt_labels[idx][gt_idxs]] = 1.
+                    # Ignore predictions
+                    gt_ious = box_iou(pred_boxes[idx, noobj_mask[idx]], gt_boxes[idx]).max(dim=1).values
+                    noobj_mask[idx, noobj_mask[idx]][gt_ious >= self.ignore_thresh] = False
 
         return target_o, target_scores, obj_mask, noobj_mask
 
@@ -280,7 +285,6 @@ class YoloLayer(nn.Module):
         b_o: Tensor,
         b_scores: Tensor,
         target: List[Dict[str, Tensor]],
-        ignore_high_iou: bool = False
     ) -> Dict[str, Tensor]:
 
         target_o, target_scores, obj_mask, noobj_mask = self._build_targets(pred_boxes, b_o, b_scores, target)
