@@ -360,7 +360,7 @@ class Yolov4Head(nn.Module):
             *conv_sequence(256, (5 + num_classes) * 3, None, None, None, conv_layer,
                            kernel_size=1, bias=True))
 
-        self.yolo1 = YoloLayer(anchors[0], num_classes=num_classes, scale_xy=1.2)
+        self.yolo1 = YoloLayer(anchors[2], num_classes=num_classes, scale_xy=1.2)
 
         self.pre_head2 = nn.Sequential(*conv_sequence(128, 256, act_layer, norm_layer, drop_layer, conv_layer,
                                                       kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)))
@@ -401,7 +401,7 @@ class Yolov4Head(nn.Module):
             *conv_sequence(1024, (5 + num_classes) * 3, None, None, None, conv_layer,
                            kernel_size=1, bias=True))
 
-        self.yolo3 = YoloLayer(anchors[2], num_classes=num_classes, scale_xy=1.05)
+        self.yolo3 = YoloLayer(anchors[0], num_classes=num_classes, scale_xy=1.05)
         init_module(self, 'leaky_relu')
         # Zero init
         self.head1[-1].weight.data.zero_()
