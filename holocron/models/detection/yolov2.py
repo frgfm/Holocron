@@ -39,9 +39,9 @@ class YOLOv2(_YOLO):
         anchors: Optional[Tensor] = None,
         passthrough_ratio: int = 8,
         lambda_obj: float = 5,
-        lambda_noobj: float = 1,
+        lambda_noobj: float = 0.5,
         lambda_class: float = 1,
-        lambda_coords: float = 1,
+        lambda_coords: float = 5,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05,
         act_layer: Optional[nn.Module] = None,
@@ -102,7 +102,9 @@ class YOLOv2(_YOLO):
         init_module(self.block5, 'leaky_relu')
         init_module(self.passthrough_layer, 'leaky_relu')
         init_module(self.block6, 'leaky_relu')
-        init_module(self.head, 'leaky_relu')
+        # Initialize the head like a linear (default Conv2D init is the same as Linear)
+        if self.head.bias is not None:
+            self.head.bias.data.zero_()
 
     @property
     def num_anchors(self) -> int:
