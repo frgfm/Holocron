@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolov4 &mdash; holocron 0.2.0.dev0+10106c3-git documentation</title>
+  <title>holocron.models.detection.yolov4 &mdash; holocron 0.2.0.dev0+36e0383-git documentation</title>
   
 
   
@@ -248,7 +248,7 @@
 <span class="kn">from</span> <span class="nn">..darknetv4</span> <span class="kn">import</span> <span class="n">default_cfgs</span> <span class="k">as</span> <span class="n">dark_cfgs</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;YOLOv4&#39;</span><span class="p">,</span> <span class="s1">&#39;yolov4&#39;</span><span class="p">,</span> <span class="s1">&#39;PAN&#39;</span><span class="p">,</span> <span class="s1">&#39;Neck&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;YOLOv4&#39;</span><span class="p">,</span> <span class="s1">&#39;yolov4&#39;</span><span class="p">,</span> <span class="s1">&#39;PAN&#39;</span><span class="p">]</span>
 
 
 <span class="n">default_cfgs</span> <span class="o">=</span> <span class="p">{</span>
@@ -355,10 +355,13 @@
         <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
         <span class="n">scale_xy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span>
         <span class="n">iou_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.213</span><span class="p">,</span>
-        <span class="n">lambda_noobj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">lambda_coords</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.</span><span class="p">,</span>
+        <span class="n">lambda_obj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">lambda_noobj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
+        <span class="n">lambda_class</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">.1</span><span class="p">,</span>
+        <span class="n">lambda_coords</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span>
         <span class="n">rpn_nms_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
-        <span class="n">box_score_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
+        <span class="n">box_score_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">ignore_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
@@ -366,7 +369,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span> <span class="o">=</span> <span class="n">rpn_nms_thresh</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span> <span class="o">=</span> <span class="n">box_score_thresh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_thresh</span> <span class="o">=</span> <span class="n">ignore_thresh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obj</span> <span class="o">=</span> <span class="n">lambda_obj</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lambda_noobj</span> <span class="o">=</span> <span class="n">lambda_noobj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_class</span> <span class="o">=</span> <span class="n">lambda_class</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lambda_coords</span> <span class="o">=</span> <span class="n">lambda_coords</span>
 
         <span class="c1"># cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1150</span>
@@ -489,7 +495,8 @@
 
             <span class="c1"># Assign boxes</span>
             <span class="n">obj_mask</span><span class="p">[</span><span class="n">target_selection</span><span class="p">,</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">anchor_idxs</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">noobj_mask</span><span class="p">[</span><span class="n">target_selection</span><span class="p">,</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">anchor_idxs</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">noobj_mask</span><span class="p">[</span><span class="n">target_selection</span><span class="p">,</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">:]</span> <span class="o">=</span> <span class="kc">False</span>
+
             <span class="c1"># B * cells * predictors * info</span>
             <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -499,6 +506,9 @@
                     <span class="n">target_o</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">=</span> <span class="n">gt_ious</span>
                     <span class="c1"># Classification target</span>
                     <span class="n">target_scores</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">gt_labels</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">gt_idxs</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">1.</span>
+                    <span class="c1"># Ignore predictions</span>
+                    <span class="n">gt_ious</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">noobj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]],</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+                    <span class="n">noobj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">noobj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]][</span><span class="n">gt_ious</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_thresh</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">return</span> <span class="n">target_o</span><span class="p">,</span> <span class="n">target_scores</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">,</span> <span class="n">noobj_mask</span>
 
@@ -508,7 +518,6 @@
         <span class="n">b_o</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">b_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]],</span>
-        <span class="n">ignore_high_iou</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
 
         <span class="n">target_o</span><span class="p">,</span> <span class="n">target_scores</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">,</span> <span class="n">noobj_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_targets</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
@@ -522,14 +531,14 @@
         <span class="n">b_o</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">b_o</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
-            <span class="n">obj_loss</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">b_o</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span> <span class="n">target_o</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">obj_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_obj</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">b_o</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span> <span class="n">target_o</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="n">noobj_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_noobj</span> <span class="o">*</span> <span class="n">b_o</span><span class="p">[</span><span class="n">noobj_mask</span><span class="p">]</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="n">bbox_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_coords</span> <span class="o">*</span> <span class="n">bbox_loss</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">clf_loss</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
+            <span class="n">clf_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_class</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
                 <span class="n">b_scores</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span>
                 <span class="n">target_scores</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span>
-                <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span>
-            <span class="p">)</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
