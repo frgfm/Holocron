@@ -72,7 +72,7 @@ class YOLOv2(_YOLO):
         if anchors is None:
             # cf. https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-voc.cfg#L242
             anchors = torch.tensor([[1.3221, 1.73145], [3.19275, 4.00944], [5.05587, 8.09892],
-                                    [9.47112, 4.84053], [11.2364, 10.0071]])
+                                    [9.47112, 4.84053], [11.2364, 10.0071]]) / 13
 
         self.backbone = DarknetBodyV2(layout, in_channels, stem_chanels, True, act_layer,
                                       backbone_norm_layer, drop_layer, conv_layer)
@@ -129,8 +129,8 @@ class YOLOv2(_YOLO):
         # Box coordinates
         b_x = (torch.sigmoid(x[..., 0]) + c_x.reshape(1, 1, -1, 1)) / w
         b_y = (torch.sigmoid(x[..., 1]) + c_y.reshape(1, -1, 1, 1)) / h
-        b_w = self.anchors[:, 0].reshape(1, 1, 1, -1) / w * torch.exp(x[..., 2])  # type: ignore[index]
-        b_h = self.anchors[:, 1].reshape(1, 1, 1, -1) / h * torch.exp(x[..., 3])  # type: ignore[index]
+        b_w = self.anchors[:, 0].reshape(1, 1, 1, -1) * torch.exp(x[..., 2])  # type: ignore[index]
+        b_h = self.anchors[:, 1].reshape(1, 1, 1, -1) * torch.exp(x[..., 3])  # type: ignore[index]
         # (B, H, W, num_anchors, 4)
         b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
