@@ -94,7 +94,7 @@ def main(args):
                 VOCTargetTransform(VOC_CLASSES),
                 RandomResizedCrop((args.img_size, args.img_size), scale=(0.3, 1.0), interpolation=interpolation_mode),
                 RandomHorizontalFlip(),
-                convert_to_relative,
+                convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
                 ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
                 ImageTransform(T.PILToTensor()),
                 ImageTransform(T.ConvertImageDtype(torch.float32)),
@@ -124,7 +124,7 @@ def main(args):
                 VOCTargetTransform(VOC_CLASSES),
                 Resize(scale_size, interpolation=interpolation_mode),
                 CenterCrop(args.img_size),
-                convert_to_relative,
+                convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
                 ImageTransform(T.PILToTensor()),
                 ImageTransform(T.ConvertImageDtype(torch.float32)),
                 ImageTransform(normalize)
