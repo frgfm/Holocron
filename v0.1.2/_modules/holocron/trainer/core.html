@@ -214,12 +214,11 @@
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">contiguous_params</span> <span class="kn">import</span> <span class="n">ContiguousParams</span>
 <span class="kn">from</span> <span class="nn">fastprogress</span> <span class="kn">import</span> <span class="n">master_bar</span><span class="p">,</span> <span class="n">progress_bar</span>
 <span class="kn">from</span> <span class="nn">fastprogress.fastprogress</span> <span class="kn">import</span> <span class="n">ConsoleMasterBar</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
@@ -267,7 +266,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gpu</span> <span class="o">=</span> <span class="n">gpu</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ContiguousParams</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">]]</span> <span class="o">=</span> <span class="p">([],</span> <span class="p">[])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">gpu</span><span class="p">)</span>
@@ -397,12 +396,9 @@
             <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;All parameters are frozen&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">norm_weight_decay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">ContiguousParams</span><span class="p">([</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">])]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">],</span> <span class="p">[]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">ContiguousParams</span><span class="p">(</span><span class="n">_params</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_params</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
-                <span class="k">for</span> <span class="n">_params</span> <span class="ow">in</span> <span class="n">split_normalization_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
-            <span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="n">split_normalization_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_reset_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Reset the target params of the optimizer&quot;&quot;&quot;</span>
@@ -413,14 +409,14 @@
         <span class="c1"># Split it if norm layers needs custom WD</span>
         <span class="k">if</span> <span class="n">norm_weight_decay</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">(</span>
-                <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">())</span>  <span class="c1"># type: ignore[index]</span>
+                <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># type: ignore[index]</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">wd_groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">norm_weight_decay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;weight_decay&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
             <span class="k">for</span> <span class="n">_params</span><span class="p">,</span> <span class="n">_wd</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">,</span> <span class="n">wd_groups</span><span class="p">):</span>  <span class="c1"># type: ignore[arg-type]</span>
-                <span class="k">if</span> <span class="n">_params</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_params</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">(</span>
-                        <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">_params</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">_wd</span><span class="p">)</span>
+                        <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">_params</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">_wd</span><span class="p">)</span>
                     <span class="p">)</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
@@ -470,9 +466,6 @@
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">mb</span><span class="p">:</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_fit_epoch</span><span class="p">(</span><span class="n">mb</span><span class="p">)</span>
-            <span class="c1"># Check whether ops invalidated the buffer</span>
-            <span class="k">for</span> <span class="n">_group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">:</span>  <span class="c1"># type: ignore[union-attr]</span>
-                <span class="n">_group</span><span class="o">.</span><span class="n">assert_buffer_is_valid</span><span class="p">()</span>
             <span class="n">eval_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
 
             <span class="c1"># master bar</span>
