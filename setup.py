@@ -46,7 +46,6 @@ _deps = [
     "numpy>=1.17.2",
     "fastprogress>=1.0.0",
     "matplotlib>=3.0.0",
-    "contiguous-params==1.0.0",
     "Pillow>=8.4.0",  # cf. https://github.com/pytorch/vision/issues/4934
     # Testing
     "pytest>=5.3.2",
