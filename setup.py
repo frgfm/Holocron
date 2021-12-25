@@ -77,7 +77,6 @@ install_requires = [
     deps["numpy"],
     deps["fastprogress"],
     deps["matplotlib"],
-    deps["contiguous-params"],
     deps["Pillow"],
 ]
 
