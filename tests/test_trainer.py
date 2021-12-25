@@ -76,6 +76,9 @@ def _test_trainer(
     lr: float = 1e-3
 ) -> None:
 
+    learner.model = trainer.utils.freeze_model(learner.model.train(), freeze_until)
+    learner._reset_opt(lr)
+    # Update param groups & LR
     learner.save(learner.output_file)
     checkpoint = torch.load(learner.output_file, map_location='cpu')
     model_w = learner.model.state_dict()[ref_param].clone()
