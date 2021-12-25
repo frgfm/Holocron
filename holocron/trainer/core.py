@@ -5,12 +5,11 @@
 
 import math
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from contiguous_params import ContiguousParams
 from fastprogress import master_bar, progress_bar
 from fastprogress.fastprogress import ConsoleMasterBar
 from torch import Tensor, nn
@@ -58,7 +57,7 @@ class Trainer:
         self.epoch = 0
         self.min_loss = math.inf
         self.gpu = gpu
-        self._params: Optional[List[ContiguousParams]] = None
+        self._params: Tuple[Sequence[torch.nn.Parameter], Sequence[torch.nn.Parameter]] = ([], [])
         self.lr_recorder: List[float] = []
         self.loss_recorder: List[float] = []
         self.set_device(gpu)
@@ -188,12 +187,9 @@ class Trainer:
             raise AssertionError("All parameters are frozen")
 
         if norm_weight_decay is None:
-            self._params = [ContiguousParams([p for p in self.model.parameters() if p.requires_grad])]
+            self._params = [p for p in self.model.parameters() if p.requires_grad], []
         else:
-            self._params = [
-                ContiguousParams(_params) if len(_params) > 0 else None
-                for _params in split_normalization_params(self.model)
-            ]
+            self._params = split_normalization_params(self.model)
 
     def _reset_opt(self, lr: float, norm_weight_decay: Optional[float] = None) -> None:
         """Reset the target params of the optimizer"""
@@ -204,14 +200,14 @@ class Trainer:
         # Split it if norm layers needs custom WD
         if norm_weight_decay is None:
             self.optimizer.add_param_group(
-                dict(params=self._params[0].contiguous())  # type: ignore[index]
+                dict(params=self._params[0])  # type: ignore[index]
             )
         else:
             wd_groups = [norm_weight_decay, self.optimizer.defaults.get('weight_decay', 0)]
             for _params, _wd in zip(self._params, wd_groups):  # type: ignore[arg-type]
-                if _params:
+                if len(_params) > 0:
                     self.optimizer.add_param_group(
-                        dict(params=_params.contiguous(), weight_decay=_wd)
+                        dict(params=_params, weight_decay=_wd)
                     )
 
     @torch.inference_mode()
@@ -261,9 +257,6 @@ class Trainer:
         for _ in mb:
 
             self._fit_epoch(mb)
-            # Check whether ops invalidated the buffer
-            for _group in self._params:  # type: ignore[union-attr]
-                _group.assert_buffer_is_valid()
             eval_metrics = self.evaluate()
 
             # master bar
