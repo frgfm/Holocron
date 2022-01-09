@@ -207,7 +207,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.models.detection.yolov4</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License version 2.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
@@ -524,7 +524,7 @@
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">output</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]:</span>
         <span class="sd">&quot;&quot;&quot;Perform detection on an image tensor and returns either the loss dictionary in training mode</span>
@@ -532,14 +532,14 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            x (torch.Tensor[N, 3, H, W]): input image tensor</span>
-<span class="sd">            target (list&lt;dict&gt;, optional): each dict must have two keys `boxes` of type torch.Tensor[-1, 4]</span>
-<span class="sd">            and `labels` of type torch.Tensor[-1]</span>
+<span class="sd">            target (list&lt;dict&gt;, optional): each dict must have two keys `boxes` of type torch.Tensor[*, 4]</span>
+<span class="sd">                and `labels` of type torch.Tensor[*]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`target` needs to be specified in training mode&quot;</span><span class="p">)</span>
 
-        <span class="n">pred_boxes</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_outputs</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">pred_boxes</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_outputs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_losses</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
@@ -779,7 +779,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019-2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2022, François-Guillaume Fernandez
 
     </p>
   </div>

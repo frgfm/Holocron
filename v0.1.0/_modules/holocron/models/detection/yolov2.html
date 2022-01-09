@@ -185,7 +185,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.models.detection.yolov2</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2021, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License version 2.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
@@ -226,9 +226,9 @@
         <span class="n">anchors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">passthrough_ratio</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
         <span class="n">lambda_obj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
-        <span class="n">lambda_noobj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">lambda_noobj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">lambda_class</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">lambda_coords</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">lambda_coords</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">rpn_nms_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
         <span class="n">box_score_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -448,7 +448,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019-2021, François-Guillaume Fernandez
+        &copy; Copyright 2019-2022, François-Guillaume Fernandez
 
     </p>
   </div>
