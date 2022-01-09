@@ -323,8 +323,8 @@ class YoloLayer(nn.Module):
 
         Args:
             x (torch.Tensor[N, 3, H, W]): input image tensor
-            target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[-1, 4]
-            and `labels` of type torch.Tensor[-1]
+            target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[*, 4]
+                and `labels` of type torch.Tensor[*]
         """
 
         if self.training and target is None:

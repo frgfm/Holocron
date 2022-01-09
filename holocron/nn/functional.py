@@ -19,6 +19,7 @@ def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
 
     Args:
         x: input tensor
+        inplace: whether the operation should be conducted inplace
     Returns:
         output tensor
     """
