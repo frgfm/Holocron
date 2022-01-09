@@ -3,7 +3,6 @@ name: tmp-comment
 on:
   pull_request:
     branches: master
-    types: opened
 
 jobs:
   is-properly-labeled:
