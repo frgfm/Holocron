@@ -315,7 +315,7 @@ class YoloLayer(nn.Module):
 
     def forward(
         self,
-        output: Tensor,
+        x: Tensor,
         target: Optional[List[Dict[str, Tensor]]] = None
     ) -> Union[Dict[str, Tensor], List[Dict[str, Tensor]]]:
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
@@ -330,7 +330,7 @@ class YoloLayer(nn.Module):
         if self.training and target is None:
             raise ValueError("`target` needs to be specified in training mode")
 
-        pred_boxes, b_o, b_scores = self._format_outputs(output)
+        pred_boxes, b_o, b_scores = self._format_outputs(x)
 
         if self.training:
             return self._compute_losses(pred_boxes, b_o, b_scores, target)  # type: ignore[arg-type]
