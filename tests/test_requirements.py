@@ -4,7 +4,7 @@ from pathlib import Path
 
 def test_deps_consistency():
 
-    IGNORE = ["flake8", "isort", "mypy"]
+    IGNORE = ["flake8", "isort", "mypy", "pydocstyle"]
     # Collect the deps from all requirements.txt
     REQ_FILES = ["requirements.txt", "tests/requirements.txt", "docs/requirements.txt"]
     folder = Path(__file__).parent.parent.absolute()
