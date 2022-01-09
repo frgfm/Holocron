@@ -1,0 +1,14 @@
+name: tmp-comment
+
+on:
+  pull_request:
+    branches: master
+    types: opened
+
+jobs:
+  is-properly-labeled:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping merger responsible for labeling if necessary
+        run: echo "${{ github.event.pull_request.user.login }} ${{ github.event.pull_request.merged_by.login }}, {{ github.event.pull_request.labels }}"
