@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021, François-Guillaume Fernandez.
+# Copyright (C) 2019-2022, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
@@ -39,9 +39,9 @@ class YOLOv2(_YOLO):
         anchors: Optional[Tensor] = None,
         passthrough_ratio: int = 8,
         lambda_obj: float = 5,
-        lambda_noobj: float = 0.5,
+        lambda_noobj: float = 1,
         lambda_class: float = 1,
-        lambda_coords: float = 5,
+        lambda_coords: float = 1,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05,
         act_layer: Optional[nn.Module] = None,
