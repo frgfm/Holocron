@@ -3,6 +3,7 @@ quality:
 	isort . -c -v
 	flake8 ./
 	mypy holocron/
+	pydocstyle holocron/
 
 # this target runs checks on all files and potentially modifies some of them
 style:
@@ -12,6 +13,11 @@ style:
 test:
 	coverage run -m pytest tests/
 
+# Build documentation for current version
+docs-single-version:
+	sphinx-build docs/source docs/_build -a
+
 # Check that docs can build
 docs:
 	cd docs && bash build.sh
+
