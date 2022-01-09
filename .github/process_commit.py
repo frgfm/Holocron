@@ -53,7 +53,6 @@ def get_pr_number(commit_hash: str) -> Optional[int]:
     data = query_repo(f"commits/{commit_hash}/pulls", accept="application/vnd.github.groot-preview+json")
     if not data:
         return None
-    import ipdb; ipdb.set_trace()
     return data[0]["number"]
 
 
