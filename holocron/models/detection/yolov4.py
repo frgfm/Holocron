@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021, François-Guillaume Fernandez.
+# Copyright (C) 2019-2022, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
@@ -315,7 +315,7 @@ class YoloLayer(nn.Module):
 
     def forward(
         self,
-        output: Tensor,
+        x: Tensor,
         target: Optional[List[Dict[str, Tensor]]] = None
     ) -> Union[Dict[str, Tensor], List[Dict[str, Tensor]]]:
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
@@ -323,14 +323,14 @@ class YoloLayer(nn.Module):
 
         Args:
             x (torch.Tensor[N, 3, H, W]): input image tensor
-            target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[-1, 4]
-            and `labels` of type torch.Tensor[-1]
+            target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[*, 4]
+                and `labels` of type torch.Tensor[*]
         """
 
         if self.training and target is None:
             raise ValueError("`target` needs to be specified in training mode")
 
-        pred_boxes, b_o, b_scores = self._format_outputs(output)
+        pred_boxes, b_o, b_scores = self._format_outputs(x)
 
         if self.training:
             return self._compute_losses(pred_boxes, b_o, b_scores, target)  # type: ignore[arg-type]

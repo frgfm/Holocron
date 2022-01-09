@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021, François-Guillaume Fernandez.
+# Copyright (C) 2019-2022, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
@@ -19,6 +19,7 @@ def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
 
     Args:
         x: input tensor
+        inplace: whether the operation should be conducted inplace
     Returns:
         output tensor
     """
