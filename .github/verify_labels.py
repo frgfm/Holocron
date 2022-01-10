@@ -34,12 +34,28 @@ SECONDARY_LABELS = {
     "topic: ci",
 }
 
+GH_ORG = 'frgfm'
+GH_REPO = 'Holocron'
+
+
+def query_repo(cmd: str, *, accept) -> Any:
+    response = requests.get(f"https://api.github.com/repos/{GH_ORG}/{GH_REPO}/{cmd}", headers=dict(Accept=accept))
+    return response.json()
+
+
+def get_pr_merger_and_labels(pr_number: int) -> Tuple[str, Set[str]]:
+    # See https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
+    data = query_repo(f"pulls/{pr_number}", accept="application/vnd.github.v3+json")
+    merger = data["merged_by"]["login"]
+    labels = {label["name"] for label in data["labels"]}
+    return merger, labels
+
 
 def main(args):
-    print(args.labels)
-    is_properly_labeled = bool(PRIMARY_LABELS.intersection(args.labels) and SECONDARY_LABELS.intersection(args.labels))
+    merger, labels = get_pr_merger_and_labels(args.pr)
+    is_properly_labeled = bool(PRIMARY_LABELS.intersection(labels) and SECONDARY_LABELS.intersection(labels))
     if not is_properly_labeled:
-        print("False")
+        print(f"@{merger}")
 
 
 def parse_args():
@@ -47,7 +63,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='PR label checker',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('labels', type=str, help='Hash of the commit')
+    parser.add_argument('pr', type=int, help='PR number')
     args = parser.parse_args()
 
     return args
