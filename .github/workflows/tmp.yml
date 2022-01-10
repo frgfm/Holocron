@@ -10,11 +10,15 @@ jobs:
 
     steps:
       - name: Ping merger responsible for labeling if necessary
-        run: echo "${{ github.event.pull_request.user.login }} ${{ github.event.pull_request.merged_by.login }}, ${{ github.event.pull_request.labels }}"
+        run: echo "${{ github.event.pull_request.user.login }}, ${{ github.event.pull_request.merged_by.login }}, ${{ github.event.pull_request.labels }}"
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Set up python
         uses: actions/setup-python@v2
+      - name: Print debug
+        env:
+          LABELS: ${{ github.event.pull_request.labels }}
+        run: python -c "import os; print(os.environ['LABELS'])"
       - name: Check labels validity
         id: labels
         run: echo "::set-output name=valid::$(python .github/verify_labels.py ${{ github.event.pull_request.labels }})"
