@@ -11,7 +11,6 @@ from typing import Any, Set, Tuple
 
 import requests
 
-
 # For a PR to be properly labeled it should have one primary label and one secondary label
 
 # Should specify the type of change
@@ -51,7 +50,7 @@ def query_repo(cmd: str, *, accept) -> Any:
 def get_pr_merger_and_labels(pr_number: int) -> Tuple[str, Set[str]]:
     # See https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     data = query_repo(f"pulls/{pr_number}", accept="application/vnd.github.v3+json")
-    merger = data["user"]["login"]
+    merger = data.get("merged_by", {}).get("login")
     labels = {label["name"] for label in data["labels"]}
     return merger, labels
 
@@ -59,7 +58,7 @@ def get_pr_merger_and_labels(pr_number: int) -> Tuple[str, Set[str]]:
 def main(args):
     merger, labels = get_pr_merger_and_labels(args.pr)
     is_properly_labeled = bool(PRIMARY_LABELS.intersection(labels) and SECONDARY_LABELS.intersection(labels))
-    if not is_properly_labeled:
+    if isinstance(merger, str) and not is_properly_labeled:
         print(f"@{merger}")
 
 
