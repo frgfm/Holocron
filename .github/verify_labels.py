@@ -7,6 +7,8 @@ Note: we ping the merger only, not the reviewers, as the reviewers can sometimes
 with no labeling responsibility, so we don't want to bother them.
 """
 
+from typing import Any, Set, Tuple
+
 # For a PR to be properly labeled it should have one primary label and one secondary label
 
 # Should specify the type of change
