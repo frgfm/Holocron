@@ -36,6 +36,7 @@ SECONDARY_LABELS = {
 
 
 def main(args):
+    print(args.labels)
     is_properly_labeled = bool(PRIMARY_LABELS.intersection(args.labels) and SECONDARY_LABELS.intersection(args.labels))
     if not is_properly_labeled:
         print("False")
