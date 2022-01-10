@@ -25,4 +25,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.issues.createComment({ issue_number, owner, repo, body: 'Hey ${{ steps.commit.outputs.merger }} 👋\nYou merged this PR, but no labels were added. The list of valid labels is available at https://github.com/frgfm/Holocron/blob/master/.github/process_commit.py' });
+            github.issues.createComment({ issue_number, owner, repo, body: 'Hey ${{ steps.commit.outputs.merger }} 👋\nYou merged this PR, but it isn't correctly labeled. The list of valid labels is available at https://github.com/frgfm/Holocron/blob/master/.github/verify_labels.py' });
