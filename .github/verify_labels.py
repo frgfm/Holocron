@@ -9,6 +9,9 @@ with no labeling responsibility, so we don't want to bother them.
 
 from typing import Any, Set, Tuple
 
+import requests
+
+
 # For a PR to be properly labeled it should have one primary label and one secondary label
 
 # Should specify the type of change
