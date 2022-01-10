@@ -51,7 +51,7 @@ def query_repo(cmd: str, *, accept) -> Any:
 def get_pr_merger_and_labels(pr_number: int) -> Tuple[str, Set[str]]:
     # See https://docs.github.com/en/rest/reference/pulls#get-a-pull-request
     data = query_repo(f"pulls/{pr_number}", accept="application/vnd.github.v3+json")
-    merger = data["merged_by"]["login"]
+    merger = data["user"]["login"]
     labels = {label["name"] for label in data["labels"]}
     return merger, labels
 
