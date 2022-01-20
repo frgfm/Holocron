@@ -183,3 +183,24 @@ def test_cb_loss():
     # assert torch.allclose(criterion(x, target), (1 - beta) / (1 - beta ** num_samples[0]) * base_loss, atol=1e-5)
 
     assert repr(criterion) == "ClassBalancedWrapper(CrossEntropyLoss(), beta=0.99)"
+
+
+def test_dice_loss():
+
+    num_batches = 2
+    num_classes = 4
+
+    x = torch.rand((num_batches, num_classes, 20, 20), requires_grad=True)
+    target = torch.rand(num_batches, num_classes, 20, 20)
+
+    # Backprop
+    out = F.dice_loss(x, target)
+    out.backward()
+
+    # Weighted loss
+    class_weights = torch.ones(num_classes)
+    class_weights[0] = 2
+    out = F.dice_loss(x, target, weight=class_weights)
+    out.backward()
+
+    assert repr(nn.DiceLoss()) == "DiceLoss(reduction='mean', gamma=1.0, eps=1e-08)"
