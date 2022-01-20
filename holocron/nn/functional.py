@@ -11,7 +11,8 @@ import torch.nn.functional as F
 from torch import Tensor
 
 __all__ = ['hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'complement_cross_entropy',
-           'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool', 'concat_downsample2d']
+           'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool', 'concat_downsample2d',
+           'dice_loss']
 
 
 def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
@@ -508,3 +509,41 @@ def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = Fa
         out *= mask.numel() / one_count
 
     return out
+
+
+def dice_loss(
+    x: Tensor,
+    target: Tensor,
+    weight: Optional[Tensor] = None,
+    gamma: float = 1.,
+    eps: float = 1e-8,
+) -> Tensor:
+    """Implements the dice loss from `"V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image
+    Segmentation" <https://arxiv.org/pdf/1606.04797.pdf>`_
+
+    Args:
+        x (torch.Tensor[N, K, ...]): predicted probability
+        target (torch.Tensor[N, K, ...]): target probability
+        weight (torch.Tensor[K], optional): manual rescaling of each class
+        gamma (float, optional): controls the balance between recall (gamma > 1) and precision (gamma < 1)
+        eps (float, optional): epsilon to balance the loss and avoids division by zero
+
+    Returns:
+        torch.Tensor: loss reduced with `reduction` method
+    """
+
+    inter = gamma * (x * target).flatten(2).sum((0, 2))
+    cardinality = (x + gamma * target).flatten(2).sum((0, 2))
+
+    dice_coeff = (inter + eps) / (cardinality + eps)
+
+    # Weight
+    if weight is None:
+        loss = 1 - (1 + 1 / gamma) * dice_coeff.mean()
+    else:
+        # Tensor type
+        if weight.type() != x.data.type():
+            weight = weight.type_as(x.data)
+        loss = 1 - (1 + 1 / gamma) * (weight * dice_coeff).sum() / weight.sum()
+
+    return loss
