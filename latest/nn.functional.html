@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.functional &mdash; holocron 0.2.0.dev0+7eeca82-git documentation</title>
+  <title>holocron.nn.functional &mdash; holocron 0.2.0.dev0+0a29c3c-git documentation</title>
   
 
   
@@ -334,6 +334,30 @@
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
 <li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – complement factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>loss reduced with <cite>reduction</cite> method</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.nn.functional.dice_loss">
+<code class="sig-prename descclassname">holocron.nn.functional.</code><code class="sig-name descname">dice_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">target</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">weight</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>torch.Tensor<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">eps</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-08</span></em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/holocron/nn/functional.html#dice_loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.functional.dice_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the dice loss from <a class="reference external" href="https://arxiv.org/pdf/1606.04797.pdf">“V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image
+Segmentation”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>..</em><em>]</em>) – predicted probability</p></li>
+<li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>..</em><em>]</em>) – target probability</p></li>
+<li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – manual rescaling of each class</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – controls the balance between recall (gamma &gt; 1) and precision (gamma &lt; 1)</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – epsilon to balance the loss and avoids division by zero</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
