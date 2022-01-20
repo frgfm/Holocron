@@ -26,6 +26,8 @@ Loss functions
 
 .. autofunction:: complement_cross_entropy
 
+.. autofunction:: dice_loss
+
 Convolutions
 ------------
 

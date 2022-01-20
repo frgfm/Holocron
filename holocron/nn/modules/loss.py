@@ -12,7 +12,7 @@ from torch import Tensor
 from .. import functional as F
 
 __all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'ComplementCrossEntropy',
-           'ClassBalancedWrapper', 'MutualChannelLoss']
+           'ClassBalancedWrapper', 'MutualChannelLoss', 'DiceLoss']
 
 
 class _Loss(nn.Module):
@@ -184,3 +184,30 @@ class MutualChannelLoss(_Loss):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(reduction='{self.reduction}', xi={self.xi}, alpha={self.alpha})"
+
+
+class DiceLoss(_Loss):
+    """Implements the dice loss from `"V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image
+    Segmentation" <https://arxiv.org/pdf/1606.04797.pdf>`_
+
+    Args:
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        gamma (float, optional): recall/precision control param
+        eps (float, optional): small value added to avoid division by zero
+    """
+
+    def __init__(
+        self,
+        weight: Optional[Union[float, List[float], Tensor]] = None,
+        gamma: float = 1.,
+        eps: float = 1e-8,
+    ) -> None:
+        super().__init__(weight)
+        self.gamma = gamma
+        self.eps = eps
+
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+        return F.dice_loss(x, target, self.weight, self.gamma, self.eps)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(reduction='{self.reduction}', gamma={self.gamma}, eps={self.eps})"
