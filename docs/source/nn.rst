@@ -26,6 +26,8 @@ Loss functions
 
 .. autoclass:: MutualChannelLoss
 
+.. autoclass:: DiceLoss
+
 
 Loss wrappers
 --------------
