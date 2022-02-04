@@ -37,5 +37,5 @@ jobs:
       - name: Run demo
         run: |
           screen -dm python demo/app.py --port 8501
-          sleep 20
+          sleep 15
           curl http://localhost:8501/
