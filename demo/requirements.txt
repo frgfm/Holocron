@@ -1,2 +1,2 @@
--e git+https://github.com/frgfm/Holocron.git#egg=pylocron
+pylocron
 gradio>=2.7.5
