@@ -4,7 +4,15 @@ from pathlib import Path
 shebang = ["#!usr/bin/python\n"]
 blank_line = "\n"
 
-copyright_notice = [f"# Copyright (C) 2019-{datetime.now().year}, François-Guillaume Fernandez.\n"]
+# Possible years
+starting_year = 2019
+current_year = datetime.now().year
+
+year_options = [f"{current_year}"] + [f"{year}-{current_year}" for year in range(starting_year, current_year)]
+copyright_notices = [
+    [f"# Copyright (C) {year_str}, François-Guillaume Fernandez.\n"]
+    for year_str in year_options
+]
 license_notice = [
     "# This program is licensed under the Apache License version 2.\n",
     "# See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.\n"
@@ -12,9 +20,13 @@ license_notice = [
 
 # Define all header options
 HEADERS = [
-    shebang + [blank_line] + copyright_notice + [blank_line] + license_notice,
+    shebang + [blank_line] + copyright_notice + [blank_line] + license_notice
+    for copyright_notice in copyright_notices
+] + [
     copyright_notice + [blank_line] + license_notice
+    for copyright_notice in copyright_notices
 ]
+
 
 IGNORED_FILES = ["version.py", "__init__.py"]
 FOLDERS = ["holocron", "scripts", "references"]
