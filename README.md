@@ -1,4 +1,7 @@
-# Holocron
+<p align="center">
+  <img src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/holocron_logo_text.png" width="40%">
+</p>
+
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/1d5c892028434715834359dce09d2210)](https://www.codacy.com/gh/frgfm/Holocron/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frgfm/Holocron&amp;utm_campaign=Badge_Grade) ![Build Status](https://github.com/frgfm/Holocron/workflows/tests/badge.svg) [![codecov](https://codecov.io/gh/frgfm/Holocron/branch/master/graph/badge.svg)](https://codecov.io/gh/frgfm/Holocron) [![Docs](https://img.shields.io/badge/docs-available-blue.svg)](https://frgfm.github.io/Holocron)   [![Pypi](https://img.shields.io/badge/pypi-v0.1.3-blue.svg)](https://pypi.org/project/pylocron/) 
 
@@ -7,8 +10,6 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 > **Holocrons** were information-storage [datacron](https://starwars.fandom.com/wiki/Datacron) devices used by both the [Jedi Order](https://starwars.fandom.com/wiki/Jedi_Order) and the [Sith](https://starwars.fandom.com/wiki/Sith) that contained ancient lessons or valuable information in [holographic](https://starwars.fandom.com/wiki/Hologram) form.
 
 *Source: Wookieepedia*
-
-*Note: support of activation mapper and model summary has been dropped and outsourced to independent packages ([torch-cam](https://github.com/frgfm/torch-cam) & [torch-scan](https://github.com/frgfm/torch-scan)) to clarify project scope.*
 
 ## Quick Tour
 
@@ -21,9 +22,9 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 - Attention: [SAM](https://arxiv.org/abs/1807.06521), [LambdaLayer](https://openreview.net/forum?id=xTJEN-ggl1b), [TripletAttention](https://arxiv.org/abs/2010.03045)
 
 ### Models for vision tasks
-- Classification: [Res2Net](https://arxiv.org/abs/1904.01169) (based on the great [implementation](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/res2net.py) from Ross Wightman), [Darknet-24](https://pjreddie.com/media/files/papers/yolo_1.pdf), [Darknet-19](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [Darknet-53](https://pjreddie.com/media/files/papers/YOLOv3.pdf), [CSPDarknet-53](<https://arxiv.org/abs/1911.11929>), [ResNet](https://arxiv.org/abs/1512.03385), [ResNeXt](https://arxiv.org/abs/1611.05431), [TridentNet](https://arxiv.org/abs/1901.01892), [PyConvResNet](https://arxiv.org/abs/2006.11538), [ReXNet](https://arxiv.org/abs/2007.00992), [SKNet](https://arxiv.org/abs/1903.06586), [RepVGG](https://arxiv.org/abs/2101.03697).
-- Detection: [YOLOv1](https://pjreddie.com/media/files/papers/yolo_1.pdf), [YOLOv2](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [YOLOv4](https://arxiv.org/abs/2004.10934)
-- Segmentation: [U-Net](https://arxiv.org/abs/1505.04597), [UNet++](https://arxiv.org/abs/1807.10165), [UNet3+](https://arxiv.org/abs/2004.08790)
+- Image Classification: [Res2Net](https://arxiv.org/abs/1904.01169) (based on the great [implementation](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/res2net.py) from Ross Wightman), [Darknet-24](https://pjreddie.com/media/files/papers/yolo_1.pdf), [Darknet-19](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [Darknet-53](https://pjreddie.com/media/files/papers/YOLOv3.pdf), [CSPDarknet-53](<https://arxiv.org/abs/1911.11929>), [ResNet](https://arxiv.org/abs/1512.03385), [ResNeXt](https://arxiv.org/abs/1611.05431), [TridentNet](https://arxiv.org/abs/1901.01892), [PyConvResNet](https://arxiv.org/abs/2006.11538), [ReXNet](https://arxiv.org/abs/2007.00992), [SKNet](https://arxiv.org/abs/1903.06586), [RepVGG](https://arxiv.org/abs/2101.03697).
+- Object Detection: [YOLOv1](https://pjreddie.com/media/files/papers/yolo_1.pdf), [YOLOv2](https://pjreddie.com/media/files/papers/YOLO9000.pdf), [YOLOv4](https://arxiv.org/abs/2004.10934)
+- Semantic Segmentation: [U-Net](https://arxiv.org/abs/1505.04597), [UNet++](https://arxiv.org/abs/1807.10165), [UNet3+](https://arxiv.org/abs/2004.08790)
 
 ### Vision-related operations
 - boxes: [Distance-IoU & Complete-IoU losses](https://arxiv.org/abs/1911.08287)
@@ -34,11 +35,13 @@ Implementations of recent Deep Learning tricks in Computer Vision, easily paired
 
 
 
-## Setup
+## Installation
+
+### Prerequisites
 
 Python 3.6 (or higher) and [pip](https://pip.pypa.io/en/stable/)/[conda](https://docs.conda.io/en/latest/miniconda.html) are required to install Holocron.
 
-### Stable release
+### Latest stable release
 
 You can install the last stable release of the package using [pypi](https://pypi.org/project/pylocron/) as follows:
 
@@ -52,9 +55,9 @@ or using [conda](https://anaconda.org/frgfm/pylocron):
 conda install -c frgfm pylocron
 ```
 
-### Developer installation
+### Developer mode
 
-Alternatively, if you wish to use the latest features of the project that haven't made their way to a release yet, you can install the package from source:
+Alternatively, if you wish to use the latest features of the project that haven't made their way to a release yet, you can install the package from source *(install [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) first)*:
 
 ```shell
 git clone https://github.com/frgfm/Holocron.git
@@ -62,12 +65,18 @@ pip install -e Holocron/.
 ```
 
 
-## What else
+
+## More goodies
 
 ### Documentation
 
 The full package documentation is available [here](https://frgfm.github.io/holocron/) for detailed specifications.
 
+### Demo app
+
+The project includes a minimal demo app using [Gradio](https://gradio.app/)
+
+![demo_app](https://github.com/frgfm/Holocron/releases/download/v0.1.3/holocron_gradio.png)
 
 ### Reference scripts
 
@@ -121,6 +130,39 @@ python scripts/eval_latency.py rexnet1_0x
 ```
 
 *All script arguments can be checked using `python scripts/eval_latency.py --help`*
+
+### Docker container
+
+If you wish to deploy containerized environments, you can use the provided Dockerfile to build a docker image:
+
+```shell
+docker build . -t <YOUR_IMAGE_TAG>
+```
+
+### Minimal API template
+
+Looking for a boilerplate to deploy a model from Holocron with a REST API? Thanks to the wonderful [FastAPI](https://github.com/tiangolo/fastapi) framework, you can do this easily.
+
+#### Deploy your API locally
+
+Run your API in a docker container as follows:
+
+```shell
+PORT=8002 docker-compose up -d --build
+```
+
+*In order to stop the container, use `PORT=8002 docker-compose down`*
+
+#### What you have deployed
+
+Your API is now running on port 8002, with its documentation http://localhost:8002/redoc and requestable routes:
+
+```python
+import requests
+with open('/path/to/your/img.jpeg', 'rb') as f:
+    data = f.read()
+response = requests.post("http://localhost:8002/classification", files={'file': data}).json()
+```
 
 
 
