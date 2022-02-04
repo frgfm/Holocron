@@ -4,6 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 import pytest
+import pytest_asyncio
 import requests
 from app.main import app
 from httpx import AsyncClient
@@ -15,7 +16,7 @@ def mock_classification_image(tmpdir_factory):
     return requests.get(url).content
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def test_app_asyncio():
     # for httpx>=20, follow_redirects=True (cf. https://github.com/encode/httpx/releases/tag/0.20.0)
     async with AsyncClient(app=app, base_url="http://test") as ac:
