@@ -30,6 +30,8 @@ SECONDARY_LABELS = {
     "module: optim",
     "module: trainer",
     "module: utils",
+    "ext: api",
+    "ext: demo",
     "ext: docs",
     "ext: references",
     "ext: scripts",
