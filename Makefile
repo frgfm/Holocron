@@ -13,6 +13,12 @@ style:
 test:
 	coverage run -m pytest tests/
 
+
+# Run sanity checks for the library
+sanity:
+	python .github/validate_headers.py
+	python .github/validate_deps.py
+
 # Build documentation for current version
 docs-single-version:
 	sphinx-build docs/source docs/_build -a

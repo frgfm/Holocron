@@ -80,6 +80,14 @@ In order to run the same unit tests as the CI workflows, you can run unittests l
 make test
 ```
 
+#### Sanity checks
+
+The CI will also run some sanity checks (header format, dependency consistency, etc.), which you can run as follows:
+
+```shell
+make sanity
+```
+
 #### Code quality
 
 To run all quality checks together
