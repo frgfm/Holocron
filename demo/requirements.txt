@@ -1,0 +1,2 @@
+pylocron
+gradio>=2.7.5
