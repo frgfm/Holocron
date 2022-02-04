@@ -354,13 +354,20 @@ class YOLOv1(_YOLO):
         return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
-def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, **kwargs: Any) -> YOLOv1:
+def _yolo(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    pretrained_backbone: bool,
+    layout: List[List[int]],
+    **kwargs: Any
+) -> YOLOv1:
 
     if pretrained:
         pretrained_backbone = False
 
     # Build the model
-    model = YOLOv1(default_cfgs[arch]['backbone']['layout'], **kwargs)
+    model = YOLOv1(layout, **kwargs)
     # Load backbone pretrained parameters
     if pretrained_backbone:
         load_pretrained_params(model.backbone, default_cfgs[arch]['backbone']['url'], progress,
@@ -438,4 +445,11 @@ def yolov1(pretrained: bool = False, progress: bool = True, pretrained_backbone:
         torch.nn.Module: detection module
     """
 
-    return _yolo('yolov1', pretrained, progress, pretrained_backbone, **kwargs)  # type: ignore[return-value]
+    return _yolo(
+        'yolov1',
+        pretrained,
+        progress,
+        pretrained_backbone,
+        [[192], [128, 256, 256, 512], [*([256, 512] * 4), 512, 1024], [512, 1024] * 2],
+        **kwargs,
+    )

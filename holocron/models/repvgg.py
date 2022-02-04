@@ -210,7 +210,7 @@ def _repvgg(
 
     # Build the model
     model = RepVGG(num_blocks, [64, 64, 128, 256, 512], a, b, **kwargs)
-    model.default_cfg = default_cfgs[arch]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)

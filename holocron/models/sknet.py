@@ -128,8 +128,8 @@ def _sknet(
 ) -> ResNet:
 
     # Build the model
-    model = ResNet(SKBottleneck, num_blocks, out_chans, **kwargs)
-    model.default_cfg = default_cfgs[arch]
+    model = ResNet(SKBottleneck, num_blocks, out_chans, **kwargs)  # type: ignore[arg-type]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)

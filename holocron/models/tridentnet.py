@@ -100,8 +100,8 @@ def _tridentnet(
     **kwargs: Any,
 ) -> ResNet:
     # Build the model
-    model = ResNet(Tridentneck, num_blocks, out_chans, num_repeats=3, **kwargs)
-    model.default_cfg = default_cfgs[arch]
+    model = ResNet(Tridentneck, num_blocks, out_chans, num_repeats=3, **kwargs)  # type: ignore[arg-type]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)

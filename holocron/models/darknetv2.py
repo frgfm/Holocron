@@ -118,10 +118,10 @@ class DarknetV2(nn.Sequential):
         init_module(self, 'leaky_relu')
 
 
-def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[List[int]], **kwargs: Any) -> DarknetV2:
+def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int, int]], **kwargs: Any) -> DarknetV2:
     # Build the model
     model = DarknetV2(layout, **kwargs)
-    model.default_cfg = default_cfgs[arch]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)

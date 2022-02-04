@@ -128,14 +128,14 @@ def _res2net(
 ) -> ResNet:
     # Build the model
     model = ResNet(
-        Bottle2neck,
+        Bottle2neck,  # type: ignore[arg-type]
         num_blocks,
         out_chans,
         width_per_group=width_per_group,
         block_args=dict(scale=scale),
         **kwargs
     )
-    model.default_cfg = default_cfgs[arch]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)

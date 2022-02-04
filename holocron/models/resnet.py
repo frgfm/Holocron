@@ -296,7 +296,7 @@ def _resnet(
     arch: str,
     pretrained: bool,
     progress: bool,
-    block: Callable[[Any], _ResBlock],
+    block: Type[Union[BasicBlock, Bottleneck]],
     num_blocks: List[int],
     out_chans: List[int],
     **kwargs: Any,
@@ -306,7 +306,7 @@ def _resnet(
 
     # Build the model
     model = ResNet(block, num_blocks, out_chans, **kwargs)
-    model.default_cfg = default_cfgs[arch]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)

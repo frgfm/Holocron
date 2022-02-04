@@ -95,7 +95,7 @@ class DarknetV1(nn.Sequential):
 def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[List[int]], **kwargs: Any) -> DarknetV1:
     # Build the model
     model = DarknetV1(layout, **kwargs)
-    model.default_cfg = default_cfgs[arch]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)

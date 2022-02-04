@@ -3,7 +3,7 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from torch.nn import Module
 
@@ -70,7 +70,7 @@ def _pyconvresnet(
     arch: str,
     pretrained: bool,
     progress: bool,
-    block: Callable[..., _ResBlock],
+    block: Type[Union[PyBottleneck, PyHGBottleneck]],
     num_blocks: List[int],
     out_chans: List[int],
     width_per_group: int,
@@ -80,7 +80,7 @@ def _pyconvresnet(
 
     # Build the model
     model = ResNet(
-        block,
+        block,  # type: ignore[arg-type]
         num_blocks,
         out_chans,
         stem_pool=False,
@@ -88,7 +88,7 @@ def _pyconvresnet(
         block_args=[dict(num_levels=len(group), groups=group) for group in groups],
         **kwargs
     )
-    model.default_cfg = default_cfgs[arch]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)

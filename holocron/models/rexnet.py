@@ -195,7 +195,7 @@ def _rexnet(
 
     # Build the model
     model = ReXNet(width_mult, depth_mult, **kwargs)
-    model.default_cfg = default_cfgs[arch]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
