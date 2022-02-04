@@ -195,13 +195,20 @@ class YOLOv2(_YOLO):
         return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
 
 
-def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, **kwargs: Any) -> YOLOv2:
+def _yolo(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    pretrained_backbone: bool,
+    layout: List[Tuple[int, int]],
+    **kwargs: Any
+) -> YOLOv2:
 
     if pretrained:
         pretrained_backbone = False
 
     # Build the model
-    model = YOLOv2(default_cfgs[arch]['backbone']['layout'], **kwargs)
+    model = YOLOv2(layout, **kwargs)
     # Load backbone pretrained parameters
     if pretrained_backbone:
         load_pretrained_params(model.backbone, default_cfgs[arch]['backbone']['url'], progress,
@@ -248,4 +255,11 @@ def yolov2(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     if pretrained_backbone:
         kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
 
-    return _yolo('yolov2', pretrained, progress, pretrained_backbone, **kwargs)  # type: ignore[return-value]
+    return _yolo(
+        'yolov2',
+        pretrained,
+        progress,
+        pretrained_backbone,
+        [(64, 0), (128, 1), (256, 1), (512, 2), (1024, 2)],
+        **kwargs,
+    )

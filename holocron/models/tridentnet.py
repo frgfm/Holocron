@@ -3,20 +3,24 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
+from .presets import IMAGENETTE
 from .resnet import ResNet, _ResBlock
 from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['Tridentneck', 'tridentnet50']
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'tridentnet50': {'block': 'Tridentneck', 'num_blocks': [3, 4, 6, 3],
-                     'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/tridentnet50_224-98b4ce9c.pth'},
+    'tridentnet50': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/tridentnet50_224-98b4ce9c.pth',
+    },
 }
 
 
@@ -87,10 +91,17 @@ class Tridentneck(_ResBlock):
             downsample, act_layer)
 
 
-def _tridentnet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> ResNet:
+def _tridentnet(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    num_blocks: List[int],
+    out_chans: List[int],
+    **kwargs: Any,
+) -> ResNet:
     # Build the model
-    model = ResNet(Tridentneck, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512],  # type: ignore[arg-type]
-                   num_repeats=3, **kwargs)
+    model = ResNet(Tridentneck, num_blocks, out_chans, num_repeats=3, **kwargs)  # type: ignore[arg-type]
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -110,4 +121,4 @@ def tridentnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any)
         torch.nn.Module: classification model
     """
 
-    return _tridentnet('tridentnet50', pretrained, progress, **kwargs)
+    return _tridentnet('tridentnet50', pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)

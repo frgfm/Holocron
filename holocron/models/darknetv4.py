@@ -13,6 +13,7 @@ from holocron.nn import DropBlock2d, GlobalAvgPool2d
 
 from ..nn.init import init_module
 from .darknetv3 import ResBlock
+from .presets import IMAGENETTE
 from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['DarknetV4', 'cspdarknet53', 'cspdarknet53_mish']
@@ -20,14 +21,14 @@ __all__ = ['DarknetV4', 'cspdarknet53', 'cspdarknet53_mish']
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     'cspdarknet53': {
-        'arch': 'DarknetV4',
-        'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_224-d2a17b18.pt'
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_224-d2a17b18.pt',
     },
     'cspdarknet53_mish': {
-        'arch': 'DarknetV4',
-        'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_mish_256-32d8ec68.pt'
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_mish_256-32d8ec68.pt',
     },
 }
 
@@ -144,9 +145,10 @@ class DarknetV4(nn.Sequential):
         init_module(self, 'leaky_relu')
 
 
-def _darknet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> DarknetV4:
+def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int, int]], **kwargs: Any) -> DarknetV4:
     # Build the model
-    model = DarknetV4(default_cfgs[arch]['layout'], **kwargs)
+    model = DarknetV4(layout, **kwargs)
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -166,7 +168,7 @@ def cspdarknet53(pretrained: bool = False, progress: bool = True, **kwargs: Any)
         torch.nn.Module: classification model
     """
 
-    return _darknet('cspdarknet53', pretrained, progress, **kwargs)  # type: ignore[return-value]
+    return _darknet('cspdarknet53', pretrained, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)
 
 
 def cspdarknet53_mish(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> DarknetV4:
@@ -185,4 +187,10 @@ def cspdarknet53_mish(pretrained: bool = False, progress: bool = True, **kwargs:
     kwargs['act_layer'] = nn.Mish(inplace=True)
     kwargs['drop_layer'] = DropBlock2d
 
-    return _darknet('cspdarknet53_mish', pretrained, progress, **kwargs)  # type: ignore[return-value]
+    return _darknet(
+        'cspdarknet53_mish',
+        pretrained,
+        progress,
+        [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
+        **kwargs
+    )

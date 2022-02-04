@@ -5,34 +5,57 @@
 
 from collections import OrderedDict
 from math import ceil
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Optional
 
 import torch.nn as nn
 
 from holocron.nn import GlobalAvgPool2d, init
 
+from .presets import IMAGENET
 from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'rexnet1_0x': {'width_mult': 1.0, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth'},
-    'rexnet1_3x': {'width_mult': 1.3, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth'},
-    'rexnet1_5x': {'width_mult': 1.5, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth'},
-    'rexnet2_0x': {'width_mult': 2.0, 'depth_mult': 1.0,
-                   'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth'},
-    'rexnet2_2x': {'width_mult': 2.2, 'depth_mult': 1.0,
-                   'url': None},
+    'rexnet1_0x': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth',
+    },
+    'rexnet1_3x': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth',
+    },
+    'rexnet1_5x': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth',
+    },
+    'rexnet2_0x': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth',
+    },
+    'rexnet2_2x': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': None,
+    },
 }
 
 
 class SEBlock(nn.Module):
 
-    def __init__(self, channels, se_ratio=12, act_layer=None, norm_layer=None, drop_layer=None):
+    def __init__(
+        self,
+        channels: int,
+        se_ratio: int = 12,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+    ) -> None:
         super().__init__()
         self.pool = GlobalAvgPool2d(flatten=False)
         self.conv = nn.Sequential(
@@ -49,8 +72,18 @@ class SEBlock(nn.Module):
 
 
 class ReXBlock(nn.Module):
-    def __init__(self, in_channels, channels, t, stride, use_se=True, se_ratio=12,
-                 act_layer=None, norm_layer=None, drop_layer=None):
+    def __init__(
+        self,
+        in_channels: int,
+        channels: int,
+        t: int,
+        stride: int,
+        use_se: bool = True,
+        se_ratio: int = 12,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+    ) -> None:
         super().__init__()
 
         if act_layer is None:
@@ -91,9 +124,22 @@ class ReXBlock(nn.Module):
 
 
 class ReXNet(nn.Sequential):
-    def __init__(self, width_mult=1.0, depth_mult=1.0, num_classes=1000, in_channels=3, in_planes=16, final_planes=180,
-                 use_se=True, se_ratio=12, dropout_ratio=0.2, bn_momentum=0.9,
-                 act_layer=None, norm_layer=None, drop_layer=None):
+    def __init__(
+        self,
+        width_mult: float = 1.0,
+        depth_mult: float = 1.0,
+        num_classes: int = 1000,
+        in_channels: int = 3,
+        in_planes: int = 16,
+        final_planes: int = 180,
+        use_se: bool = True,
+        se_ratio: int = 12,
+        dropout_ratio: float = 0.2,
+        bn_momentum: float = 0.9,
+        act_layer: Optional[nn.Module] = None,
+        norm_layer: Optional[Callable[[int], nn.Module]] = None,
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
+    ) -> None:
         """Mostly adapted from https://github.com/clovaai/rexnet/blob/master/rexnetv1.py"""
         super().__init__()
 
@@ -138,10 +184,18 @@ class ReXNet(nn.Sequential):
         init.init_module(self, nonlinearity='relu')
 
 
-def _rexnet(arch, pretrained, progress, **kwargs):
+def _rexnet(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    width_mult: float,
+    depth_mult: float,
+    **kwargs: Any
+) -> ReXNet:
 
     # Build the model
-    model = ReXNet(default_cfgs[arch]['width_mult'], default_cfgs[arch]['depth_mult'], **kwargs)
+    model = ReXNet(width_mult, depth_mult, **kwargs)
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -149,7 +203,7 @@ def _rexnet(arch, pretrained, progress, **kwargs):
     return model
 
 
-def rexnet1_0x(pretrained=False, progress=True, **kwargs):
+def rexnet1_0x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
     """ReXNet-1.0x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
@@ -162,10 +216,10 @@ def rexnet1_0x(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet1_0x', pretrained, progress, **kwargs)
+    return _rexnet('rexnet1_0x', pretrained, progress, 1, 1, **kwargs)
 
 
-def rexnet1_3x(pretrained=False, progress=True, **kwargs):
+def rexnet1_3x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
     """ReXNet-1.3x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
@@ -178,10 +232,10 @@ def rexnet1_3x(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet1_3x', pretrained, progress, **kwargs)
+    return _rexnet('rexnet1_3x', pretrained, progress, 1.3, 1, **kwargs)
 
 
-def rexnet1_5x(pretrained=False, progress=True, **kwargs):
+def rexnet1_5x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
     """ReXNet-1.5x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
@@ -194,10 +248,10 @@ def rexnet1_5x(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet1_5x', pretrained, progress, **kwargs)
+    return _rexnet('rexnet1_5x', pretrained, progress, 1.5, 1, **kwargs)
 
 
-def rexnet2_0x(pretrained=False, progress=True, **kwargs):
+def rexnet2_0x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
     """ReXNet-2.0x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
@@ -210,10 +264,10 @@ def rexnet2_0x(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet2_0x', pretrained, progress, **kwargs)
+    return _rexnet('rexnet2_0x', pretrained, progress, 2, 1, **kwargs)
 
 
-def rexnet2_2x(pretrained=False, progress=True, **kwargs):
+def rexnet2_2x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
     """ReXNet-2.2x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
@@ -226,4 +280,4 @@ def rexnet2_2x(pretrained=False, progress=True, **kwargs):
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet2_2x', pretrained, progress, **kwargs)
+    return _rexnet('rexnet2_2x', pretrained, progress, 2.2, 1, **kwargs)

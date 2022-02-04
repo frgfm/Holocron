@@ -504,13 +504,20 @@ class YOLOv4(nn.Module):
         return self.head((x20, x13, x6), target)
 
 
-def _yolo(arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, **kwargs: Any) -> YOLOv4:
+def _yolo(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    pretrained_backbone: bool,
+    layout: List[Tuple[int, int]],
+    **kwargs: Any,
+) -> YOLOv4:
 
     if pretrained:
         pretrained_backbone = False
 
     # Build the model
-    model = YOLOv4(default_cfgs[arch]['backbone']['layout'], **kwargs)  # type: ignore[index]
+    model = YOLOv4(layout, **kwargs)
     # Load backbone pretrained parameters
     if pretrained_backbone:
         load_pretrained_params(model.backbone, default_cfgs[arch]['backbone']['url'], progress,  # type: ignore[index]
@@ -557,4 +564,11 @@ def yolov4(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     if pretrained_backbone:
         kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
 
-    return _yolo('yolov4', pretrained, progress, pretrained_backbone, **kwargs)  # type: ignore[return-value]
+    return _yolo(
+        'yolov4',
+        pretrained,
+        progress,
+        pretrained_backbone,
+        [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
+        **kwargs,
+    )

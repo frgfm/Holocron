@@ -4,32 +4,54 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
 
 from ..nn import GlobalAvgPool2d
+from .presets import IMAGENETTE
 from .utils import fuse_conv_bn, load_pretrained_params
 
 __all__ = ['RepVGG', 'RepBlock', 'RepVGG', 'repvgg_a0', 'repvgg_a1', 'repvgg_a2',
            'repvgg_b0', 'repvgg_b1', 'repvgg_b2', 'repvgg_b3']
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'repvgg_a0': {'num_blocks': [1, 2, 4, 14, 1], 'a': 0.75, 'b': 2.5,
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a0_224-150f4b9d.pt'},
-    'repvgg_a1': {'num_blocks': [1, 2, 4, 14, 1], 'a': 1, 'b': 2.5,
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a1_224-870b9e4b.pt'},
-    'repvgg_a2': {'num_blocks': [1, 2, 4, 14, 1], 'a': 1.5, 'b': 2.75,
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a2_224-7051289a.pth'},
-    'repvgg_b0': {'num_blocks': [1, 4, 6, 16, 1], 'a': 1, 'b': 2.5,
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_b0_224-7e9c3fc7.pth'},
-    'repvgg_b1': {'num_blocks': [1, 4, 6, 16, 1], 'a': 2, 'b': 4,
-                  'url': None},
-    'repvgg_b2': {'num_blocks': [1, 4, 6, 16, 1], 'a': 2.5, 'b': 5,
-                  'url': None},
-    'repvgg_b3': {'num_blocks': [1, 4, 6, 16, 1], 'a': 3, 'b': 5,
-                  'url': None},
+    'repvgg_a0': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a0_224-150f4b9d.pt'
+    },
+    'repvgg_a1': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a1_224-870b9e4b.pt'
+    },
+    'repvgg_a2': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a2_224-7051289a.pt'
+    },
+    'repvgg_b0': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_b0_224-7e9c3fc7.pth'
+    },
+    'repvgg_b1': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': None,
+    },
+    'repvgg_b2': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': None,
+    },
+    'repvgg_b3': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': None,
+    },
 }
 
 
@@ -51,7 +73,7 @@ class RepBlock(nn.Module):
         if act_layer is None:
             act_layer = nn.ReLU(inplace=True)
 
-        self.branches = nn.ModuleList([
+        self.branches: Union[nn.Conv2d, nn.ModuleList] = nn.ModuleList([
             nn.Sequential(
                 nn.Conv2d(inplanes, planes, 3, padding=1, bias=(norm_layer is None), stride=stride),
                 norm_layer(planes),
@@ -71,8 +93,8 @@ class RepBlock(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
-        if len(self.branches) == 1:
-            out = self.branches[0](x)
+        if isinstance(self.branches, nn.Conv2d):
+            out = self.branches(x)
         else:
             out = sum(branch(x) for branch in self.branches)
 
@@ -80,7 +102,8 @@ class RepBlock(nn.Module):
 
     def reparametrize(self) -> None:
         """Reparametrize the block by fusing convolutions and BN in each branch, then fusing all branches"""
-
+        if not isinstance(self.branches, nn.ModuleList):
+            raise AssertionError
         inplanes = self.branches[0][0].weight.data.shape[1]
         planes = self.branches[0][0].weight.data.shape[0]
         # Instantiate the equivalent Conv 3x3
@@ -108,7 +131,7 @@ class RepBlock(nn.Module):
             rep.bias.data -= scale_factor * self.branches[2].running_mean  # type: ignore[union-attr]
 
         # Update main branch & delete the others
-        self.branches = nn.ModuleList([rep])
+        self.branches = rep
 
 
 class RepVGG(nn.Sequential):
@@ -174,11 +197,20 @@ class RepVGG(nn.Sequential):
                 block.reparametrize()
 
 
-def _repvgg(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> RepVGG:
+def _repvgg(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    num_blocks: List[int],
+    out_chans: List[int],
+    a: float,
+    b: float,
+    **kwargs: Any
+) -> RepVGG:
 
     # Build the model
-    model = RepVGG(default_cfgs[arch]['num_blocks'], [64, 64, 128, 256, 512],
-                   default_cfgs[arch]['a'], default_cfgs[arch]['b'], **kwargs)
+    model = RepVGG(num_blocks, [64, 64, 128, 256, 512], a, b, **kwargs)
+    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -198,7 +230,7 @@ def repvgg_a0(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_a0', pretrained, progress, **kwargs)
+    return _repvgg('repvgg_a0', pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], .75, 2.5, **kwargs)
 
 
 def repvgg_a1(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -213,7 +245,7 @@ def repvgg_a1(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_a1', pretrained, progress, **kwargs)
+    return _repvgg('repvgg_a1', pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
 
 
 def repvgg_a2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -228,7 +260,7 @@ def repvgg_a2(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_a2', pretrained, progress, **kwargs)
+    return _repvgg('repvgg_a2', pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1.5, 2.75, **kwargs)
 
 
 def repvgg_b0(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -243,7 +275,7 @@ def repvgg_b0(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_b0', pretrained, progress, **kwargs)
+    return _repvgg('repvgg_b0', pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
 
 
 def repvgg_b1(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -258,7 +290,7 @@ def repvgg_b1(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_b1', pretrained, progress, **kwargs)
+    return _repvgg('repvgg_b1', pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2, 4, **kwargs)
 
 
 def repvgg_b2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -273,7 +305,7 @@ def repvgg_b2(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_b2', pretrained, progress, **kwargs)
+    return _repvgg('repvgg_b2', pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2.5, 5, **kwargs)
 
 
 def repvgg_b3(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -288,4 +320,4 @@ def repvgg_b3(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_b3', pretrained, progress, **kwargs)
+    return _repvgg('repvgg_b3', pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 3, 5, **kwargs)

@@ -505,6 +505,6 @@ def unet_rexnet13(
     kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
     kwargs['act_layer'] = kwargs.get('act_layer', nn.SiLU(inplace=True))
     # hotfix of https://github.com/pytorch/vision/issues/3802
-    backbone[21] = nn.SiLU(inplace=True)
+    backbone[21] = nn.SiLU(inplace=True)  # type: ignore[operator,assignment]
 
-    return _dynamic_unet('unet_rexnet13', backbone, pretrained, progress, **kwargs)
+    return _dynamic_unet('unet_rexnet13', backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
