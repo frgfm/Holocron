@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.segmentation.unet &mdash; holocron 0.2.0.dev0+4a8fa10-git documentation</title>
+  <title>holocron.models.segmentation.unet &mdash; holocron 0.2.0.dev0+7bf4f17-git documentation</title>
   
 
   
@@ -733,9 +733,9 @@
     <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;final_upsampling&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;final_upsampling&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;act_layer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;act_layer&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">SiLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
     <span class="c1"># hotfix of https://github.com/pytorch/vision/issues/3802</span>
-    <span class="n">backbone</span><span class="p">[</span><span class="mi">21</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">SiLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">backbone</span><span class="p">[</span><span class="mi">21</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">SiLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># type: ignore[operator,assignment]</span>
 
-    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s1">&#39;unet_rexnet13&#39;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s1">&#39;unet_rexnet13&#39;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span></div>
 </pre></div>
 
            </div>

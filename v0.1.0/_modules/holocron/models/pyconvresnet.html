@@ -190,13 +190,13 @@
 <span class="c1"># This program is licensed under the Apache License version 2.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
 
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">Module</span>
 
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">PyConv2d</span>
 
+<span class="kn">from</span> <span class="nn">.presets</span> <span class="kn">import</span> <span class="n">IMAGENETTE</span>
 <span class="kn">from</span> <span class="nn">.resnet</span> <span class="kn">import</span> <span class="n">ResNet</span><span class="p">,</span> <span class="n">_ResBlock</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
 
@@ -204,14 +204,16 @@
 
 
 <span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;pyconv_resnet50&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;PyBottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;out_chans&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
-                        <span class="s1">&#39;width_per_group&#39;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
-                        <span class="s1">&#39;groups&#39;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-                        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">&#39;pyconvhg_resnet50&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;PyHGBottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;out_chans&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span>
-                          <span class="s1">&#39;width_per_group&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-                          <span class="s1">&#39;groups&#39;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">]],</span>
-                          <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;pyconv_resnet50&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">**</span><span class="n">IMAGENETTE</span><span class="p">,</span>
+        <span class="s1">&#39;input_shape&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;pyconvhg_resnet50&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">**</span><span class="n">IMAGENETTE</span><span class="p">,</span>
+        <span class="s1">&#39;input_shape&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">},</span>
 <span class="p">}</span>
 
 
@@ -251,15 +253,29 @@
     <span class="n">expansion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
 
 
-<span class="k">def</span> <span class="nf">_pyconvresnet</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_pyconvresnet</span><span class="p">(</span>
+    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">block</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">PyBottleneck</span><span class="p">,</span> <span class="n">PyHGBottleneck</span><span class="p">]],</span>
+    <span class="n">num_blocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">out_chans</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">width_per_group</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">groups</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 
-    <span class="c1"># Retrieve the correct block type</span>
-    <span class="n">block</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;block&#39;</span><span class="p">]]</span>
     <span class="c1"># Build the model</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">ResNet</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;num_blocks&#39;</span><span class="p">],</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;out_chans&#39;</span><span class="p">],</span> <span class="n">stem_pool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                   <span class="n">width_per_group</span><span class="o">=</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;width_per_group&#39;</span><span class="p">],</span>
-                   <span class="n">block_args</span><span class="o">=</span><span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">num_levels</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">),</span> <span class="n">groups</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
-                               <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;groups&#39;</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ResNet</span><span class="p">(</span>
+        <span class="n">block</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="n">num_blocks</span><span class="p">,</span>
+        <span class="n">out_chans</span><span class="p">,</span>
+        <span class="n">stem_pool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">width_per_group</span><span class="o">=</span><span class="n">width_per_group</span><span class="p">,</span>
+        <span class="n">block_args</span><span class="o">=</span><span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">num_levels</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">),</span> <span class="n">groups</span><span class="o">=</span><span class="n">group</span><span class="p">)</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">default_cfg</span> <span class="o">=</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>  <span class="c1"># type: ignore[assignment]</span>
     <span class="c1"># Load pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
@@ -279,7 +295,17 @@
 <span class="sd">        torch.nn.Module: classification model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_pyconvresnet</span><span class="p">(</span><span class="s1">&#39;pyconv_resnet50&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_pyconvresnet</span><span class="p">(</span>
+        <span class="s1">&#39;pyconv_resnet50&#39;</span><span class="p">,</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">progress</span><span class="p">,</span>
+        <span class="n">PyBottleneck</span><span class="p">,</span>
+        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
+        <span class="mi">64</span><span class="p">,</span>
+        <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="pyconvhg_resnet50"><a class="viewcode-back" href="../../../models.html#holocron.models.pyconvhg_resnet50">[docs]</a><span class="k">def</span> <span class="nf">pyconvhg_resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
@@ -294,7 +320,17 @@
 <span class="sd">        torch.nn.Module: classification model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_pyconvresnet</span><span class="p">(</span><span class="s1">&#39;pyconvhg_resnet50&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_pyconvresnet</span><span class="p">(</span>
+        <span class="s1">&#39;pyconvhg_resnet50&#39;</span><span class="p">,</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">progress</span><span class="p">,</span>
+        <span class="n">PyHGBottleneck</span><span class="p">,</span>
+        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span>
+        <span class="mi">2</span><span class="p">,</span>
+        <span class="p">[[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="p">[</span><span class="mi">32</span><span class="p">]],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
 </pre></div>
 
            </div>

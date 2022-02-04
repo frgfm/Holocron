@@ -221,6 +221,7 @@
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">DropBlock2d</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span>
 
 <span class="kn">from</span> <span class="nn">..nn.init</span> <span class="kn">import</span> <span class="n">init_module</span>
+<span class="kn">from</span> <span class="nn">.presets</span> <span class="kn">import</span> <span class="n">IMAGENETTE</span>
 <span class="kn">from</span> <span class="nn">.resnet</span> <span class="kn">import</span> <span class="n">_ResBlock</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
 
@@ -228,9 +229,11 @@
 
 
 <span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;darknet53&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;DarknetV3&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span>
-                  <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;darknet53&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">**</span><span class="n">IMAGENETTE</span><span class="p">,</span>
+        <span class="s1">&#39;input_shape&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
 <span class="p">}</span>
 
 
@@ -354,9 +357,10 @@
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_darknet</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DarknetV3</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_darknet</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DarknetV3</span><span class="p">:</span>
     <span class="c1"># Build the model</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">DarknetV3</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;layout&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">DarknetV3</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">default_cfg</span> <span class="o">=</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>  <span class="c1"># type: ignore[assignment]</span>
     <span class="c1"># Load pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
@@ -376,7 +380,13 @@
 <span class="sd">        torch.nn.Module: classification model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_darknet</span><span class="p">(</span><span class="s1">&#39;darknet53&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[return-value]</span></div>
+    <span class="k">return</span> <span class="n">_darknet</span><span class="p">(</span>
+        <span class="s1">&#39;darknet53&#39;</span><span class="p">,</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">progress</span><span class="p">,</span>
+        <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span></div>
 </pre></div>
 
            </div>

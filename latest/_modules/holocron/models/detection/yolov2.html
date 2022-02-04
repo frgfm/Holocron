@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolov2 &mdash; holocron 0.2.0.dev0+4a8fa10-git documentation</title>
+  <title>holocron.models.detection.yolov2 &mdash; holocron 0.2.0.dev0+7bf4f17-git documentation</title>
   
 
   
@@ -423,13 +423,20 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_yolo</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv2</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_yolo</span><span class="p">(</span>
+    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv2</span><span class="p">:</span>
 
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="n">pretrained_backbone</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="c1"># Build the model</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">YOLOv2</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;backbone&#39;</span><span class="p">][</span><span class="s1">&#39;layout&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">YOLOv2</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="c1"># Load backbone pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained_backbone</span><span class="p">:</span>
         <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;backbone&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">,</span>
@@ -476,7 +483,14 @@
     <span class="k">if</span> <span class="n">pretrained_backbone</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;backbone_norm_layer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrozenBatchNorm2d</span>
 
-    <span class="k">return</span> <span class="n">_yolo</span><span class="p">(</span><span class="s1">&#39;yolov2&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[return-value]</span></div>
+    <span class="k">return</span> <span class="n">_yolo</span><span class="p">(</span>
+        <span class="s1">&#39;yolov2&#39;</span><span class="p">,</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">progress</span><span class="p">,</span>
+        <span class="n">pretrained_backbone</span><span class="p">,</span>
+        <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
 </pre></div>
 
            </div>
