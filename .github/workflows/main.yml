@@ -54,7 +54,7 @@ jobs:
           flags: unittests
           fail_ci_if_error: true
 
-  header-check:
+  headers:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -72,7 +72,7 @@ jobs:
       - name: Run unittests
         run: python .github/validate_headers.py
 
-  deps-check:
+  dependencies:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
