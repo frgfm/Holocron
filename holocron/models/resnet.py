@@ -3,7 +3,6 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-import sys
 from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 
@@ -12,6 +11,7 @@ from torch import Tensor
 
 from holocron.nn import GlobalAvgPool2d, init
 
+from .presets import IMAGENET, IMAGENETTE
 from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
@@ -19,22 +19,46 @@ __all__ = ['BasicBlock', 'Bottleneck', 'ResNet', 'resnet18', 'resnet34', 'resnet
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'resnet18': {'block': 'BasicBlock', 'num_blocks': [2, 2, 2, 2],
-                 'url': None},
-    'resnet34': {'block': 'BasicBlock', 'num_blocks': [3, 4, 6, 3],
-                 'url': None},
-    'resnet50': {'block': 'Bottleneck', 'num_blocks': [3, 4, 6, 3],
-                 'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50_256-5e6206e0.pth'},
-    'resnet101': {'block': 'Bottleneck', 'num_blocks': [3, 4, 23, 3],
-                  'url': None},
-    'resnet152': {'block': 'Bottleneck', 'num_blocks': [3, 8, 86, 3],
-                  'url': None},
-    'resnext50_32x4d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 6, 3],
-                        'url': None},
-    'resnext101_32x8d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 23, 3],
-                         'url': None},
-    'resnet50d': {'block': 'Bottleneck', 'num_blocks': [3, 4, 6, 3],
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/resnet50d_224-e315ba9d.pt'},
+    'resnet18': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': None
+    },
+    'resnet34': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': None
+    },
+    'resnet50': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50_256-5e6206e0.pth'
+    },
+    'resnet101': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': None
+    },
+    'resnet152': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': None
+    },
+    'resnext50_32x4d': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': None
+    },
+    'resnext101_32x8d': {
+        **IMAGENET,
+        'input_shape': (3, 224, 224),
+        'url': None
+    },
+    'resnet50d': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/resnet50d_224-e315ba9d.pt',
+    },
 }
 
 
@@ -268,13 +292,21 @@ class ResNet(nn.Sequential):
         return nn.Sequential(*layers)
 
 
-def _resnet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> ResNet:
+def _resnet(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    block: Callable[[Any], _ResBlock],
+    num_blocks: List[int],
+    out_chans: List[int],
+    **kwargs: Any,
+) -> ResNet:
 
-    # Retrieve the correct block type
-    block = sys.modules[__name__].__dict__[default_cfgs[arch]['block']]
+    kwargs['num_classes'] = kwargs.get('num_classes', len(default_cfgs[arch]['classes']))
 
     # Build the model
-    model = ResNet(block, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512], **kwargs)
+    model = ResNet(block, num_blocks, out_chans, **kwargs)
+    model.default_cfg = default_cfgs[arch]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -294,7 +326,7 @@ def resnet18(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _resnet('resnet18', pretrained, progress, **kwargs)
+    return _resnet('resnet18', pretrained, progress, BasicBlock, [2, 2, 2, 2], [64, 128, 256, 512], **kwargs)
 
 
 def resnet34(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -309,7 +341,7 @@ def resnet34(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _resnet('resnet34', pretrained, progress, **kwargs)
+    return _resnet('resnet34', pretrained, progress, BasicBlock, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
 
 
 def resnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -324,7 +356,7 @@ def resnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _resnet('resnet50', pretrained, progress, **kwargs)
+    return _resnet('resnet50', pretrained, progress, Bottleneck, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
 
 
 def resnet50d(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -340,7 +372,17 @@ def resnet50d(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _resnet('resnet50d', pretrained, progress, deep_stem=True, avg_downsample=True, **kwargs)
+    return _resnet(
+        'resnet50d',
+        pretrained,
+        progress,
+        Bottleneck,
+        [3, 4, 6, 3],
+        [64, 128, 256, 512],
+        deep_stem=True,
+        avg_downsample=True,
+        **kwargs
+    )
 
 
 def resnet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -355,7 +397,7 @@ def resnet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _resnet('resnet101', pretrained, progress, **kwargs)
+    return _resnet('resnet101', pretrained, progress, Bottleneck, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
 
 
 def resnet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -370,7 +412,7 @@ def resnet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _resnet('resnet152', pretrained, progress, **kwargs)
+    return _resnet('resnet152', pretrained, progress, Bottleneck, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)
 
 
 def resnext50_32x4d(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -387,7 +429,16 @@ def resnext50_32x4d(pretrained: bool = False, progress: bool = True, **kwargs: A
 
     kwargs['width_per_group'] = 4
     block_args = dict(groups=32)
-    return _resnet('resnext50_32x4d', pretrained, progress, block_args=block_args, **kwargs)
+    return _resnet(
+        'resnext50_32x4d',
+        pretrained,
+        progress,
+        Bottleneck,
+        [3, 4, 6, 3],
+        [64, 128, 256, 512],
+        block_args=block_args,
+        **kwargs
+    )
 
 
 def resnext101_32x8d(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -404,4 +455,13 @@ def resnext101_32x8d(pretrained: bool = False, progress: bool = True, **kwargs: 
 
     kwargs['width_per_group'] = 8
     block_args = dict(groups=32)
-    return _resnet('resnext101_32x8d', pretrained, progress, block_args=block_args, **kwargs)
+    return _resnet(
+        'resnext101_32x8d',
+        pretrained,
+        progress,
+        Bottleneck,
+        [3, 4, 23, 3],
+        [64, 128, 256, 512],
+        block_args=block_args,
+        **kwargs
+    )

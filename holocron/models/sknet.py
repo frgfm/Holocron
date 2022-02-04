@@ -3,13 +3,14 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import torch
 import torch.nn as nn
 
 from holocron.nn import GlobalAvgPool2d
 
+from .presets import IMAGENETTE
 from .resnet import ResNet, _ResBlock
 from .utils import conv_sequence, load_pretrained_params
 
@@ -17,12 +18,21 @@ __all__ = ['SoftAttentionLayer', 'SKConv2d', 'SKBottleneck', 'sknet50', 'sknet10
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'sknet50': {'block': 'SKBottleneck', 'num_blocks': [3, 4, 6, 3],
-                'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/sknet50_224-5d2160f2.pth'},
-    'sknet101': {'block': 'SKBottleneck', 'num_blocks': [3, 4, 23, 3],
-                 'url': None},
-    'sknet152': {'block': 'SKBottleneck', 'num_blocks': [3, 8, 86, 3],
-                 'url': None},
+    'sknet50': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/sknet50_224-5d2160f2.pth',
+    },
+    'sknet101': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': None,
+    },
+    'sknet152': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': None,
+    },
 }
 
 
@@ -37,11 +47,13 @@ class SoftAttentionLayer(nn.Sequential):
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None
     ) -> None:
-        super().__init__(GlobalAvgPool2d(flatten=False),
-                         *conv_sequence(channels, max(channels // sa_ratio, 32), act_layer, norm_layer, drop_layer,
-                                        kernel_size=1, stride=1, bias=(norm_layer is None)),
-                         *conv_sequence(max(channels // sa_ratio, 32), channels * out_multiplier,
-                                        nn.Sigmoid(), None, drop_layer, kernel_size=1, stride=1))
+        super().__init__(
+            GlobalAvgPool2d(flatten=False),
+            *conv_sequence(channels, max(channels // sa_ratio, 32), act_layer, norm_layer, drop_layer,
+                           kernel_size=1, stride=1, bias=(norm_layer is None)),
+            *conv_sequence(max(channels // sa_ratio, 32), channels * out_multiplier,
+                           nn.Sigmoid(), None, drop_layer, kernel_size=1, stride=1)
+        )
 
 
 class SKConv2d(nn.Module):
@@ -58,11 +70,10 @@ class SKConv2d(nn.Module):
         **kwargs: Any
     ) -> None:
         super().__init__()
-        self.path_convs = nn.ModuleList([nn.Sequential(*conv_sequence(in_channels, out_channels,
-                                                                      act_layer, norm_layer, drop_layer,
-                                                                      kernel_size=3, bias=(norm_layer is None),
-                                                                      dilation=idx + 1, padding=idx + 1, **kwargs))
-                                         for idx in range(m)])
+        self.path_convs = nn.ModuleList([
+            nn.Sequential(*conv_sequence(in_channels, out_channels, act_layer, norm_layer, drop_layer, kernel_size=3,
+                                         bias=(norm_layer is None), dilation=idx + 1, padding=idx + 1, **kwargs))
+            for idx in range(m)])
         self.sa = SoftAttentionLayer(out_channels, sa_ratio, m, act_layer, norm_layer, drop_layer)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -107,11 +118,18 @@ class SKBottleneck(_ResBlock):
             downsample, act_layer)
 
 
-def _sknet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> ResNet:
+def _sknet(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    num_blocks: List[int],
+    out_chans: List[int],
+    **kwargs: Any,
+) -> ResNet:
 
     # Build the model
-    model = ResNet(SKBottleneck, default_cfgs[arch]['num_blocks'],  # type: ignore[arg-type]
-                   [64, 128, 256, 512], **kwargs)
+    model = ResNet(SKBottleneck, num_blocks, out_chans, **kwargs)
+    model.default_cfg = default_cfgs[arch]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -131,7 +149,7 @@ def sknet50(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> R
         torch.nn.Module: classification model
     """
 
-    return _sknet('sknet50', pretrained, progress, **kwargs)
+    return _sknet('sknet50', pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
 
 
 def sknet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -146,7 +164,7 @@ def sknet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _sknet('sknet101', pretrained, progress, **kwargs)
+    return _sknet('sknet101', pretrained, progress, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
 
 
 def sknet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -161,4 +179,4 @@ def sknet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _sknet('sknet152', pretrained, progress, **kwargs)
+    return _sknet('sknet152', pretrained, progress, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)

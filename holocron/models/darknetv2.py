@@ -12,15 +12,18 @@ import torch.nn as nn
 from holocron.nn import GlobalAvgPool2d
 
 from ..nn.init import init_module
+from .presets import IMAGENETTE
 from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['DarknetV2', 'darknet19']
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'darknet19': {'arch': 'DarknetV2',
-                  'layout': [(64, 0), (128, 1), (256, 1), (512, 2), (1024, 2)],
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/darknet19_224-b1ce16a5.pt'},
+    'darknet19': {
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/darknet19_224-b1ce16a5.pt',
+    },
 }
 
 
@@ -115,9 +118,10 @@ class DarknetV2(nn.Sequential):
         init_module(self, 'leaky_relu')
 
 
-def _darknet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> DarknetV2:
+def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[List[int]], **kwargs: Any) -> DarknetV2:
     # Build the model
-    model = DarknetV2(default_cfgs[arch]['layout'], **kwargs)
+    model = DarknetV2(layout, **kwargs)
+    model.default_cfg = default_cfgs[arch]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -137,4 +141,10 @@ def darknet19(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _darknet('darknet19', pretrained, progress, **kwargs)  # type: ignore[return-value]
+    return _darknet(
+        'darknet19',
+        pretrained,
+        progress,
+        [(64, 0), (128, 1), (256, 1), (512, 2), (1024, 2)],
+        **kwargs,
+    )

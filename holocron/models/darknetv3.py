@@ -12,6 +12,7 @@ import torch.nn as nn
 from holocron.nn import DropBlock2d, GlobalAvgPool2d
 
 from ..nn.init import init_module
+from .presets import IMAGENETTE
 from .resnet import _ResBlock
 from .utils import conv_sequence, load_pretrained_params
 
@@ -19,9 +20,11 @@ __all__ = ['DarknetV3', 'darknet53']
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'darknet53': {'arch': 'DarknetV3',
-                  'layout': [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-                  'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth'},
+    'darknet53': {
+        **IMAGENETTE,
+        'input_shape': (3, 256, 256),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth',
+    },
 }
 
 
@@ -145,9 +148,10 @@ class DarknetV3(nn.Sequential):
         init_module(self, 'leaky_relu')
 
 
-def _darknet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> DarknetV3:
+def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[List[int]], **kwargs: Any) -> DarknetV3:
     # Build the model
-    model = DarknetV3(default_cfgs[arch]['layout'], **kwargs)
+    model = DarknetV3(layout, **kwargs)
+    model.default_cfg = default_cfgs[arch]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -167,4 +171,10 @@ def darknet53(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _darknet('darknet53', pretrained, progress, **kwargs)  # type: ignore[return-value]
+    return _darknet(
+        'darknet53',
+        pretrained,
+        progress,
+        [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
+        **kwargs
+    )

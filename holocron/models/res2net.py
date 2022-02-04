@@ -9,11 +9,12 @@ based on https://github.com/rwightman/pytorch-image-models/blob/master/timm/mode
 """
 
 import math
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import torch
 import torch.nn as nn
 
+from .presets import IMAGENETTE
 from .resnet import ResNet, _ResBlock
 from .utils import conv_sequence, load_pretrained_params
 
@@ -22,8 +23,10 @@ __all__ = ['Bottle2neck', 'res2net50_26w_4s']
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     'res2net50_26w_4s': {
-        'num_blocks': [3, 4, 6, 3], 'width_per_group': 26, 'scale': 4,
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth'},
+        **IMAGENETTE,
+        'input_shape': (3, 224, 224),
+        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth',
+    },
 }
 
 
@@ -44,11 +47,11 @@ class ScaleConv2d(nn.Module):
 
         self.scale = scale
         self.width = planes // scale
-        self.conv = nn.ModuleList([nn.Sequential(*conv_sequence(self.width, self.width,
-                                                                act_layer, norm_layer, drop_layer,
-                                                                kernel_size=3, stride=stride, padding=1,
-                                                                groups=groups, bias=(norm_layer is None)))
-                                   for _ in range(max(1, scale - 1))])
+        self.conv = nn.ModuleList([
+            nn.Sequential(*conv_sequence(self.width, self.width, act_layer, norm_layer, drop_layer, kernel_size=3,
+                                         stride=stride, padding=1, groups=groups, bias=(norm_layer is None)))
+            for _ in range(max(1, scale - 1))
+        ])
 
         if downsample:
             self.downsample = nn.AvgPool2d(kernel_size=3, stride=stride, padding=1)
@@ -113,12 +116,26 @@ class Bottle2neck(_ResBlock):
             downsample, act_layer)
 
 
-def _res2net(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> ResNet:
+def _res2net(
+    arch: str,
+    pretrained: bool,
+    progress: bool,
+    num_blocks: List[int],
+    out_chans: List[int],
+    width_per_group: int,
+    scale: int,
+    **kwargs: Any
+) -> ResNet:
     # Build the model
-    model = ResNet(Bottle2neck, default_cfgs[arch]['num_blocks'], [64, 128, 256, 512],  # type: ignore[arg-type]
-                   width_per_group=default_cfgs[arch]['width_per_group'],
-                   block_args=dict(scale=default_cfgs[arch]['scale']),
-                   **kwargs)
+    model = ResNet(
+        Bottle2neck,
+        num_blocks,
+        out_chans,
+        width_per_group=width_per_group,
+        block_args=dict(scale=scale),
+        **kwargs
+    )
+    model.default_cfg = default_cfgs[arch]
     # Load pretrained parameters
     if pretrained:
         load_pretrained_params(model, default_cfgs[arch]['url'], progress)
@@ -138,4 +155,4 @@ def res2net50_26w_4s(pretrained: bool = False, progress: bool = True, **kwargs: 
         torch.nn.Module: classification model
     """
 
-    return _res2net('res2net50_26w_4s', pretrained, progress, **kwargs)
+    return _res2net('res2net50_26w_4s', pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], 26, 4, **kwargs)
