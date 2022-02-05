@@ -24,14 +24,12 @@ from torchvision.transforms import autoaugment as A
 from torchvision.transforms import transforms as T
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
 
-import holocron
+from holocron.models import classification
+from holocron.models.presets import CIFAR10 as CIF10
+from holocron.models.presets import IMAGENETTE
+from holocron.optim import AdaBelief, AdamP
 from holocron.trainer import ClassificationTrainer
 from holocron.utils.data import Mixup
-
-IMAGENETTE_CLASSES = [
-    'tench', 'English springer', 'cassette player', 'chain saw', 'church', 'French horn', 'garbage truck', 'gas pump',
-    'golf ball', 'parachute',
-]
 
 
 def worker_init_fn(worker_id: int) -> None:
@@ -44,17 +42,17 @@ def plot_samples(images, targets, num_samples=4):
     _, axes = plt.subplots(1, nb_samples, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
-        img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
-        img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
+        img *= torch.tensor(IMAGENETTE['std']).view(-1, 1, 1)
+        img += torch.tensor(IMAGENETTE['mean']).view(-1, 1, 1)
         img = to_pil_image(img)
 
         axes[idx].imshow(img)
         axes[idx].axis('off')
         if targets.ndim == 1:
-            axes[idx].set_title(IMAGENETTE_CLASSES[targets[idx].item()])
+            axes[idx].set_title(IMAGENETTE['classes'][targets[idx].item()])
         else:
             class_idcs = torch.where(targets[idx] > 0)[0]
-            _info = [f"{IMAGENETTE_CLASSES[_idx.item()]} ({targets[idx, _idx]:.2f})" for _idx in class_idcs]
+            _info = [f"{IMAGENETTE['classes'][_idx.item()]} ({targets[idx, _idx]:.2f})" for _idx in class_idcs]
             axes[idx].set_title(" ".join(_info))
 
     plt.show()
@@ -70,8 +68,8 @@ def main(args):
     train_loader, val_loader = None, None
 
     normalize = T.Normalize(
-        mean=[0.485, 0.456, 0.406] if args.dataset.lower() == "imagenette" else [0.5071, 0.4866, 0.4409],
-        std=[0.229, 0.224, 0.225] if args.dataset.lower() == "imagenette" else [0.2673, 0.2564, 0.2761]
+        mean=IMAGENETTE['mean'] if args.dataset.lower() == "imagenette" else CIF10['mean'],
+        std=IMAGENETTE['std'] if args.dataset.lower() == "imagenette" else CIF10['std'],
     )
 
     interpolation = InterpolationMode.BILINEAR
@@ -167,7 +165,7 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = holocron.models.__dict__[args.arch](args.pretrained, num_classes=num_classes)
+    model = classification.__dict__[args.arch](args.pretrained, num_classes=num_classes)
 
     criterion = nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
 
@@ -179,11 +177,9 @@ def main(args):
         optimizer = torch.optim.RAdam(model_params, args.lr,
                                       betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'adamp':
-        optimizer = holocron.optim.AdamP(model_params, args.lr,
-                                         betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+        optimizer = AdamP(model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == 'adabelief':
-        optimizer = holocron.optim.AdaBelief(model_params, args.lr,
-                                             betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+        optimizer = AdaBelief(model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
 
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = ClassificationTrainer(model, train_loader, val_loader, criterion, optimizer,

@@ -2,14 +2,14 @@ import pytest
 import torch
 from torch import nn
 
-from holocron import models
+from holocron.models import classification
 
 
 def _test_classification_model(name, num_classes=10):
 
     batch_size = 2
     x = torch.rand((batch_size, 3, 224, 224))
-    model = models.__dict__[name](pretrained=True, num_classes=num_classes).eval()
+    model = classification.__dict__[name](pretrained=True, num_classes=num_classes).eval()
     with torch.no_grad():
         out = model(x)
 
@@ -28,7 +28,7 @@ def test_repvgg_reparametrize():
     num_classes = 10
     batch_size = 2
     x = torch.rand((batch_size, 3, 224, 224))
-    model = models.repvgg_a0(pretrained=False, num_classes=num_classes).eval()
+    model = classification.repvgg_a0(pretrained=False, num_classes=num_classes).eval()
     with torch.no_grad():
         out = model(x)
 
