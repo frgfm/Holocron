@@ -66,8 +66,7 @@ jobs:
           auto-update-conda: true
           python-version: 3.7
       - name: Install dependencies
-        run: |
-          conda install -y conda-build conda-verify anaconda-client
+        run: conda install -y conda-build conda-verify anaconda-client
       - name: Get release tag
         id: release_tag
         run: |
@@ -79,7 +78,7 @@ jobs:
         run: |
           python setup.py sdist
           mkdir conda-dist
-          conda-build .conda/ -c pytorch -c fastai -c frgfm --output-folder conda-dist
+          conda-build .conda/ -c pytorch -c fastai -c conda-forge --output-folder conda-dist
           ls -l conda-dist/noarch/*tar.bz2
           anaconda upload conda-dist/noarch/*tar.bz2 -u frgfm
 
