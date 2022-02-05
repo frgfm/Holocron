@@ -14,9 +14,9 @@ from typing import Any, Callable, Dict, List, Optional
 import torch
 import torch.nn as nn
 
-from .presets import IMAGENETTE
+from ..presets import IMAGENETTE
+from ..utils import conv_sequence, load_pretrained_params
 from .resnet import ResNet, _ResBlock
-from .utils import conv_sequence, load_pretrained_params
 
 __all__ = ['Bottle2neck', 'res2net50_26w_4s']
 

@@ -11,8 +11,8 @@ import torch.nn as nn
 
 from holocron.nn import GlobalAvgPool2d, init
 
-from .presets import IMAGENET
-from .utils import conv_sequence, load_pretrained_params
+from ..presets import IMAGENET
+from ..utils import conv_sequence, load_pretrained_params
 
 __all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']
 

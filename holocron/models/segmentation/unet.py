@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022, François-Guillaume Fernandez.
+# Copyright (C) 2020-2022, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
@@ -15,7 +15,7 @@ from torchvision.models._utils import IntermediateLayerGetter
 
 from ...nn import GlobalAvgPool2d
 from ...nn.init import init_module
-from ..rexnet import rexnet1_3x
+from ..classification.rexnet import rexnet1_3x
 from ..utils import conv_sequence, load_pretrained_params
 
 __all__ = ['UNet', 'unet', 'DynamicUNet', 'unet_tvvgg11', 'unet_tvresnet34', 'unet_rexnet13', 'unet2']
