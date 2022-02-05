@@ -273,7 +273,7 @@ class Trainer:
             if self.on_epoch_end is not None:
                 self.on_epoch_end(eval_metrics)
 
-    def lr_find(
+    def find_lr(
         self,
         freeze_until: Optional[str] = None,
         start_lr: float = 1e-7,

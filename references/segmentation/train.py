@@ -130,7 +130,7 @@ def main(args):
         plot_samples(x, target, ignore_index=255)
         return
 
-    if not (args.lr_finder or args.check_setup):
+    if not (args.find_lr or args.check_setup):
         st = time.time()
         val_set = VOCSegmentation(
             args.data_path,
@@ -205,9 +205,9 @@ def main(args):
         print(f"Validation loss: {eval_metrics['val_loss']:.4} (Mean IoU: {eval_metrics['mean_iou']:.2%})")
         return
 
-    if args.lr_finder:
+    if args.find_lr:
         print("Looking for optimal LR")
-        trainer.lr_find(args.freeze_until, norm_weight_decay=args.norm_weight_decay, num_it=min(len(train_loader), 100))
+        trainer.find_lr(args.freeze_until, norm_weight_decay=args.norm_weight_decay, num_it=min(len(train_loader), 100))
         trainer.plot_recorder()
         return
 
@@ -270,28 +270,22 @@ def parse_args():
                         help='number of data loading workers')
     parser.add_argument('--loss', default='crossentropy', type=str, help='loss')
     parser.add_argument('--label-smoothing', default=0.1, type=float, help='label smoothing')
-    parser.add_argument('--bg-factor', dest='bg_factor', default=1, type=float,
-                        help='Class weight of background in the loss')
+    parser.add_argument('--bg-factor', default=1, type=float, help='Class weight of background in the loss')
     parser.add_argument('--opt', default='adam', type=str, help='optimizer')
     parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
     parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
-    parser.add_argument('--norm-wd', default=None, type=float, dest='norm_weight_decay',
-                        help='weight decay of norm parameters')
-    parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
-    parser.add_argument("--check-setup", dest='check_setup', action='store_true', help="Check your training setup")
+    parser.add_argument('--norm-wd', default=None, type=float, help='weight decay of norm parameters')
+    parser.add_argument("--find-lr", action='store_true', help="Should you run LR Finder")
+    parser.add_argument("--check-setup", action='store_true', help="Check your training setup")
     parser.add_argument('--output-file', default='./model.pth', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
-    parser.add_argument("--show-samples", dest='show_samples', action='store_true',
-                        help="Whether training samples should be displayed")
-    parser.add_argument("--show-preds", dest='show_preds', action='store_true',
-                        help="Whether one batch predictions should be displayed")
-    parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
-    parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
-                        action="store_true")
-    parser.add_argument("--amp", dest="amp", help="Use Automatic Mixed Precision", action="store_true")
-    parser.add_argument('--wb', dest='wb', action='store_true',
-                        help='Log to Weights & Biases')
+    parser.add_argument("--show-samples", action='store_true', help="Whether training samples should be displayed")
+    parser.add_argument("--show-preds", action='store_true', help="Whether one batch predictions should be displayed")
+    parser.add_argument("--test-only", action="store_true", help="Only test the model")
+    parser.add_argument("--pretrained", action="store_true", help="Use pre-trained models from the model zoo")
+    parser.add_argument("--amp", action="store_true", help="Use Automatic Mixed Precision")
+    parser.add_argument('--wb', action='store_true', help='Log to Weights & Biases')
 
     args = parser.parse_args()
     return args

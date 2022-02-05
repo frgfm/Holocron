@@ -31,7 +31,7 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
     },
     'resnet50': {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
+        'input_shape': (3, 256, 256),
         'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50_256-5e6206e0.pth'
     },
     'resnet101': {
