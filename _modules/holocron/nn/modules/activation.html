@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.activation &mdash; holocron 0.1.3a0+d41610b-git documentation</title>
+  <title>holocron.nn.modules.activation &mdash; holocron 0.2.0.dev0+67a50c7-git documentation</title>
   
 
   
@@ -88,8 +88,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../installing.html#via-git">Via Git</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notebooks.html">Holocron Notebooks</a></li>
 </ul>
-<p><span class="caption-text">Package Documentation</span></p>
+<p><span class="caption-text">Package Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#classification">Classification</a><ul>
@@ -100,6 +101,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#object-detection">Object Detection</a><ul>
@@ -137,7 +139,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../trainer.html">holocron.trainer</a><ul>
@@ -151,6 +152,16 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../utils.data.html">holocron.utils.data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+<p><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-3-2020-10-27">v0.1.3 (2020-10-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-2-2020-06-21">v0.1.2 (2020-06-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-1-2020-05-12">v0.1.1 (2020-05-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-0-2020-05-11">v0.1.0 (2020-05-11)</a></li>
 </ul>
 </li>
 </ul>
@@ -216,13 +227,20 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.nn.modules.activation</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
+
+<span class="c1"># This program is licensed under the Apache License version 2.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
+
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SiLU&#39;</span><span class="p">,</span> <span class="s1">&#39;Mish&#39;</span><span class="p">,</span> <span class="s1">&#39;HardMish&#39;</span><span class="p">,</span> <span class="s1">&#39;NLReLU&#39;</span><span class="p">,</span> <span class="s1">&#39;FReLU&#39;</span><span class="p">]</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;HardMish&#39;</span><span class="p">,</span> <span class="s1">&#39;NLReLU&#39;</span><span class="p">,</span> <span class="s1">&#39;FReLU&#39;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">_Activation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -238,65 +256,26 @@
         <span class="k">return</span> <span class="n">inplace_str</span>
 
 
-<span class="k">class</span> <span class="nc">_SiLU</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">silu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">grad_output</span> <span class="o">*</span> <span class="n">sig</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">sig</span><span class="p">))</span>
-
-
-<div class="viewcode-block" id="SiLU"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.SiLU">[docs]</a><span class="k">class</span> <span class="nc">SiLU</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the SiLU activation from `&quot;Gaussian Error Linear Units (GELUs)&quot;</span>
-<span class="sd">    &lt;https://arxiv.org/pdf/1606.08415.pdf&gt;`_ (also known as Swish).</span>
-
-<span class="sd">    This activation is computed as follows:</span>
-
-<span class="sd">    .. math::</span>
-<span class="sd">        f(x) = x \\cdot \\sigma(x)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_SiLU</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Mish"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.Mish">[docs]</a><span class="k">class</span> <span class="nc">Mish</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Mish activation module from `&quot;Mish: A Self Regularized Non-Monotonic Neural Activation Function&quot;</span>
-<span class="sd">    &lt;https://arxiv.org/pdf/1908.08681.pdf&gt;`_</span>
-
-<span class="sd">    This activation is computed as follows:</span>
-
-<span class="sd">    .. math::</span>
-<span class="sd">        f(x) = x \\cdot \\tanh(ln(1 + e^x))</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">mish</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
-
-
 <div class="viewcode-block" id="HardMish"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.HardMish">[docs]</a><span class="k">class</span> <span class="nc">HardMish</span><span class="p">(</span><span class="n">_Activation</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Had Mish activation module from `&quot;H-Mish&quot; &lt;https://github.com/digantamisra98/H-Mish&gt;`_</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the Had Mish activation module from `&quot;H-Mish&quot; &lt;https://github.com/digantamisra98/H-Mish&gt;`_</span>
 
 <span class="sd">    This activation is computed as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        f(x) = \\frac{x}{2} \\cdot \\min(2, \\max(0, x + 2))</span>
+<span class="sd">        f(x) = \frac{x}{2} \cdot \min(2, \max(0, x + 2))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hard_mish</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="NLReLU"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NLReLU">[docs]</a><span class="k">class</span> <span class="nc">NLReLU</span><span class="p">(</span><span class="n">_Activation</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Natural-Logarithm ReLU activation module from `&quot;Natural-Logarithm-Rectified Activation</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the Natural-Logarithm ReLU activation module from `&quot;Natural-Logarithm-Rectified Activation</span>
 <span class="sd">    Function in Convolutional Neural Networks&quot; &lt;https://arxiv.org/pdf/1908.03682.pdf&gt;`_</span>
 
 <span class="sd">    This activation is computed as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        f(x) = ln(1 + \\beta \\cdot max(0, x))</span>
+<span class="sd">        f(x) = ln(1 + \beta \cdot max(0, x))</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        inplace (bool): should the operation be performed inplace</span>
@@ -306,15 +285,15 @@
 
 
 <div class="viewcode-block" id="FReLU"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.FReLU">[docs]</a><span class="k">class</span> <span class="nc">FReLU</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Funnel activation module from `&quot;Funnel Activation for Visual Recognition&quot;</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the Funnel activation module from `&quot;Funnel Activation for Visual Recognition&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.11824.pdf&gt;`_</span>
 
 <span class="sd">    This activation is computed as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        f(x) = max(\\mathbb{T}(x), x)</span>
+<span class="sd">        f(x) = max(\mathbb{T}(x), x)</span>
 
-<span class="sd">    where the :math:`\\mathbb{T}` is the spatial contextual feature extraction. It is a convolution filter of size</span>
+<span class="sd">    where the :math:`\mathbb{T}` is the spatial contextual feature extraction. It is a convolution filter of size</span>
 <span class="sd">    `kernel_size`, same padding and groups equal to the number of input channels, followed by a batch normalization.</span>
 
 <span class="sd">    Args:</span>

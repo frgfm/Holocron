@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.loss &mdash; holocron 0.1.3a0+d41610b-git documentation</title>
+  <title>holocron.nn.modules.loss &mdash; holocron 0.2.0.dev0+67a50c7-git documentation</title>
   
 
   
@@ -88,8 +88,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../installing.html#via-git">Via Git</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notebooks.html">Holocron Notebooks</a></li>
 </ul>
-<p><span class="caption-text">Package Documentation</span></p>
+<p><span class="caption-text">Package Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#classification">Classification</a><ul>
@@ -100,6 +101,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#object-detection">Object Detection</a><ul>
@@ -137,7 +139,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../trainer.html">holocron.trainer</a><ul>
@@ -151,6 +152,16 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../utils.data.html">holocron.utils.data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+<p><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-3-2020-10-27">v0.1.3 (2020-10-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-2-2020-06-21">v0.1.2 (2020-06-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-1-2020-05-12">v0.1.1 (2020-05-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-0-2020-05-11">v0.1.0 (2020-05-11)</a></li>
 </ul>
 </li>
 </ul>
@@ -216,14 +227,21 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.nn.modules.loss</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
+
+<span class="c1"># This program is licensed under the Apache License version 2.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;FocalLoss&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiLabelCrossEntropy&#39;</span><span class="p">,</span> <span class="s1">&#39;LabelSmoothingCrossEntropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ComplementCrossEntropy&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;MixupLoss&#39;</span><span class="p">,</span> <span class="s1">&#39;ClassBalancedWrapper&#39;</span><span class="p">,</span> <span class="s1">&#39;MutualChannelLoss&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;FocalLoss&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiLabelCrossEntropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ComplementCrossEntropy&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;ClassBalancedWrapper&#39;</span><span class="p">,</span> <span class="s1">&#39;MutualChannelLoss&#39;</span><span class="p">,</span> <span class="s1">&#39;DiceLoss&#39;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">_Loss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -238,37 +256,38 @@
         <span class="c1"># Cast class weights if possible</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">weight</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">weight</span><span class="p">])</span>  <span class="c1"># type: ignore[assignment]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">weight</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">weight</span><span class="p">]))</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>  <span class="c1"># type: ignore[assignment]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">weight</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span> <span class="o">=</span> <span class="n">ignore_index</span>
         <span class="c1"># Set the reduction method</span>
         <span class="k">if</span> <span class="n">reduction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;argument reduction received an incorrect input&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
 
 
 <div class="viewcode-block" id="FocalLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.FocalLoss">[docs]</a><span class="k">class</span> <span class="nc">FocalLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implementation of Focal Loss as described in</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of Focal Loss as described in</span>
 <span class="sd">    `&quot;Focal Loss for Dense Object Detection&quot; &lt;https://arxiv.org/pdf/1708.02002.pdf&gt;`_.</span>
 
 <span class="sd">    While the weighted cross-entropy is described by:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        CE(p_t) = -\\alpha_t log(p_t)</span>
+<span class="sd">        CE(p_t) = -\alpha_t log(p_t)</span>
 
-<span class="sd">    where :math:`\\alpha_t` is the loss weight of class :math:`t`,</span>
+<span class="sd">    where :math:`\alpha_t` is the loss weight of class :math:`t`,</span>
 <span class="sd">    and :math:`p_t` is the predicted probability of class :math:`t`.</span>
 
 <span class="sd">    the focal loss introduces a modulating factor</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        FL(p_t) = -\\alpha_t (1 - p_t)^\\gamma log(p_t)</span>
+<span class="sd">        FL(p_t) = -\alpha_t (1 - p_t)^\gamma log(p_t)</span>
 
-<span class="sd">    where :math:`\\gamma` is a positive focusing parameter.</span>
+<span class="sd">    where :math:`\gamma` is a positive focusing parameter.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        gamma (float, optional): exponent parameter of the focal loss</span>
@@ -307,28 +326,6 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
 
 
-<div class="viewcode-block" id="LabelSmoothingCrossEntropy"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.LabelSmoothingCrossEntropy">[docs]</a><span class="k">class</span> <span class="nc">LabelSmoothingCrossEntropy</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implementation of the cross-entropy loss with label smoothing on hard target as described in</span>
-<span class="sd">    `&quot;Attention Is All You Need&quot; &lt;https://arxiv.org/pdf/1706.03762.pdf&gt;`_</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        eps (float, optional): smoothing factor</span>
-<span class="sd">        weight (torch.Tensor[K], optional): class weight for loss computation</span>
-<span class="sd">        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient</span>
-<span class="sd">        reduction (str, optional): type of reduction to apply to the final loss</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">ls_cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(eps=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="si">}</span><span class="s2">, reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
-
-
 <div class="viewcode-block" id="ComplementCrossEntropy"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ComplementCrossEntropy">[docs]</a><span class="k">class</span> <span class="nc">ComplementCrossEntropy</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implements the complement cross entropy loss from</span>
 <span class="sd">    `&quot;Imbalanced Image Classification with Complement Cross Entropy&quot; &lt;https://arxiv.org/pdf/2009.02189.pdf&gt;`_</span>
@@ -351,45 +348,17 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(gamma=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="si">}</span><span class="s2">, reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
 
 
-<div class="viewcode-block" id="MixupLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.MixupLoss">[docs]</a><span class="k">class</span> <span class="nc">MixupLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements a Mixup wrapper as described in</span>
-<span class="sd">    `&quot;mixup: Beyond Empirical Risk Minimization&quot; &lt;https://arxiv.org/pdf/1710.09412.pdf&gt;`_</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        criterion (callable): initial criterion to be used on normal sample &amp; targets</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">criterion</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target_a</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target_b</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">lam</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the mixed-up loss</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            x (torch.Tensor): predictions</span>
-<span class="sd">            target_a (torch.Tensor): target for first sample</span>
-<span class="sd">            target_b (torch.Tensor): target for second sample</span>
-<span class="sd">            lam (float): lambda factor</span>
-<span class="sd">        Returns:</span>
-<span class="sd">            torch.Tensor: loss</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">lam</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target_a</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target_b</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Mixup_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span></div>
-
-
 <div class="viewcode-block" id="ClassBalancedWrapper"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ClassBalancedWrapper">[docs]</a><span class="k">class</span> <span class="nc">ClassBalancedWrapper</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implementation of the class-balanced loss as described in `&quot;Class-Balanced Loss Based on Effective Number</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of the class-balanced loss as described in `&quot;Class-Balanced Loss Based on Effective Number</span>
 <span class="sd">    of Samples&quot; &lt;https://arxiv.org/pdf/1901.05555.pdf&gt;`_.</span>
 
-<span class="sd">    Given a loss function :math:`\\mathcal{L}`, the class-balanced loss is described by:</span>
+<span class="sd">    Given a loss function :math:`\mathcal{L}`, the class-balanced loss is described by:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        CB(p, y) = \\frac{1 - \\beta}{1 - \\beta^{n_y}} \\mathcal{L}(p, y)</span>
+<span class="sd">        CB(p, y) = \frac{1 - \beta}{1 - \beta^{n_y}} \mathcal{L}(p, y)</span>
 
 <span class="sd">    where :math:`p` is the predicted probability for class :math:`y`, :math:`n_y` is the number of training</span>
-<span class="sd">    samples for class :math:`y`, and :math:`\\beta` is exponential factor.</span>
+<span class="sd">    samples for class :math:`y`, and :math:`\beta` is exponential factor.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        criterion (torch.nn.Module): loss module</span>
@@ -423,7 +392,7 @@
 <span class="sd">        weight (torch.Tensor[K], optional): class weight for loss computation</span>
 <span class="sd">        ignore_index (int, optional): specifies target value that is ignored and do not contribute to gradient</span>
 <span class="sd">        reduction (str, optional): type of reduction to apply to the final loss</span>
-<span class="sd">        chi (in, optional): num of features per class</span>
+<span class="sd">        xi (in, optional): num of features per class</span>
 <span class="sd">        alpha (float, optional): diversity factor</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -432,18 +401,45 @@
         <span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
         <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span><span class="p">,</span>
-        <span class="n">chi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">xi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">ignore_index</span><span class="p">,</span> <span class="n">reduction</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">chi</span> <span class="o">=</span> <span class="n">chi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xi</span> <span class="o">=</span> <span class="n">xi</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">mutual_channel_loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">mutual_channel_loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;, chi=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">chi</span><span class="si">}</span><span class="s2">, alpha=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;, xi=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xi</span><span class="si">}</span><span class="s2">, alpha=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+<div class="viewcode-block" id="DiceLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.DiceLoss">[docs]</a><span class="k">class</span> <span class="nc">DiceLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements the dice loss from `&quot;V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image</span>
+<span class="sd">    Segmentation&quot; &lt;https://arxiv.org/pdf/1606.04797.pdf&gt;`_</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        weight (torch.Tensor[K], optional): class weight for loss computation</span>
+<span class="sd">        gamma (float, optional): recall/precision control param</span>
+<span class="sd">        eps (float, optional): small value added to avoid division by zero</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span>
+        <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">dice_loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;, gamma=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="si">}</span><span class="s2">, eps=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 </pre></div>
 
            </div>

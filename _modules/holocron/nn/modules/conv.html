@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn.modules.conv &mdash; holocron 0.1.3a0+d41610b-git documentation</title>
+  <title>holocron.nn.modules.conv &mdash; holocron 0.2.0.dev0+67a50c7-git documentation</title>
   
 
   
@@ -88,8 +88,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../installing.html#via-git">Via Git</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notebooks.html">Holocron Notebooks</a></li>
 </ul>
-<p><span class="caption-text">Package Documentation</span></p>
+<p><span class="caption-text">Package Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#classification">Classification</a><ul>
@@ -100,6 +101,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#object-detection">Object Detection</a><ul>
@@ -137,7 +139,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../trainer.html">holocron.trainer</a><ul>
@@ -151,6 +152,16 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../utils.data.html">holocron.utils.data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+<p><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-3-2020-10-27">v0.1.3 (2020-10-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-2-2020-06-21">v0.1.2 (2020-06-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-1-2020-05-12">v0.1.1 (2020-05-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-0-2020-05-11">v0.1.0 (2020-05-11)</a></li>
 </ul>
 </li>
 </ul>
@@ -216,17 +227,24 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.nn.modules.conv</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
+
+<span class="c1"># This program is licensed under the Apache License version 2.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torch.nn.functional</span> <span class="kn">import</span> <span class="n">pad</span>
 <span class="kn">from</span> <span class="nn">torch.nn.modules.conv</span> <span class="kn">import</span> <span class="n">_ConvNd</span>
 <span class="kn">from</span> <span class="nn">torch.nn.modules.utils</span> <span class="kn">import</span> <span class="n">_pair</span>
-<span class="kn">from</span> <span class="nn">torch.nn.functional</span> <span class="kn">import</span> <span class="n">pad</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;NormConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;Add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;SlimConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;PyConv2d&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;NormConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;Add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;SlimConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;PyConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;Involution2d&#39;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">_NormConvNd</span><span class="p">(</span><span class="n">_ConvNd</span><span class="p">):</span>
@@ -246,15 +264,15 @@
         <span class="n">normalize_slices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">eps</span><span class="o">=</span><span class="mf">1e-14</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span>
-                         <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">transposed</span><span class="p">,</span> <span class="n">output_padding</span><span class="p">,</span>
-                         <span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">padding_mode</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+                         <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">transposed</span><span class="p">,</span> <span class="n">output_padding</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+                         <span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">padding_mode</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalize_slices</span> <span class="o">=</span> <span class="n">normalize_slices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
 
 
 <div class="viewcode-block" id="NormConv2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NormConv2d">[docs]</a><span class="k">class</span> <span class="nc">NormConv2d</span><span class="p">(</span><span class="n">_NormConvNd</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the normalized convolution module from `&quot;Normalized Convolutional Neural Network&quot;</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the normalized convolution module from `&quot;Normalized Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2005.05274v2.pdf&gt;`_.</span>
 
 <span class="sd">    In the simplest case, the output value of the layer with input size</span>
@@ -264,7 +282,7 @@
 <span class="sd">    .. math::</span>
 <span class="sd">        out(N_i, C_{out_j}) = bias(C_{out_j}) +</span>
 <span class="sd">        \sum_{k = 0}^{C_{in} - 1} weight(C_{out_j}, k) \star</span>
-<span class="sd">        \\frac{input(N_i, k) - \mu(N_i, k)}{\sqrt{\sigma^2(N_i, k) + \epsilon}}</span>
+<span class="sd">        \frac{input(N_i, k) - \mu(N_i, k)}{\sqrt{\sigma^2(N_i, k) + \epsilon}}</span>
 
 <span class="sd">    where :math:`\star` is the valid 2D cross-correlation operator,</span>
 <span class="sd">    :math:`\mu(N_i, k)` and :math:`\sigma²(N_i, k)` are the mean and variance of :math:`input(N_i, k)` over all slices,</span>
@@ -322,7 +340,7 @@
 
 
 <div class="viewcode-block" id="Add2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.Add2d">[docs]</a><span class="k">class</span> <span class="nc">Add2d</span><span class="p">(</span><span class="n">_NormConvNd</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the adder module from `&quot;AdderNet: Do We Really Need Multiplications in Deep Learning?&quot;</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the adder module from `&quot;AdderNet: Do We Really Need Multiplications in Deep Learning?&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1912.13200.pdf&gt;`_.</span>
 
 <span class="sd">    In the simplest case, the output value of the layer at position :math:`(m, n)` in channel :math:`c`</span>
@@ -330,12 +348,16 @@
 <span class="sd">    can be precisely described as:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        out(m, n, c) = - \\sum\\limits_{i=0}^d \\sum\\limits_{j=0}^d \\sum\\limits_{k=0}^{C_{in}}</span>
+<span class="sd">        out(m, n, c) = - \sum\limits_{i=0}^d \sum\limits_{j=0}^d \sum\limits_{k=0}^{C_{in}}</span>
 <span class="sd">        |X(m + i, n + j, k) - F(i, j, k, c)|</span>
 
 <span class="sd">    where :math:`C` denotes a number of channels,</span>
 <span class="sd">    :math:`H` is a height of input planes in pixels, and :math:`W` is</span>
 <span class="sd">    width in pixels.</span>
+
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/add2d.png</span>
+<span class="sd">        :align: center</span>
+<span class="sd">        :alt: Add2D schema</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        in_channels (int): Number of channels in the input image</span>
@@ -390,24 +412,24 @@
 
 
 <div class="viewcode-block" id="SlimConv2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.SlimConv2d">[docs]</a><span class="k">class</span> <span class="nc">SlimConv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the convolution module from `&quot;SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the convolution module from `&quot;SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks</span>
 <span class="sd">    by Weights Flipping&quot; &lt;https://arxiv.org/pdf/2003.07469.pdf&gt;`_.</span>
 
 <span class="sd">    First, we compute channel-wise weights as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        z(c) = \\frac{1}{H \\cdot W} \\sum\\limits_{i=1}^H \\sum\\limits_{j=1}^W X_{c,i,j}</span>
+<span class="sd">        z(c) = \frac{1}{H \cdot W} \sum\limits_{i=1}^H \sum\limits_{j=1}^W X_{c,i,j}</span>
 
-<span class="sd">    where :math:`X \\in \\mathbb{R}^{C \\times H \\times W}` is the input tensor,</span>
+<span class="sd">    where :math:`X \in \mathbb{R}^{C \times H \times W}` is the input tensor,</span>
 <span class="sd">    :math:`H` is height in pixels, and :math:`W` is</span>
 <span class="sd">    width in pixels.</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        w = \\sigma(F_{fc2}(\\delta(F_{fc1}(z))))</span>
+<span class="sd">        w = \sigma(F_{fc2}(\delta(F_{fc1}(z))))</span>
 
-<span class="sd">    where :math:`z \\in \\mathbb{R}^{C}` contains channel-wise statistics,</span>
-<span class="sd">    :math:`\\sigma` refers to the sigmoid function,</span>
-<span class="sd">    :math:`\\delta` refers to the ReLU function,</span>
+<span class="sd">    where :math:`z \in \mathbb{R}^{C}` contains channel-wise statistics,</span>
+<span class="sd">    :math:`\sigma` refers to the sigmoid function,</span>
+<span class="sd">    :math:`\delta` refers to the ReLU function,</span>
 <span class="sd">    :math:`F_{fc1}` is a convolution operation with kernel of size :math:`(1, 1)`</span>
 <span class="sd">    with :math:`max(C/r, L)` output channels followed by batch normalization,</span>
 <span class="sd">    and :math:`F_{fc2}` is a plain convolution operation with kernel of size :math:`(1, 1)`</span>
@@ -416,12 +438,12 @@
 <span class="sd">    We then proceed with reconstructing and transforming both pathways:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        X_{top} = X \\odot w</span>
+<span class="sd">        X_{top} = X \odot w</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        X_{bot} = X \\odot \\check{w}</span>
+<span class="sd">        X_{bot} = X \odot \check{w}</span>
 
-<span class="sd">    where :math:`\\odot` refers to the element-wise multiplication and :math:`\\check{w}` is</span>
+<span class="sd">    where :math:`\odot` refers to the element-wise multiplication and :math:`\check{w}` is</span>
 <span class="sd">    the channel-wise reverse-flip of :math:`w`.</span>
 
 <span class="sd">    .. math::</span>
@@ -438,9 +460,13 @@
 <span class="sd">    Finally we fuse both pathways to yield the output:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        Y = T_{top} \\oplus T_{bot}</span>
+<span class="sd">        Y = T_{top} \oplus T_{bot}</span>
 
-<span class="sd">    where :math:`\\oplus` is the channel-wise concatenation.</span>
+<span class="sd">    where :math:`\oplus` is the channel-wise concatenation.</span>
+
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/slimconv2d.png</span>
+<span class="sd">        :align: center</span>
+<span class="sd">        :alt: SlimConv2D schema</span>
 
 
 <span class="sd">    Args:</span>
@@ -509,6 +535,10 @@
     <span class="sd">&quot;&quot;&quot;Implements the convolution module from `&quot;Pyramidal Convolution: Rethinking Convolutional Neural Networks for</span>
 <span class="sd">    Visual Recognition&quot; &lt;https://arxiv.org/pdf/2006.11538.pdf&gt;`_.</span>
 
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/pyconv2d.png</span>
+<span class="sd">        :align: center</span>
+<span class="sd">        :alt: PyConv2D schema</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        in_channels (int): Number of channels in the input image</span>
 <span class="sd">        out_channels (int): Number of channels produced by the convolution</span>
@@ -556,8 +586,72 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">conv</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">conv</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Involution2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.Involution2d">[docs]</a><span class="k">class</span> <span class="nc">Involution2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements the convolution module from `&quot;Involution: Inverting the Inherence of Convolution for Visual</span>
+<span class="sd">    Recognition&quot; &lt;https://arxiv.org/pdf/2103.06255.pdf&gt;`_, adapted from the proposed PyTorch implementation in</span>
+<span class="sd">    the paper.</span>
+
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/involutions.png</span>
+<span class="sd">        :align: center</span>
+<span class="sd">        :alt: Involution2d schema</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_channels (int): Number of channels in the input image</span>
+<span class="sd">        kernel_size (int): Size of the convolving kernel</span>
+<span class="sd">        padding (int or tuple, optional): Zero-padding added to both sides of</span>
+<span class="sd">            the input. Default: 0</span>
+<span class="sd">        stride: Stride of the convolution. Default: 1</span>
+<span class="sd">        groups: Number of blocked connections from input channels to output channels. Default: 1</span>
+<span class="sd">        dilation: Spacing between kernel elements. Default: 1</span>
+<span class="sd">        reduction_ratio: reduction ratio of the channels to generate the kernel</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">reduction_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="o">=</span> <span class="n">groups</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AvgPool2d</span><span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">stride</span><span class="p">)</span> <span class="k">if</span> <span class="n">stride</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduce</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">in_channels</span> <span class="o">//</span> <span class="n">reduction_ratio</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">span</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">in_channels</span> <span class="o">//</span> <span class="n">reduction_ratio</span><span class="p">),</span> <span class="n">kernel_size</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">groups</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unfold</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Unfold</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">stride</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+        <span class="c1"># Kernel generation</span>
+        <span class="c1"># (N, C, H, W) --&gt; (N, C, H // s, W // s)</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span>
+        <span class="c1"># --&gt; (N, C // r, H // s, W // s)</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+        <span class="c1"># --&gt; (N, K * K * G, H // s, W // s)</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+        <span class="c1"># --&gt; (N, G, 1, K ** 2, H // s, W // s)</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+
+        <span class="c1"># --&gt; (N, C * K ** 2, H * W // s ** 2)</span>
+        <span class="n">x_unfolded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># --&gt; (N, G, C // G, K ** 2, H // s, W // s)</span>
+        <span class="n">x_unfolded</span> <span class="o">=</span> <span class="n">x_unfolded</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+
+        <span class="c1"># Multiply-Add operation</span>
+        <span class="c1"># --&gt; (N, C, H // s, W // s)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel</span> <span class="o">*</span> <span class="n">x_unfolded</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="o">*</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+
+        <span class="k">return</span> <span class="n">out</span></div>
 </pre></div>
 
            </div>

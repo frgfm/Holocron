@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models &mdash; holocron 0.1.3a0+d41610b-git documentation</title>
+  <title>holocron.models &mdash; holocron 0.2.0.dev0+67a50c7-git documentation</title>
   
 
   
@@ -42,7 +42,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="holocron.nn" href="nn.html" />
-    <link rel="prev" title="Installation" href="installing.html" /> 
+    <link rel="prev" title="Holocron Notebooks" href="notebooks.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -91,8 +91,9 @@
 <li class="toctree-l2"><a class="reference internal" href="installing.html#via-git">Via Git</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Holocron Notebooks</a></li>
 </ul>
-<p><span class="caption-text">Package Documentation</span></p>
+<p><span class="caption-text">Package Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#classification">Classification</a><ul>
@@ -103,6 +104,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#object-detection">Object Detection</a><ul>
@@ -140,7 +142,6 @@
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
@@ -154,6 +155,16 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.data.html">holocron.utils.data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+<p><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-3-2020-10-27">v0.1.3 (2020-10-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-2-2020-06-21">v0.1.2 (2020-06-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-1-2020-05-12">v0.1.1 (2020-05-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-0-2020-05-11">v0.1.0 (2020-05-11)</a></li>
 </ul>
 </li>
 </ul>
@@ -226,35 +237,36 @@
 different tasks, including: image classification, pixelwise semantic
 segmentation, object detection, instance segmentation, person
 keypoint detection and video classification.</p>
-<p>The following datasets are available:</p>
+<p>The following models are available:</p>
 <div class="contents local topic" id="models">
 <p class="topic-title">Models</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#classification" id="id16">Classification</a></p>
+<li><p><a class="reference internal" href="#classification" id="id30">Classification</a></p>
 <ul>
-<li><p><a class="reference internal" href="#resnet" id="id17">ResNet</a></p></li>
-<li><p><a class="reference internal" href="#res2net" id="id18">Res2Net</a></p></li>
-<li><p><a class="reference internal" href="#tridentnet" id="id19">TridentNet</a></p></li>
-<li><p><a class="reference internal" href="#pyconvresnet" id="id20">PyConvResNet</a></p></li>
-<li><p><a class="reference internal" href="#rexnet" id="id21">ReXNet</a></p></li>
-<li><p><a class="reference internal" href="#sknet" id="id22">SKNet</a></p></li>
-<li><p><a class="reference internal" href="#darknet" id="id23">Darknet</a></p></li>
+<li><p><a class="reference internal" href="#resnet" id="id31">ResNet</a></p></li>
+<li><p><a class="reference internal" href="#res2net" id="id32">Res2Net</a></p></li>
+<li><p><a class="reference internal" href="#tridentnet" id="id33">TridentNet</a></p></li>
+<li><p><a class="reference internal" href="#pyconvresnet" id="id34">PyConvResNet</a></p></li>
+<li><p><a class="reference internal" href="#rexnet" id="id35">ReXNet</a></p></li>
+<li><p><a class="reference internal" href="#sknet" id="id36">SKNet</a></p></li>
+<li><p><a class="reference internal" href="#darknet" id="id37">Darknet</a></p></li>
+<li><p><a class="reference internal" href="#repvgg" id="id38">RepVGG</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#object-detection" id="id24">Object Detection</a></p>
+<li><p><a class="reference internal" href="#object-detection" id="id39">Object Detection</a></p>
 <ul>
-<li><p><a class="reference internal" href="#yolo" id="id25">YOLO</a></p></li>
+<li><p><a class="reference internal" href="#yolo" id="id40">YOLO</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#semantic-segmentation" id="id26">Semantic Segmentation</a></p>
+<li><p><a class="reference internal" href="#semantic-segmentation" id="id41">Semantic Segmentation</a></p>
 <ul>
-<li><p><a class="reference internal" href="#u-net" id="id27">U-Net</a></p></li>
+<li><p><a class="reference internal" href="#u-net" id="id42">U-Net</a></p></li>
 </ul>
 </li>
 </ul>
 </div>
 <section id="classification">
-<h2><a class="toc-backref" href="#id16">Classification</a><a class="headerlink" href="#classification" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id30">Classification</a><a class="headerlink" href="#classification" title="Permalink to this headline">¶</a></h2>
 <p>Classification models expect a 4D image tensor as an input (N x C x H x W) and returns a 2D output (N x K).
 The output represents the classification scores for each output classes.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -262,10 +274,10 @@ The output represents the classification scores for each output classes.</p>
 </pre></div>
 </div>
 <section id="resnet">
-<h3><a class="toc-backref" href="#id17">ResNet</a><a class="headerlink" href="#resnet" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id31">ResNet</a><a class="headerlink" href="#resnet" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.resnet18">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet18</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/resnet.html#resnet18"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet18" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet18</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnet18"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet18" title="Permalink to this definition">¶</a></dt>
 <dd><p>ResNet-18 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
@@ -286,7 +298,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.resnet34">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet34</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/resnet.html#resnet34"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet34" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet34</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnet34"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet34" title="Permalink to this definition">¶</a></dt>
 <dd><p>ResNet-34 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
@@ -307,7 +319,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.resnet50">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/resnet.html#resnet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet50" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet50" title="Permalink to this definition">¶</a></dt>
 <dd><p>ResNet-50 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
@@ -328,7 +340,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.resnet101">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet101</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/resnet.html#resnet101"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet101" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet101</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnet101"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet101" title="Permalink to this definition">¶</a></dt>
 <dd><p>ResNet-101 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
@@ -349,7 +361,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.resnet152">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet152</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/resnet.html#resnet152"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet152" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet152</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnet152"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet152" title="Permalink to this definition">¶</a></dt>
 <dd><p>ResNet-152 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
@@ -370,7 +382,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.resnext50_32x4d">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnext50_32x4d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/resnet.html#resnext50_32x4d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnext50_32x4d" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnext50_32x4d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnext50_32x4d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnext50_32x4d" title="Permalink to this definition">¶</a></dt>
 <dd><p>ResNeXt-50 from
 <a class="reference external" href="https://arxiv.org/pdf/1611.05431.pdf">“Aggregated Residual Transformations for Deep Neural Networks”</a></p>
 <dl class="field-list simple">
@@ -391,7 +403,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.resnext101_32x8d">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnext101_32x8d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/resnet.html#resnext101_32x8d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnext101_32x8d" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnext101_32x8d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnext101_32x8d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnext101_32x8d" title="Permalink to this definition">¶</a></dt>
 <dd><p>ResNeXt-101 from
 <a class="reference external" href="https://arxiv.org/pdf/1611.05431.pdf">“Aggregated Residual Transformations for Deep Neural Networks”</a></p>
 <dl class="field-list simple">
@@ -412,7 +424,7 @@ The output represents the classification scores for each output classes.</p>
 
 <dl class="py function">
 <dt id="holocron.models.resnet50d">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet50d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/resnet.html#resnet50d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet50d" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">resnet50d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnet50d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.resnet50d" title="Permalink to this definition">¶</a></dt>
 <dd><p>ResNet-50-D from
 <a class="reference external" href="https://arxiv.org/pdf/1812.01187.pdf">“Bag of Tricks for Image Classification with Convolutional Neural Networks”</a></p>
 <dl class="field-list simple">
@@ -433,10 +445,10 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="res2net">
-<h3><a class="toc-backref" href="#id18">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id32">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.res2net50_26w_4s">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">res2net50_26w_4s</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/res2net.html#res2net50_26w_4s"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.res2net50_26w_4s" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">res2net50_26w_4s</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/res2net.html#res2net50_26w_4s"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.res2net50_26w_4s" title="Permalink to this definition">¶</a></dt>
 <dd><p>Res2Net-50 26wx4s from
 <a class="reference external" href="https://arxiv.org/pdf/1904.01169.pdf">“Res2Net: A New Multi-scale Backbone Architecture”</a></p>
 <dl class="field-list simple">
@@ -457,10 +469,10 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="tridentnet">
-<h3><a class="toc-backref" href="#id19">TridentNet</a><a class="headerlink" href="#tridentnet" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id33">TridentNet</a><a class="headerlink" href="#tridentnet" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.tridentnet50">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">tridentnet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/tridentnet.html#tridentnet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.tridentnet50" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">tridentnet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/tridentnet.html#tridentnet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.tridentnet50" title="Permalink to this definition">¶</a></dt>
 <dd><p>TridentNet-50 from
 <a class="reference external" href="https://arxiv.org/pdf/1901.01892.pdf">“Scale-Aware Trident Networks for Object Detection”</a></p>
 <dl class="field-list simple">
@@ -481,10 +493,10 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="pyconvresnet">
-<h3><a class="toc-backref" href="#id20">PyConvResNet</a><a class="headerlink" href="#pyconvresnet" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id34">PyConvResNet</a><a class="headerlink" href="#pyconvresnet" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.pyconv_resnet50">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">pyconv_resnet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/pyconvresnet.html#pyconv_resnet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.pyconv_resnet50" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">pyconv_resnet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/pyconvresnet.html#pyconv_resnet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.pyconv_resnet50" title="Permalink to this definition">¶</a></dt>
 <dd><p>PyConvResNet-50 from <a class="reference external" href="https://arxiv.org/pdf/2006.11538.pdf">“Pyramidal Convolution: Rethinking Convolutional Neural Networks
 for Visual Recognition”</a></p>
 <dl class="field-list simple">
@@ -505,7 +517,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.pyconvhg_resnet50">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">pyconvhg_resnet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/pyconvresnet.html#pyconvhg_resnet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.pyconvhg_resnet50" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">pyconvhg_resnet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/pyconvresnet.html#pyconvhg_resnet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.pyconvhg_resnet50" title="Permalink to this definition">¶</a></dt>
 <dd><p>PyConvHGResNet-50 from <a class="reference external" href="https://arxiv.org/pdf/2006.11538.pdf">“Pyramidal Convolution: Rethinking Convolutional Neural Networks
 for Visual Recognition”</a></p>
 <dl class="field-list simple">
@@ -526,10 +538,10 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="rexnet">
-<h3><a class="toc-backref" href="#id21">ReXNet</a><a class="headerlink" href="#rexnet" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id35">ReXNet</a><a class="headerlink" href="#rexnet" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.rexnet1_0x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_0x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet1_0x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_0x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_0x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.rexnet.ReXNet<a class="reference internal" href="_modules/holocron/models/classification/rexnet.html#rexnet1_0x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_0x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-1.0x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -550,7 +562,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.rexnet1_3x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_3x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet1_3x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_3x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_3x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.rexnet.ReXNet<a class="reference internal" href="_modules/holocron/models/classification/rexnet.html#rexnet1_3x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_3x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-1.3x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -571,7 +583,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.rexnet1_5x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_5x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet1_5x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_5x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet1_5x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.rexnet.ReXNet<a class="reference internal" href="_modules/holocron/models/classification/rexnet.html#rexnet1_5x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet1_5x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-1.5x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -592,7 +604,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.rexnet2_0x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet2_0x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet2_0x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet2_0x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet2_0x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.rexnet.ReXNet<a class="reference internal" href="_modules/holocron/models/classification/rexnet.html#rexnet2_0x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet2_0x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-2.0x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -613,7 +625,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.rexnet2_2x">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet2_2x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet2_2x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet2_2x" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">rexnet2_2x</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.rexnet.ReXNet<a class="reference internal" href="_modules/holocron/models/classification/rexnet.html#rexnet2_2x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.rexnet2_2x" title="Permalink to this definition">¶</a></dt>
 <dd><p>ReXNet-2.2x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
@@ -634,10 +646,10 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="sknet">
-<h3><a class="toc-backref" href="#id22">SKNet</a><a class="headerlink" href="#sknet" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id36">SKNet</a><a class="headerlink" href="#sknet" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.sknet50">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">sknet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/sknet.html#sknet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.sknet50" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">sknet50</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/sknet.html#sknet50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.sknet50" title="Permalink to this definition">¶</a></dt>
 <dd><p>SKNet-50 from
 <a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">“Selective Kernel Networks”</a></p>
 <dl class="field-list simple">
@@ -657,8 +669,29 @@ for Visual Recognition”</a></p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="holocron.models.sknet101">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">sknet101</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/sknet.html#sknet101"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.sknet101" title="Permalink to this definition">¶</a></dt>
+<dd><p>SKNet-101 from
+<a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">“Selective Kernel Networks”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="holocron.models.sknet152">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">sknet152</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/sknet.html#sknet152"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.sknet152" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">sknet152</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.resnet.ResNet<a class="reference internal" href="_modules/holocron/models/classification/sknet.html#sknet152"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.sknet152" title="Permalink to this definition">¶</a></dt>
 <dd><p>SKNet-152 from
 <a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">“Selective Kernel Networks”</a></p>
 <dl class="field-list simple">
@@ -679,10 +712,10 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="darknet">
-<h3><a class="toc-backref" href="#id23">Darknet</a><a class="headerlink" href="#darknet" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id37">Darknet</a><a class="headerlink" href="#darknet" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
 <dt id="holocron.models.darknet24">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">darknet24</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.darknet.DarknetV1<a class="reference internal" href="_modules/holocron/models/darknet.html#darknet24"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.darknet24" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">darknet24</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.darknet.DarknetV1<a class="reference internal" href="_modules/holocron/models/classification/darknet.html#darknet24"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.darknet24" title="Permalink to this definition">¶</a></dt>
 <dd><p>Darknet-24 from
 <a class="reference external" href="https://pjreddie.com/media/files/papers/yolo_1.pdf">“You Only Look Once: Unified, Real-Time Object Detection”</a></p>
 <dl class="field-list simple">
@@ -703,7 +736,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.darknet19">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">darknet19</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.darknetv2.DarknetV2<a class="reference internal" href="_modules/holocron/models/darknetv2.html#darknet19"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.darknet19" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">darknet19</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.darknetv2.DarknetV2<a class="reference internal" href="_modules/holocron/models/classification/darknetv2.html#darknet19"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.darknet19" title="Permalink to this definition">¶</a></dt>
 <dd><p>Darknet-19 from
 <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a></p>
 <dl class="field-list simple">
@@ -724,7 +757,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.darknet53">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">darknet53</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.darknetv3.DarknetV3<a class="reference internal" href="_modules/holocron/models/darknetv3.html#darknet53"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.darknet53" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">darknet53</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.darknetv3.DarknetV3<a class="reference internal" href="_modules/holocron/models/classification/darknetv3.html#darknet53"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.darknet53" title="Permalink to this definition">¶</a></dt>
 <dd><p>Darknet-53 from
 <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLOv3.pdf">“YOLOv3: An Incremental Improvement”</a></p>
 <dl class="field-list simple">
@@ -745,7 +778,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.cspdarknet53">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">cspdarknet53</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.darknetv4.DarknetV4<a class="reference internal" href="_modules/holocron/models/darknetv4.html#cspdarknet53"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.cspdarknet53" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">cspdarknet53</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.darknetv4.DarknetV4<a class="reference internal" href="_modules/holocron/models/classification/darknetv4.html#cspdarknet53"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.cspdarknet53" title="Permalink to this definition">¶</a></dt>
 <dd><p>CSP-Darknet-53 from
 <a class="reference external" href="https://arxiv.org/pdf/1911.11929.pdf">“CSPNet: A New Backbone that can Enhance Learning Capability of CNN”</a></p>
 <dl class="field-list simple">
@@ -766,7 +799,7 @@ for Visual Recognition”</a></p>
 
 <dl class="py function">
 <dt id="holocron.models.cspdarknet53_mish">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">cspdarknet53_mish</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.darknetv4.DarknetV4<a class="reference internal" href="_modules/holocron/models/darknetv4.html#cspdarknet53_mish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.cspdarknet53_mish" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">cspdarknet53_mish</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.darknetv4.DarknetV4<a class="reference internal" href="_modules/holocron/models/classification/darknetv4.html#cspdarknet53_mish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.cspdarknet53_mish" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modified version of CSP-Darknet-53 from
 <a class="reference external" href="https://arxiv.org/pdf/1911.11929.pdf">“CSPNet: A New Backbone that can Enhance Learning Capability of CNN”</a>
 with Mish as activation layer and DropBlock as regularization layer.</p>
@@ -787,9 +820,159 @@ with Mish as activation layer and DropBlock as regularization layer.</p>
 </dd></dl>
 
 </section>
+<section id="repvgg">
+<h3><a class="toc-backref" href="#id38">RepVGG</a><a class="headerlink" href="#repvgg" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt id="holocron.models.repvgg_a0">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">repvgg_a0</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.repvgg.RepVGG<a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_a0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.repvgg_a0" title="Permalink to this definition">¶</a></dt>
+<dd><p>RepVGG-A0 from
+<a class="reference external" href="https://arxiv.org/pdf/2101.03697.pdf">“RepVGG: Making VGG-style ConvNets Great Again”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.repvgg_a1">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">repvgg_a1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.repvgg.RepVGG<a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_a1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.repvgg_a1" title="Permalink to this definition">¶</a></dt>
+<dd><p>RepVGG-A1 from
+<a class="reference external" href="https://arxiv.org/pdf/2101.03697.pdf">“RepVGG: Making VGG-style ConvNets Great Again”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.repvgg_a2">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">repvgg_a2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.repvgg.RepVGG<a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_a2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.repvgg_a2" title="Permalink to this definition">¶</a></dt>
+<dd><p>RepVGG-A2 from
+<a class="reference external" href="https://arxiv.org/pdf/2101.03697.pdf">“RepVGG: Making VGG-style ConvNets Great Again”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.repvgg_b0">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">repvgg_b0</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.repvgg.RepVGG<a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_b0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.repvgg_b0" title="Permalink to this definition">¶</a></dt>
+<dd><p>RepVGG-B0 from
+<a class="reference external" href="https://arxiv.org/pdf/2101.03697.pdf">“RepVGG: Making VGG-style ConvNets Great Again”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.repvgg_b1">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">repvgg_b1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.repvgg.RepVGG<a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_b1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.repvgg_b1" title="Permalink to this definition">¶</a></dt>
+<dd><p>RepVGG-B1 from
+<a class="reference external" href="https://arxiv.org/pdf/2101.03697.pdf">“RepVGG: Making VGG-style ConvNets Great Again”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.repvgg_b2">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">repvgg_b2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.repvgg.RepVGG<a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_b2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.repvgg_b2" title="Permalink to this definition">¶</a></dt>
+<dd><p>RepVGG-B2 from
+<a class="reference external" href="https://arxiv.org/pdf/2101.03697.pdf">“RepVGG: Making VGG-style ConvNets Great Again”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.repvgg_b3">
+<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">repvgg_b3</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.classification.repvgg.RepVGG<a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_b3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.repvgg_b3" title="Permalink to this definition">¶</a></dt>
+<dd><p>RepVGG-B3 from
+<a class="reference external" href="https://arxiv.org/pdf/2101.03697.pdf">“RepVGG: Making VGG-style ConvNets Great Again”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 <section id="object-detection">
-<h2><a class="toc-backref" href="#id24">Object Detection</a><a class="headerlink" href="#object-detection" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id39">Object Detection</a><a class="headerlink" href="#object-detection" title="Permalink to this headline">¶</a></h2>
 <p>Object detection models expect a 4D image tensor as an input (N x C x H x W) and returns a list of dictionaries.
 Each dictionary has 3 keys: box coordinates, classification probability, classification label.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -797,10 +980,10 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
 </pre></div>
 </div>
 <section id="yolo">
-<h3><a class="toc-backref" href="#id25">YOLO</a><a class="headerlink" href="#yolo" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id40">YOLO</a><a class="headerlink" href="#yolo" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
-<dt id="holocron.models.yolov1">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">yolov1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.detection.yolo.YOLOv1<a class="reference internal" href="_modules/holocron/models/detection/yolo.html#yolov1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.yolov1" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.models.detection.yolov1">
+<code class="sig-prename descclassname">holocron.models.detection.</code><code class="sig-name descname">yolov1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.detection.yolo.YOLOv1<a class="reference internal" href="_modules/holocron/models/detection/yolo.html#yolov1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.detection.yolov1" title="Permalink to this definition">¶</a></dt>
 <dd><p>YOLO model from
 <a class="reference external" href="https://pjreddie.com/media/files/papers/yolo_1.pdf">“You Only Look Once: Unified, Real-Time Object Detection”</a>.</p>
 <p>YOLO’s particularity is to make predictions in a grid (same size as last feature map). For each grid cell,
@@ -863,8 +1046,8 @@ and <span class="math notranslate nohighlight">\(\hat{p}_i(c)\)</span> is the pr
 </dd></dl>
 
 <dl class="py function">
-<dt id="holocron.models.yolov2">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">yolov2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.detection.yolov2.YOLOv2<a class="reference internal" href="_modules/holocron/models/detection/yolov2.html#yolov2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.yolov2" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.models.detection.yolov2">
+<code class="sig-prename descclassname">holocron.models.detection.</code><code class="sig-name descname">yolov2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.detection.yolov2.YOLOv2<a class="reference internal" href="_modules/holocron/models/detection/yolov2.html#yolov2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.detection.yolov2" title="Permalink to this definition">¶</a></dt>
 <dd><p>YOLOv2 model from
 <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a>.</p>
 <p>YOLOv2 improves upon YOLO by raising the number of boxes predicted by grid cell (default: 5), introducing
@@ -900,14 +1083,24 @@ in the i-th cell.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="holocron.models.yolov4">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">yolov4</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.detection.yolov4.YOLOv4<a class="reference internal" href="_modules/holocron/models/detection/yolov4.html#yolov4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.yolov4" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.models.detection.yolov4">
+<code class="sig-prename descclassname">holocron.models.detection.</code><code class="sig-name descname">yolov4</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.detection.yolov4.YOLOv4<a class="reference internal" href="_modules/holocron/models/detection/yolov4.html#yolov4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.detection.yolov4" title="Permalink to this definition">¶</a></dt>
 <dd><p>YOLOv4 model from
 <a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">“YOLOv4: Optimal Speed and Accuracy of Object Detection”</a>.</p>
-<p>YOLOv4 is an improvement on YOLOv3 that includes many changes including: the usage of <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">DropBlock</a> regularization, <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">Mish</a> activation,
+<p>The architecture improves upon YOLOv3 by including: the usage of <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">DropBlock</a> regularization, <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">Mish</a> activation,
 <a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">CSP</a> and <a class="reference external" href="https://arxiv.org/pdf/1807.06521.pdf">SAM</a> in the
 backbone, <a class="reference external" href="https://arxiv.org/pdf/1406.4729.pdf">SPP</a> and <a class="reference external" href="https://arxiv.org/pdf/1803.01534.pdf">PAN</a> in the
 neck.</p>
+<p>For training, YOLOv4 uses the same multi-part loss as YOLOv3 apart from its box coordinate loss:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L}_{coords} = \sum\limits_{i=0}^{S^2}  \sum\limits_{j=0}^{B}
+\min\limits_{k \in [1, M]} C_{IoU}(\hat{loc}_{ij}, loc^{GT}_k)\]</div>
+<p>where <span class="math notranslate nohighlight">\(S\)</span> is size of the output feature map (13 for an input size <span class="math notranslate nohighlight">\((416, 416)\)</span>),
+<span class="math notranslate nohighlight">\(B\)</span> is the number of anchor boxes per grid cell (default: 3),
+<span class="math notranslate nohighlight">\(M\)</span> is the number of ground truth boxes,
+<span class="math notranslate nohighlight">\(C_{IoU}\)</span> is the complete IoU loss,
+<span class="math notranslate nohighlight">\(\hat{loc}_{ij}\)</span> is the predicted bounding box for grid cell <span class="math notranslate nohighlight">\(i\)</span> at anchor <span class="math notranslate nohighlight">\(j\)</span>,
+and <span class="math notranslate nohighlight">\(loc^{GT}_k\)</span> is the k-th ground truth bounding box.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -928,7 +1121,7 @@ neck.</p>
 </section>
 </section>
 <section id="semantic-segmentation">
-<h2><a class="toc-backref" href="#id26">Semantic Segmentation</a><a class="headerlink" href="#semantic-segmentation" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id41">Semantic Segmentation</a><a class="headerlink" href="#semantic-segmentation" title="Permalink to this headline">¶</a></h2>
 <p>Semantic segmentation models expect a 4D image tensor as an input (N x C x H x W) and returns a classification score
 tensor of size (N x K x Ho x Wo).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -936,87 +1129,158 @@ tensor of size (N x K x Ho x Wo).</p>
 </pre></div>
 </div>
 <section id="u-net">
-<h3><a class="toc-backref" href="#id27">U-Net</a><a class="headerlink" href="#u-net" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id42">U-Net</a><a class="headerlink" href="#u-net" title="Permalink to this headline">¶</a></h3>
 <dl class="py function">
-<dt id="holocron.models.unet">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">unet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.UNet<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.unet" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.models.segmentation.unet">
+<code class="sig-prename descclassname">holocron.models.segmentation.</code><code class="sig-name descname">unet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.UNet<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.segmentation.unet" title="Permalink to this definition">¶</a></dt>
 <dd><p>U-Net from
 <a class="reference external" href="https://arxiv.org/pdf/1505.04597.pdf">“U-Net: Convolutional Networks for Biomedical Image Segmentation”</a></p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
-<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+<li><p><strong>pretrained</strong> – If True, returns a model pre-trained on PASCAL VOC2012</p></li>
+<li><p><strong>progress</strong> – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>semantic segmentation model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.nn.Module</p>
-</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt id="holocron.models.unetp">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">unetp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.UNetp<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unetp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.unetp" title="Permalink to this definition">¶</a></dt>
-<dd><p>UNet+ from
-<a class="reference external" href="https://arxiv.org/pdf/1807.10165.pdf">“UNet++: A Nested U-Net Architecture for Medical Image Segmentation”</a></p>
+<dt id="holocron.models.segmentation.unetp">
+<code class="sig-prename descclassname">holocron.models.segmentation.</code><code class="sig-name descname">unetp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unetpp.UNetp<a class="reference internal" href="_modules/holocron/models/segmentation/unetpp.html#unetp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.segmentation.unetp" title="Permalink to this definition">¶</a></dt>
+<dd><p>UNet+ from <a class="reference external" href="https://arxiv.org/pdf/1912.05074.pdf">“UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation”</a></p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unetp.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unetp.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
-<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+<li><p><strong>pretrained</strong> – If True, returns a model pre-trained on PASCAL VOC2012</p></li>
+<li><p><strong>progress</strong> – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>semantic segmentation model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.nn.Module</p>
-</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt id="holocron.models.unetpp">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">unetpp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.UNetpp<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unetpp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.unetpp" title="Permalink to this definition">¶</a></dt>
-<dd><p>UNet++ from
-<a class="reference external" href="https://arxiv.org/pdf/1807.10165.pdf">“UNet++: A Nested U-Net Architecture for Medical Image Segmentation”</a></p>
+<dt id="holocron.models.segmentation.unetpp">
+<code class="sig-prename descclassname">holocron.models.segmentation.</code><code class="sig-name descname">unetpp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unetpp.UNetpp<a class="reference internal" href="_modules/holocron/models/segmentation/unetpp.html#unetpp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.segmentation.unetpp" title="Permalink to this definition">¶</a></dt>
+<dd><p>UNet++ from <a class="reference external" href="https://arxiv.org/pdf/1912.05074.pdf">“UNet++: Redesigning Skip Connections to Exploit Multiscale Features in Image Segmentation”</a></p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unetpp.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unetpp.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
-<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+<li><p><strong>pretrained</strong> – If True, returns a model pre-trained on PASCAL VOC2012</p></li>
+<li><p><strong>progress</strong> – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>semantic segmentation model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.nn.Module</p>
-</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt id="holocron.models.unet3p">
-<code class="sig-prename descclassname">holocron.models.</code><code class="sig-name descname">unet3p</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.UNet3p<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet3p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.unet3p" title="Permalink to this definition">¶</a></dt>
+<dt id="holocron.models.segmentation.unet3p">
+<code class="sig-prename descclassname">holocron.models.segmentation.</code><code class="sig-name descname">unet3p</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet3p.UNet3p<a class="reference internal" href="_modules/holocron/models/segmentation/unet3p.html#unet3p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.segmentation.unet3p" title="Permalink to this definition">¶</a></dt>
 <dd><p>UNet3+ from
 <a class="reference external" href="https://arxiv.org/pdf/2004.08790.pdf">“UNet 3+: A Full-Scale Connected UNet For Medical Image Segmentation”</a></p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet3p.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet3p.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
-<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+<li><p><strong>pretrained</strong> – If True, returns a model pre-trained on PASCAL VOC2012</p></li>
+<li><p><strong>progress</strong> – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>semantic segmentation model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.nn.Module</p>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.segmentation.unet2">
+<code class="sig-prename descclassname">holocron.models.segmentation.</code><code class="sig-name descname">unet2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">in_channels</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.DynamicUNet<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.segmentation.unet2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modified version of U-Net from
+<a class="reference external" href="https://arxiv.org/pdf/1505.04597.pdf">“U-Net: Convolutional Networks for Biomedical Image Segmentation”</a>
+that includes a more advanced upscaling block inspired by <a class="reference external" href="https://docs.fast.ai/vision.models.unet.html#DynamicUnet">fastai</a>.</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet.png" />
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> – If True, returns a model pre-trained on PASCAL VOC2012</p></li>
+<li><p><strong>progress</strong> – If True, displays a progress bar of the download to stderr</p></li>
+<li><p><strong>in_channels</strong> – number of input channels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>semantic segmentation model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.segmentation.unet_tvvgg11">
+<code class="sig-prename descclassname">holocron.models.segmentation.</code><code class="sig-name descname">unet_tvvgg11</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.DynamicUNet<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet_tvvgg11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.segmentation.unet_tvvgg11" title="Permalink to this definition">¶</a></dt>
+<dd><p>U-Net from
+<a class="reference external" href="https://arxiv.org/pdf/1505.04597.pdf">“U-Net: Convolutional Networks for Biomedical Image Segmentation”</a>
+with a VGG-11 backbone used as encoder, and more advanced upscaling blocks inspired by <a class="reference external" href="https://docs.fast.ai/vision.models.unet.html#DynamicUnet">fastai</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> – If True, returns a model pre-trained on PASCAL VOC2012</p></li>
+<li><p><strong>pretrained_backbone</strong> – If True, the encoder will load pretrained parameters from ImageNet</p></li>
+<li><p><strong>progress</strong> – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>semantic segmentation model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.segmentation.unet_tvresnet34">
+<code class="sig-prename descclassname">holocron.models.segmentation.</code><code class="sig-name descname">unet_tvresnet34</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.DynamicUNet<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet_tvresnet34"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.segmentation.unet_tvresnet34" title="Permalink to this definition">¶</a></dt>
+<dd><p>U-Net from
+<a class="reference external" href="https://arxiv.org/pdf/1505.04597.pdf">“U-Net: Convolutional Networks for Biomedical Image Segmentation”</a>
+with a ResNet-34 backbone used as encoder, and more advanced upscaling blocks inspired by <a class="reference external" href="https://docs.fast.ai/vision.models.unet.html#DynamicUnet">fastai</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> – If True, returns a model pre-trained on PASCAL VOC2012</p></li>
+<li><p><strong>pretrained_backbone</strong> – If True, the encoder will load pretrained parameters from ImageNet</p></li>
+<li><p><strong>progress</strong> – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>semantic segmentation model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.models.segmentation.unet_rexnet13">
+<code class="sig-prename descclassname">holocron.models.segmentation.</code><code class="sig-name descname">unet_rexnet13</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pretrained</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">pretrained_backbone</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">progress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">in_channels</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; holocron.models.segmentation.unet.DynamicUNet<a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet_rexnet13"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.models.segmentation.unet_rexnet13" title="Permalink to this definition">¶</a></dt>
+<dd><p>U-Net from
+<a class="reference external" href="https://arxiv.org/pdf/1505.04597.pdf">“U-Net: Convolutional Networks for Biomedical Image Segmentation”</a>
+with a ReXNet-1.3x backbone used as encoder, and more advanced upscaling blocks inspired by <a class="reference external" href="https://docs.fast.ai/vision.models.unet.html#DynamicUnet">fastai</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> – If True, returns a model pre-trained on PASCAL VOC2012</p></li>
+<li><p><strong>pretrained_backbone</strong> – If True, the encoder will load pretrained parameters from ImageNet</p></li>
+<li><p><strong>progress</strong> – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>semantic segmentation model</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1036,7 +1300,7 @@ tensor of size (N x K x Ho x Wo).</p>
         <a href="nn.html" class="btn btn-neutral float-right" title="holocron.nn" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="installing.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="notebooks.html" class="btn btn-neutral float-left" title="Holocron Notebooks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

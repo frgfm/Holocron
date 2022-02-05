@@ -18,6 +18,9 @@ Image classification
 .. autoclass:: ClassificationTrainer
     :members:
 
+.. autoclass:: BinaryClassificationTrainer
+    :members:
+
 .. autoclass:: SegmentationTrainer
     :members:
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.ops.boxes &mdash; holocron 0.1.3a0+d41610b-git documentation</title>
+  <title>holocron.ops.boxes &mdash; holocron 0.2.0.dev0+67a50c7-git documentation</title>
   
 
   
@@ -88,8 +88,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../installing.html#via-git">Via Git</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Holocron Notebooks</a></li>
 </ul>
-<p><span class="caption-text">Package Documentation</span></p>
+<p><span class="caption-text">Package Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#classification">Classification</a><ul>
@@ -100,6 +101,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../models.html#object-detection">Object Detection</a><ul>
@@ -137,7 +139,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../trainer.html">holocron.trainer</a><ul>
@@ -151,6 +152,16 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../utils.data.html">holocron.utils.data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+<p><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../changelog.html#v0-1-3-2020-10-27">v0.1.3 (2020-10-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../changelog.html#v0-1-2-2020-06-21">v0.1.2 (2020-06-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../changelog.html#v0-1-1-2020-05-12">v0.1.1 (2020-05-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../changelog.html#v0-1-0-2020-05-11">v0.1.0 (2020-05-11)</a></li>
 </ul>
 </li>
 </ul>
@@ -216,18 +227,17 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.ops.boxes</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Bounding box operations</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="c1"># This program is licensed under the Apache License version 2.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span><span class="p">,</span> <span class="n">box_area</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
 
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_area</span><span class="p">,</span> <span class="n">box_iou</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;box_giou&#39;</span><span class="p">,</span> <span class="s1">&#39;diou_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;ciou_loss&#39;</span><span class="p">]</span>
 
@@ -250,17 +260,17 @@
 
 
 <div class="viewcode-block" id="box_giou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_giou">[docs]</a><span class="k">def</span> <span class="nf">box_giou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Computes the Generalized-IoU as described in `&quot;Generalized Intersection over Union: A Metric and A Loss</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Generalized-IoU as described in `&quot;Generalized Intersection over Union: A Metric and A Loss</span>
 <span class="sd">    for Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1902.09630.pdf&gt;`_. This implementation was adapted</span>
 <span class="sd">    from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py</span>
 
 <span class="sd">    The generalized IoU is defined as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        GIoU = IoU - \\frac{|C - A \\cup B|}{|C|}</span>
+<span class="sd">        GIoU = IoU - \frac{|C - A \cup B|}{|C|}</span>
 
 <span class="sd">    where :math:`IoU` is the Intersection over Union,</span>
-<span class="sd">    :math:`A \\cup B` is the area of the boxes&#39; union,</span>
+<span class="sd">    :math:`A \cup B` is the area of the boxes&#39; union,</span>
 <span class="sd">    and :math:`C` is the area of the smallest enclosing box covering the two boxes.</span>
 
 <span class="sd">    Args:</span>
@@ -324,18 +334,21 @@
 
 
 <div class="viewcode-block" id="diou_loss"><a class="viewcode-back" href="../../../ops.html#holocron.ops.diou_loss">[docs]</a><span class="k">def</span> <span class="nf">diou_loss</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Computes the Distance-IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Distance-IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
 <span class="sd">    Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1911.08287.pdf&gt;`_.</span>
 
 <span class="sd">    The loss is defined as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \\mathcal{L}_{DIoU} = 1 - IoU + \\frac{\\rho^2(b, b^{GT})}{c^2}</span>
+<span class="sd">        \mathcal{L}_{DIoU} = 1 - IoU + \frac{\rho^2(b, b^{GT})}{c^2}</span>
 
 <span class="sd">    where :math:`IoU` is the Intersection over Union,</span>
 <span class="sd">    :math:`b` and :math:`b^{GT}` are the centers of the box and the ground truth box respectively,</span>
 <span class="sd">    :math:`c` c is the diagonal length of the smallest enclosing box covering the two boxes,</span>
-<span class="sd">    and :math:`\\rho(.)` is the Euclidean distance.</span>
+<span class="sd">    and :math:`\rho(.)` is the Euclidean distance.</span>
+
+<span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/diou_loss.png</span>
+<span class="sd">        :align: center</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -380,30 +393,30 @@
 
 
 <div class="viewcode-block" id="ciou_loss"><a class="viewcode-back" href="../../../ops.html#holocron.ops.ciou_loss">[docs]</a><span class="k">def</span> <span class="nf">ciou_loss</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Computes the Complete IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Complete IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
 <span class="sd">    Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1911.08287.pdf&gt;`_.</span>
 
 <span class="sd">    The loss is defined as follows:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \\mathcal{L}_{CIoU} = 1 - IoU + \\frac{\\rho^2(b, b^{GT})}{c^2} + \\alpha v</span>
+<span class="sd">        \mathcal{L}_{CIoU} = 1 - IoU + \frac{\rho^2(b, b^{GT})}{c^2} + \alpha v</span>
 
 <span class="sd">    where :math:`IoU` is the Intersection over Union,</span>
 <span class="sd">    :math:`b` and :math:`b^{GT}` are the centers of the box and the ground truth box respectively,</span>
 <span class="sd">    :math:`c` c is the diagonal length of the smallest enclosing box covering the two boxes,</span>
-<span class="sd">    :math:`\\rho(.)` is the Euclidean distance,</span>
-<span class="sd">    :math:`\\alpha` is a positive trade-off parameter,</span>
+<span class="sd">    :math:`\rho(.)` is the Euclidean distance,</span>
+<span class="sd">    :math:`\alpha` is a positive trade-off parameter,</span>
 <span class="sd">    and :math:`v` is the aspect ratio consistency.</span>
 
 <span class="sd">    More specifically:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        v = \\frac{4}{\\pi^2} \\Big(\\arctan{\\frac{w^{GT}}{h^{GT}}} - \\arctan{\\frac{w}{h}}\\Big)^2</span>
+<span class="sd">        v = \frac{4}{\pi^2} \Big(\arctan{\frac{w^{GT}}{h^{GT}}} - \arctan{\frac{w}{h}}\Big)^2</span>
 
 <span class="sd">    and</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \\alpha = \\frac{v}{(1 - IoU) + v}</span>
+<span class="sd">        \alpha = \frac{v}{(1 - IoU) + v}</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -427,7 +440,7 @@
 
     <span class="c1"># Check</span>
     <span class="n">_filter</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iou</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">ciou_loss</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span><span class="o">.</span><span class="n">addcdiv_</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">iou</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">])</span>
+    <span class="n">ciou_loss</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span><span class="o">.</span><span class="n">addcdiv_</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">],</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">iou</span><span class="p">[</span><span class="n">_filter</span><span class="p">]</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="n">_filter</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">ciou_loss</span></div>
 </pre></div>

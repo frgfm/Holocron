@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.1.3a0+d41610b-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.2.0.dev0+67a50c7-git documentation</title>
   
 
   
@@ -91,8 +91,9 @@
 <li class="toctree-l2"><a class="reference internal" href="installing.html#via-git">Via Git</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Holocron Notebooks</a></li>
 </ul>
-<p><span class="caption-text">Package Documentation</span></p>
+<p><span class="caption-text">Package Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
@@ -103,6 +104,7 @@
 <li class="toctree-l3"><a class="reference internal" href="models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#object-detection">Object Detection</a><ul>
@@ -140,7 +142,6 @@
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
@@ -154,6 +155,16 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils.data.html">holocron.utils.data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+<p><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-3-2020-10-27">v0.1.3 (2020-10-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-2-2020-06-21">v0.1.2 (2020-06-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-1-2020-05-12">v0.1.1 (2020-05-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-0-2020-05-11">v0.1.0 (2020-05-11)</a></li>
 </ul>
 </li>
 </ul>
@@ -225,24 +236,6 @@
 <p>An addition to the <code class="xref py py-mod docutils literal notranslate"><span class="pre">torch.nn</span></code> module of Pytorch to extend the range of neural networks building blocks.</p>
 <section id="non-linear-activations">
 <h2>Non-linear activations<a class="headerlink" href="#non-linear-activations" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt id="holocron.nn.SiLU">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">SiLU</code><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#SiLU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.SiLU" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the SiLU activation from <a class="reference external" href="https://arxiv.org/pdf/1606.08415.pdf">“Gaussian Error Linear Units (GELUs)”</a> (also known as Swish).</p>
-<p>This activation is computed as follows:</p>
-<div class="math notranslate nohighlight">
-\[f(x) = x \cdot \sigma(x)\]</div>
-</dd></dl>
-
-<dl class="py class">
-<dt id="holocron.nn.Mish">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">Mish</code><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#Mish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Mish" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements the Mish activation module from <a class="reference external" href="https://arxiv.org/pdf/1908.08681.pdf">“Mish: A Self Regularized Non-Monotonic Neural Activation Function”</a></p>
-<p>This activation is computed as follows:</p>
-<div class="math notranslate nohighlight">
-\[f(x) = x \cdot \tanh(ln(1 + e^x))\]</div>
-</dd></dl>
-
 <dl class="py class">
 <dt id="holocron.nn.HardMish">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">HardMish</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inplace</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/activation.html#HardMish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.HardMish" title="Permalink to this definition">¶</a></dt>
@@ -328,23 +321,6 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 </dd></dl>
 
 <dl class="py class">
-<dt id="holocron.nn.LabelSmoothingCrossEntropy">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">LabelSmoothingCrossEntropy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eps</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#LabelSmoothingCrossEntropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.LabelSmoothingCrossEntropy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implementation of the cross-entropy loss with label smoothing on hard target as described in
-<a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">“Attention Is All You Need”</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
-<li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
-<li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
-<li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
 <dt id="holocron.nn.ComplementCrossEntropy">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">ComplementCrossEntropy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gamma</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">- 1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#ComplementCrossEntropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.ComplementCrossEntropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the complement cross entropy loss from
@@ -363,7 +339,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 
 <dl class="py class">
 <dt id="holocron.nn.MutualChannelLoss">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">MutualChannelLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weight</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>float<span class="p">, </span>List<span class="p">[</span>float<span class="p">]</span><span class="p">, </span>torch.Tensor<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">chi</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MutualChannelLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.MutualChannelLoss" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">MutualChannelLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weight</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>float<span class="p">, </span>List<span class="p">[</span>float<span class="p">]</span><span class="p">, </span>torch.Tensor<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 100</span></em>, <em class="sig-param"><span class="n">reduction</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'mean'</span></em>, <em class="sig-param"><span class="n">xi</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MutualChannelLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.MutualChannelLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the mutual channel loss from
 <a class="reference external" href="https://arxiv.org/pdf/2002.04264.pdf">“The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification”</a>.</p>
 <dl class="field-list simple">
@@ -372,8 +348,24 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
-<li><p><strong>chi</strong> (<em>in</em><em>, </em><em>optional</em>) – num of features per class</p></li>
+<li><p><strong>xi</strong> (<em>in</em><em>, </em><em>optional</em>) – num of features per class</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – diversity factor</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.DiceLoss">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">DiceLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weight</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>float<span class="p">, </span>List<span class="p">[</span>float<span class="p">]</span><span class="p">, </span>torch.Tensor<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">eps</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-08</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#DiceLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.DiceLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the dice loss from <a class="reference external" href="https://arxiv.org/pdf/1606.04797.pdf">“V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image
+Segmentation”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – recall/precision control param</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – small value added to avoid division by zero</p></li>
 </ul>
 </dd>
 </dl>
@@ -382,18 +374,6 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 </section>
 <section id="loss-wrappers">
 <h2>Loss wrappers<a class="headerlink" href="#loss-wrappers" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt id="holocron.nn.MixupLoss">
-<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">MixupLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">criterion</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MixupLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.MixupLoss" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a Mixup wrapper as described in
-<a class="reference external" href="https://arxiv.org/pdf/1710.09412.pdf">“mixup: Beyond Empirical Risk Minimization”</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>criterion</strong> (<em>callable</em>) – initial criterion to be used on normal sample &amp; targets</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py class">
 <dt id="holocron.nn.ClassBalancedWrapper">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">ClassBalancedWrapper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">criterion</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="n">num_samples</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">beta</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.99</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#ClassBalancedWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.ClassBalancedWrapper" title="Permalink to this definition">¶</a></dt>
@@ -471,6 +451,7 @@ can be precisely described as:</p>
 <p>where <span class="math notranslate nohighlight">\(C\)</span> denotes a number of channels,
 <span class="math notranslate nohighlight">\(H\)</span> is a height of input planes in pixels, and <span class="math notranslate nohighlight">\(W\)</span> is
 width in pixels.</p>
+<img alt="Add2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/add2d.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -536,6 +517,7 @@ followed by a convolution of kernel size <span class="math notranslate nohighlig
 <div class="math notranslate nohighlight">
 \[Y = T_{top} \oplus T_{bot}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\oplus\)</span> is the channel-wise concatenation.</p>
+<img alt="SlimConv2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/slimconv2d.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -564,6 +546,7 @@ output. Default: <code class="docutils literal notranslate"><span class="pre">Tr
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">PyConv2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">out_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">num_levels</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em>, <em class="sig-param"><span class="n">padding</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">groups</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/conv.html#PyConv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.PyConv2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the convolution module from <a class="reference external" href="https://arxiv.org/pdf/2006.11538.pdf">“Pyramidal Convolution: Rethinking Convolutional Neural Networks for
 Visual Recognition”</a>.</p>
+<img alt="PyConv2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/pyconv2d.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -580,6 +563,29 @@ channels to output channels. Default: 1</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt id="holocron.nn.Involution2d">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">Involution2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">padding</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">stride</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">reduction_ratio</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/conv.html#Involution2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.Involution2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the convolution module from <a class="reference external" href="https://arxiv.org/pdf/2103.06255.pdf">“Involution: Inverting the Inherence of Convolution for Visual
+Recognition”</a>, adapted from the proposed PyTorch implementation in
+the paper.</p>
+<img alt="Involution2d schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/involutions.png" />
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>padding</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+the input. Default: 0</p></li>
+<li><p><strong>stride</strong> – Stride of the convolution. Default: 1</p></li>
+<li><p><strong>groups</strong> – Number of blocked connections from input channels to output channels. Default: 1</p></li>
+<li><p><strong>dilation</strong> – Spacing between kernel elements. Default: 1</p></li>
+<li><p><strong>reduction_ratio</strong> – reduction ratio of the channels to generate the kernel</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="regularization-layers">
 <h2>Regularization layers<a class="headerlink" href="#regularization-layers" title="Permalink to this headline">¶</a></h2>
@@ -587,6 +593,7 @@ channels to output channels. Default: 1</p></li>
 <dt id="holocron.nn.DropBlock2d">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">DropBlock2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">block_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">7</span></em>, <em class="sig-param"><span class="n">inplace</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/dropblock.html#DropBlock2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.DropBlock2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the DropBlock module from <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">“DropBlock: A regularization method for convolutional networks”</a></p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/dropblock.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/dropblock.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -628,6 +635,7 @@ channels to output channels. Default: 1</p></li>
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">BlurPool2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="n">stride</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#BlurPool2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.BlurPool2d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ross Wightman’s <a class="reference external" href="https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/layers/blur_pool.py">implementation</a> of blur pooling
 module as described in <a class="reference external" href="https://arxiv.org/pdf/1904.11486.pdf">“Making Convolutional Networks Shift-Invariant Again”</a>.</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/blurpool.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/blurpool.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -656,6 +664,17 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt id="holocron.nn.ZPool">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">ZPool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dim</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#ZPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.ZPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Z-pool layer from <a class="reference external" href="https://arxiv.org/pdf/2010.03045.pdf">“Rotate to Attend: Convolutional Triplet Attention Module”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dim</strong> – dimension to pool</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="attention">
 <h2>Attention<a class="headerlink" href="#attention" title="Permalink to this headline">¶</a></h2>
@@ -674,8 +693,8 @@ modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934
 <dl class="py class">
 <dt id="holocron.nn.LambdaLayer">
 <em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">LambdaLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">out_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">dim_k</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">r</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_heads</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">4</span></em>, <em class="sig-param"><span class="n">dim_u</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/lambda_layer.html#LambdaLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.LambdaLayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Lambda layer from <a class="reference external" href="https://openreview.net/pdf?id=xTJEN-ggl1b">“LambdaNetworks: Modeling long-range interactions without attention”</a>. The implementation was adapted from <cite>lucidrains’
-&lt;https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py&gt;</cite>.</p>
+<dd><p>Lambda layer from <a class="reference external" href="https://openreview.net/pdf?id=xTJEN-ggl1b">“LambdaNetworks: Modeling long-range interactions without attention”</a>. The implementation was adapted from <a class="reference external" href="https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py">lucidrains’</a>.</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/lambdalayer.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/lambdalayer.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -689,6 +708,14 @@ modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.TripletAttention">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">TripletAttention</code><a class="reference internal" href="_modules/holocron/nn/modules/attention.html#TripletAttention"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.TripletAttention" title="Permalink to this definition">¶</a></dt>
+<dd><p>Triplet attention layer from <a class="reference external" href="https://arxiv.org/pdf/2010.03045.pdf">“Rotate to Attend: Convolutional Triplet Attention Module”</a>. This implementation is based on the
+<a class="reference external" href="https://github.com/LandskapeAI/triplet-attention/blob/master/MODELS/triplet_attention.py">one</a>
+from the paper’s authors.</p>
 </dd></dl>
 
 </section>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolov2 &mdash; holocron 0.1.3a0+d41610b-git documentation</title>
+  <title>holocron.models.detection.yolov2 &mdash; holocron 0.2.0.dev0+67a50c7-git documentation</title>
   
 
   
@@ -88,8 +88,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../installing.html#via-git">Via Git</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notebooks.html">Holocron Notebooks</a></li>
 </ul>
-<p><span class="caption-text">Package Documentation</span></p>
+<p><span class="caption-text">Package Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../models.html">holocron.models</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#classification">Classification</a><ul>
@@ -100,6 +101,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#rexnet">ReXNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#sknet">SKNet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../models.html#darknet">Darknet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../models.html#repvgg">RepVGG</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../models.html#object-detection">Object Detection</a><ul>
@@ -137,7 +139,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../optim.html">holocron.optim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizers">Optimizers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../trainer.html">holocron.trainer</a><ul>
@@ -151,6 +152,16 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../utils.data.html">holocron.utils.data</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../../utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+<p><span class="caption-text">Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-3-2020-10-27">v0.1.3 (2020-10-27)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-2-2020-06-21">v0.1.2 (2020-06-21)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-1-2020-05-12">v0.1.1 (2020-05-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changelog.html#v0-1-0-2020-05-11">v0.1.0 (2020-05-11)</a></li>
 </ul>
 </li>
 </ul>
@@ -216,19 +227,26 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.models.detection.yolov2</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span></span><span class="c1"># Copyright (C) 2020-2022, François-Guillaume Fernandez.</span>
+
+<span class="c1"># This program is licensed under the Apache License version 2.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">torchvision.ops.misc</span> <span class="kn">import</span> <span class="n">FrozenBatchNorm2d</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
-<span class="kn">from</span> <span class="nn">.yolo</span> <span class="kn">import</span> <span class="n">_YOLO</span>
-<span class="kn">from</span> <span class="nn">..darknetv2</span> <span class="kn">import</span> <span class="n">DarknetBodyV2</span><span class="p">,</span> <span class="n">default_cfgs</span> <span class="k">as</span> <span class="n">dark_cfgs</span>
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">ConcatDownsample2d</span>
 <span class="kn">from</span> <span class="nn">holocron.nn.init</span> <span class="kn">import</span> <span class="n">init_module</span>
 
+<span class="kn">from</span> <span class="nn">..classification.darknetv2</span> <span class="kn">import</span> <span class="n">DarknetBodyV2</span>
+<span class="kn">from</span> <span class="nn">..classification.darknetv2</span> <span class="kn">import</span> <span class="n">default_cfgs</span> <span class="k">as</span> <span class="n">dark_cfgs</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
+<span class="kn">from</span> <span class="nn">.yolo</span> <span class="kn">import</span> <span class="n">_YOLO</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;YOLOv2&#39;</span><span class="p">,</span> <span class="s1">&#39;yolov2&#39;</span><span class="p">]</span>
 
@@ -249,8 +267,10 @@
         <span class="n">stem_chanels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
         <span class="n">anchors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">passthrough_ratio</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
-        <span class="n">lambda_noobj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">lambda_coords</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.</span><span class="p">,</span>
+        <span class="n">lambda_obj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">lambda_noobj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">lambda_class</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">lambda_coords</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">rpn_nms_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
         <span class="n">box_score_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -260,7 +280,15 @@
         <span class="n">backbone_norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">num_classes</span><span class="p">,</span>
+            <span class="n">rpn_nms_thresh</span><span class="p">,</span>
+            <span class="n">box_score_thresh</span><span class="p">,</span>
+            <span class="n">lambda_obj</span><span class="p">,</span>
+            <span class="n">lambda_noobj</span><span class="p">,</span>
+            <span class="n">lambda_class</span><span class="p">,</span>
+            <span class="n">lambda_coords</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">act_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -271,28 +299,28 @@
 
         <span class="c1"># Priors computed using K-means</span>
         <span class="k">if</span> <span class="n">anchors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># cf. https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-voc.cfg#L242</span>
             <span class="n">anchors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.3221</span><span class="p">,</span> <span class="mf">1.73145</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.19275</span><span class="p">,</span> <span class="mf">4.00944</span><span class="p">],</span> <span class="p">[</span><span class="mf">5.05587</span><span class="p">,</span> <span class="mf">8.09892</span><span class="p">],</span>
-                                    <span class="p">[</span><span class="mf">9.47112</span><span class="p">,</span> <span class="mf">4.84053</span><span class="p">],</span> <span class="p">[</span><span class="mf">11.2364</span><span class="p">,</span> <span class="mf">10.0071</span><span class="p">]])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+                                    <span class="p">[</span><span class="mf">9.47112</span><span class="p">,</span> <span class="mf">4.84053</span><span class="p">],</span> <span class="p">[</span><span class="mf">11.2364</span><span class="p">,</span> <span class="mf">10.0071</span><span class="p">]])</span> <span class="o">/</span> <span class="mi">13</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV2</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_chanels</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span>
                                       <span class="n">backbone_norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">block5</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
             <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
             <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">passthrough_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">passthrough_ratio</span><span class="p">,</span>
                                                               <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                                                              <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                                                              <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
                                                <span class="n">ConcatDownsample2d</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">block6</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
             <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">passthrough_ratio</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
                            <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
 
         <span class="c1"># Each box has P_objectness, 4 coords, and score for each class</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">anchors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
@@ -300,14 +328,12 @@
         <span class="c1"># Register losses</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;anchors&#39;</span><span class="p">,</span> <span class="n">anchors</span><span class="p">)</span>
 
-        <span class="c1"># Loss coefficients</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_noobj</span> <span class="o">=</span> <span class="n">lambda_noobj</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_coords</span> <span class="o">=</span> <span class="n">lambda_coords</span>
-
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block5</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passthrough_layer</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block6</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
+        <span class="c1"># Initialize the head like a linear (default Conv2D init is the same as Linear)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -326,17 +352,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">b</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
-        <span class="c1"># B * C * H * W --&gt; B * H * W * num_anchors * (5 + num_classes)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span><span class="p">,</span> <span class="mi">5</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># (B, C, H, W) --&gt; (B, H, W, num_anchors, 5 + num_classes)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_anchors</span><span class="p">,</span> <span class="mi">5</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="c1"># Cell offset</span>
         <span class="n">c_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">c_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="c1"># Box coordinates</span>
-        <span class="n">b_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">c_x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">w</span>
-        <span class="n">b_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">c_y</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">h</span>
-        <span class="n">b_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">w</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># type: ignore[index]</span>
-        <span class="n">b_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">h</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>  <span class="c1"># type: ignore[index]</span>
-        <span class="c1"># B * H * W * num_anchors * 4</span>
+        <span class="c1"># Box coordinates</span>
+        <span class="n">b_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">c_x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">w</span>
+        <span class="n">b_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">c_y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">h</span>
+        <span class="n">b_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># type: ignore[index]</span>
+        <span class="n">b_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>  <span class="c1"># type: ignore[index]</span>
+        <span class="c1"># (B, H, W, num_anchors, 4)</span>
         <span class="n">b_coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">b_x</span><span class="p">,</span> <span class="n">b_y</span><span class="p">,</span> <span class="n">b_w</span><span class="p">,</span> <span class="n">b_h</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
         <span class="c1"># Objectness</span>
         <span class="n">b_o</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
@@ -382,29 +408,36 @@
 
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-        <span class="c1"># B * H * W * num_anchors</span>
+        <span class="c1"># (B, H, W, num_anchors)</span>
         <span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_outputs</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
             <span class="c1"># Update losses</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_losses</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># B * (H * W * num_anchors)</span>
-            <span class="n">b_coords</span> <span class="o">=</span> <span class="n">b_coords</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-            <span class="n">b_o</span> <span class="o">=</span> <span class="n">b_o</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">b_scores</span> <span class="o">=</span> <span class="n">b_scores</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
 
-            <span class="c1"># Stack detections into a list</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span><span class="p">)</span>
+        <span class="c1"># (B, H * W * num_anchors)</span>
+        <span class="n">b_coords</span> <span class="o">=</span> <span class="n">b_coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">b_o</span> <span class="o">=</span> <span class="n">b_o</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">b_scores</span> <span class="o">=</span> <span class="n">b_scores</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+
+        <span class="c1"># Stack detections into a list</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">b_coords</span><span class="p">,</span> <span class="n">b_o</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_yolo</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv2</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_yolo</span><span class="p">(</span>
+    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv2</span><span class="p">:</span>
 
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="n">pretrained_backbone</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="c1"># Build the model</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">YOLOv2</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;backbone&#39;</span><span class="p">][</span><span class="s1">&#39;layout&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">YOLOv2</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="c1"># Load backbone pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained_backbone</span><span class="p">:</span>
         <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;backbone&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">,</span>
@@ -416,8 +449,8 @@
     <span class="k">return</span> <span class="n">model</span>
 
 
-<div class="viewcode-block" id="yolov2"><a class="viewcode-back" href="../../../../models.html#holocron.models.yolov2">[docs]</a><span class="k">def</span> <span class="nf">yolov2</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv2</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;YOLOv2 model from</span>
+<div class="viewcode-block" id="yolov2"><a class="viewcode-back" href="../../../../models.html#holocron.models.detection.yolov2">[docs]</a><span class="k">def</span> <span class="nf">yolov2</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv2</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;YOLOv2 model from</span>
 <span class="sd">    `&quot;YOLO9000: Better, Faster, Stronger&quot; &lt;https://pjreddie.com/media/files/papers/YOLO9000.pdf&gt;`_.</span>
 
 <span class="sd">    YOLOv2 improves upon YOLO by raising the number of boxes predicted by grid cell (default: 5), introducing</span>
@@ -426,17 +459,17 @@
 <span class="sd">    For training, YOLOv2 uses the same multi-part loss as YOLO apart from its classification loss:</span>
 
 <span class="sd">    .. math::</span>
-<span class="sd">        \\mathcal{L}_{classification} = \\sum\\limits_{i=0}^{S^2}  \\sum\\limits_{j=0}^{B}</span>
-<span class="sd">        \\mathbb{1}_{ij}^{obj} \\sum\\limits_{c \\in classes}</span>
-<span class="sd">        (p_{ij}(c) - \\hat{p}_{ij}(c))^2</span>
+<span class="sd">        \mathcal{L}_{classification} = \sum\limits_{i=0}^{S^2}  \sum\limits_{j=0}^{B}</span>
+<span class="sd">        \mathbb{1}_{ij}^{obj} \sum\limits_{c \in classes}</span>
+<span class="sd">        (p_{ij}(c) - \hat{p}_{ij}(c))^2</span>
 
 <span class="sd">    where :math:`S` is size of the output feature map (13 for an input size :math:`(416, 416)`),</span>
 <span class="sd">    :math:`B` is the number of anchor boxes per grid cell (default: 5),</span>
-<span class="sd">    :math:`\\mathbb{1}_{ij}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell and among the</span>
+<span class="sd">    :math:`\mathbb{1}_{ij}^{obj}` equals to 1 if a GT center falls inside the i-th grid cell and among the</span>
 <span class="sd">    anchor boxes of that cell, has the highest IoU with the j-th box else 0,</span>
 <span class="sd">    :math:`p_{ij}(c)` equals 1 if the assigned ground truth to the j-th anchor box of the i-th cell is classified</span>
 <span class="sd">    as class :math:`c`,</span>
-<span class="sd">    and :math:`\\hat{p}_{ij}(c)` is the predicted probability of class :math:`c` for the j-th anchor box</span>
+<span class="sd">    and :math:`\hat{p}_{ij}(c)` is the predicted probability of class :math:`c` for the j-th anchor box</span>
 <span class="sd">    in the i-th cell.</span>
 
 <span class="sd">    Args:</span>
@@ -451,7 +484,14 @@
     <span class="k">if</span> <span class="n">pretrained_backbone</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;backbone_norm_layer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrozenBatchNorm2d</span>
 
-    <span class="k">return</span> <span class="n">_yolo</span><span class="p">(</span><span class="s1">&#39;yolov2&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[return-value]</span></div>
+    <span class="k">return</span> <span class="n">_yolo</span><span class="p">(</span>
+        <span class="s1">&#39;yolov2&#39;</span><span class="p">,</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">progress</span><span class="p">,</span>
+        <span class="n">pretrained_backbone</span><span class="p">,</span>
+        <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
 </pre></div>
 
            </div>

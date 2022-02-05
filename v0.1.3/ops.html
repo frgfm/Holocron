@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>holocron.ops &mdash; holocron 0.1.3a0+d41610b-git documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+        <script src="_static/js/custom.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/custom_theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="holocron.optim" href="optim.html" />
+    <link rel="prev" title="holocron.nn.functional" href="nn.functional.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> holocron
+          
+
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installing.html#via-python-package">Via Python Package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installing.html#via-conda">Via Conda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installing.html#via-git">Via Git</a></li>
+</ul>
+</li>
+</ul>
+<p><span class="caption-text">Package Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="models.html">holocron.models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models.html#classification">Classification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="models.html#resnet">ResNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#res2net">Res2Net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#tridentnet">TridentNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#pyconvresnet">PyConvResNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#rexnet">ReXNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#sknet">SKNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#darknet">Darknet</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#object-detection">Object Detection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="models.html#yolo">YOLO</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#semantic-segmentation">Semantic Segmentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="models.html#u-net">U-Net</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nn.html">holocron.nn</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#non-linear-activations">Non-linear activations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#loss-wrappers">Loss wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#convolution-layers">Convolution layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#regularization-layers">Regularization layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#downsampling">Downsampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.html#attention">Attention</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nn.functional.html">holocron.nn.functional</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#non-linear-activations">Non-linear activations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#loss-functions">Loss functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#convolutions">Convolutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#regularization-layers">Regularization layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nn.functional.html#downsampling">Downsampling</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">holocron.ops</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#boxes">Boxes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="optim.html#optimizers">Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optim.html#optimizer-wrappers">Optimizer wrappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optim.html#learning-rate-schedulers">Learning rate schedulers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="trainer.html#image-classification">Image classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trainer.html#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">holocron.utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.data.html">holocron.utils.data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.data.html#batch-collate">Batch collate</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">holocron</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>holocron.ops</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ops.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="holocron-ops">
+<h1>holocron.ops<a class="headerlink" href="#holocron-ops" title="Permalink to this headline">¶</a></h1>
+<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.ops</span></code> implements operators that are specific for Computer Vision.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Those operators currently do not support TorchScript.</p>
+</div>
+<section id="boxes">
+<h2>Boxes<a class="headerlink" href="#boxes" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="holocron.ops.box_giou">
+<code class="sig-prename descclassname">holocron.ops.</code><code class="sig-name descname">box_giou</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes1</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">boxes2</span><span class="p">:</span> <span class="n">torch.Tensor</span></em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/holocron/ops/boxes.html#box_giou"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.ops.box_giou" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Generalized-IoU as described in <a class="reference external" href="https://arxiv.org/pdf/1902.09630.pdf">“Generalized Intersection over Union: A Metric and A Loss
+for Bounding Box Regression”</a>. This implementation was adapted
+from <a class="reference external" href="https://github.com/facebookresearch/detr/blob/master/util/box_ops.py">https://github.com/facebookresearch/detr/blob/master/util/box_ops.py</a></p>
+<p>The generalized IoU is defined as follows:</p>
+<div class="math notranslate nohighlight">
+\[GIoU = IoU - \frac{|C - A \cup B|}{|C|}\]</div>
+<p>where <span class="math notranslate nohighlight">\(IoU\)</span> is the Intersection over Union,
+<span class="math notranslate nohighlight">\(A \cup B\)</span> is the area of the boxes’ union,
+and <span class="math notranslate nohighlight">\(C\)</span> is the area of the smallest enclosing box covering the two boxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes1</strong> (<em>torch.Tensor</em><em>[</em><em>M</em><em>, </em><em>4</em><em>]</em>) – bounding boxes</p></li>
+<li><p><strong>boxes2</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>4</em><em>]</em>) – bounding boxes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Generalized-IoU</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor[M, N]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.ops.diou_loss">
+<code class="sig-prename descclassname">holocron.ops.</code><code class="sig-name descname">diou_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes1</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">boxes2</span><span class="p">:</span> <span class="n">torch.Tensor</span></em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/holocron/ops/boxes.html#diou_loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.ops.diou_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Distance-IoU loss as described in <a class="reference external" href="https://arxiv.org/pdf/1911.08287.pdf">“Distance-IoU Loss: Faster and Better Learning for
+Bounding Box Regression”</a>.</p>
+<p>The loss is defined as follows:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L}_{DIoU} = 1 - IoU + \frac{\rho^2(b, b^{GT})}{c^2}\]</div>
+<p>where <span class="math notranslate nohighlight">\(IoU\)</span> is the Intersection over Union,
+<span class="math notranslate nohighlight">\(b\)</span> and <span class="math notranslate nohighlight">\(b^{GT}\)</span> are the centers of the box and the ground truth box respectively,
+<span class="math notranslate nohighlight">\(c\)</span> c is the diagonal length of the smallest enclosing box covering the two boxes,
+and <span class="math notranslate nohighlight">\(\rho(.)\)</span> is the Euclidean distance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes1</strong> (<em>torch.Tensor</em><em>[</em><em>M</em><em>, </em><em>4</em><em>]</em>) – bounding boxes</p></li>
+<li><p><strong>boxes2</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>4</em><em>]</em>) – bounding boxes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Distance-IoU loss</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor[M, N]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="holocron.ops.ciou_loss">
+<code class="sig-prename descclassname">holocron.ops.</code><code class="sig-name descname">ciou_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">boxes1</span><span class="p">:</span> <span class="n">torch.Tensor</span></em>, <em class="sig-param"><span class="n">boxes2</span><span class="p">:</span> <span class="n">torch.Tensor</span></em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="reference internal" href="_modules/holocron/ops/boxes.html#ciou_loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.ops.ciou_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the Complete IoU loss as described in <a class="reference external" href="https://arxiv.org/pdf/1911.08287.pdf">“Distance-IoU Loss: Faster and Better Learning for
+Bounding Box Regression”</a>.</p>
+<p>The loss is defined as follows:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L}_{CIoU} = 1 - IoU + \frac{\rho^2(b, b^{GT})}{c^2} + \alpha v\]</div>
+<p>where <span class="math notranslate nohighlight">\(IoU\)</span> is the Intersection over Union,
+<span class="math notranslate nohighlight">\(b\)</span> and <span class="math notranslate nohighlight">\(b^{GT}\)</span> are the centers of the box and the ground truth box respectively,
+<span class="math notranslate nohighlight">\(c\)</span> c is the diagonal length of the smallest enclosing box covering the two boxes,
+<span class="math notranslate nohighlight">\(\rho(.)\)</span> is the Euclidean distance,
+<span class="math notranslate nohighlight">\(\alpha\)</span> is a positive trade-off parameter,
+and <span class="math notranslate nohighlight">\(v\)</span> is the aspect ratio consistency.</p>
+<p>More specifically:</p>
+<div class="math notranslate nohighlight">
+\[v = \frac{4}{\pi^2} \Big(\arctan{\frac{w^{GT}}{h^{GT}}} - \arctan{\frac{w}{h}}\Big)^2\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[\alpha = \frac{v}{(1 - IoU) + v}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes1</strong> (<em>torch.Tensor</em><em>[</em><em>M</em><em>, </em><em>4</em><em>]</em>) – bounding boxes</p></li>
+<li><p><strong>boxes2</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>4</em><em>]</em>) – bounding boxes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Complete IoU loss</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor[M, N]</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">holocron.ops.boxes</span> <span class="kn">import</span> <span class="n">box_ciou</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">boxes1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">boxes2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">150</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">box_ciou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="optim.html" class="btn btn-neutral float-right" title="holocron.optim" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nn.functional.html" class="btn btn-neutral float-left" title="holocron.nn.functional" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019-2022, François-Guillaume Fernandez
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-148140560-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+   
+
+</body>
+</html>

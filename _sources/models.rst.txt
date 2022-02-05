@@ -6,7 +6,7 @@ different tasks, including: image classification, pixelwise semantic
 segmentation, object detection, instance segmentation, person
 keypoint detection and video classification.
 
-The following datasets are available:
+The following models are available:
 
 .. contents:: Models
     :local:
@@ -85,7 +85,7 @@ SKNet
 
 .. autofunction:: sknet50
 
-.. autofunction:: sknet100
+.. autofunction:: sknet101
 
 .. autofunction:: sknet152
 
@@ -104,6 +104,24 @@ Darknet
 .. autofunction:: cspdarknet53_mish
 
 
+RepVGG
+------
+.. autofunction:: repvgg_a0
+
+.. autofunction:: repvgg_a1
+
+.. autofunction:: repvgg_a2
+
+.. autofunction:: repvgg_b0
+
+.. autofunction:: repvgg_b1
+
+.. autofunction:: repvgg_b2
+
+.. autofunction:: repvgg_b3
+
+
+
 Object Detection
 ================
 
@@ -115,6 +133,8 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
     import holocron.models as models
     yolov2 = models.yolov2(num_classes=10)
 
+
+.. currentmodule:: holocron.models.detection
 
 YOLO
 ----
@@ -138,6 +158,9 @@ tensor of size (N x K x Ho x Wo).
     unet = models.unet(num_classes=10)
 
 
+.. currentmodule:: holocron.models.segmentation
+
+
 U-Net
 -----
 
@@ -148,3 +171,11 @@ U-Net
 .. autofunction:: unetpp
 
 .. autofunction:: unet3p
+
+.. autofunction:: unet2
+
+.. autofunction:: unet_tvvgg11
+
+.. autofunction:: unet_tvresnet34
+
+.. autofunction:: unet_rexnet13
