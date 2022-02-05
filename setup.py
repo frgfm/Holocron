@@ -14,7 +14,7 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-version = '0.2.0.dev0'
+version = '0.2.1.dev0'
 sha = 'Unknown'
 src_folder = 'holocron'
 package_index = 'pylocron'
