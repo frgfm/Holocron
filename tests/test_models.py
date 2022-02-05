@@ -3,7 +3,7 @@ import torch
 from torch import nn
 
 from holocron.models import utils
-from holocron.models.classification.revgg import RepVGG
+from holocron.models.classification.repvgg import RepVGG
 from holocron.nn import SAM, BlurPool2d, DropBlock2d
 
 
