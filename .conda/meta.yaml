@@ -19,13 +19,14 @@ requirements:
     - python>=3.6
 
   run:
-    - pytorch >=1.5.1
-    - torchvision >=0.6.1
+    - pytorch >=1.9.1
+    - torchvision >=0.10.1
     - tqdm >=4.1.0
     - numpy >=1.17.2
     - fastprogress >=1.0.0
     - matplotlib >=3.0.0
-    - contiguous_params >=1.0.0
+    - pillow >=8.4.0
+    - huggingface_hub >=0.4.0
 
 test:
   # Python imports
