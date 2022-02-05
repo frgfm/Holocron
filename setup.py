@@ -80,6 +80,7 @@ install_requires = [
     deps["fastprogress"],
     deps["matplotlib"],
     deps["Pillow"],
+    deps["huggingface-hub"],
 ]
 
 extras = {}
