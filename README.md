@@ -175,13 +175,12 @@ response = requests.post("http://localhost:8002/classification", files={'file': 
 If you wish to cite this project, feel free to use this [BibTeX](http://www.bibtex.org/) reference:
 
 ```bibtex
-@misc{holocron2019,
-    title={Holocron},
-    author={François-Guillaume Fernandez},
-    year={2019},
-    month={August},
-    publisher = {GitHub},
-    howpublished = {\url{https://github.com/frgfm/Holocron}}
+@software{Fernandez_Holocron_2020,
+author = {Fernandez, François-Guillaume},
+month = {5},
+title = {{Holocron}},
+url = {https://github.com/frgfm/Holocron},
+year = {2020}
 }
 ```
 
