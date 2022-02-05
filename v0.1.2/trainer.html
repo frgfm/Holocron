@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.trainer &mdash; holocron 0.2.0.dev0+b38c9df-git documentation</title>
+  <title>holocron.trainer &mdash; holocron 0.2.0.dev0+514ce05-git documentation</title>
   
 
   
@@ -253,6 +253,23 @@
 </dd></dl>
 
 <dl class="py method">
+<dt id="holocron.trainer.Trainer.find_lr">
+<code class="sig-name descname">find_lr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start_lr</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-07</span></em>, <em class="sig-param"><span class="n">end_lr</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_it</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.find_lr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.find_lr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gridsearch the optimal learning rate for the training</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>freeze_until</strong> (<em>str</em><em>, </em><em>optional</em>) – last layer to freeze</p></li>
+<li><p><strong>start_lr</strong> (<em>float</em><em>, </em><em>optional</em>) – initial learning rate</p></li>
+<li><p><strong>end_lr</strong> (<em>float</em><em>, </em><em>optional</em>) – final learning rate</p></li>
+<li><p><strong>norm_weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay to apply to normalization parameters</p></li>
+<li><p><strong>num_it</strong> (<em>int</em><em>, </em><em>optional</em>) – number of iterations to perform</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="holocron.trainer.Trainer.fit_n_epochs">
 <code class="sig-name descname">fit_n_epochs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_epochs</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">lr</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sched_type</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'onecycle'</span></em>, <em class="sig-param"><span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.fit_n_epochs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.fit_n_epochs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train the model for a given number of epochs</p>
@@ -276,23 +293,6 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>state</strong> (<em>dict</em>) – checkpoint dictionary</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="holocron.trainer.Trainer.lr_find">
-<code class="sig-name descname">lr_find</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start_lr</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-07</span></em>, <em class="sig-param"><span class="n">end_lr</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_it</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/holocron/trainer/core.html#Trainer.lr_find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.trainer.Trainer.lr_find" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gridsearch the optimal learning rate for the training</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>freeze_until</strong> (<em>str</em><em>, </em><em>optional</em>) – last layer to freeze</p></li>
-<li><p><strong>start_lr</strong> (<em>float</em><em>, </em><em>optional</em>) – initial learning rate</p></li>
-<li><p><strong>end_lr</strong> (<em>float</em><em>, </em><em>optional</em>) – final learning rate</p></li>
-<li><p><strong>norm_weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay to apply to normalization parameters</p></li>
-<li><p><strong>num_it</strong> (<em>int</em><em>, </em><em>optional</em>) – number of iterations to perform</p></li>
-</ul>
 </dd>
 </dl>
 </dd></dl>
