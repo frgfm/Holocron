@@ -3,6 +3,7 @@ import torch
 from torch import nn
 
 from holocron.models import utils
+from holocron.models.classification.revgg import RepVGG
 from holocron.nn import SAM, BlurPool2d, DropBlock2d
 
 
@@ -68,3 +69,13 @@ def test_fuse_conv_bn():
     fused_conv.bias.data = b
     with torch.no_grad():
         assert torch.allclose(bn(conv(x)), fused_conv(x), atol=1e-6)
+
+
+def test_model_from_hf_hub():
+
+    model = utils.model_from_hf_hub("frgfm/repvgg_a0")
+    # Check model type
+    assert isinstance(model, RepVGG)
+
+    # Check num of params
+    assert sum(p.data.numel() for p in model.parameters()) == 24741642
