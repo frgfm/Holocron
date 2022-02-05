@@ -92,7 +92,7 @@ def _test_trainer(
         learner.plot_recorder(block=False)
 
     with pytest.raises(ValueError):
-        learner.lr_find(freeze_until, num_it=num_it + 1)
+        learner.find_lr(freeze_until, num_it=num_it + 1)
 
     # All params are frozen
     for p in learner.model.parameters():
@@ -101,7 +101,7 @@ def _test_trainer(
         learner._set_params()
 
     # Test norm weight decay
-    learner.lr_find(freeze_until, norm_weight_decay=5e-4, num_it=num_it)
+    learner.find_lr(freeze_until, norm_weight_decay=5e-4, num_it=num_it)
     assert len(learner.lr_recorder) == len(learner.loss_recorder)
     learner.plot_recorder(block=False)
 
