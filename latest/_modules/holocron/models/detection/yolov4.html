@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.models.detection.yolov4 &mdash; holocron 0.2.0.dev0+af8f22e-git documentation</title>
+  <title>holocron.models.detection.yolov4 &mdash; holocron 0.2.0.dev0+b38c9df-git documentation</title>
   
 
   
@@ -226,7 +226,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for holocron.models.detection.yolov4</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2020-2022, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License version 2.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
@@ -244,8 +244,8 @@
 <span class="kn">from</span> <span class="nn">holocron.nn.init</span> <span class="kn">import</span> <span class="n">init_module</span>
 <span class="kn">from</span> <span class="nn">holocron.ops.boxes</span> <span class="kn">import</span> <span class="n">ciou_loss</span>
 
-<span class="kn">from</span> <span class="nn">..darknetv4</span> <span class="kn">import</span> <span class="n">DarknetBodyV4</span>
-<span class="kn">from</span> <span class="nn">..darknetv4</span> <span class="kn">import</span> <span class="n">default_cfgs</span> <span class="k">as</span> <span class="n">dark_cfgs</span>
+<span class="kn">from</span> <span class="nn">..classification.darknetv4</span> <span class="kn">import</span> <span class="n">DarknetBodyV4</span>
+<span class="kn">from</span> <span class="nn">..classification.darknetv4</span> <span class="kn">import</span> <span class="n">default_cfgs</span> <span class="k">as</span> <span class="n">dark_cfgs</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;YOLOv4&#39;</span><span class="p">,</span> <span class="s1">&#39;yolov4&#39;</span><span class="p">,</span> <span class="s1">&#39;PAN&#39;</span><span class="p">]</span>
