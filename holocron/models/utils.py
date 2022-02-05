@@ -3,16 +3,19 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
+import json
 import logging
 from typing import Any, Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
+from huggingface_hub import hf_hub_download
 from torch.hub import load_state_dict_from_url
 
+from holocron import models
 from holocron.nn import BlurPool2d
 
-__all__ = ['conv_sequence', 'load_pretrained_params', 'fuse_conv_bn']
+__all__ = ['conv_sequence', 'load_pretrained_params', 'fuse_conv_bn', "model_from_hf_hub"]
 
 
 def conv_sequence(
@@ -67,7 +70,7 @@ def load_pretrained_params(
     if url is None:
         logging.warning("Invalid model URL, using default initialization.")
     else:
-        state_dict = load_state_dict_from_url(url, progress=progress)
+        state_dict = load_state_dict_from_url(url, progress=progress, map_location='cpu')
         if isinstance(key_filter, str):
             state_dict = {k: v for k, v in state_dict.items() if k.startswith(key_filter)}
         if isinstance(key_replacement, tuple):
@@ -100,3 +103,27 @@ def fuse_conv_bn(conv: nn.Conv2d, bn: nn.BatchNorm2d) -> Tuple[torch.Tensor, tor
     fused_kernel = scale_factor.view(-1, 1, 1, 1) * conv.weight.data
 
     return fused_kernel, fused_bias
+
+
+def model_from_hf_hub(repo_id: str) -> nn.Module:
+    """Instantiate & load a pretrained model from HF hub.
+
+    Args:
+        repo_id: HuggingFace model hub repo
+    Returns:
+        Model loaded with the checkpoint
+    """
+
+    # Get the config
+    with open(hf_hub_download(repo_id, filename='config.json'), 'rb') as f:
+        cfg = json.load(f)
+
+    model = models.__dict__[cfg['arch']](num_classes=len(cfg['classes']), pretrained=False)
+    # Patch the config
+    model.default_cfg.update(cfg)
+
+    # Load the checkpoint
+    state_dict = torch.load(hf_hub_download(repo_id, filename='pytorch_model.bin'), map_location='cpu')
+    model.load_state_dict(state_dict)
+
+    return model

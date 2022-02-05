@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022, François-Guillaume Fernandez.
+# Copyright (C) 2021-2022, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
@@ -9,9 +9,10 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import torch
 import torch.nn as nn
 
-from ..nn import GlobalAvgPool2d
-from .presets import IMAGENETTE
-from .utils import fuse_conv_bn, load_pretrained_params
+from holocron.nn import GlobalAvgPool2d
+
+from ..presets import IMAGENETTE
+from ..utils import fuse_conv_bn, load_pretrained_params
 
 __all__ = ['RepVGG', 'RepBlock', 'RepVGG', 'repvgg_a0', 'repvgg_a1', 'repvgg_a2',
            'repvgg_b0', 'repvgg_b1', 'repvgg_b2', 'repvgg_b3']

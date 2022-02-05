@@ -10,7 +10,7 @@ from PIL import Image
 from torchvision.transforms import Compose, ConvertImageDtype, Normalize, PILToTensor, Resize
 from torchvision.transforms.functional import InterpolationMode
 
-from holocron.models import rexnet1_5x
+from holocron.models.classification import rexnet1_5x
 
 __all__ = ['classification_model', 'classification_preprocessor', 'decode_image']
 

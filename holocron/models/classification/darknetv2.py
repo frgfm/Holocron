@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022, François-Guillaume Fernandez.
+# Copyright (C) 2020-2022, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
@@ -10,10 +10,10 @@ import torch
 import torch.nn as nn
 
 from holocron.nn import GlobalAvgPool2d
+from holocron.nn.init import init_module
 
-from ..nn.init import init_module
-from .presets import IMAGENETTE
-from .utils import conv_sequence, load_pretrained_params
+from ..presets import IMAGENETTE
+from ..utils import conv_sequence, load_pretrained_params
 
 __all__ = ['DarknetV2', 'darknet19']
 

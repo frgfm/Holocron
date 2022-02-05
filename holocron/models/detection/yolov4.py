@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2022, François-Guillaume Fernandez.
+# Copyright (C) 2020-2022, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
@@ -16,8 +16,8 @@ from holocron.nn import SPP, DropBlock2d
 from holocron.nn.init import init_module
 from holocron.ops.boxes import ciou_loss
 
-from ..darknetv4 import DarknetBodyV4
-from ..darknetv4 import default_cfgs as dark_cfgs
+from ..classification.darknetv4 import DarknetBodyV4
+from ..classification.darknetv4 import default_cfgs as dark_cfgs
 from ..utils import conv_sequence, load_pretrained_params
 
 __all__ = ['YOLOv4', 'yolov4', 'PAN']
