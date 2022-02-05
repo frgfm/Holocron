@@ -130,7 +130,7 @@ def main(args):
         plot_samples(x, target)
         return
 
-    if not (args.lr_finder or args.check_setup):
+    if not (args.find_lr or args.check_setup):
         st = time.time()
         if args.dataset.lower() == "imagenette":
             eval_tf = []
@@ -196,15 +196,15 @@ def main(args):
               f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})")
         return
 
-    if args.lr_finder:
+    if args.find_lr:
         print("Looking for optimal LR")
-        trainer.lr_find(args.freeze_until, num_it=min(len(train_loader), 100), norm_weight_decay=args.norm_weight_decay)
+        trainer.find_lr(args.freeze_until, num_it=min(len(train_loader), 100), norm_weight_decay=args.norm_wd)
         trainer.plot_recorder()
         return
 
     if args.check_setup:
         print("Checking batch overfitting")
-        is_ok = trainer.check_setup(args.freeze_until, args.lr, norm_weight_decay=args.norm_weight_decay,
+        is_ok = trainer.check_setup(args.freeze_until, args.lr, norm_weight_decay=args.norm_wd,
                                     num_it=min(len(train_loader), 100))
         print(is_ok)
         return
@@ -237,7 +237,7 @@ def main(args):
 
     print("Start training")
     start_time = time.time()
-    trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched, norm_weight_decay=args.norm_weight_decay)
+    trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched, norm_weight_decay=args.norm_wd)
     total_time_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     print(f"Training time {total_time_str}")
 
@@ -266,21 +266,17 @@ def parse_args():
     parser.add_argument('--sched', default='onecycle', type=str, help='Scheduler to be used')
     parser.add_argument('--lr', default=1e-3, type=float, help='initial learning rate')
     parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
-    parser.add_argument('--norm-wd', default=None, type=float, dest='norm_weight_decay',
-                        help='weight decay of norm parameters')
+    parser.add_argument('--norm-wd', default=None, type=float, help='weight decay of norm parameters')
     parser.add_argument('--mixup-alpha', default=0, type=float, help='Mixup alpha factor')
-    parser.add_argument("--lr-finder", dest='lr_finder', action='store_true', help="Should you run LR Finder")
-    parser.add_argument("--check-setup", dest='check_setup', action='store_true', help="Check your training setup")
-    parser.add_argument("--show-samples", dest='show_samples', action='store_true',
-                        help="Whether training samples should be displayed")
+    parser.add_argument("--find-lr", action='store_true', help="Should you run LR Finder")
+    parser.add_argument("--check-setup", action='store_true', help="Check your training setup")
+    parser.add_argument("--show-samples", action='store_true', help="Whether training samples should be displayed")
     parser.add_argument('--output-file', default='./model.pth', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
-    parser.add_argument("--test-only", dest="test_only", help="Only test the model", action="store_true")
-    parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
-                        action="store_true")
-    parser.add_argument("--amp", dest="amp", help="Use Automatic Mixed Precision", action="store_true")
-    parser.add_argument('--wb', dest='wb', action='store_true',
-                        help='Log to Weights & Biases')
+    parser.add_argument("--test-only", help="Only test the model", action="store_true")
+    parser.add_argument("--pretrained", action="store_true", help="Use pre-trained models from the modelzoo")
+    parser.add_argument("--amp", help="Use Automatic Mixed Precision", action="store_true")
+    parser.add_argument('--wb', action='store_true', help='Log to Weights & Biases')
 
     args = parser.parse_args()
 
