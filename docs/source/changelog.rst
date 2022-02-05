@@ -1,6 +1,10 @@
 Changelog
 =========
 
+v0.2.0 (2022-02-05)
+-------------------
+Release note: `v0.2.0 <https://github.com/frgfm/Holocron/releases/tag/v0.2.0>`_
+
 v0.1.3 (2020-10-27)
 -------------------
 Release note: `v0.1.3 <https://github.com/frgfm/Holocron/releases/tag/v0.1.3>`_
