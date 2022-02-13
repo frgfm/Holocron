@@ -29,7 +29,7 @@ HEADERS = [
 
 
 IGNORED_FILES = ["version.py", "__init__.py"]
-FOLDERS = ["holocron", "scripts", "references"]
+FOLDERS = ["holocron", "scripts", "references", "api/app", "demo"]
 
 
 def main():
