@@ -1,38 +1,65 @@
+# Copyright (C) 2022, François-Guillaume Fernandez.
+
+# This program is licensed under the Apache License version 2.
+# See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
+
 import argparse
+import json
 
 import gradio as gr
-import torch
+import numpy as np
+import onnxruntime
+from huggingface_hub import hf_hub_download
 from PIL import Image
-from torchvision.transforms import Compose, ConvertImageDtype, Normalize, PILToTensor, Resize
-from torchvision.transforms.functional import InterpolationMode
-
-from holocron import models
 
 
 def main(args):
 
-    model = models.rexnet1_3x(pretrained=True).eval()
+    # Download model config & checkpoint
+    with open(hf_hub_download(args.repo, filename='config.json'), 'rb') as f:
+        cfg = json.load(f)
 
-    preprocessor = Compose([
-        Resize(model.default_cfg['input_shape'][1:], interpolation=InterpolationMode.BILINEAR),
-        PILToTensor(),
-        ConvertImageDtype(torch.float32),
-        Normalize(model.default_cfg['mean'], model.default_cfg['std'])
-    ])
+    ort_session = onnxruntime.InferenceSession(hf_hub_download(args.repo, filename='model.onnx'))
 
-    def predict(input):
-        input = Image.fromarray(input.astype('uint8'), 'RGB')
-        input = preprocessor(input)
-        with torch.inference_mode():
-            prediction = torch.nn.functional.softmax(model(input.unsqueeze(0))[0], dim=0)
-        return {class_name: float(conf) for class_name, conf in zip(model.default_cfg['classes'], prediction)}
+    def preprocess_image(pil_img: Image.Image) -> np.ndarray:
+        """Preprocess an image for inference
 
-    image = gr.inputs.Image()
+        Args:
+            pil_img: a valid pillow image
+
+        Returns:
+            the resized and normalized image of shape (1, C, H, W)
+        """
+
+        # Resizing
+        img = pil_img.resize(cfg['input_shape'][-2:], Image.BILINEAR)
+        # (H, W, C) --> (C, H, W)
+        img = np.asarray(img).transpose((2, 0, 1)).astype(np.float32) / 255
+        # Normalization
+        img -= np.array(cfg['mean'])[:, None, None]
+        img /= np.array(cfg['std'])[:, None, None]
+
+        return img[None, ...]
+
+    def predict(image):
+        # Preprocessing
+        np_img = preprocess_image(image)
+        ort_input = {ort_session.get_inputs()[0].name: np_img}
+
+        # Inference
+        ort_out = ort_session.run(None, ort_input)
+        # Post-processing
+        out_exp = np.exp(ort_out[0][0])
+        probs = out_exp / out_exp.sum()
+
+        return {class_name: float(conf) for class_name, conf in zip(cfg['classes'], probs)}
+
+    img = gr.inputs.Image(type='pil')
     outputs = gr.outputs.Label(num_top_classes=3)
 
     interface = gr.Interface(
         fn=predict,
-        inputs=[image],
+        inputs=[img],
         outputs=outputs,
         title="Holocron: image classification demo",
         article=("<p style='text-align: center'><a href='https://github.com/frgfm/Holocron'>" "Github Repo</a> | "
@@ -48,6 +75,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Holocron image classification demo',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--repo", type=str, default="frgfm/rexnet1_0x", help="HF Hub repo to use")
     parser.add_argument("--port", type=int, default=8001, help="Port on which the webserver will be run")
     args = parser.parse_args()
 
