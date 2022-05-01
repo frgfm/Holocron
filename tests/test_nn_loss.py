@@ -12,7 +12,7 @@ def _test_loss_function(loss_fn, same_loss=0., multi_label=False):
     num_classes = 4
     # 4 classes
     x = torch.ones(num_batches, num_classes)
-    x[:, 0, ...] = 10
+    x[:, 0, ...] = 100
     x.requires_grad_(True)
 
     # Identical target
@@ -204,3 +204,27 @@ def test_dice_loss():
     out.backward()
 
     assert repr(nn.DiceLoss()) == "DiceLoss(reduction='mean', gamma=1.0, eps=1e-08)"
+
+
+def test_poly_loss():
+
+    _test_loss_function(F.poly_loss)
+
+    num_batches = 2
+    num_classes = 4
+
+    x = torch.rand((num_batches, num_classes, 20, 20), requires_grad=True)
+    target = torch.rand(num_batches, num_classes, 20, 20)
+    target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
+
+    # Backprop
+    out = F.poly_loss(x, target)
+    out.backward()
+
+    # Weighted loss
+    class_weights = torch.ones(num_classes)
+    class_weights[0] = 2
+    out = F.poly_loss(x, target, weight=class_weights)
+    out.backward()
+
+    assert repr(nn.PolyLoss()) == "PolyLoss(eps=2.0, reduction='mean')"
