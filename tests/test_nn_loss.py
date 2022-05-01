@@ -12,7 +12,7 @@ def _test_loss_function(loss_fn, same_loss=0., multi_label=False):
     num_classes = 4
     # 4 classes
     x = torch.ones(num_batches, num_classes)
-    x[:, 0, ...] = 10
+    x[:, 0, ...] = 100
     x.requires_grad_(True)
 
     # Identical target
