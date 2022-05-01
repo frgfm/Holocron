@@ -12,7 +12,7 @@ from torch import Tensor
 from .. import functional as F
 
 __all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'ComplementCrossEntropy',
-           'ClassBalancedWrapper', 'MutualChannelLoss', 'DiceLoss']
+           'ClassBalancedWrapper', 'MutualChannelLoss', 'DiceLoss', 'PolyLoss']
 
 
 class _Loss(nn.Module):
@@ -21,7 +21,7 @@ class _Loss(nn.Module):
         self,
         weight: Optional[Union[float, List[float], Tensor]] = None,
         ignore_index: int = -100,
-        reduction: str = 'mean'
+        reduction: str = 'mean',
     ) -> None:
         super().__init__()
         # Cast class weights if possible
@@ -211,3 +211,30 @@ class DiceLoss(_Loss):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(reduction='{self.reduction}', gamma={self.gamma}, eps={self.eps})"
+
+
+class PolyLoss(_Loss):
+    """Implements the Poly1 loss from `"PolyLoss: A Polynomial Expansion Perspective of Classification Loss
+    Functions" <https://arxiv.org/pdf/2204.12511.pdf>`_.
+
+    Args:
+        weight (torch.Tensor[K], optional): class weight for loss computation
+        eps (float, optional): epsilon 1 from the paper
+        ignore_index: int = -100,
+        reduction: str = 'mean',
+    """
+
+    def __init__(
+        self,
+        *args: Any,
+        eps: float = 2.,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.eps = eps
+
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+        return F.poly_loss(x, target, self.eps, self.weight, self.ignore_index, self.reduction)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(eps={self.eps}, reduction='{self.reduction}')"
