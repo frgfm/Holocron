@@ -204,3 +204,24 @@ def test_dice_loss():
     out.backward()
 
     assert repr(nn.DiceLoss()) == "DiceLoss(reduction='mean', gamma=1.0, eps=1e-08)"
+
+
+def test_poly_loss():
+
+    num_batches = 2
+    num_classes = 4
+
+    x = torch.rand((num_batches, num_classes, 20, 20), requires_grad=True)
+    target = torch.rand(num_batches, num_classes, 20, 20)
+
+    # Backprop
+    out = F.poly_loss(x, target)
+    out.backward()
+
+    # Weighted loss
+    class_weights = torch.ones(num_classes)
+    class_weights[0] = 2
+    out = F.poly_loss(x, target, weight=class_weights)
+    out.backward()
+
+    assert repr(nn.PolyLoss()) == "PolyLoss(eps=2, reduction='mean')"
