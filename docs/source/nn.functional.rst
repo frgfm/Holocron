@@ -28,6 +28,8 @@ Loss functions
 
 .. autofunction:: dice_loss
 
+..autofunction:: poly_loss
+
 Convolutions
 ------------
 
