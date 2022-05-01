@@ -227,4 +227,4 @@ def test_poly_loss():
     out = F.poly_loss(x, target, weight=class_weights)
     out.backward()
 
-    assert repr(nn.PolyLoss()) == "PolyLoss(eps=2, reduction='mean')"
+    assert repr(nn.PolyLoss()) == "PolyLoss(eps=2.0, reduction='mean')"
