@@ -64,6 +64,7 @@ _deps = [
     "docutils<0.18",
     "recommonmark>=0.7.1",
     "sphinx-markdown-tables>=0.0.15",
+    "Jinja2<3.1",  # cf. https://github.com/readthedocs/readthedocs.org/issues/9038
 ]
 
 # Borrowed from https://github.com/huggingface/transformers/blob/master/setup.py
@@ -107,6 +108,7 @@ extras["docs"] = deps_list(
     "docutils",
     "recommonmark",
     "sphinx-markdown-tables",
+    "Jinja2",
 )
 
 extras["dev"] = (
