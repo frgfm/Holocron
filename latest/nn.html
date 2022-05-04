@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>holocron.nn &mdash; holocron 0.2.1.dev0+f0f6379-git documentation</title>
+  <title>holocron.nn &mdash; holocron 0.2.1.dev0+ef7b80c-git documentation</title>
   
 
   
@@ -367,6 +367,23 @@ Segmentation”</a></p>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – recall/precision control param</p></li>
 <li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – small value added to avoid division by zero</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="holocron.nn.PolyLoss">
+<em class="property">class </em><code class="sig-prename descclassname">holocron.nn.</code><code class="sig-name descname">PolyLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span></em>, <em class="sig-param"><span class="n">eps</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">2.0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#PolyLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#holocron.nn.PolyLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the Poly1 loss from <a class="reference external" href="https://arxiv.org/pdf/2204.12511.pdf">“PolyLoss: A Polynomial Expansion Perspective of Classification Loss
+Functions”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – epsilon 1 from the paper</p></li>
+<li><p><strong>ignore_index</strong> – int = -100,</p></li>
+<li><p><strong>reduction</strong> – str = ‘mean’,</p></li>
 </ul>
 </dd>
 </dl>
