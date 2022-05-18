@@ -65,8 +65,6 @@ def main(args):
         article=("<p style='text-align: center'><a href='https://github.com/frgfm/Holocron'>" "Github Repo</a> | "
                  "<a href='https://frgfm.github.io/Holocron/'>Documentation</a></p>"),
         live=True,
-        theme="huggingface",
-        layout="horizontal",
     )
 
     interface.launch(server_port=args.port, show_error=True)
