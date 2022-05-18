@@ -1,4 +1,4 @@
-gradio>=2.7.5
+gradio>=3.0.2
 Pillow>=8.4.0
 onnxruntime>=1.10.0
 huggingface-hub>=0.4.0
