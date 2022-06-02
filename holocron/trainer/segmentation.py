@@ -9,7 +9,7 @@ import torch
 
 from .core import Trainer
 
-__all__ = ['SegmentationTrainer']
+__all__ = ["SegmentationTrainer"]
 
 
 class SegmentationTrainer(Trainer):
@@ -46,14 +46,15 @@ class SegmentationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, mean_iou, num_valid_batches = 0., 0., 0
-        conf_mat = torch.zeros((self.num_classes, self.num_classes), dtype=torch.int64,
-                               device=next(self.model.parameters()).device)
+        val_loss, mean_iou, num_valid_batches = 0.0, 0.0, 0
+        conf_mat = torch.zeros(
+            (self.num_classes, self.num_classes), dtype=torch.int64, device=next(self.model.parameters()).device
+        )
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
             if self.amp:
-                with torch.cuda.amp.autocast():
+                with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
                     # Forward
                     out = self.model(x)
                     # Loss computation
@@ -75,7 +76,7 @@ class SegmentationTrainer(Trainer):
             k = (target >= 0) & (target < self.num_classes)
             inds = self.num_classes * target[k].to(torch.int64) + pred[k]
             nc = self.num_classes
-            conf_mat += torch.bincount(inds, minlength=nc ** 2).reshape(nc, nc)
+            conf_mat += torch.bincount(inds, minlength=nc**2).reshape(nc, nc)
 
         val_loss /= num_valid_batches
         acc_global = (torch.diag(conf_mat).sum() / conf_mat.sum()).item()
@@ -85,5 +86,7 @@ class SegmentationTrainer(Trainer):
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return (f"Validation loss: {eval_metrics['val_loss']:.4} "
-                f"(Acc: {eval_metrics['acc_global']:.2%} | Mean IoU: {eval_metrics['mean_iou']:.2%})")
+        return (
+            f"Validation loss: {eval_metrics['val_loss']:.4} "
+            f"(Acc: {eval_metrics['acc_global']:.2%} | Mean IoU: {eval_metrics['mean_iou']:.2%})"
+        )

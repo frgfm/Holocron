@@ -3,9 +3,9 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-'''
+"""
 Training script for object detection
-'''
+"""
 
 import datetime
 import math
@@ -23,15 +23,43 @@ from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
 from torchvision.models import detection as tv_detection
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
-from transforms import (CenterCrop, Compose, ImageTransform, RandomHorizontalFlip, RandomResizedCrop, Resize,
-                        VOCTargetTransform, convert_to_relative)
+from transforms import (
+    CenterCrop,
+    Compose,
+    ImageTransform,
+    RandomHorizontalFlip,
+    RandomResizedCrop,
+    Resize,
+    VOCTargetTransform,
+    convert_to_relative,
+)
 
 import holocron
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 
-VOC_CLASSES = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable',
-               'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+VOC_CLASSES = [
+    "aeroplane",
+    "bicycle",
+    "bird",
+    "boat",
+    "bottle",
+    "bus",
+    "car",
+    "cat",
+    "chair",
+    "cow",
+    "diningtable",
+    "dog",
+    "horse",
+    "motorbike",
+    "person",
+    "pottedplant",
+    "sheep",
+    "sofa",
+    "train",
+    "tvmonitor",
+]
 
 
 def worker_init_fn(worker_id: int) -> None:
@@ -54,17 +82,16 @@ def plot_samples(images, targets):
         img = to_pil_image(img)
 
         axes[idx].imshow(img)
-        axes[idx].axis('off')
-        for box, label in zip(targets[idx]['boxes'], targets[idx]['labels']):
+        axes[idx].axis("off")
+        for box, label in zip(targets[idx]["boxes"], targets[idx]["labels"]):
             xmin = int(box[0] * images[idx].shape[-1])
             ymin = int(box[1] * images[idx].shape[-2])
             xmax = int(box[2] * images[idx].shape[-1])
             ymax = int(box[3] * images[idx].shape[-2])
 
-            rect = Rectangle((xmin, ymin), xmax - xmin, ymax - ymin,
-                             linewidth=2, edgecolor='lime', facecolor='none')
+            rect = Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor="lime", facecolor="none")
             axes[idx].add_patch(rect)
-            axes[idx].text(xmin, ymin, VOC_CLASSES[label.item()], color='lime', fontsize=12)
+            axes[idx].text(xmin, ymin, VOC_CLASSES[label.item()], color="lime", fontsize=12)
 
     plt.show()
 
@@ -88,26 +115,39 @@ def main(args):
         st = time.time()
         train_set = VOCDetection(
             args.data_path,
-            image_set='train',
+            image_set="train",
             download=True,
-            transforms=Compose([
-                VOCTargetTransform(VOC_CLASSES),
-                RandomResizedCrop((args.img_size, args.img_size), scale=(0.3, 1.0), interpolation=interpolation_mode),
-                RandomHorizontalFlip(),
-                convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
-                ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
-                ImageTransform(T.PILToTensor()),
-                ImageTransform(T.ConvertImageDtype(torch.float32)),
-                ImageTransform(normalize)
-            ])
+            transforms=Compose(
+                [
+                    VOCTargetTransform(VOC_CLASSES),
+                    RandomResizedCrop(
+                        (args.img_size, args.img_size), scale=(0.3, 1.0), interpolation=interpolation_mode
+                    ),
+                    RandomHorizontalFlip(),
+                    convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
+                    ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
+                    ImageTransform(T.PILToTensor()),
+                    ImageTransform(T.ConvertImageDtype(torch.float32)),
+                    ImageTransform(normalize),
+                ]
+            ),
         )
 
         train_loader = torch.utils.data.DataLoader(
-            train_set, batch_size=args.batch_size, drop_last=True, collate_fn=collate_fn,
-            sampler=RandomSampler(train_set), num_workers=args.workers, pin_memory=True, worker_init_fn=worker_init_fn)
+            train_set,
+            batch_size=args.batch_size,
+            drop_last=True,
+            collate_fn=collate_fn,
+            sampler=RandomSampler(train_set),
+            num_workers=args.workers,
+            pin_memory=True,
+            worker_init_fn=worker_init_fn,
+        )
 
-        print(f"Training set loaded in {time.time() - st:.2f}s "
-              f"({len(train_set)} samples in {len(train_loader)} batches)")
+        print(
+            f"Training set loaded in {time.time() - st:.2f}s "
+            f"({len(train_set)} samples in {len(train_loader)} batches)"
+        )
 
     if args.show_samples:
         x, target = next(iter(train_loader))
@@ -118,51 +158,72 @@ def main(args):
         st = time.time()
         val_set = VOCDetection(
             args.data_path,
-            image_set='val',
+            image_set="val",
             download=True,
-            transforms=Compose([
-                VOCTargetTransform(VOC_CLASSES),
-                Resize(scale_size, interpolation=interpolation_mode),
-                CenterCrop(args.img_size),
-                convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
-                ImageTransform(T.PILToTensor()),
-                ImageTransform(T.ConvertImageDtype(torch.float32)),
-                ImageTransform(normalize)
-            ])
+            transforms=Compose(
+                [
+                    VOCTargetTransform(VOC_CLASSES),
+                    Resize(scale_size, interpolation=interpolation_mode),
+                    CenterCrop(args.img_size),
+                    convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
+                    ImageTransform(T.PILToTensor()),
+                    ImageTransform(T.ConvertImageDtype(torch.float32)),
+                    ImageTransform(normalize),
+                ]
+            ),
         )
 
         val_loader = torch.utils.data.DataLoader(
-            val_set, batch_size=args.batch_size, drop_last=False, collate_fn=collate_fn,
-            sampler=SequentialSampler(val_set), num_workers=args.workers, pin_memory=True,
-            worker_init_fn=worker_init_fn)
+            val_set,
+            batch_size=args.batch_size,
+            drop_last=False,
+            collate_fn=collate_fn,
+            sampler=SequentialSampler(val_set),
+            num_workers=args.workers,
+            pin_memory=True,
+            worker_init_fn=worker_init_fn,
+        )
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    if args.source.lower() == 'holocron':
+    if args.source.lower() == "holocron":
         model = detection.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES))
-    elif args.source.lower() == 'torchvision':
+    elif args.source.lower() == "torchvision":
         model = tv_detection.__dict__[args.arch](args.pretrained, num_classes=len(VOC_CLASSES))
 
     model_params = [p for p in model.parameters() if p.requires_grad]
-    if args.opt == 'sgd':
+    if args.opt == "sgd":
         optimizer = torch.optim.SGD(model_params, args.lr, momentum=0.9, weight_decay=args.weight_decay)
-    elif args.opt == 'radam':
-        optimizer = holocron.optim.RAdam(model_params, args.lr,
-                                         betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
-    elif args.opt == 'adamp':
-        optimizer = holocron.optim.AdamP(model_params, args.lr,
-                                         betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
-    elif args.opt == 'adabelief':
-        optimizer = holocron.optim.AdaBelief(model_params, args.lr,
-                                             betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+    elif args.opt == "radam":
+        optimizer = holocron.optim.RAdam(
+            model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay
+        )
+    elif args.opt == "adamp":
+        optimizer = holocron.optim.AdamP(
+            model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay
+        )
+    elif args.opt == "adabelief":
+        optimizer = holocron.optim.AdaBelief(
+            model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay
+        )
 
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
-    trainer = DetectionTrainer(model, train_loader, val_loader, None, optimizer,
-                               args.device, args.output_file, amp=args.amp, skip_nan_loss=True, on_epoch_end=log_wb)
+    trainer = DetectionTrainer(
+        model,
+        train_loader,
+        val_loader,
+        None,
+        optimizer,
+        args.device,
+        args.output_file,
+        amp=args.amp,
+        skip_nan_loss=True,
+        on_epoch_end=log_wb,
+    )
 
     if args.resume:
         print(f"Resuming {args.resume}")
-        checkpoint = torch.load(args.resume, map_location='cpu')
+        checkpoint = torch.load(args.resume, map_location="cpu")
         trainer.load(checkpoint)
 
     if args.test_only:
@@ -179,8 +240,9 @@ def main(args):
 
     if args.check_setup:
         print("Checking batch overfitting")
-        is_ok = trainer.check_setup(args.freeze_until, args.lr, norm_weight_decay=args.norm_weight_decay,
-                                    num_it=min(len(train_loader), 100))
+        is_ok = trainer.check_setup(
+            args.freeze_until, args.lr, norm_weight_decay=args.norm_weight_decay, num_it=min(len(train_loader), 100)
+        )
         print(is_ok)
         return
 
@@ -205,7 +267,7 @@ def main(args):
                 "input_size": args.img_size,
                 "optimizer": args.opt,
                 "dataset": "PASCAL VOC2012 Detection",
-            }
+            },
         )
 
     print("Start training")
@@ -220,34 +282,37 @@ def main(args):
 
 def get_parser():
     import argparse
-    parser = argparse.ArgumentParser(description='Holocron Detection Training',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('data_path', type=str, help='path to dataset folder')
-    parser.add_argument('--name', type=str, default=None, help='Name of your training experiment')
-    parser.add_argument('--arch', type=str, default='yolov2', help='architecture to use')
-    parser.add_argument('--source', type=str, default='holocron', help='where should the architecture be taken from')
-    parser.add_argument('--freeze-until', default='backbone', type=str, help='Last layer to freeze')
-    parser.add_argument('--device', default=None, type=int, help='device')
-    parser.add_argument('-b', '--batch-size', default=32, type=int, help='batch size')
-    parser.add_argument('--epochs', default=20, type=int, help='number of total epochs to run')
-    parser.add_argument('-j', '--workers', default=min(os.cpu_count(), 16), type=int,
-                        help='number of data loading workers')
-    parser.add_argument('--img-size', default=416, type=int, help='image size')
-    parser.add_argument('--opt', default='adam', type=str, help='optimizer')
-    parser.add_argument('--sched', default='onecycle', type=str, help='scheduler')
-    parser.add_argument('--lr', default=0.1, type=float, help='initial learning rate')
-    parser.add_argument('--wd', '--weight-decay', default=0, type=float, help='weight decay', dest='weight_decay')
-    parser.add_argument('--norm-wd', default=None, type=float, help='weight decay of norm parameters')
-    parser.add_argument("--find-lr", action='store_true', help="Should you run LR Finder")
-    parser.add_argument("--check-setup", action='store_true', help="Check your training setup")
-    parser.add_argument('--output-file', default='./model.pth', help='path where to save')
-    parser.add_argument('--resume', default='', help='resume from checkpoint')
-    parser.add_argument("--show-samples", action='store_true', help="Whether training samples should be displayed")
+    parser = argparse.ArgumentParser(
+        description="Holocron Detection Training", formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument("data_path", type=str, help="path to dataset folder")
+    parser.add_argument("--name", type=str, default=None, help="Name of your training experiment")
+    parser.add_argument("--arch", type=str, default="yolov2", help="architecture to use")
+    parser.add_argument("--source", type=str, default="holocron", help="where should the architecture be taken from")
+    parser.add_argument("--freeze-until", default="backbone", type=str, help="Last layer to freeze")
+    parser.add_argument("--device", default=None, type=int, help="device")
+    parser.add_argument("-b", "--batch-size", default=32, type=int, help="batch size")
+    parser.add_argument("--epochs", default=20, type=int, help="number of total epochs to run")
+    parser.add_argument(
+        "-j", "--workers", default=min(os.cpu_count(), 16), type=int, help="number of data loading workers"
+    )
+    parser.add_argument("--img-size", default=416, type=int, help="image size")
+    parser.add_argument("--opt", default="adam", type=str, help="optimizer")
+    parser.add_argument("--sched", default="onecycle", type=str, help="scheduler")
+    parser.add_argument("--lr", default=0.1, type=float, help="initial learning rate")
+    parser.add_argument("--wd", "--weight-decay", default=0, type=float, help="weight decay", dest="weight_decay")
+    parser.add_argument("--norm-wd", default=None, type=float, help="weight decay of norm parameters")
+    parser.add_argument("--find-lr", action="store_true", help="Should you run LR Finder")
+    parser.add_argument("--check-setup", action="store_true", help="Check your training setup")
+    parser.add_argument("--output-file", default="./model.pth", help="path where to save")
+    parser.add_argument("--resume", default="", help="resume from checkpoint")
+    parser.add_argument("--show-samples", action="store_true", help="Whether training samples should be displayed")
     parser.add_argument("--test-only", help="Only test the model", action="store_true")
     parser.add_argument("--pretrained", action="store_true", help="Use pre-trained models from the model zoo")
     parser.add_argument("--amp", action="store_true", help="Use Automatic Mixed Precision")
-    parser.add_argument('--wb', action='store_true', help='Log to Weights & Biases')
+    parser.add_argument("--wb", action="store_true", help="Log to Weights & Biases")
 
     return parser
 

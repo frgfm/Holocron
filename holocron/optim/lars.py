@@ -26,13 +26,13 @@ class Lars(Optimizer):
 
     def __init__(
         self,
-        params: Iterable[torch.nn.Parameter],
+        params: Iterable[torch.nn.Parameter],  # type: ignore[name-defined]
         lr: float = 1e-3,
-        momentum: float = 0.,
-        dampening: float = 0.,
-        weight_decay: float = 0.,
+        momentum: float = 0.0,
+        dampening: float = 0.0,
+        weight_decay: float = 0.0,
         nesterov: bool = False,
-        scale_clip: Optional[Tuple[float, float]] = None
+        scale_clip: Optional[Tuple[float, float]] = None,
     ) -> None:
         if not isinstance(lr, float) or lr < 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
@@ -41,20 +41,19 @@ class Lars(Optimizer):
         if weight_decay < 0.0:
             raise ValueError(f"Invalid weight_decay value: {weight_decay}")
 
-        defaults = dict(lr=lr, momentum=momentum, dampening=dampening,
-                        weight_decay=weight_decay, nesterov=nesterov)
+        defaults = dict(lr=lr, momentum=momentum, dampening=dampening, weight_decay=weight_decay, nesterov=nesterov)
         if nesterov and (momentum <= 0 or dampening != 0):
             raise ValueError("Nesterov momentum requires a momentum and zero dampening")
         super(Lars, self).__init__(params, defaults)
         # LARS arguments
         self.scale_clip = scale_clip
         if self.scale_clip is None:
-            self.scale_clip = (0., 10.)
+            self.scale_clip = (0.0, 10.0)
 
     def __setstate__(self, state: Dict[str, torch.Tensor]):
         super(Lars, self).__setstate__(state)
         for group in self.param_groups:
-            group.setdefault('nesterov', False)
+            group.setdefault("nesterov", False)
 
     @torch.no_grad()
     def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
@@ -69,12 +68,12 @@ class Lars(Optimizer):
                 loss = closure()
 
         for group in self.param_groups:
-            weight_decay = group['weight_decay']
-            momentum = group['momentum']
-            dampening = group['dampening']
-            nesterov = group['nesterov']
+            weight_decay = group["weight_decay"]
+            momentum = group["momentum"]
+            dampening = group["dampening"]
+            nesterov = group["nesterov"]
 
-            for p in group['params']:
+            for p in group["params"]:
                 if p.grad is None:
                     continue
                 d_p = p.grad.data
@@ -82,10 +81,10 @@ class Lars(Optimizer):
                     d_p.add_(p.data, alpha=weight_decay)
                 if momentum != 0:
                     param_state = self.state[p]
-                    if 'momentum_buffer' not in param_state:
-                        buf = param_state['momentum_buffer'] = torch.clone(d_p).detach()
+                    if "momentum_buffer" not in param_state:
+                        buf = param_state["momentum_buffer"] = torch.clone(d_p).detach()
                     else:
-                        buf = param_state['momentum_buffer']
+                        buf = param_state["momentum_buffer"]
                         buf.mul_(momentum).add_(d_p, alpha=1 - dampening)
                     if nesterov:
                         d_p = d_p.add(buf, alpha=momentum)
@@ -101,6 +100,6 @@ class Lars(Optimizer):
                 else:
                     local_lr = p_norm / update_norm
 
-                p.data.add_(d_p, alpha=-group['lr'] * local_lr)
+                p.data.add_(d_p, alpha=-group["lr"] * local_lr)
 
         return loss

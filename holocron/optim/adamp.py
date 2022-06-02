@@ -27,11 +27,11 @@ class AdamP(Adam):
 
     def __init__(
         self,
-        params: Iterable[torch.nn.Parameter],
+        params: Iterable[torch.nn.Parameter],  # type: ignore[name-defined]
         lr: float = 1e-3,
         betas: Tuple[float, float] = (0.9, 0.999),
         eps: float = 1e-8,
-        weight_decay: float = 0.,
+        weight_decay: float = 0.0,
         amsgrad: bool = False,
         delta: float = 0.1,
     ) -> None:
@@ -58,7 +58,7 @@ class AdamP(Adam):
             max_exp_avg_sqs = []
             state_steps = []
 
-            for p in group['params']:
+            for p in group["params"]:
                 if p.grad is not None:
                     params_with_grad.append(p)
                     if p.grad.is_sparse:
@@ -68,39 +68,40 @@ class AdamP(Adam):
                     state = self.state[p]
                     # Lazy state initialization
                     if len(state) == 0:
-                        state['step'] = 0
+                        state["step"] = 0
                         # Exponential moving average of gradient values
-                        state['exp_avg'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                        state["exp_avg"] = torch.zeros_like(p, memory_format=torch.preserve_format)
                         # Exponential moving average of squared gradient values
-                        state['exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
-                        if group['amsgrad']:
+                        state["exp_avg_sq"] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                        if group["amsgrad"]:
                             # Maintains max of all exp. moving avg. of sq. grad. values
-                            state['max_exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
+                            state["max_exp_avg_sq"] = torch.zeros_like(p, memory_format=torch.preserve_format)
 
-                    exp_avgs.append(state['exp_avg'])
-                    exp_avg_sqs.append(state['exp_avg_sq'])
-                    if group['amsgrad']:
-                        max_exp_avg_sqs.append(state['max_exp_avg_sq'])
+                    exp_avgs.append(state["exp_avg"])
+                    exp_avg_sqs.append(state["exp_avg_sq"])
+                    if group["amsgrad"]:
+                        max_exp_avg_sqs.append(state["max_exp_avg_sq"])
 
                     # update the steps for each param group update
-                    state['step'] += 1
+                    state["step"] += 1
                     # record the step after step update
-                    state_steps.append(state['step'])
+                    state_steps.append(state["step"])
 
-            beta1, beta2 = group['betas']
-            F.adamp(params_with_grad,
-                    grads,
-                    exp_avgs,
-                    exp_avg_sqs,
-                    max_exp_avg_sqs,
-                    state_steps,
-                    group['amsgrad'],
-                    beta1,
-                    beta2,
-                    group['lr'],
-                    group['weight_decay'],
-                    group['eps'],
-                    self.delta
-                    )
+            beta1, beta2 = group["betas"]
+            F.adamp(
+                params_with_grad,
+                grads,
+                exp_avgs,
+                exp_avg_sqs,
+                max_exp_avg_sqs,
+                state_steps,
+                group["amsgrad"],
+                beta1,
+                beta2,
+                group["lr"],
+                group["weight_decay"],
+                group["eps"],
+                self.delta,
+            )
 
         return loss

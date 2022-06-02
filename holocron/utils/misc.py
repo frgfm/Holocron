@@ -6,11 +6,23 @@
 import torch
 from tqdm.auto import tqdm
 
-__all__ = ['lr_finder']
+__all__ = ["lr_finder"]
 
 
-def lr_finder(batch_training_fn, model, train_loader, optimizer, criterion, device=None,
-              start_lr=1e-7, end_lr=10, num_it=100, stop_div=True, stop_threshold=2, beta=0.9):
+def lr_finder(
+    batch_training_fn,
+    model,
+    train_loader,
+    optimizer,
+    criterion,
+    device=None,
+    start_lr=1e-7,
+    end_lr=10,
+    num_it=100,
+    stop_div=True,
+    stop_threshold=2,
+    beta=0.9,
+):
     """Learning rate finder as described in
     `"Cyclical Learning Rates for Training Neural Networks" <https://arxiv.org/pdf/1506.01186.pdf>`_
 
@@ -34,16 +46,16 @@ def lr_finder(batch_training_fn, model, train_loader, optimizer, criterion, devi
 
     if device is None:
         if torch.cuda.is_available():
-            device = torch.device('cuda:0')
+            device = torch.device("cuda:0")
         else:
-            device = torch.device('cpu')
+            device = torch.device("cpu")
 
     model.train()
     model = model.to(device)
     loader_iter = iter(train_loader)
     gamma = (end_lr / start_lr) ** (1 / (num_it - 1))
     base_lr = start_lr
-    avg_loss, best_loss = 0, 0.
+    avg_loss, best_loss = 0, 0.0
     lrs, losses = [], []
     for batch_idx in tqdm(range(num_it)):
 
@@ -68,6 +80,6 @@ def lr_finder(batch_training_fn, model, train_loader, optimizer, criterion, devi
         # Update LR
         base_lr *= gamma
         for group in optimizer.param_groups:
-            group['lr'] *= gamma
+            group["lr"] *= gamma
 
     return lrs, losses

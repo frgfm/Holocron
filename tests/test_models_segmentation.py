@@ -24,14 +24,14 @@ def _test_segmentation_model(name, input_shape):
 @pytest.mark.parametrize(
     "arch, input_shape",
     [
-        ['unet', (256, 256)],
-        ['unet2', (256, 256)],
-        ['unet_rexnet13', (256, 256)],
-        ['unet_tvvgg11', (256, 256)],
-        ['unet_tvresnet34', (256, 256)],
-        ['unetp', (256, 256)],
-        ['unetpp', (256, 256)],
-        ['unet3p', (320, 320)],
+        ["unet", (256, 256)],
+        ["unet2", (256, 256)],
+        ["unet_rexnet13", (256, 256)],
+        ["unet_tvvgg11", (256, 256)],
+        ["unet_tvresnet34", (256, 256)],
+        ["unetp", (256, 256)],
+        ["unetpp", (256, 256)],
+        ["unet3p", (320, 320)],
     ],
 )
 def test_segmentation_model(arch, input_shape):

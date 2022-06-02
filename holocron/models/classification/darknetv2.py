@@ -15,20 +15,19 @@ from holocron.nn.init import init_module
 from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ['DarknetV2', 'darknet19']
+__all__ = ["DarknetV2", "darknet19"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'darknet19': {
+    "darknet19": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/darknet19_224-b1ce16a5.pt',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/darknet19_224-b1ce16a5.pt",
     },
 }
 
 
 class DarknetBodyV2(nn.Sequential):
-
     def __init__(
         self,
         layout: List[Tuple[int, int]],
@@ -38,7 +37,7 @@ class DarknetBodyV2(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
 
         if act_layer is None:
@@ -49,13 +48,38 @@ class DarknetBodyV2(nn.Sequential):
 
         in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
-        super().__init__(OrderedDict([
-            ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=1, bias=(norm_layer is None)))),
-            ('layers', nn.Sequential(*[self._make_layer(num_blocks, _in_chans, out_chans,
-                                                        act_layer, norm_layer, drop_layer, conv_layer)
-                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
+        super().__init__(
+            OrderedDict(
+                [
+                    (
+                        "stem",
+                        nn.Sequential(
+                            *conv_sequence(
+                                in_channels,
+                                stem_channels,
+                                act_layer,
+                                norm_layer,
+                                drop_layer,
+                                conv_layer,
+                                kernel_size=3,
+                                padding=1,
+                                bias=(norm_layer is None),
+                            )
+                        ),
+                    ),
+                    (
+                        "layers",
+                        nn.Sequential(
+                            *[
+                                self._make_layer(
+                                    num_blocks, _in_chans, out_chans, act_layer, norm_layer, drop_layer, conv_layer
+                                )
+                                for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)
+                            ]
+                        ),
+                    ),
+                ]
+            )
         )
 
         self.passthrough = passthrough
@@ -68,16 +92,50 @@ class DarknetBodyV2(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> nn.Sequential:
         layers: List[nn.Module] = [nn.MaxPool2d(2)]
-        layers.extend(conv_sequence(in_planes, out_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                                    kernel_size=3, padding=1, stride=1, bias=(norm_layer is None)))
+        layers.extend(
+            conv_sequence(
+                in_planes,
+                out_planes,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                stride=1,
+                bias=(norm_layer is None),
+            )
+        )
         for _ in range(num_blocks):
-            layers.extend(conv_sequence(out_planes, out_planes // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                                        kernel_size=1, padding=0, stride=1, bias=(norm_layer is None)) +
-                          conv_sequence(out_planes // 2, out_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                                        kernel_size=3, padding=1, stride=1, bias=(norm_layer is None)))
+            layers.extend(
+                conv_sequence(
+                    out_planes,
+                    out_planes // 2,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    conv_layer,
+                    kernel_size=1,
+                    padding=0,
+                    stride=1,
+                    bias=(norm_layer is None),
+                )
+                + conv_sequence(
+                    out_planes // 2,
+                    out_planes,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    conv_layer,
+                    kernel_size=3,
+                    padding=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                )
+            )
 
         return nn.Sequential(*layers)
 
@@ -106,16 +164,25 @@ class DarknetV2(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
 
-        super().__init__(OrderedDict([
-            ('features', DarknetBodyV2(layout, in_channels, stem_channels, False,
-                                       act_layer, norm_layer, drop_layer, conv_layer)),
-            ('classifier', nn.Conv2d(layout[-1][0], num_classes, 1)),
-            ('pool', GlobalAvgPool2d(flatten=True))]))
+        super().__init__(
+            OrderedDict(
+                [
+                    (
+                        "features",
+                        DarknetBodyV2(
+                            layout, in_channels, stem_channels, False, act_layer, norm_layer, drop_layer, conv_layer
+                        ),
+                    ),
+                    ("classifier", nn.Conv2d(layout[-1][0], num_classes, 1)),
+                    ("pool", GlobalAvgPool2d(flatten=True)),
+                ]
+            )
+        )
 
-        init_module(self, 'leaky_relu')
+        init_module(self, "leaky_relu")
 
 
 def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int, int]], **kwargs: Any) -> DarknetV2:
@@ -124,7 +191,7 @@ def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -142,7 +209,7 @@ def darknet19(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
     """
 
     return _darknet(
-        'darknet19',
+        "darknet19",
         pretrained,
         progress,
         [(64, 0), (128, 1), (256, 1), (512, 2), (1024, 2)],

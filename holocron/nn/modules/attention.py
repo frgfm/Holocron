@@ -9,7 +9,7 @@ from torch import Tensor
 
 from .downsample import ZPool
 
-__all__ = ['SAM', 'TripletAttention']
+__all__ = ["SAM", "TripletAttention"]
 
 
 class SAM(nn.Module):
@@ -19,6 +19,7 @@ class SAM(nn.Module):
     Args:
         in_channels (int): input channels
     """
+
     def __init__(self, in_channels: int) -> None:
         super().__init__()
         self.conv = nn.Conv2d(in_channels, 1, 1)
@@ -33,13 +34,14 @@ class DimAttention(nn.Module):
     Args:
         dim: dimension to compute attention on
     """
+
     def __init__(self, dim: int) -> None:
         super().__init__()
         self.compress = nn.Sequential(
             ZPool(dim=1),
             nn.Conv2d(2, 1, kernel_size=7, stride=1, padding=3, bias=False),
             nn.BatchNorm2d(1, eps=1e-5, momentum=0.01),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
         self.dim = dim
 
@@ -58,6 +60,7 @@ class TripletAttention(nn.Module):
     `one <https://github.com/LandskapeAI/triplet-attention/blob/master/MODELS/triplet_attention.py>`_
     from the paper's authors.
     """
+
     def __init__(self) -> None:
         super().__init__()
         self.c_branch = DimAttention(dim=1)

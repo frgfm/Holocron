@@ -21,14 +21,15 @@ class Lamb(Optimizer):
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
         scale_clip (tuple, optional): the lower and upper bounds for the weight norm in local LR of LARS
     """
+
     def __init__(
         self,
-        params: Iterable[torch.nn.Parameter],
+        params: Iterable[torch.nn.Parameter],  # type: ignore[name-defined]
         lr: float = 1e-3,
         betas: Tuple[float, float] = (0.9, 0.999),
         eps: float = 1e-8,
-        weight_decay: float = 0.,
-        scale_clip: Optional[Tuple[float, float]] = None
+        weight_decay: float = 0.0,
+        scale_clip: Optional[Tuple[float, float]] = None,
     ) -> None:
         if lr < 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
@@ -43,7 +44,7 @@ class Lamb(Optimizer):
         # LARS arguments
         self.scale_clip = scale_clip
         if self.scale_clip is None:
-            self.scale_clip = (0., 10.)
+            self.scale_clip = (0.0, 10.0)
 
     @torch.no_grad()
     def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
@@ -58,7 +59,7 @@ class Lamb(Optimizer):
                 loss = closure()
 
         for group in self.param_groups:
-            for p in group['params']:
+            for p in group["params"]:
                 if p.grad is None:
                     continue
                 grad = p.grad.data
@@ -69,16 +70,16 @@ class Lamb(Optimizer):
 
                 # State initialization
                 if len(state) == 0:
-                    state['step'] = 0
+                    state["step"] = 0
                     # Exponential moving average of gradient values
-                    state['exp_avg'] = torch.zeros_like(p.data)
+                    state["exp_avg"] = torch.zeros_like(p.data)
                     # Exponential moving average of squared gradient values
-                    state['exp_avg_sq'] = torch.zeros_like(p.data)
+                    state["exp_avg_sq"] = torch.zeros_like(p.data)
 
-                exp_avg, exp_avg_sq = state['exp_avg'], state['exp_avg_sq']
-                beta1, beta2 = group['betas']
+                exp_avg, exp_avg_sq = state["exp_avg"], state["exp_avg_sq"]
+                beta1, beta2 = group["betas"]
 
-                state['step'] += 1
+                state["step"] += 1
 
                 # Decay the first and second moment running average coefficient
                 exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
@@ -86,12 +87,12 @@ class Lamb(Optimizer):
 
                 # Gradient term correction
                 update = torch.zeros_like(p.data)
-                denom = exp_avg_sq.sqrt().add_(group['eps'])
+                denom = exp_avg_sq.sqrt().add_(group["eps"])
                 update.addcdiv_(exp_avg, denom)
 
                 # Weight decay
-                if group['weight_decay'] != 0:
-                    update.add_(p.data, alpha=group['weight_decay'])
+                if group["weight_decay"] != 0:
+                    update.add_(p.data, alpha=group["weight_decay"])
 
                 # LARS
                 p_norm = p.data.pow(2).sum().sqrt()
@@ -103,8 +104,8 @@ class Lamb(Optimizer):
                 else:
                     local_lr = phi_p / update_norm
 
-                state['local_lr'] = local_lr
+                state["local_lr"] = local_lr
 
-                p.data.add_(update, alpha=-group['lr'] * local_lr)
+                p.data.add_(update, alpha=-group["lr"] * local_lr)
 
         return loss

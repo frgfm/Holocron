@@ -12,7 +12,7 @@ from torch import Tensor
 
 from .. import functional as F
 
-__all__ = ['ConcatDownsample2d', 'ConcatDownsample2dJit', 'GlobalAvgPool2d', 'BlurPool2d', 'SPP', 'ZPool']
+__all__ = ["ConcatDownsample2d", "ConcatDownsample2dJit", "GlobalAvgPool2d", "BlurPool2d", "SPP", "ZPool"]
 
 
 class ConcatDownsample2d(nn.Module):
@@ -32,7 +32,7 @@ class ConcatDownsample2d(nn.Module):
         return F.concat_downsample2d(x, self.scale_factor)
 
 
-@torch.jit.script
+@torch.jit.script  # type: ignore[attr-defined]
 class ConcatDownsample2dJit(object):
     """Implements a loss-less downsampling operation described in `"YOLO9000: Better, Faster, Stronger"
     <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_ by stacking adjacent information on the channel dimension.
@@ -56,6 +56,7 @@ class GlobalAvgPool2d(nn.Module):
     Args:
         flatten (bool, optional): whether spatial dimensions should be squeezed
     """
+
     def __init__(self, flatten: bool = False) -> None:
         super().__init__()
         self.flatten = flatten
@@ -67,7 +68,7 @@ class GlobalAvgPool2d(nn.Module):
         return x.view(x.size(0), x.size(1), -1).mean(-1).view(x.size(0), x.size(1), 1, 1)
 
     def extra_repr(self) -> str:
-        inplace_str = 'flatten=True' if self.flatten else ''
+        inplace_str = "flatten=True" if self.flatten else ""
         return inplace_str
 
 
@@ -117,7 +118,8 @@ class BlurPool2d(nn.Module):
     def forward(self, input_tensor: Tensor) -> Tensor:
         blur_filter = self.kernel.get(str(input_tensor.device), self._create_filter(input_tensor))
         return nn.functional.conv2d(
-            self.padding(input_tensor), blur_filter, stride=self.stride, groups=input_tensor.shape[1])
+            self.padding(input_tensor), blur_filter, stride=self.stride, groups=input_tensor.shape[1]
+        )
 
     def extra_repr(self) -> str:
         return f"{self.channels}, kernel_size={self.kernel_size}, stride={self.stride}"
@@ -132,8 +134,7 @@ class SPP(nn.ModuleList):
     """
 
     def __init__(self, kernel_sizes: List[int]) -> None:
-        super().__init__([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2)
-                          for k_size in kernel_sizes])
+        super().__init__([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2) for k_size in kernel_sizes])
 
     def forward(self, x):
         feats = [x] + [pool_layer(x) for pool_layer in self]

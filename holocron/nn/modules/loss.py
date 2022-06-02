@@ -11,32 +11,38 @@ from torch import Tensor
 
 from .. import functional as F
 
-__all__ = ['FocalLoss', 'MultiLabelCrossEntropy', 'ComplementCrossEntropy',
-           'ClassBalancedWrapper', 'MutualChannelLoss', 'DiceLoss', 'PolyLoss']
+__all__ = [
+    "FocalLoss",
+    "MultiLabelCrossEntropy",
+    "ComplementCrossEntropy",
+    "ClassBalancedWrapper",
+    "MutualChannelLoss",
+    "DiceLoss",
+    "PolyLoss",
+]
 
 
 class _Loss(nn.Module):
-
     def __init__(
         self,
         weight: Optional[Union[float, List[float], Tensor]] = None,
         ignore_index: int = -100,
-        reduction: str = 'mean',
+        reduction: str = "mean",
     ) -> None:
         super().__init__()
         # Cast class weights if possible
         self.weight: Optional[Tensor]
         if isinstance(weight, (float, int)):
-            self.register_buffer('weight', torch.Tensor([weight, 1 - weight]))
+            self.register_buffer("weight", torch.Tensor([weight, 1 - weight]))
         elif isinstance(weight, list):
-            self.register_buffer('weight', torch.Tensor(weight))
+            self.register_buffer("weight", torch.Tensor(weight))
         elif isinstance(weight, Tensor):
-            self.register_buffer('weight', weight)
+            self.register_buffer("weight", weight)
         else:
             self.weight = None
         self.ignore_index = ignore_index
         # Set the reduction method
-        if reduction not in ['none', 'mean', 'sum']:
+        if reduction not in ["none", "mean", "sum"]:
             raise NotImplementedError("argument reduction received an incorrect input")
         self.reduction = reduction
 
@@ -67,7 +73,7 @@ class FocalLoss(_Loss):
         reduction (str, optional): type of reduction to apply to the final loss
     """
 
-    def __init__(self, gamma: float = 2., **kwargs: Any) -> None:
+    def __init__(self, gamma: float = 2.0, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.gamma = gamma
 
@@ -141,7 +147,7 @@ class ClassBalancedWrapper(nn.Module):
         super().__init__()
         self.criterion = criterion
         self.beta = beta
-        cb_weights = (1 - beta) / (1 - beta ** num_samples)
+        cb_weights = (1 - beta) / (1 - beta**num_samples)
         if self.criterion.weight is None:
             self.criterion.weight = cb_weights
         else:
@@ -171,7 +177,7 @@ class MutualChannelLoss(_Loss):
         self,
         weight: Optional[Union[float, List[float], Tensor]] = None,
         ignore_index: int = -100,
-        reduction: str = 'mean',
+        reduction: str = "mean",
         xi: int = 2,
         alpha: float = 1,
     ) -> None:
@@ -199,7 +205,7 @@ class DiceLoss(_Loss):
     def __init__(
         self,
         weight: Optional[Union[float, List[float], Tensor]] = None,
-        gamma: float = 1.,
+        gamma: float = 1.0,
         eps: float = 1e-8,
     ) -> None:
         super().__init__(weight)
@@ -227,7 +233,7 @@ class PolyLoss(_Loss):
     def __init__(
         self,
         *args: Any,
-        eps: float = 2.,
+        eps: float = 2.0,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)

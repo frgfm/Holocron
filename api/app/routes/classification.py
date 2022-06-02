@@ -19,6 +19,6 @@ async def classify(file: UploadFile = File(...)):
     probs = torch.softmax(out, dim=0)
 
     return ClsCandidate(
-        value=classification_model.default_cfg['classes'][probs.argmax().item()],
+        value=classification_model.default_cfg["classes"][probs.argmax().item()],
         confidence=probs.max().item(),
     )

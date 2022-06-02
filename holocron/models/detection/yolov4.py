@@ -20,12 +20,11 @@ from ..classification.darknetv4 import DarknetBodyV4
 from ..classification.darknetv4 import default_cfgs as dark_cfgs
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ['YOLOv4', 'yolov4', 'PAN']
+__all__ = ["YOLOv4", "yolov4", "PAN"]
 
 
 default_cfgs = {
-    'yolov4': {'arch': 'YOLOv4', 'backbone': dark_cfgs['cspdarknet53_mish'],
-               'url': None},
+    "yolov4": {"arch": "YOLOv4", "backbone": dark_cfgs["cspdarknet53_mish"], "url": None},
 }
 
 
@@ -39,36 +38,98 @@ class PAN(nn.Module):
         drop_layer (callable, optional): regularization layer
         conv_layer (callable, optional): convolutional layer
     """
+
     def __init__(
         self,
         in_channels: int,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
 
-        self.conv1 = nn.Sequential(*conv_sequence(in_channels, in_channels // 2,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=1, bias=(norm_layer is None)))
-        self.up = nn.Upsample(scale_factor=2, mode='nearest')
+        self.conv1 = nn.Sequential(
+            *conv_sequence(
+                in_channels,
+                in_channels // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            )
+        )
+        self.up = nn.Upsample(scale_factor=2, mode="nearest")
 
-        self.conv2 = nn.Sequential(*conv_sequence(in_channels, in_channels // 2,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=1, bias=(norm_layer is None)))
+        self.conv2 = nn.Sequential(
+            *conv_sequence(
+                in_channels,
+                in_channels // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            )
+        )
 
         self.convs = nn.Sequential(
-            *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(in_channels // 2, in_channels, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(in_channels // 2, in_channels, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(in_channels, in_channels // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)))
+            *conv_sequence(
+                in_channels,
+                in_channels // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                in_channels // 2,
+                in_channels,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                in_channels,
+                in_channels // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                in_channels // 2,
+                in_channels,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                in_channels,
+                in_channels // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
+        )
 
     def forward(self, x: Tensor, up: Tensor) -> Tensor:
         out = self.conv1(x)
@@ -85,29 +146,79 @@ class Neck(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
 
         self.fpn = nn.Sequential(
-            *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(in_planes[0] // 2, in_planes[0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
+            *conv_sequence(
+                in_planes[0],
+                in_planes[0] // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                in_planes[0] // 2,
+                in_planes[0],
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                in_planes[0],
+                in_planes[0] // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
             SPP([5, 9, 13]),
-            *conv_sequence(4 * in_planes[0] // 2, in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(in_planes[0] // 2, in_planes[0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(in_planes[0], in_planes[0] // 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None))
+            *conv_sequence(
+                4 * in_planes[0] // 2,
+                in_planes[0] // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                in_planes[0] // 2,
+                in_planes[0],
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                in_planes[0],
+                in_planes[0] // 2,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
         )
 
         self.pan1 = PAN(in_planes[1], act_layer, norm_layer, drop_layer, conv_layer)
         self.pan2 = PAN(in_planes[2], act_layer, norm_layer, drop_layer, conv_layer)
-        init_module(self, 'leaky_relu')
+        init_module(self, "leaky_relu")
 
     def forward(self, feats: List[Tensor]) -> Tuple[Tensor, Tensor, Tensor]:
 
@@ -121,23 +232,24 @@ class Neck(nn.Module):
 
 class YoloLayer(nn.Module):
     """Scale-specific part of YoloHead"""
+
     def __init__(
         self,
         anchors: Tensor,
         num_classes: int = 80,
-        scale_xy: float = 1.,
+        scale_xy: float = 1.0,
         iou_thresh: float = 0.213,
         lambda_obj: float = 1,
         lambda_noobj: float = 0.001,
-        lambda_class: float = .1,
-        lambda_coords: float = 1.,
+        lambda_class: float = 0.1,
+        lambda_coords: float = 1.0,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05,
         ignore_thresh: float = 0.5,
     ) -> None:
         super().__init__()
         self.num_classes = num_classes
-        self.register_buffer('anchors', anchors)
+        self.register_buffer("anchors", anchors)
 
         self.rpn_nms_thresh = rpn_nms_thresh
         self.box_score_thresh = box_score_thresh
@@ -190,11 +302,7 @@ class YoloLayer(nn.Module):
 
     @staticmethod
     def post_process(
-        boxes: Tensor,
-        b_o: Tensor,
-        b_scores: Tensor,
-        rpn_nms_thresh: float = 0.7,
-        box_score_thresh: float = 0.05
+        boxes: Tensor, b_o: Tensor, b_scores: Tensor, rpn_nms_thresh: float = 0.7, box_score_thresh: float = 0.05
     ) -> List[Dict[str, Tensor]]:
 
         b_o = torch.sigmoid(b_o)
@@ -231,11 +339,7 @@ class YoloLayer(nn.Module):
         return detections
 
     def _build_targets(
-        self,
-        pred_boxes: Tensor,
-        b_o: Tensor,
-        b_scores: Tensor,
-        target: List[Dict[str, Tensor]]
+        self, pred_boxes: Tensor, b_o: Tensor, b_scores: Tensor, target: List[Dict[str, Tensor]]
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
 
         b, h, w, num_anchors = b_o.shape
@@ -246,8 +350,8 @@ class YoloLayer(nn.Module):
         obj_mask = torch.zeros((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
         noobj_mask = torch.ones((b, h, w, num_anchors), dtype=torch.bool, device=b_o.device)
 
-        gt_boxes = [t['boxes'] for t in target]
-        gt_labels = [t['labels'] for t in target]
+        gt_boxes = [t["boxes"] for t in target]
+        gt_labels = [t["labels"] for t in target]
 
         # GT coords --> left, top, width, height
         _boxes = torch.cat(gt_boxes, dim=0)
@@ -256,14 +360,18 @@ class YoloLayer(nn.Module):
         gt_centers[:, 1] *= h
         gt_centers = gt_centers.to(dtype=torch.long)
 
-        target_selection = torch.tensor([_idx for _idx, _boxes in enumerate(gt_boxes) for _ in range(_boxes.shape[0])],
-                                        dtype=torch.long, device=b_o.device)
+        target_selection = torch.tensor(
+            [_idx for _idx, _boxes in enumerate(gt_boxes) for _ in range(_boxes.shape[0])],
+            dtype=torch.long,
+            device=b_o.device,
+        )
         if target_selection.shape[0] > 0:
 
             # Anchors IoU
             gt_wh = _boxes[:, 2:] - _boxes[:, :2]
-            anchor_idxs = box_iou(torch.cat((-gt_wh, gt_wh), dim=-1),
-                                  torch.cat((-self.anchors, self.anchors), dim=-1)).argmax(dim=1)
+            anchor_idxs = box_iou(
+                torch.cat((-gt_wh, gt_wh), dim=-1), torch.cat((-self.anchors, self.anchors), dim=-1)
+            ).argmax(dim=1)
 
             # Assign boxes
             obj_mask[target_selection, gt_centers[:, 1], gt_centers[:, 0], anchor_idxs] = True
@@ -277,7 +385,7 @@ class YoloLayer(nn.Module):
                     # Objectness target
                     target_o[idx, obj_mask[idx]] = gt_ious
                     # Classification target
-                    target_scores[idx, obj_mask[idx], gt_labels[idx][gt_idxs]] = 1.
+                    target_scores[idx, obj_mask[idx], gt_labels[idx][gt_idxs]] = 1.0
                     # Ignore predictions
                     gt_ious = box_iou(pred_boxes[idx, noobj_mask[idx]], gt_boxes[idx]).max(dim=1).values
                     noobj_mask[idx, noobj_mask[idx]][gt_ious >= self.ignore_thresh] = False
@@ -297,26 +405,28 @@ class YoloLayer(nn.Module):
         # Bbox regression
         bbox_loss = torch.zeros(1, device=b_o.device)
         for idx, _target in enumerate(target):
-            if _target['boxes'].shape[0] > 0 and torch.any(obj_mask[idx]):
-                bbox_loss += ciou_loss(pred_boxes[idx, obj_mask[idx]], _target['boxes']).min(dim=1).values.sum()
+            if _target["boxes"].shape[0] > 0 and torch.any(obj_mask[idx]):
+                bbox_loss += ciou_loss(pred_boxes[idx, obj_mask[idx]], _target["boxes"]).min(dim=1).values.sum()
 
         b_o = torch.sigmoid(b_o)
 
         return dict(
-            obj_loss=self.lambda_obj * F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction='sum') / b_o.shape[0],
+            obj_loss=self.lambda_obj * F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction="sum") / b_o.shape[0],
             noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum() / b_o.shape[0],
             bbox_loss=self.lambda_coords * bbox_loss / b_o.shape[0],
-            clf_loss=self.lambda_class * F.binary_cross_entropy_with_logits(
+            clf_loss=self.lambda_class
+            * F.binary_cross_entropy_with_logits(
                 b_scores[obj_mask],
                 target_scores[obj_mask],
-                reduction='none',
-            ).mean(1).sum(0) / b_o.shape[0],
+                reduction="none",
+            )
+            .mean(1)
+            .sum(0)
+            / b_o.shape[0],
         )
 
     def forward(
-        self,
-        x: Tensor,
-        target: Optional[List[Dict[str, Tensor]]] = None
+        self, x: Tensor, target: Optional[List[Dict[str, Tensor]]] = None
     ) -> Union[Dict[str, Tensor], List[Dict[str, Tensor]]]:
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
@@ -347,14 +457,22 @@ class Yolov4Head(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
 
         # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1143
         if anchors is None:
-            anchors = torch.tensor([[[12, 16], [19, 36], [40, 28]],
-                                   [[36, 75], [76, 55], [72, 146]],
-                                   [[142, 110], [192, 243], [459, 401]]], dtype=torch.float32) / 608
+            anchors = (
+                torch.tensor(
+                    [
+                        [[12, 16], [19, 36], [40, 28]],
+                        [[36, 75], [76, 55], [72, 146]],
+                        [[142, 110], [192, 243], [459, 401]],
+                    ],
+                    dtype=torch.float32,
+                )
+                / 608
+            )
         elif not isinstance(anchors, torch.Tensor):
             anchors = torch.tensor(anchors, dtype=torch.float32)
 
@@ -364,54 +482,132 @@ class Yolov4Head(nn.Module):
         super().__init__()
 
         self.head1 = nn.Sequential(
-            *conv_sequence(128, 256, act_layer, norm_layer, None, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(256, (5 + num_classes) * 3, None, None, None, conv_layer,
-                           kernel_size=1, bias=True))
+            *conv_sequence(
+                128, 256, act_layer, norm_layer, None, conv_layer, kernel_size=3, padding=1, bias=(norm_layer is None)
+            ),
+            *conv_sequence(256, (5 + num_classes) * 3, None, None, None, conv_layer, kernel_size=1, bias=True),
+        )
 
         self.yolo1 = YoloLayer(anchors[0], num_classes=num_classes, scale_xy=1.2)
 
-        self.pre_head2 = nn.Sequential(*conv_sequence(128, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                                                      kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)))
+        self.pre_head2 = nn.Sequential(
+            *conv_sequence(
+                128,
+                256,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                stride=2,
+                bias=(norm_layer is None),
+            )
+        )
         self.head2_1 = nn.Sequential(
-            *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(512, 256, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)))
+            *conv_sequence(
+                512, 256, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1, bias=(norm_layer is None)
+            ),
+            *conv_sequence(
+                256,
+                512,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                512, 256, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1, bias=(norm_layer is None)
+            ),
+            *conv_sequence(
+                256,
+                512,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                512, 256, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1, bias=(norm_layer is None)
+            ),
+        )
         self.head2_2 = nn.Sequential(
-            *conv_sequence(256, 512, act_layer, norm_layer, None, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(512, (5 + num_classes) * 3, None, None, None, conv_layer,
-                           kernel_size=1, bias=True))
+            *conv_sequence(
+                256, 512, act_layer, norm_layer, None, conv_layer, kernel_size=3, padding=1, bias=(norm_layer is None)
+            ),
+            *conv_sequence(512, (5 + num_classes) * 3, None, None, None, conv_layer, kernel_size=1, bias=True),
+        )
 
         self.yolo2 = YoloLayer(anchors[1], num_classes=num_classes, scale_xy=1.1)
 
-        self.pre_head3 = nn.Sequential(*conv_sequence(256, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                                                      kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)))
+        self.pre_head3 = nn.Sequential(
+            *conv_sequence(
+                256,
+                512,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                stride=2,
+                bias=(norm_layer is None),
+            )
+        )
         self.head3 = nn.Sequential(
-            *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(1024, 512, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1, bias=(norm_layer is None)),
-            *conv_sequence(512, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(1024, (5 + num_classes) * 3, None, None, None, conv_layer,
-                           kernel_size=1, bias=True))
+            *conv_sequence(
+                1024, 512, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1, bias=(norm_layer is None)
+            ),
+            *conv_sequence(
+                512,
+                1024,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                1024, 512, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1, bias=(norm_layer is None)
+            ),
+            *conv_sequence(
+                512,
+                1024,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                1024, 512, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1, bias=(norm_layer is None)
+            ),
+            *conv_sequence(
+                512,
+                1024,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(1024, (5 + num_classes) * 3, None, None, None, conv_layer, kernel_size=1, bias=True),
+        )
 
         self.yolo3 = YoloLayer(anchors[2], num_classes=num_classes, scale_xy=1.05)
-        init_module(self, 'leaky_relu')
+        init_module(self, "leaky_relu")
         # Zero init
         self.head1[-1].weight.data.zero_()
         self.head1[-1].bias.data.zero_()
@@ -421,9 +617,7 @@ class Yolov4Head(nn.Module):
         self.head3[-1].bias.data.zero_()
 
     def forward(
-        self,
-        feats: List[Tensor],
-        target: Optional[List[Dict[str, Tensor]]] = None
+        self, feats: List[Tensor], target: Optional[List[Dict[str, Tensor]]] = None
     ) -> Union[List[Dict[str, Tensor]], Dict[str, Tensor]]:
         o1 = self.head1(feats[0])
 
@@ -443,10 +637,14 @@ class Yolov4Head(nn.Module):
 
         if not self.training:
 
-            detections = [dict(boxes=torch.cat((det1['boxes'], det2['boxes'], det3['boxes']), dim=0),
-                               scores=torch.cat((det1['scores'], det2['scores'], det3['scores']), dim=0),
-                               labels=torch.cat((det1['labels'], det2['labels'], det3['labels']), dim=0))
-                          for det1, det2, det3 in zip(y1, y2, y3)]
+            detections = [
+                dict(
+                    boxes=torch.cat((det1["boxes"], det2["boxes"], det3["boxes"]), dim=0),
+                    scores=torch.cat((det1["scores"], det2["scores"], det3["scores"]), dim=0),
+                    labels=torch.cat((det1["labels"], det2["labels"], det3["labels"]), dim=0),
+                )
+                for det1, det2, det3 in zip(y1, y2, y3)
+            ]
             return detections
 
         return {k: y1[k] + y2[k] + y3[k] for k in y1.keys()}
@@ -464,7 +662,7 @@ class YOLOv4(nn.Module):
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
-        backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None
+        backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None,
     ) -> None:
         super().__init__()
 
@@ -478,20 +676,19 @@ class YOLOv4(nn.Module):
             drop_layer = DropBlock2d
 
         # backbone
-        self.backbone = DarknetBodyV4(layout, in_channels, stem_channels, 3, act_layer,
-                                      backbone_norm_layer, drop_layer, conv_layer)
+        self.backbone = DarknetBodyV4(
+            layout, in_channels, stem_channels, 3, act_layer, backbone_norm_layer, drop_layer, conv_layer
+        )
         # neck
         self.neck = Neck([1024, 512, 256], act_layer, norm_layer, drop_layer, conv_layer)
         # head
         self.head = Yolov4Head(num_classes, anchors, act_layer, norm_layer, drop_layer, conv_layer)
 
-        init_module(self.neck, 'leaky_relu')
-        init_module(self.head, 'leaky_relu')
+        init_module(self.neck, "leaky_relu")
+        init_module(self.head, "leaky_relu")
 
     def forward(
-        self,
-        x: Tensor,
-        target: Optional[List[Dict[str, Tensor]]] = None
+        self, x: Tensor, target: Optional[List[Dict[str, Tensor]]] = None
     ) -> Union[List[Dict[str, Tensor]], Dict[str, Tensor]]:
 
         if not isinstance(x, torch.Tensor):
@@ -520,11 +717,16 @@ def _yolo(
     model = YOLOv4(layout, **kwargs)
     # Load backbone pretrained parameters
     if pretrained_backbone:
-        load_pretrained_params(model.backbone, default_cfgs[arch]['backbone']['url'], progress,  # type: ignore[index]
-                               key_replacement=('features.', ''), key_filter='features.')
+        load_pretrained_params(
+            model.backbone,
+            default_cfgs[arch]["backbone"]["url"],  # type: ignore[index]
+            progress,
+            key_replacement=("features.", ""),
+            key_filter="features.",
+        )
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)  # type: ignore[arg-type]
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)  # type: ignore[arg-type]
 
     return model
 
@@ -562,10 +764,10 @@ def yolov4(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     """
 
     if pretrained_backbone:
-        kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
+        kwargs["backbone_norm_layer"] = FrozenBatchNorm2d
 
     return _yolo(
-        'yolov4',
+        "yolov4",
         pretrained,
         progress,
         pretrained_backbone,

@@ -13,19 +13,19 @@ from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .resnet import ResNet, _ResBlock
 
-__all__ = ['PyBottleneck', 'pyconv_resnet50', 'pyconvhg_resnet50']
+__all__ = ["PyBottleneck", "pyconv_resnet50", "pyconvhg_resnet50"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'pyconv_resnet50': {
+    "pyconv_resnet50": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': None,
+        "input_shape": (3, 224, 224),
+        "url": None,
     },
-    'pyconvhg_resnet50': {
+    "pyconvhg_resnet50": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': None,
+        "input_shape": (3, 224, 224),
+        "url": None,
     },
 }
 
@@ -46,20 +46,55 @@ class PyBottleneck(_ResBlock):
         norm_layer: Optional[Callable[[int], Module]] = None,
         drop_layer: Optional[Callable[..., Module]] = None,
         num_levels: int = 2,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
 
-        width = int(planes * (base_width / 64.)) * min(groups)
+        width = int(planes * (base_width / 64.0)) * min(groups)
 
         super().__init__(
-            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=(norm_layer is None), **kwargs),
-             *conv_sequence(width, width, act_layer, norm_layer, drop_layer, conv_layer=PyConv2d, kernel_size=3,
-                            stride=stride, padding=dilation, groups=groups, bias=(norm_layer is None),
-                            dilation=dilation, num_levels=num_levels, **kwargs),
-             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=(norm_layer is None), **kwargs)],
-            downsample, act_layer)
+            [
+                *conv_sequence(
+                    inplanes,
+                    width,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                    **kwargs,
+                ),
+                *conv_sequence(
+                    width,
+                    width,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    conv_layer=PyConv2d,
+                    kernel_size=3,
+                    stride=stride,
+                    padding=dilation,
+                    groups=groups,
+                    bias=(norm_layer is None),
+                    dilation=dilation,
+                    num_levels=num_levels,
+                    **kwargs,
+                ),
+                *conv_sequence(
+                    width,
+                    planes * self.expansion,
+                    None,
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                    **kwargs,
+                ),
+            ],
+            downsample,
+            act_layer,
+        )
 
 
 class PyHGBottleneck(PyBottleneck):
@@ -75,7 +110,7 @@ def _pyconvresnet(
     out_chans: List[int],
     width_per_group: int,
     groups: List[List[int]],
-    **kwargs: Any
+    **kwargs: Any,
 ) -> ResNet:
 
     # Build the model
@@ -86,12 +121,12 @@ def _pyconvresnet(
         stem_pool=False,
         width_per_group=width_per_group,
         block_args=[dict(num_levels=len(group), groups=group) for group in groups],
-        **kwargs
+        **kwargs,
     )
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -109,7 +144,7 @@ def pyconv_resnet50(pretrained: bool = False, progress: bool = True, **kwargs: A
     """
 
     return _pyconvresnet(
-        'pyconv_resnet50',
+        "pyconv_resnet50",
         pretrained,
         progress,
         PyBottleneck,
@@ -134,7 +169,7 @@ def pyconvhg_resnet50(pretrained: bool = False, progress: bool = True, **kwargs:
     """
 
     return _pyconvresnet(
-        'pyconvhg_resnet50',
+        "pyconvhg_resnet50",
         pretrained,
         progress,
         PyHGBottleneck,

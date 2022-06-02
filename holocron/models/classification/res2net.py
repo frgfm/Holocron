@@ -18,14 +18,14 @@ from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .resnet import ResNet, _ResBlock
 
-__all__ = ['Bottle2neck', 'res2net50_26w_4s']
+__all__ = ["Bottle2neck", "res2net50_26w_4s"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'res2net50_26w_4s': {
+    "res2net50_26w_4s": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth",
     },
 }
 
@@ -41,17 +41,31 @@ class ScaleConv2d(nn.Module):
         downsample: bool = False,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
-        drop_layer: Optional[Callable[..., nn.Module]] = None
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
 
         self.scale = scale
         self.width = planes // scale
-        self.conv = nn.ModuleList([
-            nn.Sequential(*conv_sequence(self.width, self.width, act_layer, norm_layer, drop_layer, kernel_size=3,
-                                         stride=stride, padding=1, groups=groups, bias=(norm_layer is None)))
-            for _ in range(max(1, scale - 1))
-        ])
+        self.conv = nn.ModuleList(
+            [
+                nn.Sequential(
+                    *conv_sequence(
+                        self.width,
+                        self.width,
+                        act_layer,
+                        norm_layer,
+                        drop_layer,
+                        kernel_size=3,
+                        stride=stride,
+                        padding=1,
+                        groups=groups,
+                        bias=(norm_layer is None),
+                    )
+                )
+                for _ in range(max(1, scale - 1))
+            ]
+        )
 
         if downsample:
             self.downsample = nn.AvgPool2d(kernel_size=3, stride=stride, padding=1)
@@ -96,7 +110,7 @@ class Bottle2neck(_ResBlock):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        scale: int = 4
+        scale: int = 4,
     ) -> None:
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -106,14 +120,34 @@ class Bottle2neck(_ResBlock):
         # Check if ScaleConv2d needs to downsample the identity branch
         _downsample = stride > 1 or downsample is not None
 
-        width = int(math.floor(planes * (base_width / 64.))) * groups
+        width = int(math.floor(planes * (base_width / 64.0))) * groups
         super().__init__(
-            [*conv_sequence(inplanes, width * scale, act_layer, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=(norm_layer is None)),
-             ScaleConv2d(scale, width * scale, 3, stride, groups, _downsample, act_layer, norm_layer, drop_layer),
-             *conv_sequence(width * scale, planes * self.expansion, None, norm_layer, drop_layer, kernel_size=1,
-                            stride=1, bias=(norm_layer is None))],
-            downsample, act_layer)
+            [
+                *conv_sequence(
+                    inplanes,
+                    width * scale,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                ),
+                ScaleConv2d(scale, width * scale, 3, stride, groups, _downsample, act_layer, norm_layer, drop_layer),
+                *conv_sequence(
+                    width * scale,
+                    planes * self.expansion,
+                    None,
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                ),
+            ],
+            downsample,
+            act_layer,
+        )
 
 
 def _res2net(
@@ -124,7 +158,7 @@ def _res2net(
     out_chans: List[int],
     width_per_group: int,
     scale: int,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> ResNet:
     # Build the model
     model = ResNet(
@@ -133,12 +167,12 @@ def _res2net(
         out_chans,
         width_per_group=width_per_group,
         block_args=dict(scale=scale),
-        **kwargs
+        **kwargs,
     )
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -155,4 +189,4 @@ def res2net50_26w_4s(pretrained: bool = False, progress: bool = True, **kwargs: 
         torch.nn.Module: classification model
     """
 
-    return _res2net('res2net50_26w_4s', pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], 26, 4, **kwargs)
+    return _res2net("res2net50_26w_4s", pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], 26, 4, **kwargs)

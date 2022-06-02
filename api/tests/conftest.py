@@ -12,7 +12,7 @@ from httpx import AsyncClient
 
 @pytest.fixture(scope="session")
 def mock_classification_image(tmpdir_factory):
-    url = 'https://m.media-amazon.com/images/I/517Nh08xqkL._AC_SX425_.jpg'
+    url = "https://m.media-amazon.com/images/I/517Nh08xqkL._AC_SX425_.jpg"
     return requests.get(url).content
 
 

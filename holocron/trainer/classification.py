@@ -9,7 +9,7 @@ import torch
 
 from .core import Trainer
 
-__all__ = ['ClassificationTrainer', 'BinaryClassificationTrainer']
+__all__ = ["ClassificationTrainer", "BinaryClassificationTrainer"]
 
 
 class ClassificationTrainer(Trainer):
@@ -38,12 +38,12 @@ class ClassificationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, top1, top5, num_samples, num_valid_batches = 0., 0, 0, 0, 0
+        val_loss, top1, top5, num_samples, num_valid_batches = 0.0, 0, 0, 0, 0
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
             if self.amp:
-                with torch.cuda.amp.autocast():
+                with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
                     # Forward
                     out = self.model(x)
                     # Loss computation
@@ -73,8 +73,10 @@ class ClassificationTrainer(Trainer):
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return (f"Validation loss: {eval_metrics['val_loss']:.4} "
-                f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})")
+        return (
+            f"Validation loss: {eval_metrics['val_loss']:.4} "
+            f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})"
+        )
 
 
 class BinaryClassificationTrainer(Trainer):
@@ -101,12 +103,12 @@ class BinaryClassificationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, top1, num_samples, num_valid_batches = 0., 0, 0, 0
+        val_loss, top1, num_samples, num_valid_batches = 0.0, 0, 0, 0
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
             if self.amp:
-                with torch.cuda.amp.autocast():
+                with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
                     # Forward
                     out = self.model(x)
                     # Apply sigmoid
@@ -136,5 +138,4 @@ class BinaryClassificationTrainer(Trainer):
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return (f"Validation loss: {eval_metrics['val_loss']:.4} "
-                f"(Acc: {eval_metrics['acc']:.2%})")
+        return f"Validation loss: {eval_metrics['val_loss']:.4} " f"(Acc: {eval_metrics['acc']:.2%})"

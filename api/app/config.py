@@ -7,7 +7,7 @@ import os
 
 import holocron
 
-PROJECT_NAME: str = 'Holocron API template'
-PROJECT_DESCRIPTION: str = 'Template API for Computer Vision'
+PROJECT_NAME: str = "Holocron API template"
+PROJECT_DESCRIPTION: str = "Template API for Computer Vision"
 VERSION: str = holocron.__version__
-DEBUG: bool = os.environ.get('DEBUG', '') != 'False'
+DEBUG: bool = os.environ.get("DEBUG", "") != "False"

@@ -16,10 +16,10 @@ from PIL import Image
 def main(args):
 
     # Download model config & checkpoint
-    with open(hf_hub_download(args.repo, filename='config.json'), 'rb') as f:
+    with open(hf_hub_download(args.repo, filename="config.json"), "rb") as f:
         cfg = json.load(f)
 
-    ort_session = onnxruntime.InferenceSession(hf_hub_download(args.repo, filename='model.onnx'))
+    ort_session = onnxruntime.InferenceSession(hf_hub_download(args.repo, filename="model.onnx"))
 
     def preprocess_image(pil_img: Image.Image) -> np.ndarray:
         """Preprocess an image for inference
@@ -32,12 +32,12 @@ def main(args):
         """
 
         # Resizing
-        img = pil_img.resize(cfg['input_shape'][-2:], Image.BILINEAR)
+        img = pil_img.resize(cfg["input_shape"][-2:], Image.BILINEAR)
         # (H, W, C) --> (C, H, W)
         img = np.asarray(img).transpose((2, 0, 1)).astype(np.float32) / 255
         # Normalization
-        img -= np.array(cfg['mean'])[:, None, None]
-        img /= np.array(cfg['std'])[:, None, None]
+        img -= np.array(cfg["mean"])[:, None, None]
+        img /= np.array(cfg["std"])[:, None, None]
 
         return img[None, ...]
 
@@ -52,9 +52,9 @@ def main(args):
         out_exp = np.exp(ort_out[0][0])
         probs = out_exp / out_exp.sum()
 
-        return {class_name: float(conf) for class_name, conf in zip(cfg['classes'], probs)}
+        return {class_name: float(conf) for class_name, conf in zip(cfg["classes"], probs)}
 
-    img = gr.inputs.Image(type='pil')
+    img = gr.inputs.Image(type="pil")
     outputs = gr.outputs.Label(num_top_classes=3)
 
     interface = gr.Interface(
@@ -62,17 +62,21 @@ def main(args):
         inputs=[img],
         outputs=outputs,
         title="Holocron: image classification demo",
-        article=("<p style='text-align: center'><a href='https://github.com/frgfm/Holocron'>" "Github Repo</a> | "
-                 "<a href='https://frgfm.github.io/Holocron/'>Documentation</a></p>"),
+        article=(
+            "<p style='text-align: center'><a href='https://github.com/frgfm/Holocron'>"
+            "Github Repo</a> | "
+            "<a href='https://frgfm.github.io/Holocron/'>Documentation</a></p>"
+        ),
         live=True,
     )
 
     interface.launch(server_port=args.port, show_error=True)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Holocron image classification demo',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Holocron image classification demo", formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument("--repo", type=str, default="frgfm/rexnet1_0x", help="HF Hub repo to use")
     parser.add_argument("--port", type=int, default=8001, help="Port on which the webserver will be run")
     args = parser.parse_args()

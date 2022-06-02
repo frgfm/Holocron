@@ -25,7 +25,7 @@ def tadam(
     lr: float,
     weight_decay: float,
     eps: float,
-    dof: float
+    dof: float,
 ) -> None:
     r"""Functional API that performs TAdam algorithm computation.
     See :class:`~holocron.optim.TAdam` for details.
@@ -42,8 +42,8 @@ def tadam(
         if amsgrad:
             max_exp_avg_sq = max_exp_avg_sqs[i]
 
-        bias_correction1 = 1 - beta1 ** step
-        bias_correction2 = 1 - beta2 ** step
+        bias_correction1 = 1 - beta1**step
+        bias_correction2 = 1 - beta2**step
 
         if weight_decay != 0:
             grad = grad.add(param, alpha=weight_decay)
@@ -57,7 +57,7 @@ def tadam(
         exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
         if amsgrad:
             # Maintains the maximum of all 2nd moment running avg. till now
-            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)  # type: ignore[attr-defined]
+            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)
             # Use the max. for normalizing running avg. of gradient
             denom = (max_exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
         else:
@@ -80,7 +80,7 @@ def adabelief(
     beta2: float,
     lr: float,
     weight_decay: float,
-    eps: float
+    eps: float,
 ) -> None:
     r"""Functional API that performs AdaBelief algorithm computation.
     See :class:`~holocron.optim.AdaBelief` for details.
@@ -95,8 +95,8 @@ def adabelief(
         if amsgrad:
             max_exp_avg_sq = max_exp_avg_sqs[i]
 
-        bias_correction1 = 1 - beta1 ** step
-        bias_correction2 = 1 - beta2 ** step
+        bias_correction1 = 1 - beta1**step
+        bias_correction2 = 1 - beta2**step
 
         if weight_decay != 0:
             grad = grad.add(param, alpha=weight_decay)
@@ -108,7 +108,7 @@ def adabelief(
 
         if amsgrad:
             # Maintains the maximum of all 2nd moment running avg. till now
-            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)  # type: ignore[attr-defined]
+            torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)
             # Use the max. for normalizing running avg. of gradient
             denom = (max_exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
         else:
@@ -145,8 +145,8 @@ def adamp(
         exp_avg_sq = exp_avg_sqs[i]
         step = state_steps[i]
 
-        bias_correction1 = 1 - beta1 ** step
-        bias_correction2 = 1 - beta2 ** step
+        bias_correction1 = 1 - beta1**step
+        bias_correction2 = 1 - beta2**step
 
         if weight_decay != 0:
             grad = grad.add(param, alpha=weight_decay)
