@@ -5,7 +5,7 @@ on:
     branches: main
 
 jobs:
-  docs-build:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,9 +18,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pkg-deps-${{ matrix.python }}-${{ hashFiles('requirements.txt') }}-${{ hashFiles('docs/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pkg-deps-${{ matrix.python }}-${{ hashFiles('requirements.txt') }}-
+          key: ${{ runner.os }}-python-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}-docs
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
