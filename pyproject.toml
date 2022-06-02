@@ -79,14 +79,14 @@ dev = [
     "pydocstyle[toml]>=6.0.0",
     "black>=22.1,<23.0",
     # docs
-    "sphinx<=3.4.3",
-    "sphinx-rtd-theme==0.4.3",
+    "sphinx>=3.0.0,!=3.5.0",
     "sphinxemoji>=0.1.8",
     "sphinx-copybutton>=0.3.1",
     "docutils<0.18",
     "recommonmark>=0.7.1",
     "sphinx-markdown-tables>=0.0.15",
     "Jinja2<3.1",
+    "furo>=2022.3.4",
 ]
 
 [project.urls]

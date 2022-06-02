@@ -15,7 +15,7 @@ function deploy_doc(){
     if [ ! -z "$2" ]
     then
         if [ "$2" == "latest" ]; then
-            echo "Pushing master"
+            echo "Pushing main"
             sphinx-build source _build -a && mkdir build && mkdir build/$2 && cp -a _build/* build/$2/
         elif [ -d build/$2 ]; then
             echo "Directory" $2 "already exists"
