@@ -23,16 +23,8 @@ from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
 from torchvision.models import detection as tv_detection
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
-from transforms import (
-    CenterCrop,
-    Compose,
-    ImageTransform,
-    RandomHorizontalFlip,
-    RandomResizedCrop,
-    Resize,
-    VOCTargetTransform,
-    convert_to_relative,
-)
+from transforms import (CenterCrop, Compose, ImageTransform, RandomHorizontalFlip, RandomResizedCrop, Resize,
+                        VOCTargetTransform, convert_to_relative)
 
 import holocron
 from holocron.models import detection
