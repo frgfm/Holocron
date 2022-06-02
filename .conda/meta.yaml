@@ -44,7 +44,7 @@ test:
 about:
   home: {{ data.get('url') }}
   license: {{ data['license'] }}
-  license_url: https://github.com/frgfm/Holocron/blob/master/LICENSE
+  license_url: https://github.com/frgfm/Holocron/blob/main/LICENSE
   license_file: LICENSE
   summary: {{ data['description'] }}
   description: |
