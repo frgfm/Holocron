@@ -13,16 +13,12 @@ from ...nn.init import init_module
 from ..utils import conv_sequence, load_pretrained_params
 from .unet import UpPath, down_path
 
-__all__ = ['UNetp', 'unetp', 'UNetpp', 'unetpp']
+__all__ = ["UNetp", "unetp", "UNetpp", "unetpp"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'unetp': {'arch': 'UNetp',
-              'layout': [64, 128, 256, 512],
-              'url': None},
-    'unetpp': {'arch': 'UNetpp',
-               'layout': [64, 128, 256, 512],
-               'url': None},
+    "unetp": {"arch": "UNetp", "layout": [64, 128, 256, 512], "url": None},
+    "unetpp": {"arch": "UNetpp", "layout": [64, 128, 256, 512], "url": None},
 }
 
 
@@ -38,6 +34,7 @@ class UNetp(nn.Module):
         drop_layer: dropout layer
         conv_layer: convolutional layer
     """
+
     def __init__(
         self,
         layout: List[int],
@@ -58,32 +55,36 @@ class UNetp(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoder.append(down_path(in_chan, out_chan, _pool, 1,
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
         self.bridge = nn.Sequential(
             nn.MaxPool2d((2, 2)),
-            *conv_sequence(layout[-1], 2 * layout[-1],
-                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
-            *conv_sequence(2 * layout[-1], layout[-1],
-                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+            *conv_sequence(
+                layout[-1], 2 * layout[-1], act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1
+            ),
+            *conv_sequence(
+                2 * layout[-1], layout[-1], act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1
+            ),
         )
 
         # Expansive path
         self.decoder = nn.ModuleList([])
         _layout = [layout[-1]] + layout[1:][::-1]
         for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1)):
-            self.decoder.append(nn.ModuleList([
-                UpPath(left_chan + up_chan, left_chan, True, 1,
-                       act_layer, norm_layer, drop_layer, conv_layer)
-                for _ in range(num_cells)
-            ]))
+            self.decoder.append(
+                nn.ModuleList(
+                    [
+                        UpPath(left_chan + up_chan, left_chan, True, 1, act_layer, norm_layer, drop_layer, conv_layer)
+                        for _ in range(num_cells)
+                    ]
+                )
+            )
 
         # Classifier
         self.classifier = nn.Conv2d(layout[0], num_classes, 1)
 
-        init_module(self, 'relu')
+        init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
 
@@ -115,6 +116,7 @@ class UNetpp(nn.Module):
         drop_layer: dropout layer
         conv_layer: convolutional layer
     """
+
     def __init__(
         self,
         layout: List[int],
@@ -123,7 +125,7 @@ class UNetpp(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
 
@@ -140,26 +142,40 @@ class UNetpp(nn.Module):
 
         self.bridge = nn.Sequential(
             nn.MaxPool2d((2, 2)),
-            *conv_sequence(layout[-1], 2 * layout[-1],
-                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
-            *conv_sequence(2 * layout[-1], layout[-1],
-                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+            *conv_sequence(
+                layout[-1], 2 * layout[-1], act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1
+            ),
+            *conv_sequence(
+                2 * layout[-1], layout[-1], act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1
+            ),
         )
 
         # Expansive path
         self.decoder = nn.ModuleList([])
         _layout = [layout[-1]] + layout[1:][::-1]
         for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1)):
-            self.decoder.append(nn.ModuleList([
-                UpPath(up_chan + (idx + 1) * left_chan, left_chan, True, 1,
-                       act_layer, norm_layer, drop_layer, conv_layer)
-                for idx in range(num_cells)
-            ]))
+            self.decoder.append(
+                nn.ModuleList(
+                    [
+                        UpPath(
+                            up_chan + (idx + 1) * left_chan,
+                            left_chan,
+                            True,
+                            1,
+                            act_layer,
+                            norm_layer,
+                            drop_layer,
+                            conv_layer,
+                        )
+                        for idx in range(num_cells)
+                    ]
+                )
+            )
 
         # Classifier
         self.classifier = nn.Conv2d(layout[0], num_classes, 1)
 
-        init_module(self, 'relu')
+        init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
 
@@ -182,12 +198,12 @@ class UNetpp(nn.Module):
 
 def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> nn.Module:
     # Retrieve the correct Darknet layout type
-    unet_type = sys.modules[__name__].__dict__[default_cfgs[arch]['arch']]
+    unet_type = sys.modules[__name__].__dict__[default_cfgs[arch]["arch"]]
     # Build the model
-    model = unet_type(default_cfgs[arch]['layout'], **kwargs)
+    model = unet_type(default_cfgs[arch]["layout"], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -207,7 +223,7 @@ def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNe
         semantic segmentation model
     """
 
-    return _unet('unetp', pretrained, progress, **kwargs)  # type: ignore[return-value]
+    return _unet("unetp", pretrained, progress, **kwargs)  # type: ignore[return-value]
 
 
 def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNetpp:
@@ -225,4 +241,4 @@ def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
         semantic segmentation model
     """
 
-    return _unet('unetpp', pretrained, progress, **kwargs)  # type: ignore[return-value]
+    return _unet("unetpp", pretrained, progress, **kwargs)  # type: ignore[return-value]

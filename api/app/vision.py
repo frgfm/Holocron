@@ -12,15 +12,17 @@ from torchvision.transforms.functional import InterpolationMode
 
 from holocron.models.classification import rexnet1_5x
 
-__all__ = ['classification_model', 'classification_preprocessor', 'decode_image']
+__all__ = ["classification_model", "classification_preprocessor", "decode_image"]
 
 classification_model = rexnet1_5x(pretrained=True).eval()
-classification_preprocessor = Compose([
-    Resize(classification_model.default_cfg['input_shape'][1:], interpolation=InterpolationMode.BILINEAR),
-    PILToTensor(),
-    ConvertImageDtype(torch.float32),
-    Normalize(classification_model.default_cfg['mean'], classification_model.default_cfg['std'])
-])
+classification_preprocessor = Compose(
+    [
+        Resize(classification_model.default_cfg["input_shape"][1:], interpolation=InterpolationMode.BILINEAR),
+        PILToTensor(),
+        ConvertImageDtype(torch.float32),
+        Normalize(classification_model.default_cfg["mean"], classification_model.default_cfg["std"]),
+    ]
+)
 
 
 def decode_image(img_data: bytes) -> torch.Tensor:

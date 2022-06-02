@@ -15,7 +15,7 @@ from torch.hub import load_state_dict_from_url
 from holocron import models
 from holocron.nn import BlurPool2d
 
-__all__ = ['conv_sequence', 'load_pretrained_params', 'fuse_conv_bn', "model_from_hf_hub"]
+__all__ = ["conv_sequence", "load_pretrained_params", "fuse_conv_bn", "model_from_hf_hub"]
 
 
 def conv_sequence(
@@ -28,7 +28,7 @@ def conv_sequence(
     bn_channels: Optional[int] = None,
     attention_layer: Optional[Callable[[int], nn.Module]] = None,
     blurpool: bool = False,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> List[nn.Module]:
 
     if conv_layer is None:
@@ -36,12 +36,12 @@ def conv_sequence(
     if bn_channels is None:
         bn_channels = out_channels
 
-    conv_stride = kwargs.get('stride', 1)
+    conv_stride = kwargs.get("stride", 1)
     if blurpool and conv_stride > 1:
-        kwargs['stride'] = 1
+        kwargs["stride"] = 1
 
     # Avoid bias if there is batch normalization
-    kwargs['bias'] = kwargs.get('bias', norm_layer is None)
+    kwargs["bias"] = kwargs.get("bias", norm_layer is None)
 
     conv_seq = [conv_layer(in_channels, out_channels, **kwargs)]
 
@@ -70,7 +70,7 @@ def load_pretrained_params(
     if url is None:
         logging.warning("Invalid model URL, using default initialization.")
     else:
-        state_dict = load_state_dict_from_url(url, progress=progress, map_location='cpu')
+        state_dict = load_state_dict_from_url(url, progress=progress, map_location="cpu")
         if isinstance(key_filter, str):
             state_dict = {k: v for k, v in state_dict.items() if k.startswith(key_filter)}
         if isinstance(key_replacement, tuple):
@@ -116,15 +116,15 @@ def model_from_hf_hub(repo_id: str, **kwargs: Any) -> nn.Module:
     """
 
     # Get the config
-    with open(hf_hub_download(repo_id, filename='config.json', **kwargs), 'rb') as f:
+    with open(hf_hub_download(repo_id, filename="config.json", **kwargs), "rb") as f:
         cfg = json.load(f)
 
-    model = models.__dict__[cfg['arch']](num_classes=len(cfg['classes']), pretrained=False)
+    model = models.__dict__[cfg["arch"]](num_classes=len(cfg["classes"]), pretrained=False)
     # Patch the config
     model.default_cfg.update(cfg)
 
     # Load the checkpoint
-    state_dict = torch.load(hf_hub_download(repo_id, filename='pytorch_model.bin', **kwargs), map_location='cpu')
+    state_dict = torch.load(hf_hub_download(repo_id, filename="pytorch_model.bin", **kwargs), map_location="cpu")
     model.load_state_dict(state_dict)
 
     return model

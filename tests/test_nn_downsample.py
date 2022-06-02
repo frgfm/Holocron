@@ -11,14 +11,18 @@ def test_concatdownsample2d():
     num_batches = 2
     num_chan = 4
     scale_factor = 2
-    x = torch.arange(num_batches * num_chan * 4 ** 2).view(num_batches, num_chan, 4, 4)
+    x = torch.arange(num_batches * num_chan * 4**2).view(num_batches, num_chan, 4, 4)
 
-    # Test functional API
+    # Test functional API
     with pytest.raises(AssertionError):
         F.concat_downsample2d(x, 3)
     out = F.concat_downsample2d(x, scale_factor)
-    assert out.shape == (num_batches, num_chan * scale_factor ** 2,
-                         x.shape[2] // scale_factor, x.shape[3] // scale_factor)
+    assert out.shape == (
+        num_batches,
+        num_chan * scale_factor**2,
+        x.shape[2] // scale_factor,
+        x.shape[3] // scale_factor,
+    )
 
     # Check first and last values
     assert torch.equal(out[0][0], torch.tensor([[0, 2], [8, 10]]))
@@ -26,7 +30,7 @@ def test_concatdownsample2d():
     # Test module
     mod = downsample.ConcatDownsample2d(scale_factor)
     assert torch.equal(mod(x), out)
-    # Test JIT module
+    # Test JIT module
     mod = downsample.ConcatDownsample2dJit(scale_factor)
     assert torch.equal(mod(x), out)
 
@@ -74,7 +78,7 @@ def test_zpool():
     num_chan = 4
     x = torch.rand((num_batches, num_chan, 32, 32))
 
-    # Test functional API
+    # Test functional API
     out = F.z_pool(x, 1)
     assert out.shape == (num_batches, 2, 32, 32)
     assert out[0, 0, 0, 0].item() == x[0, :, 0, 0].max().item()

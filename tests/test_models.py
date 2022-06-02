@@ -21,14 +21,29 @@ def _test_conv_seq(conv_seq, expected_classes, expected_channels):
 
 def test_conv_sequence():
 
-    mod = utils.conv_sequence(3, 32, kernel_size=3, act_layer=nn.ReLU(inplace=True),
-                              norm_layer=nn.BatchNorm2d, drop_layer=DropBlock2d, attention_layer=SAM)
+    mod = utils.conv_sequence(
+        3,
+        32,
+        kernel_size=3,
+        act_layer=nn.ReLU(inplace=True),
+        norm_layer=nn.BatchNorm2d,
+        drop_layer=DropBlock2d,
+        attention_layer=SAM,
+    )
 
     _test_conv_seq(mod, [nn.Conv2d, nn.BatchNorm2d, nn.ReLU, SAM, DropBlock2d], 32)
     assert mod[0].kernel_size == (3, 3)
 
-    mod = utils.conv_sequence(3, 32, kernel_size=3, stride=2, act_layer=nn.ReLU(inplace=True),
-                              norm_layer=nn.BatchNorm2d, drop_layer=DropBlock2d, blurpool=True)
+    mod = utils.conv_sequence(
+        3,
+        32,
+        kernel_size=3,
+        stride=2,
+        act_layer=nn.ReLU(inplace=True),
+        norm_layer=nn.BatchNorm2d,
+        drop_layer=DropBlock2d,
+        blurpool=True,
+    )
     _test_conv_seq(mod, [nn.Conv2d, nn.BatchNorm2d, nn.ReLU, BlurPool2d, DropBlock2d], 32)
     assert mod[0].kernel_size == (3, 3)
     assert mod[0].stride == (1, 1)
@@ -36,7 +51,7 @@ def test_conv_sequence():
     assert mod[0].bias is None
     # Ensures that bias is added when there is no BN
     mod = utils.conv_sequence(3, 32, kernel_size=3, stride=2, act_layer=nn.ReLU(inplace=True))
-    assert isinstance(getattr(mod[0], 'bias'), nn.Parameter)
+    assert isinstance(getattr(mod[0], "bias"), nn.Parameter)
 
 
 def test_fuse_conv_bn():

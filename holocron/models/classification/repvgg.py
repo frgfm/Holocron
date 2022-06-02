@@ -14,50 +14,59 @@ from holocron.nn import GlobalAvgPool2d
 from ..presets import IMAGENETTE
 from ..utils import fuse_conv_bn, load_pretrained_params
 
-__all__ = ['RepVGG', 'RepBlock', 'RepVGG', 'repvgg_a0', 'repvgg_a1', 'repvgg_a2',
-           'repvgg_b0', 'repvgg_b1', 'repvgg_b2', 'repvgg_b3']
+__all__ = [
+    "RepVGG",
+    "RepBlock",
+    "RepVGG",
+    "repvgg_a0",
+    "repvgg_a1",
+    "repvgg_a2",
+    "repvgg_b0",
+    "repvgg_b1",
+    "repvgg_b2",
+    "repvgg_b3",
+]
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'repvgg_a0': {
+    "repvgg_a0": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a0_224-150f4b9d.pt'
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a0_224-150f4b9d.pt",
     },
-    'repvgg_a1': {
+    "repvgg_a1": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a1_224-870b9e4b.pt'
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a1_224-870b9e4b.pt",
     },
-    'repvgg_a2': {
+    "repvgg_a2": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a2_224-7051289a.pt'
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a2_224-7051289a.pt",
     },
-    'repvgg_b0': {
+    "repvgg_b0": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_b0_224-7e9c3fc7.pth'
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_b0_224-7e9c3fc7.pth",
     },
-    'repvgg_b1': {
+    "repvgg_b1": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': None,
+        "input_shape": (3, 224, 224),
+        "url": None,
     },
-    'repvgg_b2': {
+    "repvgg_b2": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': None,
+        "input_shape": (3, 224, 224),
+        "url": None,
     },
-    'repvgg_b3': {
+    "repvgg_b3": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': None,
+        "input_shape": (3, 224, 224),
+        "url": None,
     },
 }
 
 
 class RepBlock(nn.Module):
-
     def __init__(
         self,
         inplanes: int,
@@ -74,16 +83,18 @@ class RepBlock(nn.Module):
         if act_layer is None:
             act_layer = nn.ReLU(inplace=True)
 
-        self.branches: Union[nn.Conv2d, nn.ModuleList] = nn.ModuleList([
-            nn.Sequential(
-                nn.Conv2d(inplanes, planes, 3, padding=1, bias=(norm_layer is None), stride=stride),
-                norm_layer(planes),
-            ),
-            nn.Sequential(
-                nn.Conv2d(inplanes, planes, 1, padding=0, bias=(norm_layer is None), stride=stride),
-                norm_layer(planes),
-            ),
-        ])
+        self.branches: Union[nn.Conv2d, nn.ModuleList] = nn.ModuleList(
+            [
+                nn.Sequential(
+                    nn.Conv2d(inplanes, planes, 3, padding=1, bias=(norm_layer is None), stride=stride),
+                    norm_layer(planes),
+                ),
+                nn.Sequential(
+                    nn.Conv2d(inplanes, planes, 1, padding=0, bias=(norm_layer is None), stride=stride),
+                    norm_layer(planes),
+                ),
+            ]
+        )
 
         self.activation = act_layer
 
@@ -108,8 +119,7 @@ class RepBlock(nn.Module):
         inplanes = self.branches[0][0].weight.data.shape[1]
         planes = self.branches[0][0].weight.data.shape[0]
         # Instantiate the equivalent Conv 3x3
-        rep = nn.Conv2d(inplanes, planes, 3,
-                        padding=1, bias=True, stride=self.branches[0][0].stride)
+        rep = nn.Conv2d(inplanes, planes, 3, padding=1, bias=True, stride=self.branches[0][0].stride)
 
         # Fuse convolutions with their BN
         fused_k3, fused_b3 = fuse_conv_bn(*self.branches[0])
@@ -183,11 +193,13 @@ class RepVGG(nn.Sequential):
             _stages.append(nn.Sequential(*_layers))
 
         super().__init__(
-            OrderedDict([
-                ('features', nn.Sequential(*_stages)),
-                ('pool', GlobalAvgPool2d(flatten=True)),
-                ('head', nn.Linear(chans[-1], num_classes))
-            ])
+            OrderedDict(
+                [
+                    ("features", nn.Sequential(*_stages)),
+                    ("pool", GlobalAvgPool2d(flatten=True)),
+                    ("head", nn.Linear(chans[-1], num_classes)),
+                ]
+            )
         )
 
     def reparametrize(self) -> None:
@@ -206,7 +218,7 @@ def _repvgg(
     out_chans: List[int],
     a: float,
     b: float,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> RepVGG:
 
     # Build the model
@@ -214,7 +226,7 @@ def _repvgg(
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -231,7 +243,7 @@ def repvgg_a0(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_a0', pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], .75, 2.5, **kwargs)
+    return _repvgg("repvgg_a0", pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 0.75, 2.5, **kwargs)
 
 
 def repvgg_a1(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -246,7 +258,7 @@ def repvgg_a1(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_a1', pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
+    return _repvgg("repvgg_a1", pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
 
 
 def repvgg_a2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -261,7 +273,7 @@ def repvgg_a2(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_a2', pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1.5, 2.75, **kwargs)
+    return _repvgg("repvgg_a2", pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1.5, 2.75, **kwargs)
 
 
 def repvgg_b0(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -276,7 +288,7 @@ def repvgg_b0(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_b0', pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
+    return _repvgg("repvgg_b0", pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
 
 
 def repvgg_b1(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -291,7 +303,7 @@ def repvgg_b1(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_b1', pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2, 4, **kwargs)
+    return _repvgg("repvgg_b1", pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2, 4, **kwargs)
 
 
 def repvgg_b2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -306,7 +318,7 @@ def repvgg_b2(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_b2', pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2.5, 5, **kwargs)
+    return _repvgg("repvgg_b2", pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2.5, 5, **kwargs)
 
 
 def repvgg_b3(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
@@ -321,4 +333,4 @@ def repvgg_b3(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _repvgg('repvgg_b3', pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 3, 5, **kwargs)
+    return _repvgg("repvgg_b3", pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 3, 5, **kwargs)

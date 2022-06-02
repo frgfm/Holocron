@@ -16,12 +16,12 @@ def _test_conv2d(mod, input_shape, output_shape):
 
 def test_normconv2d():
     _test_conv2d(nn.NormConv2d(8, 16, 3, padding=1), (2, 8, 16, 16), (2, 16, 16, 16))
-    _test_conv2d(nn.NormConv2d(8, 16, 3, padding=1, padding_mode='reflect'), (2, 8, 16, 16), (2, 16, 16, 16))
+    _test_conv2d(nn.NormConv2d(8, 16, 3, padding=1, padding_mode="reflect"), (2, 8, 16, 16), (2, 16, 16, 16))
 
 
 def test_add2d():
     _test_conv2d(nn.Add2d(8, 16, 3, padding=1), (2, 8, 16, 16), (2, 16, 16, 16))
-    _test_conv2d(nn.Add2d(8, 16, 3, padding=1, padding_mode='reflect'), (2, 8, 16, 16), (2, 16, 16, 16))
+    _test_conv2d(nn.Add2d(8, 16, 3, padding=1, padding_mode="reflect"), (2, 8, 16, 16), (2, 16, 16, 16))
 
 
 def test_slimconv2d():

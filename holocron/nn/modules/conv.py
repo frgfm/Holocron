@@ -15,7 +15,7 @@ from torch.nn.modules.utils import _pair
 
 from .. import functional as F
 
-__all__ = ['NormConv2d', 'Add2d', 'SlimConv2d', 'PyConv2d', 'Involution2d']
+__all__ = ["NormConv2d", "Add2d", "SlimConv2d", "PyConv2d", "Involution2d"]
 
 
 class _NormConvNd(_ConvNd):
@@ -33,11 +33,21 @@ class _NormConvNd(_ConvNd):
         bias: bool,
         padding_mode: str,
         normalize_slices=False,
-        eps=1e-14
+        eps=1e-14,
     ) -> None:
-        super().__init__(in_channels, out_channels, kernel_size, stride,  # type: ignore[arg-type]
-                         padding, dilation, transposed, output_padding,  # type: ignore[arg-type]
-                         groups, bias, padding_mode)
+        super().__init__(
+            in_channels,
+            out_channels,
+            kernel_size,  # type: ignore[arg-type]
+            stride,  # type: ignore[arg-type]
+            padding,  # type: ignore[arg-type]
+            dilation,  # type: ignore[arg-type]
+            transposed,
+            output_padding,  # type: ignore[arg-type]
+            groups,
+            bias,
+            padding_mode,
+        )
         self.normalize_slices = normalize_slices
         self.eps = eps
 
@@ -90,24 +100,51 @@ class NormConv2d(_NormConvNd):
         dilation: int = 1,
         groups: int = 1,
         bias: bool = True,
-        padding_mode: str = 'zeros',
-        eps: float = 1e-14
+        padding_mode: str = "zeros",
+        eps: float = 1e-14,
     ) -> None:
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
         padding = _pair(padding)
         dilation = _pair(dilation)
         super().__init__(
-            in_channels, out_channels, kernel_size, stride, padding, dilation,
-            False, _pair(0), groups, bias, padding_mode, False, eps)
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation,
+            False,
+            _pair(0),
+            groups,
+            bias,
+            padding_mode,
+            False,
+            eps,
+        )
 
     def forward(self, x: Tensor) -> Tensor:
-        if self.padding_mode != 'zeros':
-            return F.norm_conv2d(pad(x, self._reversed_padding_repeated_twice, mode=self.padding_mode),
-                                 self.weight, self.bias, self.stride, _pair(0),  # type: ignore[arg-type]
-                                 self.dilation, self.groups, self.eps)  # type: ignore[arg-type]
-        return F.norm_conv2d(x, self.weight, self.bias, self.stride, self.padding,  # type: ignore[arg-type]
-                             self.dilation, self.groups, self.eps)  # type: ignore[arg-type]
+        if self.padding_mode != "zeros":
+            return F.norm_conv2d(
+                pad(x, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+                self.weight,
+                self.bias,
+                self.stride,  # type: ignore[arg-type]
+                _pair(0),
+                self.dilation,  # type: ignore[arg-type]
+                self.groups,
+                self.eps,
+            )
+        return F.norm_conv2d(
+            x,
+            self.weight,
+            self.bias,
+            self.stride,  # type: ignore[arg-type]
+            self.padding,  # type: ignore[arg-type]
+            self.dilation,  # type: ignore[arg-type]
+            self.groups,
+            self.eps,
+        )
 
 
 class Add2d(_NormConvNd):
@@ -161,25 +198,54 @@ class Add2d(_NormConvNd):
         dilation: int = 1,
         groups: int = 1,
         bias: bool = True,
-        padding_mode: str = 'zeros',
+        padding_mode: str = "zeros",
         normalize_slices: bool = False,
-        eps: float = 1e-14
+        eps: float = 1e-14,
     ) -> None:
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
         padding = _pair(padding)
         dilation = _pair(dilation)
         super().__init__(
-            in_channels, out_channels, kernel_size, stride, padding, dilation,
-            False, _pair(0), groups, bias, padding_mode, normalize_slices, eps)
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation,
+            False,
+            _pair(0),
+            groups,
+            bias,
+            padding_mode,
+            normalize_slices,
+            eps,
+        )
 
     def forward(self, x: Tensor) -> Tensor:
-        if self.padding_mode != 'zeros':
-            return F.add2d(pad(x, self._reversed_padding_repeated_twice, mode=self.padding_mode),
-                           self.weight, self.bias, self.stride, _pair(0),  # type: ignore[arg-type]
-                           self.dilation, self.groups, self.normalize_slices, self.eps)  # type: ignore[arg-type]
-        return F.add2d(x, self.weight, self.bias, self.stride, self.padding,  # type: ignore[arg-type]
-                       self.dilation, self.groups, self.normalize_slices, self.eps)  # type: ignore[arg-type]
+        if self.padding_mode != "zeros":
+            return F.add2d(
+                pad(x, self._reversed_padding_repeated_twice, mode=self.padding_mode),
+                self.weight,
+                self.bias,
+                self.stride,  # type: ignore[arg-type]
+                _pair(0),
+                self.dilation,  # type: ignore[arg-type]
+                self.groups,
+                self.normalize_slices,
+                self.eps,
+            )
+        return F.add2d(
+            x,
+            self.weight,
+            self.bias,
+            self.stride,  # type: ignore[arg-type]
+            self.padding,  # type: ignore[arg-type]
+            self.dilation,  # type: ignore[arg-type]
+            self.groups,
+            self.normalize_slices,
+            self.eps,
+        )
 
 
 class SlimConv2d(nn.Module):
@@ -267,19 +333,21 @@ class SlimConv2d(nn.Module):
         dilation: int = 1,
         groups: int = 1,
         bias: bool = True,
-        padding_mode: str = 'zeros',
+        padding_mode: str = "zeros",
         r: int = 32,
-        L: int = 2
+        L: int = 2,
     ) -> None:
         super().__init__()
         self.fc1 = nn.Conv2d(in_channels, max(in_channels // r, L), 1)
         self.bn = nn.BatchNorm2d(max(in_channels // r, L))
         self.fc2 = nn.Conv2d(max(in_channels // r, L), in_channels, 1)
-        self.conv_top = nn.Conv2d(in_channels // 2, in_channels // 2, kernel_size, stride, padding,
-                                  dilation, groups, bias, padding_mode)
+        self.conv_top = nn.Conv2d(
+            in_channels // 2, in_channels // 2, kernel_size, stride, padding, dilation, groups, bias, padding_mode
+        )
         self.conv_bot1 = nn.Conv2d(in_channels // 2, in_channels // 4, 1)
-        self.conv_bot2 = nn.Conv2d(in_channels // 4, in_channels // 4, kernel_size, stride, padding,
-                                   dilation, groups, bias, padding_mode)
+        self.conv_bot2 = nn.Conv2d(
+            in_channels // 4, in_channels // 4, kernel_size, stride, padding, dilation, groups, bias, padding_mode
+        )
 
     def forward(self, x: Tensor) -> Tensor:
         # Channel-wise weights
@@ -290,9 +358,9 @@ class SlimConv2d(nn.Module):
 
         # Compression
         X_w = x * w
-        X_top = X_w[:, :x.shape[1] // 2] + X_w[:, x.shape[1] // 2:]
+        X_top = X_w[:, : x.shape[1] // 2] + X_w[:, x.shape[1] // 2 :]
         X_w = x * w.flip(dims=(1,))
-        X_bot = X_w[:, :x.shape[1] // 2] + X_w[:, x.shape[1] // 2:]
+        X_bot = X_w[:, : x.shape[1] // 2] + X_w[:, x.shape[1] // 2 :]
 
         # Transform
         X_top = self.conv_top(X_top)
@@ -329,28 +397,44 @@ class PyConv2d(nn.ModuleList):
         num_levels: int = 2,
         padding: int = 0,
         groups: Optional[List[int]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
 
         if num_levels == 1:
-            super().__init__([nn.Conv2d(in_channels, out_channels, kernel_size, padding=padding,
-                                        groups=groups[0] if isinstance(groups, list) else 1, **kwargs)])
+            super().__init__(
+                [
+                    nn.Conv2d(
+                        in_channels,
+                        out_channels,
+                        kernel_size,
+                        padding=padding,
+                        groups=groups[0] if isinstance(groups, list) else 1,
+                        **kwargs,
+                    )
+                ]
+            )
         else:
             exp2 = int(math.log2(num_levels))
-            reminder = num_levels - 2 ** exp2
-            out_chans = [out_channels // 2 ** (exp2 + 1)] * (2 * reminder) + \
-                        [out_channels // 2 ** exp2] * (num_levels - 2 * reminder)
+            reminder = num_levels - 2**exp2
+            out_chans = [out_channels // 2 ** (exp2 + 1)] * (2 * reminder) + [out_channels // 2**exp2] * (
+                num_levels - 2 * reminder
+            )
 
             k_sizes = [kernel_size + 2 * idx for idx in range(num_levels)]
             if groups is None:
-                groups = [1] + [min(2 ** (2 + idx), out_chan)
-                                for idx, out_chan in zip(range(num_levels - 1), out_chans[1:])]
+                groups = [1] + [
+                    min(2 ** (2 + idx), out_chan) for idx, out_chan in zip(range(num_levels - 1), out_chans[1:])
+                ]
             elif not isinstance(groups, list) or len(groups) != num_levels:
                 raise ValueError("The argument `group` is expected to be a list of integer of size `num_levels`.")
             paddings = [padding + idx for idx in range(num_levels)]
 
-            super().__init__([nn.Conv2d(in_channels, out_chan, k_size, padding=padding, groups=group, **kwargs)
-                              for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, groups)])
+            super().__init__(
+                [
+                    nn.Conv2d(in_channels, out_chan, k_size, padding=padding, groups=group, **kwargs)
+                    for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, groups)
+                ]
+            )
         self.num_levels = num_levels
 
     def forward(self, x):
@@ -398,7 +482,7 @@ class Involution2d(nn.Module):
 
         self.pool = nn.AvgPool2d(stride, stride) if stride > 1 else None
         self.reduce = nn.Conv2d(in_channels, int(in_channels // reduction_ratio), 1)
-        self.span = nn.Conv2d(int(in_channels // reduction_ratio), kernel_size ** 2 * groups, 1)
+        self.span = nn.Conv2d(int(in_channels // reduction_ratio), kernel_size**2 * groups, 1)
         self.unfold = nn.Unfold(kernel_size, dilation, padding, stride)
 
     def forward(self, x):
@@ -411,7 +495,7 @@ class Involution2d(nn.Module):
         # --> (N, K * K * G, H // s, W // s)
         kernel = self.span(kernel)
         # --> (N, G, 1, K ** 2, H // s, W // s)
-        kernel = kernel.view(x.shape[0], self.groups, 1, self.k_size ** 2, *kernel.shape[-2:])
+        kernel = kernel.view(x.shape[0], self.groups, 1, self.k_size**2, *kernel.shape[-2:])
 
         # --> (N, C * K ** 2, H * W // s ** 2)
         x_unfolded = self.unfold(x)

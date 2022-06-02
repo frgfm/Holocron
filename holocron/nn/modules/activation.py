@@ -11,19 +11,19 @@ from torch import Tensor
 
 from .. import functional as F
 
-__all__ = ['HardMish', 'NLReLU', 'FReLU']
+__all__ = ["HardMish", "NLReLU", "FReLU"]
 
 
 class _Activation(nn.Module):
 
-    __constants__: List[str] = ['inplace']
+    __constants__: List[str] = ["inplace"]
 
     def __init__(self, inplace: bool = False) -> None:
         super().__init__()
         self.inplace = inplace
 
     def extra_repr(self) -> str:
-        inplace_str = 'inplace=True' if self.inplace else ''
+        inplace_str = "inplace=True" if self.inplace else ""
         return inplace_str
 
 
@@ -35,6 +35,7 @@ class HardMish(_Activation):
     .. math::
         f(x) = \frac{x}{2} \cdot \min(2, \max(0, x + 2))
     """
+
     def forward(self, x: Tensor) -> Tensor:
         return F.hard_mish(x, inplace=self.inplace)
 
@@ -51,6 +52,7 @@ class NLReLU(_Activation):
     Args:
         inplace (bool): should the operation be performed inplace
     """
+
     def forward(self, x: Tensor) -> Tensor:
         return F.nl_relu(x, inplace=self.inplace)
 
@@ -70,6 +72,7 @@ class FReLU(nn.Module):
     Args:
         inplace (bool): should the operation be performed inplace
     """
+
     def __init__(self, in_channels: int, kernel_size: int = 3) -> None:
         super().__init__()
         self.conv = nn.Conv2d(in_channels, in_channels, kernel_size, padding=kernel_size // 2, groups=in_channels)

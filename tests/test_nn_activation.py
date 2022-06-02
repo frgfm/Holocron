@@ -11,20 +11,20 @@ def _test_activation_function(fn, input_shape):
     # Optional testing
     fn_args = inspect.signature(fn).parameters.keys()
     cfg = {}
-    if 'inplace' in fn_args:
-        cfg['inplace'] = [False, True]
+    if "inplace" in fn_args:
+        cfg["inplace"] = [False, True]
 
     # Generate inputs
     x = torch.rand(input_shape)
 
     # Optional argument testing
     kwargs = {}
-    for inplace in cfg.get('inplace', [None]):
+    for inplace in cfg.get("inplace", [None]):
         if isinstance(inplace, bool):
-            kwargs['inplace'] = inplace
+            kwargs["inplace"] = inplace
         out = fn(x, **kwargs)
         assert out.shape == x.shape
-        if kwargs.get('inplace', False):
+        if kwargs.get("inplace", False):
             assert x.data_ptr() == out.data_ptr()
 
 
@@ -42,4 +42,4 @@ def test_frelu():
     mod = activation.FReLU(8).eval()
     with torch.no_grad():
         _test_activation_function(mod.forward, (4, 8, 32, 32))
-    assert len(repr(mod).split('\n')) == 4
+    assert len(repr(mod).split("\n")) == 4

@@ -11,7 +11,7 @@ from torchvision.ops.boxes import box_iou
 
 from .core import Trainer
 
-__all__ = ['DetectionTrainer']
+__all__ = ["DetectionTrainer"]
 
 
 def assign_iou(gt_boxes: Tensor, pred_boxes: Tensor, iou_threshold: float = 0.5) -> Tuple[List[int], List[int]]:
@@ -50,15 +50,14 @@ class DetectionTrainer(Trainer):
 
     @staticmethod
     def _to_cuda(  # type: ignore[override]
-        x: List[Tensor],
-        target: List[Dict[str, Tensor]]
+        x: List[Tensor], target: List[Dict[str, Tensor]]
     ) -> Tuple[List[Tensor], List[Dict[str, Tensor]]]:
         """Move input and target to GPU"""
         x = [_x.cuda(non_blocking=True) for _x in x]
         target = [{k: v.cuda(non_blocking=True) for k, v in t.items()} for t in target]
         return x, target
 
-    def _backprop_step(self, loss: Tensor, grad_clip: float = .1) -> None:
+    def _backprop_step(self, loss: Tensor, grad_clip: float = 0.1) -> None:
         # Clean gradients
         self.optimizer.zero_grad()
         # Backpropate the loss
@@ -67,7 +66,7 @@ class DetectionTrainer(Trainer):
             # Safeguard for Gradient explosion
             if isinstance(grad_clip, float):
                 self.scaler.unscale_(self.optimizer)
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)  # type: ignore[attr-defined]
 
             # Update the params
             self.scaler.step(self.optimizer)
@@ -76,14 +75,14 @@ class DetectionTrainer(Trainer):
             loss.backward()
             # Safeguard for Gradient explosion
             if isinstance(grad_clip, float):
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)  # type: ignore[attr-defined]
             # Update the params
             self.optimizer.step()
 
     def _get_loss(self, x: List[Tensor], target: List[Dict[str, Tensor]]) -> Tensor:  # type: ignore[override]
         # AMP
         if self.amp:
-            with torch.cuda.amp.autocast():
+            with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
                 # Forward & loss computation
                 loss_dict = self.model(x, target)
                 return sum(loss_dict.values())  # type: ignore[return-value]
@@ -93,9 +92,9 @@ class DetectionTrainer(Trainer):
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, Optional[float]]) -> str:
-        loc_str = f"{eval_metrics['loc_err']:.2%}" if isinstance(eval_metrics['loc_err'], float) else "N/A"
-        clf_str = f"{eval_metrics['clf_err']:.2%}" if isinstance(eval_metrics['clf_err'], float) else "N/A"
-        det_str = f"{eval_metrics['det_err']:.2%}" if isinstance(eval_metrics['det_err'], float) else "N/A"
+        loc_str = f"{eval_metrics['loc_err']:.2%}" if isinstance(eval_metrics["loc_err"], float) else "N/A"
+        clf_str = f"{eval_metrics['clf_err']:.2%}" if isinstance(eval_metrics["clf_err"], float) else "N/A"
+        det_str = f"{eval_metrics['det_err']:.2%}" if isinstance(eval_metrics["det_err"], float) else "N/A"
         return f"Loc error: {loc_str} | Clf error: {clf_str} | Det error: {det_str}"
 
     @torch.inference_mode()
@@ -117,24 +116,24 @@ class DetectionTrainer(Trainer):
             x, target = self.to_cuda(x, target)
 
             if self.amp:
-                with torch.cuda.amp.autocast():
+                with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
                     detections = self.model(x)
             else:
                 detections = self.model(x)
 
             for dets, t in zip(detections, target):
-                if t['boxes'].shape[0] > 0 and dets['boxes'].shape[0] > 0:
-                    gt_indices, pred_indices = assign_iou(t['boxes'], dets['boxes'], iou_threshold)
+                if t["boxes"].shape[0] > 0 and dets["boxes"].shape[0] > 0:
+                    gt_indices, pred_indices = assign_iou(t["boxes"], dets["boxes"], iou_threshold)
                     loc_assigns += len(gt_indices)
-                    _correct = (t['labels'][gt_indices] == dets['labels'][pred_indices]).sum().item()
+                    _correct = (t["labels"][gt_indices] == dets["labels"][pred_indices]).sum().item()
                 else:
                     gt_indices, pred_indices = [], []
                     _correct = 0
                 correct += _correct
                 clf_error += len(gt_indices) - _correct
-                loc_fn += t['boxes'].shape[0] - len(gt_indices)
-                loc_fp += dets['boxes'].shape[0] - len(pred_indices)
-            num_samples += sum(t['boxes'].shape[0] for t in target)
+                loc_fn += t["boxes"].shape[0] - len(gt_indices)
+                loc_fp += dets["boxes"].shape[0] - len(pred_indices)
+            num_samples += sum(t["boxes"].shape[0] for t in target)
 
         nb_preds = num_samples - loc_fn + loc_fp
         # Localization

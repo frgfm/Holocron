@@ -26,9 +26,9 @@ def _test_wrapper(name: str) -> None:
     # Check gradient reset
     opt_wrapper.zero_grad()
     for group in optimizer.param_groups:
-        for p in group['params']:
+        for p in group["params"]:
             if p.grad is not None:
-                assert torch.all(p.grad == 0.)
+                assert torch.all(p.grad == 0.0)
 
     # Check update step
     _p = model.classifier[3].weight
@@ -48,12 +48,12 @@ def _test_wrapper(name: str) -> None:
     assert not torch.equal(_p.data, p_val) and not torch.equal(_p.data, p_val - lr * _p.grad)
 
     # Repr
-    assert len(repr(opt_wrapper).split('\n')) == len(repr(optimizer).split('\n')) + 4
+    assert len(repr(opt_wrapper).split("\n")) == len(repr(optimizer).split("\n")) + 4
 
 
 def test_lookahead():
-    _test_wrapper('Lookahead')
+    _test_wrapper("Lookahead")
 
 
 def test_scout():
-    _test_wrapper('Scout')
+    _test_wrapper("Scout")

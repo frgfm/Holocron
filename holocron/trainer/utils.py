@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
-__all__ = ['freeze_bn', 'freeze_model', 'split_normalization_params']
+__all__ = ["freeze_bn", "freeze_model", "split_normalization_params"]
 
 
 def freeze_bn(mod: nn.Module) -> nn.Module:
@@ -32,9 +32,7 @@ def freeze_bn(mod: nn.Module) -> nn.Module:
 
 
 def freeze_model(
-    model: nn.Module,
-    last_frozen_layer: Optional[str] = None,
-    frozen_bn_stat_update: bool = False
+    model: nn.Module, last_frozen_layer: Optional[str] = None, frozen_bn_stat_update: bool = False
 ) -> nn.Module:
     """Freeze a specific range of model layers
 
@@ -75,7 +73,7 @@ def freeze_model(
 def split_normalization_params(
     model: nn.Module,
     norm_classes: Optional[List[type]] = None,
-) -> Tuple[List[nn.Parameter], List[nn.Parameter]]:
+) -> Tuple[List[nn.Parameter], List[nn.Parameter]]:  # type: ignore[name-defined]
     # Borrowed from https://github.com/pytorch/vision/blob/main/torchvision/ops/_utils.py
     # Adapted from https://github.com/facebookresearch/ClassyVision/blob/659d7f78/classy_vision/generic/util.py#L501
     if not norm_classes:
@@ -87,8 +85,8 @@ def split_normalization_params(
 
     classes = tuple(norm_classes)
 
-    norm_params: List[nn.Parameter] = []
-    other_params: List[nn.Parameter] = []
+    norm_params: List[nn.Parameter] = []  # type: ignore[name-defined]
+    other_params: List[nn.Parameter] = []  # type: ignore[name-defined]
     for module in model.modules():
         if next(module.children(), None):
             other_params.extend(p for p in module.parameters(recurse=False) if p.requires_grad)

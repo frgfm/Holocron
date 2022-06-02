@@ -13,11 +13,11 @@ from ...nn.init import init_module
 from ..utils import conv_sequence, load_pretrained_params
 from .unet import down_path
 
-__all__ = ['UNet3p', 'unet3p']
+__all__ = ["UNet3p", "unet3p"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'unet3p': {'arch': 'UNet3p', 'layout': [64, 128, 256, 512, 1024], 'url': None}
+    "unet3p": {"arch": "UNet3p", "layout": [64, 128, 256, 512, 1024], "url": None}
 }
 
 
@@ -30,7 +30,7 @@ class FSAggreg(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
 
         super().__init__()
@@ -40,30 +40,54 @@ class FSAggreg(nn.Module):
         # Get UNet depth
         depth = len(e_chans) + 1 + len(d_chans)
         # Downsample = max pooling + conv for channel reduction
-        self.downsamples = nn.ModuleList([nn.Sequential(nn.MaxPool2d(2 ** (len(e_chans) - idx)),
-                                                        nn.Conv2d(e_chan, base_chan, 3, padding=1))
-                                          for idx, e_chan in enumerate(e_chans)])
+        self.downsamples = nn.ModuleList(
+            [
+                nn.Sequential(nn.MaxPool2d(2 ** (len(e_chans) - idx)), nn.Conv2d(e_chan, base_chan, 3, padding=1))
+                for idx, e_chan in enumerate(e_chans)
+            ]
+        )
         self.skip = nn.Conv2d(skip_chan, base_chan, 3, padding=1) if len(e_chans) > 0 else nn.Identity()
         # Upsample = bilinear interpolation + conv for channel reduction
-        self.upsamples = nn.ModuleList([nn.Sequential(nn.Upsample(scale_factor=2 ** (idx + 1),
-                                                                  mode='bilinear', align_corners=True),
-                                                      nn.Conv2d(d_chan, base_chan, 3, padding=1))
-                                        for idx, d_chan in enumerate(d_chans)])
+        self.upsamples = nn.ModuleList(
+            [
+                nn.Sequential(
+                    nn.Upsample(scale_factor=2 ** (idx + 1), mode="bilinear", align_corners=True),
+                    nn.Conv2d(d_chan, base_chan, 3, padding=1),
+                )
+                for idx, d_chan in enumerate(d_chans)
+            ]
+        )
 
-        self.block = nn.Sequential(*conv_sequence(depth * base_chan, depth * base_chan,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=1))
+        self.block = nn.Sequential(
+            *conv_sequence(
+                depth * base_chan,
+                depth * base_chan,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+            )
+        )
 
     def forward(self, downfeats: List[Tensor], feat: Tensor, upfeats: List[Tensor]):
 
         if len(downfeats) != len(self.downsamples) or len(upfeats) != len(self.upsamples):
-            raise ValueError(f"Expected {len(self.downsamples)} encoding & {len(self.upsamples)} decoding features, "
-                             f"received: {len(downfeats)} & {len(upfeats)}")
+            raise ValueError(
+                f"Expected {len(self.downsamples)} encoding & {len(self.upsamples)} decoding features, "
+                f"received: {len(downfeats)} & {len(upfeats)}"
+            )
 
         # Concatenate full-scale features
-        x = torch.cat((*[downsample(downfeat) for downsample, downfeat in zip(self.downsamples, downfeats)],
-                       self.skip(feat),
-                       *[upsample(upfeat) for upsample, upfeat in zip(self.upsamples, upfeats)]), dim=1)
+        x = torch.cat(
+            (
+                *[downsample(downfeat) for downsample, downfeat in zip(self.downsamples, downfeats)],
+                self.skip(feat),
+                *[upsample(upfeat) for upsample, upfeat in zip(self.upsamples, upfeats)],
+            ),
+            dim=1,
+        )
 
         return self.block(x)
 
@@ -80,6 +104,7 @@ class UNet3p(nn.Module):
         drop_layer: dropout layer
         conv_layer: convolutional layer
     """
+
     def __init__(
         self,
         layout: List[int],
@@ -88,7 +113,7 @@ class UNet3p(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
 
@@ -108,17 +133,22 @@ class UNet3p(nn.Module):
         # Expansive path
         self.decoder = nn.ModuleList([])
         for row in range(len(layout) - 1):
-            self.decoder.append(FSAggreg(
-                layout[:row],
-                layout[row],
-                [len(layout) * layout[0]] * (len(layout) - 2 - row) + layout[-1:],
-                act_layer, norm_layer, drop_layer, conv_layer
-            ))
+            self.decoder.append(
+                FSAggreg(
+                    layout[:row],
+                    layout[row],
+                    [len(layout) * layout[0]] * (len(layout) - 2 - row) + layout[-1:],
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    conv_layer,
+                )
+            )
 
         # Classifier
         self.classifier = nn.Conv2d(len(layout) * layout[0], num_classes, 1)
 
-        init_module(self, 'relu')
+        init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
 
@@ -129,7 +159,7 @@ class UNet3p(nn.Module):
 
         # Full-scale expansive path
         for idx in range(len(self.decoder) - 1, -1, -1):
-            xs[idx] = self.decoder[idx](xs[:idx], xs[idx], xs[idx + 1:])
+            xs[idx] = self.decoder[idx](xs[:idx], xs[idx], xs[idx + 1 :])
 
         # Classifier
         x = self.classifier(xs[0])
@@ -138,10 +168,10 @@ class UNet3p(nn.Module):
 
 def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> nn.Module:
     # Build the model
-    model = UNet3p(default_cfgs[arch]['layout'], **kwargs)
+    model = UNet3p(default_cfgs[arch]["layout"], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -161,4 +191,4 @@ def unet3p(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
         semantic segmentation model
     """
 
-    return _unet('unet3p', pretrained, progress, **kwargs)  # type: ignore[return-value]
+    return _unet("unet3p", pretrained, progress, **kwargs)  # type: ignore[return-value]

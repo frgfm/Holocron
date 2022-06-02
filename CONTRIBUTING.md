@@ -8,11 +8,11 @@ Whatever the way you wish to contribute to the project, please respect the [code
 
 ## Codebase structure
 
-- [holocron](https://github.com/frgfm/Holocron/blob/master/holocron) - The actual holocron library
-- [tests](https://github.com/frgfm/Holocron/blob/master/tests) - Python unit tests
-- [docs](https://github.com/frgfm/Holocron/blob/master/docs) - Sphinx documentation building
-- [scripts](https://github.com/frgfm/Holocron/blob/master/scripts) - Example and utilities scripts
-- [references](https://github.com/frgfm/Holocron/blob/master/references) - Reference training scripts
+- [holocron](https://github.com/frgfm/Holocron/blob/main/holocron) - The actual holocron library
+- [tests](https://github.com/frgfm/Holocron/blob/main/tests) - Python unit tests
+- [docs](https://github.com/frgfm/Holocron/blob/main/docs) - Sphinx documentation building
+- [scripts](https://github.com/frgfm/Holocron/blob/main/scripts) - Example and utilities scripts
+- [references](https://github.com/frgfm/Holocron/blob/main/references) - Reference training scripts
 
 
 
@@ -55,7 +55,7 @@ cd Holocron
 git remote add upstream https://github.com/frgfm/Holocron.git
 ```
 
-3 - You should not work on the `master` branch, so let's create a new one
+3 - You should not work on the `main` branch, so let's create a new one
 ```shell
 git checkout -b a-short-description
 ```

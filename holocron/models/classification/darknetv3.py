@@ -16,20 +16,19 @@ from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .resnet import _ResBlock
 
-__all__ = ['DarknetV3', 'darknet53']
+__all__ = ["DarknetV3", "darknet53"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'darknet53': {
+    "darknet53": {
         **IMAGENETTE,
-        'input_shape': (3, 256, 256),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth',
+        "input_shape": (3, 256, 256),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth",
     },
 }
 
 
 class ResBlock(_ResBlock):
-
     def __init__(
         self,
         planes: int,
@@ -37,31 +36,49 @@ class ResBlock(_ResBlock):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__(
-            conv_sequence(planes, mid_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                          kernel_size=1, bias=(norm_layer is None)) +
-            conv_sequence(mid_planes, planes, act_layer, norm_layer, drop_layer, conv_layer,
-                          kernel_size=3, padding=1, bias=(norm_layer is None)),
-            None, None)
+            conv_sequence(
+                planes,
+                mid_planes,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            )
+            + conv_sequence(
+                mid_planes,
+                planes,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            None,
+            None,
+        )
         if drop_layer is not None:
             self.dropblock = DropBlock2d(0.1, 7, inplace=True)
 
         # The backpropagation does not seem to appreciate inplace activation on the residual branch
-        if hasattr(self.conv[-1], 'inplace'):
+        if hasattr(self.conv[-1], "inplace"):
             self.conv[-1].inplace = False
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         out = super().forward(x)
-        if hasattr(self, 'dropblock'):
+        if hasattr(self, "dropblock"):
             out = self.dropblock(out)
 
         return out
 
 
 class DarknetBodyV3(nn.Sequential):
-
     def __init__(
         self,
         layout: List[Tuple[int, int]],
@@ -71,7 +88,7 @@ class DarknetBodyV3(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
 
         if act_layer is None:
@@ -81,13 +98,38 @@ class DarknetBodyV3(nn.Sequential):
 
         in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
-        super().__init__(OrderedDict([
-            ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=1, bias=(norm_layer is None)))),
-            ('layers', nn.Sequential(*[self._make_layer(num_blocks, _in_chans, out_chans,
-                                                        act_layer, norm_layer, drop_layer, conv_layer)
-                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
+        super().__init__(
+            OrderedDict(
+                [
+                    (
+                        "stem",
+                        nn.Sequential(
+                            *conv_sequence(
+                                in_channels,
+                                stem_channels,
+                                act_layer,
+                                norm_layer,
+                                drop_layer,
+                                conv_layer,
+                                kernel_size=3,
+                                padding=1,
+                                bias=(norm_layer is None),
+                            )
+                        ),
+                    ),
+                    (
+                        "layers",
+                        nn.Sequential(
+                            *[
+                                self._make_layer(
+                                    num_blocks, _in_chans, out_chans, act_layer, norm_layer, drop_layer, conv_layer
+                                )
+                                for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)
+                            ]
+                        ),
+                    ),
+                ]
+            )
         )
         self.num_features = num_features
 
@@ -99,13 +141,27 @@ class DarknetBodyV3(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> nn.Sequential:
 
-        layers = conv_sequence(in_planes, out_planes, act_layer, norm_layer, drop_layer, conv_layer,
-                               kernel_size=3, padding=1, stride=2, bias=(norm_layer is None))
-        layers.extend([ResBlock(out_planes, out_planes // 2, act_layer, norm_layer, drop_layer, conv_layer)
-                       for _ in range(num_blocks)])
+        layers = conv_sequence(
+            in_planes,
+            out_planes,
+            act_layer,
+            norm_layer,
+            drop_layer,
+            conv_layer,
+            kernel_size=3,
+            padding=1,
+            stride=2,
+            bias=(norm_layer is None),
+        )
+        layers.extend(
+            [
+                ResBlock(out_planes, out_planes // 2, act_layer, norm_layer, drop_layer, conv_layer)
+                for _ in range(num_blocks)
+            ]
+        )
 
         return nn.Sequential(*layers)
 
@@ -136,16 +192,25 @@ class DarknetV3(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
 
-        super().__init__(OrderedDict([
-            ('features', DarknetBodyV3(layout, in_channels, stem_channels, 1,
-                                       act_layer, norm_layer, drop_layer, conv_layer)),
-            ('pool', GlobalAvgPool2d(flatten=True)),
-            ('classifier', nn.Linear(layout[-1][0], num_classes))]))
+        super().__init__(
+            OrderedDict(
+                [
+                    (
+                        "features",
+                        DarknetBodyV3(
+                            layout, in_channels, stem_channels, 1, act_layer, norm_layer, drop_layer, conv_layer
+                        ),
+                    ),
+                    ("pool", GlobalAvgPool2d(flatten=True)),
+                    ("classifier", nn.Linear(layout[-1][0], num_classes)),
+                ]
+            )
+        )
 
-        init_module(self, 'leaky_relu')
+        init_module(self, "leaky_relu")
 
 
 def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int, int]], **kwargs: Any) -> DarknetV3:
@@ -154,7 +219,7 @@ def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -171,10 +236,4 @@ def darknet53(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
         torch.nn.Module: classification model
     """
 
-    return _darknet(
-        'darknet53',
-        pretrained,
-        progress,
-        [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-        **kwargs
-    )
+    return _darknet("darknet53", pretrained, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)

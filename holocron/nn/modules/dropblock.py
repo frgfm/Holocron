@@ -8,7 +8,7 @@ from torch import Tensor
 
 from .. import functional as F
 
-__all__ = ['DropBlock2d']
+__all__ = ["DropBlock2d"]
 
 
 class DropBlock2d(nn.Module):
@@ -32,7 +32,7 @@ class DropBlock2d(nn.Module):
 
     @property
     def drop_prob(self) -> float:
-        return self.p / self.block_size ** 2
+        return self.p / self.block_size**2
 
     def forward(self, x: Tensor) -> Tensor:
         return F.dropblock2d(x, self.drop_prob, self.block_size, self.inplace, self.training)

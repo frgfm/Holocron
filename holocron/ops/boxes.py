@@ -10,7 +10,7 @@ import torch
 from torch import Tensor
 from torchvision.ops.boxes import box_area, box_iou
 
-__all__ = ['box_giou', 'diou_loss', 'ciou_loss']
+__all__ = ["box_giou", "diou_loss", "ciou_loss"]
 
 
 def _box_iou(boxes1: Tensor, boxes2: Tensor) -> Tuple[Tensor, Tensor]:
@@ -54,7 +54,7 @@ def box_giou(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     # degenerate boxes gives inf / nan results
     # so do an early check
     if torch.any(boxes1[:, 2:] < boxes1[:, :2]) or torch.any(boxes2[:, 2:] < boxes2[:, :2]):
-        raise AssertionError('Incorrect coordinate format')
+        raise AssertionError("Incorrect coordinate format")
     iou, union = _box_iou(boxes1, boxes2)
 
     lt = torch.min(boxes1[:, None, :2], boxes2[:, :2])
@@ -82,7 +82,7 @@ def iou_penalty(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     # Assign bottom right coords
     c2[..., 0] = torch.max(boxes1[:, 2].unsqueeze(-1), boxes2[:, 2].unsqueeze(-2))
     c2[..., 1] = torch.max(boxes1[:, 3].unsqueeze(-1), boxes2[:, 3].unsqueeze(-2))
-    # Subtract top left coords
+    # Subtract top left coords
     c2[..., 0].sub_(torch.min(boxes1[:, 0].unsqueeze(-1), boxes2[:, 0].unsqueeze(-2)))
     c2[..., 1].sub_(torch.min(boxes1[:, 1].unsqueeze(-1), boxes2[:, 1].unsqueeze(-2)))
 
@@ -158,7 +158,7 @@ def aspect_ratio_consistency(boxes1: Tensor, boxes2: Tensor) -> Tensor:
 
     v = aspect_ratio(boxes1).unsqueeze(-1) - aspect_ratio(boxes2).unsqueeze(-2)
     v.pow_(2)
-    v.mul_(4 / math.pi ** 2)
+    v.mul_(4 / math.pi**2)
 
     return v
 

@@ -19,17 +19,15 @@ from ..classification.darknetv2 import default_cfgs as dark_cfgs
 from ..utils import conv_sequence, load_pretrained_params
 from .yolo import _YOLO
 
-__all__ = ['YOLOv2', 'yolov2']
+__all__ = ["YOLOv2", "yolov2"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'yolov2': {'arch': 'YOLOv2', 'backbone': dark_cfgs['darknet19'],
-               'url': None},
+    "yolov2": {"arch": "YOLOv2", "backbone": dark_cfgs["darknet19"], "url": None},
 }
 
 
 class YOLOv2(_YOLO):
-
     def __init__(
         self,
         layout: List[Tuple[int, int]],
@@ -48,17 +46,11 @@ class YOLOv2(_YOLO):
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
-        backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None
+        backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None,
     ) -> None:
 
         super().__init__(
-            num_classes,
-            rpn_nms_thresh,
-            box_score_thresh,
-            lambda_obj,
-            lambda_noobj,
-            lambda_class,
-            lambda_coords
+            num_classes, rpn_nms_thresh, box_score_thresh, lambda_obj, lambda_noobj, lambda_class, lambda_coords
         )
 
         if act_layer is None:
@@ -71,37 +63,79 @@ class YOLOv2(_YOLO):
         # Priors computed using K-means
         if anchors is None:
             # cf. https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-voc.cfg#L242
-            anchors = torch.tensor([[1.3221, 1.73145], [3.19275, 4.00944], [5.05587, 8.09892],
-                                    [9.47112, 4.84053], [11.2364, 10.0071]]) / 13
+            anchors = (
+                torch.tensor(
+                    [[1.3221, 1.73145], [3.19275, 4.00944], [5.05587, 8.09892], [9.47112, 4.84053], [11.2364, 10.0071]]
+                )
+                / 13
+            )
 
-        self.backbone = DarknetBodyV2(layout, in_channels, stem_chanels, True, act_layer,
-                                      backbone_norm_layer, drop_layer, conv_layer)
+        self.backbone = DarknetBodyV2(
+            layout, in_channels, stem_chanels, True, act_layer, backbone_norm_layer, drop_layer, conv_layer
+        )
 
         self.block5 = nn.Sequential(
-            *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(layout[-1][0], layout[-1][0], act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)))
+            *conv_sequence(
+                layout[-1][0],
+                layout[-1][0],
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                layout[-1][0],
+                layout[-1][0],
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+        )
 
-        self.passthrough_layer = nn.Sequential(*conv_sequence(layout[-2][0], layout[-2][0] // passthrough_ratio,
-                                                              act_layer, norm_layer, drop_layer, conv_layer,
-                                                              kernel_size=1, bias=(norm_layer is None)),
-                                               ConcatDownsample2d(scale_factor=2))
+        self.passthrough_layer = nn.Sequential(
+            *conv_sequence(
+                layout[-2][0],
+                layout[-2][0] // passthrough_ratio,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
+            ConcatDownsample2d(scale_factor=2),
+        )
 
         self.block6 = nn.Sequential(
-            *conv_sequence(layout[-1][0] + layout[-2][0] // passthrough_ratio * 2 ** 2, layout[-1][0],
-                           act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)))
+            *conv_sequence(
+                layout[-1][0] + layout[-2][0] // passthrough_ratio * 2**2,
+                layout[-1][0],
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            )
+        )
 
         # Each box has P_objectness, 4 coords, and score for each class
         self.head = nn.Conv2d(layout[-1][0], anchors.shape[0] * (5 + num_classes), 1)
 
         # Register losses
-        self.register_buffer('anchors', anchors)
+        self.register_buffer("anchors", anchors)
 
-        init_module(self.block5, 'leaky_relu')
-        init_module(self.passthrough_layer, 'leaky_relu')
-        init_module(self.block6, 'leaky_relu')
+        init_module(self.block5, "leaky_relu")
+        init_module(self.passthrough_layer, "leaky_relu")
+        init_module(self.block6, "leaky_relu")
         # Initialize the head like a linear (default Conv2D init is the same as Linear)
         if self.head.bias is not None:
             self.head.bias.data.zero_()
@@ -158,9 +192,7 @@ class YOLOv2(_YOLO):
         return out
 
     def forward(
-        self,
-        x: Union[Tensor, List[Tensor], Tuple[Tensor, ...]],
-        target: Optional[List[Dict[str, Tensor]]] = None
+        self, x: Union[Tensor, List[Tensor], Tuple[Tensor, ...]], target: Optional[List[Dict[str, Tensor]]] = None
     ) -> Union[Dict[str, Tensor], List[Dict[str, Tensor]]]:
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
@@ -196,12 +228,7 @@ class YOLOv2(_YOLO):
 
 
 def _yolo(
-    arch: str,
-    pretrained: bool,
-    progress: bool,
-    pretrained_backbone: bool,
-    layout: List[Tuple[int, int]],
-    **kwargs: Any
+    arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, layout: List[Tuple[int, int]], **kwargs: Any
 ) -> YOLOv2:
 
     if pretrained:
@@ -211,11 +238,16 @@ def _yolo(
     model = YOLOv2(layout, **kwargs)
     # Load backbone pretrained parameters
     if pretrained_backbone:
-        load_pretrained_params(model.backbone, default_cfgs[arch]['backbone']['url'], progress,
-                               key_replacement=('features.', ''), key_filter='features.')
+        load_pretrained_params(
+            model.backbone,
+            default_cfgs[arch]["backbone"]["url"],
+            progress,
+            key_replacement=("features.", ""),
+            key_filter="features.",
+        )
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -253,10 +285,10 @@ def yolov2(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     """
 
     if pretrained_backbone:
-        kwargs['backbone_norm_layer'] = FrozenBatchNorm2d
+        kwargs["backbone_norm_layer"] = FrozenBatchNorm2d
 
     return _yolo(
-        'yolov2',
+        "yolov2",
         pretrained,
         progress,
         pretrained_backbone,

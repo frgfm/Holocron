@@ -6,7 +6,7 @@ from holocron import nn
 from holocron.nn import functional as F
 
 
-def _test_loss_function(loss_fn, same_loss=0., multi_label=False):
+def _test_loss_function(loss_fn, same_loss=0.0, multi_label=False):
 
     num_batches = 2
     num_classes = 4
@@ -15,17 +15,15 @@ def _test_loss_function(loss_fn, same_loss=0., multi_label=False):
     x[:, 0, ...] = 100
     x.requires_grad_(True)
 
-    # Identical target
+    # Identical target
     if multi_label:
         target = torch.zeros_like(x)
-        target[:, 0] = 1.
+        target[:, 0] = 1.0
     else:
         target = torch.zeros(num_batches, dtype=torch.long)
     assert abs(loss_fn(x, target).item() - same_loss) < 1e-3
     assert torch.allclose(
-        loss_fn(x, target, reduction='none'),
-        same_loss * torch.ones(num_batches, dtype=x.dtype),
-        atol=1e-3
+        loss_fn(x, target, reduction="none"), same_loss * torch.ones(num_batches, dtype=x.dtype), atol=1e-3
     )
 
     # Check that class rescaling works
@@ -50,15 +48,9 @@ def _test_loss_function(loss_fn, same_loss=0., multi_label=False):
     loss.backward()
 
     # Test reduction
+    assert torch.allclose(loss_fn(x, target, reduction="sum"), loss_fn(x, target, reduction="none").sum(), atol=1e-6)
     assert torch.allclose(
-        loss_fn(x, target, reduction='sum'),
-        loss_fn(x, target, reduction='none').sum(),
-        atol=1e-6
-    )
-    assert torch.allclose(
-        loss_fn(x, target, reduction='mean'),
-        loss_fn(x, target, reduction='sum') / target.shape[0],
-        atol=1e-6
+        loss_fn(x, target, reduction="mean"), loss_fn(x, target, reduction="sum") / target.shape[0], atol=1e-6
     )
 
 
@@ -77,9 +69,7 @@ def test_focal_loss():
     # Equal probabilities
     x = torch.ones(num_batches, num_classes, 20, 20)
     assert torch.allclose(
-        (1 - 1 / num_classes) * F.focal_loss(x, target, gamma=0),
-        F.focal_loss(x, target, gamma=1),
-        atol=1e-5
+        (1 - 1 / num_classes) * F.focal_loss(x, target, gamma=0), F.focal_loss(x, target, gamma=1), atol=1e-5
     )
 
     assert repr(nn.FocalLoss()) == "FocalLoss(gamma=2.0, reduction='mean')"
@@ -95,7 +85,7 @@ def test_multilabel_cross_entropy():
 
     x = torch.rand(num_batches, num_classes, 20, 20)
     target = torch.zeros_like(x)
-    target[:, 0] = 1.
+    target[:, 0] = 1.0
 
     # Value check
     assert torch.allclose(F.multilabel_cross_entropy(x, target), cross_entropy(x, target.argmax(dim=1)), atol=1e-5)
@@ -131,11 +121,11 @@ def test_mc_loss():
     mod = Linear(xi * num_classes, xi * num_classes)
 
     # Check backprop
-    for reduction in ['mean', 'sum', 'none']:
+    for reduction in ["mean", "sum", "none"]:
         for p in mod.parameters():
             p.grad = None
         train_loss = F.mutual_channel_loss(mod(x), target, ignore_index=0, reduction=reduction)
-        if reduction == 'none':
+        if reduction == "none":
             assert train_loss.shape == (num_batches,)
             train_loss = train_loss.sum()
         train_loss.backward()

@@ -18,30 +18,17 @@ from ...nn.init import init_module
 from ..classification.rexnet import rexnet1_3x
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ['UNet', 'unet', 'DynamicUNet', 'unet_tvvgg11', 'unet_tvresnet34', 'unet_rexnet13', 'unet2']
+__all__ = ["UNet", "unet", "DynamicUNet", "unet_tvvgg11", "unet_tvresnet34", "unet_rexnet13", "unet2"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'unet': {
-        'encoder_layout': [64, 128, 256, 512],
-        'url': None
-    },
-    'unet2': {
-        'encoder_layout': [64, 128, 256, 512],
-        'backbone_layers': ['0', '1', '2', '3'],
-        'url': None
-    },
-    'unet_vgg11': {
-        'backbone_layers': ['1', '4', '9', '14', '19'],
-        'url': None
-    },
-    'unet_tvresnet34': {
-        'backbone_layers': ['relu', 'layer1', 'layer2', 'layer3', 'layer4'],
-        'url': None
-    },
-    'unet_rexnet13': {
-        'backbone_layers': ['3', '5', '7', '13', '18'],
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet_rexnet13_256-38315ff3.pth',
+    "unet": {"encoder_layout": [64, 128, 256, 512], "url": None},
+    "unet2": {"encoder_layout": [64, 128, 256, 512], "backbone_layers": ["0", "1", "2", "3"], "url": None},
+    "unet_vgg11": {"backbone_layers": ["1", "4", "9", "14", "19"], "url": None},
+    "unet_tvresnet34": {"backbone_layers": ["relu", "layer1", "layer2", "layer3", "layer4"], "url": None},
+    "unet_rexnet13": {
+        "backbone_layers": ["3", "5", "7", "13", "18"],
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/unet_rexnet13_256-38315ff3.pth",
     },
 }
 
@@ -54,14 +41,20 @@ def down_path(
     act_layer: Optional[nn.Module] = None,
     norm_layer: Optional[Callable[[int], nn.Module]] = None,
     drop_layer: Optional[Callable[..., nn.Module]] = None,
-    conv_layer: Optional[Callable[..., nn.Module]] = None
+    conv_layer: Optional[Callable[..., nn.Module]] = None,
 ) -> nn.Sequential:
 
     layers: List[nn.Module] = [nn.MaxPool2d(2)] if downsample else []
-    layers.extend([*conv_sequence(in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
-                                  kernel_size=3, padding=padding),
-                   *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
-                                  kernel_size=3, padding=padding)])
+    layers.extend(
+        [
+            *conv_sequence(
+                in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
+            ),
+            *conv_sequence(
+                out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
+            ),
+        ]
+    )
     return nn.Sequential(*layers)
 
 
@@ -75,22 +68,24 @@ class UpPath(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
 
         self.upsample: nn.Module
         if bilinear_upsampling:
-            self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+            self.upsample = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
         else:
             self.upsample = nn.ConvTranspose2d(in_chan, out_chan, 2, stride=2)
 
-        self.block = nn.Sequential(*conv_sequence(in_chan, out_chan,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=padding),
-                                   *conv_sequence(out_chan, out_chan,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=padding))
+        self.block = nn.Sequential(
+            *conv_sequence(
+                in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
+            ),
+            *conv_sequence(
+                out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
+            ),
+        )
 
     def forward(self, downfeats: Union[Tensor, List[Tensor]], upfeat: Tensor) -> Tensor:
 
@@ -98,7 +93,7 @@ class UpPath(nn.Module):
             downfeats = [downfeats]
         # Upsample expansive features
         _upfeat = self.upsample(upfeat)
-        # Crop contracting path features
+        # Crop contracting path features
         for idx, downfeat in enumerate(downfeats):
             if downfeat.shape != _upfeat.shape:
                 delta_w = downfeat.shape[-1] - _upfeat.shape[-1]
@@ -131,16 +126,22 @@ class UNetBackbone(nn.Sequential):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            _layers.append(down_path(in_chan, out_chan, _pool, int(same_padding),
-                                     act_layer, norm_layer, drop_layer, conv_layer))
+            _layers.append(
+                down_path(in_chan, out_chan, _pool, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
+            )
             _pool = True
 
-        super().__init__(OrderedDict([
-            ('features', nn.Sequential(*_layers)),
-            ('pool', GlobalAvgPool2d(flatten=True)),
-            ('head', nn.Linear(layout[-1], num_classes))]))
+        super().__init__(
+            OrderedDict(
+                [
+                    ("features", nn.Sequential(*_layers)),
+                    ("pool", GlobalAvgPool2d(flatten=True)),
+                    ("head", nn.Linear(layout[-1], num_classes)),
+                ]
+            )
+        )
 
-        init_module(self, 'relu')
+        init_module(self, "relu")
 
 
 class UNet(nn.Module):
@@ -157,6 +158,7 @@ class UNet(nn.Module):
         same_padding: enforces same padding in convolutions
         bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling
     """
+
     def __init__(
         self,
         layout: List[int],
@@ -179,29 +181,42 @@ class UNet(nn.Module):
         _layout = [in_channels] + layout
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoder.append(down_path(in_chan, out_chan, _pool, int(same_padding),
-                                          act_layer, norm_layer, drop_layer, conv_layer))
+            self.encoder.append(
+                down_path(in_chan, out_chan, _pool, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
+            )
             _pool = True
 
         self.bridge = nn.Sequential(
             nn.MaxPool2d((2, 2)),
-            *conv_sequence(layout[-1], 2 * layout[-1],
-                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
-            *conv_sequence(2 * layout[-1], layout[-1],
-                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
+            *conv_sequence(
+                layout[-1], 2 * layout[-1], act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1
+            ),
+            *conv_sequence(
+                2 * layout[-1], layout[-1], act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1
+            ),
         )
 
         # Expansive path
         self.decoder = nn.ModuleList([])
         _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][:-1]] + [layout[0]]
         for in_chan, out_chan in zip([2 * layout[-1]] + layout[::-1][:-1], _layout):
-            self.decoder.append(UpPath(in_chan, out_chan, bilinear_upsampling, int(same_padding),
-                                       act_layer, norm_layer, drop_layer, conv_layer))
+            self.decoder.append(
+                UpPath(
+                    in_chan,
+                    out_chan,
+                    bilinear_upsampling,
+                    int(same_padding),
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    conv_layer,
+                )
+            )
 
         # Classifier
         self.classifier = nn.Conv2d(layout[0], num_classes, 1)
 
-        init_module(self, 'relu')
+        init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
 
@@ -230,7 +245,7 @@ class UBlock(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
 
@@ -238,19 +253,27 @@ class UBlock(nn.Module):
             act_layer = nn.ReLU(inplace=True)
 
         self.upsample = nn.Sequential(
-            *conv_sequence(up_chan, up_chan * 2 ** 2, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=1),
-            nn.PixelShuffle(upscale_factor=2)
+            *conv_sequence(up_chan, up_chan * 2**2, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
+            nn.PixelShuffle(upscale_factor=2),
         )
 
         self.bn = nn.BatchNorm2d(left_chan) if norm_layer is None else norm_layer(left_chan)
 
         self.block = nn.Sequential(
             act_layer,
-            *conv_sequence(left_chan + up_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=padding),
-            *conv_sequence(out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=padding)
+            *conv_sequence(
+                left_chan + up_chan,
+                out_chan,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=padding,
+            ),
+            *conv_sequence(
+                out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
+            ),
         )
 
     def forward(self, downfeat: Tensor, upfeat: Tensor) -> Tensor:
@@ -258,9 +281,9 @@ class UBlock(nn.Module):
         # Upsample expansive features
         _upfeat = self.upsample(upfeat)
 
-        # Crop upsampled features
+        # Crop upsampled features
         if downfeat.shape[-2:] != _upfeat.shape[-2:]:
-            _upfeat = F.interpolate(_upfeat, downfeat.shape[-2:], mode='nearest')
+            _upfeat = F.interpolate(_upfeat, downfeat.shape[-2:], mode="nearest")
 
         # Concatenate both feature maps and forward them
         return self.block(torch.cat((self.bn(downfeat), _upfeat), dim=1))
@@ -279,6 +302,7 @@ class DynamicUNet(nn.Module):
         same_padding: enforces same padding in convolutions
         bilinear_upsampling: replaces transposed conv by bilinear interpolation for upsampling
     """
+
     def __init__(
         self,
         encoder: IntermediateLayerGetter,
@@ -311,32 +335,36 @@ class DynamicUNet(nn.Module):
         self.bridge = nn.Sequential(
             nn.BatchNorm2d(chans[-1]) if norm_layer is None else norm_layer(chans[-1]),
             act_layer,
-            *conv_sequence(chans[-1], 2 * chans[-1],
-                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1),
-            *conv_sequence(2 * chans[-1], chans[-1],
-                           act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1)
+            *conv_sequence(
+                chans[-1], 2 * chans[-1], act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1
+            ),
+            *conv_sequence(
+                2 * chans[-1], chans[-1], act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=1
+            ),
         )
 
         # Expansive path
         self.decoder = nn.ModuleList([])
         _layout = chans[::-1][1:] + [chans[0]]
         for up_chan, out_chan in zip(chans[::-1], _layout):
-            self.decoder.append(UBlock(up_chan, up_chan, out_chan, int(same_padding),
-                                       act_layer, norm_layer, drop_layer, conv_layer))
+            self.decoder.append(
+                UBlock(up_chan, up_chan, out_chan, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
+            )
 
         # Final upsampling if sizes don't match
         self.upsample: Optional[nn.Sequential] = None
         if final_upsampling:
             self.upsample = nn.Sequential(
-                *conv_sequence(chans[0], chans[0] * 2 ** 2,
-                               act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
-                nn.PixelShuffle(upscale_factor=2)
+                *conv_sequence(
+                    chans[0], chans[0] * 2**2, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1
+                ),
+                nn.PixelShuffle(upscale_factor=2),
             )
 
         # Classifier
         self.classifier = nn.Conv2d(chans[0], num_classes, 1)
 
-        init_module(self, 'relu')
+        init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
 
@@ -358,10 +386,10 @@ class DynamicUNet(nn.Module):
 
 def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> UNet:
     # Build the model
-    model = UNet(default_cfgs[arch]['encoder_layout'], **kwargs)
+    model = UNet(default_cfgs[arch]["encoder_layout"], **kwargs)
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -381,27 +409,21 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
         semantic segmentation model
     """
 
-    return _unet('unet', pretrained, progress, **kwargs)
+    return _unet("unet", pretrained, progress, **kwargs)
 
 
 def _dynamic_unet(
-    arch: str,
-    backbone: nn.Module,
-    pretrained: bool,
-    progress: bool,
-    num_classes: int = 21,
-    **kwargs: Any
+    arch: str, backbone: nn.Module, pretrained: bool, progress: bool, num_classes: int = 21, **kwargs: Any
 ) -> DynamicUNet:
     # Build the encoder
     encoder = IntermediateLayerGetter(
-        backbone,
-        {name: str(idx) for idx, name in enumerate(default_cfgs[arch]['backbone_layers'])}
+        backbone, {name: str(idx) for idx, name in enumerate(default_cfgs[arch]["backbone_layers"])}
     )
     # Build the model
     model = DynamicUNet(encoder, num_classes=num_classes, **kwargs)
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -424,16 +446,13 @@ def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 3,
         semantic segmentation model
     """
 
-    backbone = UNetBackbone(default_cfgs['unet2']['encoder_layout'], in_channels=in_channels).features
+    backbone = UNetBackbone(default_cfgs["unet2"]["encoder_layout"], in_channels=in_channels).features
 
-    return _dynamic_unet('unet2', backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
+    return _dynamic_unet("unet2", backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
 
 
 def unet_tvvgg11(
-    pretrained: bool = False,
-    pretrained_backbone: bool = True,
-    progress: bool = True,
-    **kwargs: Any
+    pretrained: bool = False, pretrained_backbone: bool = True, progress: bool = True, **kwargs: Any
 ) -> DynamicUNet:
     """U-Net from
     `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
@@ -451,14 +470,11 @@ def unet_tvvgg11(
 
     backbone = vgg11(pretrained=pretrained_backbone and not pretrained).features
 
-    return _dynamic_unet('unet_vgg11', backbone, pretrained, progress, **kwargs)
+    return _dynamic_unet("unet_vgg11", backbone, pretrained, progress, **kwargs)
 
 
 def unet_tvresnet34(
-    pretrained: bool = False,
-    pretrained_backbone: bool = True,
-    progress: bool = True,
-    **kwargs: Any
+    pretrained: bool = False, pretrained_backbone: bool = True, progress: bool = True, **kwargs: Any
 ) -> DynamicUNet:
     """U-Net from
     `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
@@ -475,9 +491,9 @@ def unet_tvresnet34(
     """
 
     backbone = resnet34(pretrained=pretrained_backbone and not pretrained)
-    kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
+    kwargs["final_upsampling"] = kwargs.get("final_upsampling", True)
 
-    return _dynamic_unet('unet_tvresnet34', backbone, pretrained, progress, **kwargs)
+    return _dynamic_unet("unet_tvresnet34", backbone, pretrained, progress, **kwargs)
 
 
 def unet_rexnet13(
@@ -485,7 +501,7 @@ def unet_rexnet13(
     pretrained_backbone: bool = True,
     progress: bool = True,
     in_channels: int = 3,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> DynamicUNet:
     """U-Net from
     `"U-Net: Convolutional Networks for Biomedical Image Segmentation" <https://arxiv.org/pdf/1505.04597.pdf>`_
@@ -502,9 +518,9 @@ def unet_rexnet13(
     """
 
     backbone = rexnet1_3x(pretrained=pretrained_backbone and not pretrained, in_channels=in_channels).features
-    kwargs['final_upsampling'] = kwargs.get('final_upsampling', True)
-    kwargs['act_layer'] = kwargs.get('act_layer', nn.SiLU(inplace=True))
+    kwargs["final_upsampling"] = kwargs.get("final_upsampling", True)
+    kwargs["act_layer"] = kwargs.get("act_layer", nn.SiLU(inplace=True))
     # hotfix of https://github.com/pytorch/vision/issues/3802
     backbone[21] = nn.SiLU(inplace=True)  # type: ignore[operator,assignment]
 
-    return _dynamic_unet('unet_rexnet13', backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
+    return _dynamic_unet("unet_rexnet13", backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]

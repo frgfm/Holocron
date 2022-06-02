@@ -40,8 +40,8 @@ SECONDARY_LABELS = {
     "topic: ci",
 }
 
-GH_ORG = 'frgfm'
-GH_REPO = 'Holocron'
+GH_ORG = "frgfm"
+GH_REPO = "Holocron"
 
 
 def query_repo(cmd: str, *, accept) -> Any:
@@ -66,10 +66,12 @@ def main(args):
 
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='PR label checker',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('pr', type=int, help='PR number')
+    parser = argparse.ArgumentParser(
+        description="PR label checker", formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument("pr", type=int, help="PR number")
     args = parser.parse_args()
 
     return args

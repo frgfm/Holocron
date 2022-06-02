@@ -41,24 +41,24 @@ def _test_optimizer(name: str, **kwargs: Any) -> None:
 
 
 def test_lars():
-    _test_optimizer('Lars', momentum=0.9, weight_decay=2e-5)
+    _test_optimizer("Lars", momentum=0.9, weight_decay=2e-5)
 
 
 def test_lamb():
-    _test_optimizer('Lamb', weight_decay=2e-5)
+    _test_optimizer("Lamb", weight_decay=2e-5)
 
 
 def test_ralars():
-    _test_optimizer('RaLars', weight_decay=2e-5)
+    _test_optimizer("RaLars", weight_decay=2e-5)
 
 
 def test_tadam():
-    _test_optimizer('TAdam')
+    _test_optimizer("TAdam")
 
 
 def test_adabelief():
-    _test_optimizer('AdaBelief')
+    _test_optimizer("AdaBelief")
 
 
 def test_adamp():
-    _test_optimizer('AdamP')
+    _test_optimizer("AdamP")

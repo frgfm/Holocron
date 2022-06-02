@@ -1,5 +1,6 @@
+*********************************************
 Holocron: a Deep Learning toolbox for PyTorch
-=============================================
+*********************************************
 
 .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/holocron_logo_text.png
         :align: center

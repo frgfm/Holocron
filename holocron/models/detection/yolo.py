@@ -17,12 +17,11 @@ from ..classification.darknet import DarknetBodyV1
 from ..classification.darknet import default_cfgs as dark_cfgs
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ['YOLOv1', 'yolov1']
+__all__ = ["YOLOv1", "yolov1"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'yolov1': {'arch': 'YOLOv1', 'backbone': dark_cfgs['darknet24'],
-               'url': None},
+    "yolov1": {"arch": "YOLOv1", "backbone": dark_cfgs["darknet24"], "url": None},
 }
 
 
@@ -52,7 +51,7 @@ class _YOLO(nn.Module):
         pred_o: Tensor,
         pred_scores: Tensor,
         target: List[Dict[str, Tensor]],
-        ignore_high_iou=False
+        ignore_high_iou=False,
     ) -> Dict[str, Tensor]:
         """Computes the detector losses as described in `"You Only Look Once: Unified, Real-Time Object Detection"
         <https://pjreddie.com/media/files/papers/yolo_1.pdf>`_
@@ -67,8 +66,8 @@ class _YOLO(nn.Module):
             dict: dictionary of losses
         """
 
-        gt_boxes = [t['boxes'] for t in target]
-        gt_labels = [t['labels'] for t in target]
+        gt_boxes = [t["boxes"] for t in target]
+        gt_labels = [t["labels"] for t in target]
 
         if not all(torch.all(boxes >= 0) and torch.all(boxes <= 1) for boxes in gt_boxes):
             raise ValueError("Ground truth boxes are expected to have values between 0 and 1.")
@@ -94,8 +93,9 @@ class _YOLO(nn.Module):
             not_matched = torch.arange(h * w * num_anchors)
             if gt_boxes[idx].shape[0] > 0:
                 # Locate the cell of each GT
-                gt_centers = torch.stack((gt_boxes[idx][:, [0, 2]].mean(dim=-1) * w,
-                                          gt_boxes[idx][:, [1, 3]].mean(dim=-1) * h), dim=1).to(dtype=torch.long)
+                gt_centers = torch.stack(
+                    (gt_boxes[idx][:, [0, 2]].mean(dim=-1) * w, gt_boxes[idx][:, [1, 3]].mean(dim=-1) * h), dim=1
+                ).to(dtype=torch.long)
                 cell_idxs = gt_centers[:, 1] * w + gt_centers[:, 0]
                 # Assign the best anchor in each corresponding cell
                 iou_mat = box_iou(pred_xyxy[idx].reshape(-1, 4), gt_boxes[idx]).reshape(h * w, num_anchors, -1)
@@ -126,7 +126,7 @@ class _YOLO(nn.Module):
                 pred_filter = cell_idxs if (pred_scores.shape[3] == 1) else is_matched
                 selected_scores = pred_scores.reshape(b, -1, num_classes)[idx, pred_filter].reshape(-1, num_classes)
                 selected_boxes = pred_boxes.reshape(b, -1, 4)[idx, is_matched].reshape(-1, 4)
-                # Convert GT --> xc, yc, w, h
+                # Convert GT --> xc, yc, w, h
                 gt_wh = gt_boxes[idx][:, 2:] - gt_boxes[idx][:, :2]
                 gt_centers = (gt_boxes[idx][:, 2:] + gt_boxes[idx][:, :2]) / 2
                 # Make xy relative to cell
@@ -141,25 +141,23 @@ class _YOLO(nn.Module):
 
                 # Localization
                 # cf. YOLOv1 loss: SSE of xy preds, SSE of squared root of wh
-                bbox_loss += F.mse_loss(selected_boxes[:, :2], gt_centers, reduction='sum')
-                bbox_loss += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(), reduction='sum')
+                bbox_loss += F.mse_loss(selected_boxes[:, :2], gt_centers, reduction="sum")
+                bbox_loss += F.mse_loss(selected_boxes[:, 2:].sqrt(), gt_wh.sqrt(), reduction="sum")
                 # Objectness
-                obj_loss += F.mse_loss(selection_o, selection_iou, reduction='sum')
+                obj_loss += F.mse_loss(selection_o, selection_iou, reduction="sum")
                 # Classification
-                clf_loss += F.mse_loss(selected_scores, gt_probs, reduction='sum')
+                clf_loss += F.mse_loss(selected_scores, gt_probs, reduction="sum")
 
-        return dict(obj_loss=self.lambda_obj * obj_loss / pred_boxes.shape[0],
-                    noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
-                    bbox_loss=self.lambda_coords * bbox_loss / pred_boxes.shape[0],
-                    clf_loss=self.lambda_class * clf_loss / pred_boxes.shape[0])
+        return dict(
+            obj_loss=self.lambda_obj * obj_loss / pred_boxes.shape[0],
+            noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
+            bbox_loss=self.lambda_coords * bbox_loss / pred_boxes.shape[0],
+            clf_loss=self.lambda_class * clf_loss / pred_boxes.shape[0],
+        )
 
     @staticmethod
     def post_process(
-        b_coords: Tensor,
-        b_o: Tensor,
-        b_scores: Tensor,
-        rpn_nms_thresh=0.7,
-        box_score_thresh=0.05
+        b_coords: Tensor, b_o: Tensor, b_scores: Tensor, rpn_nms_thresh=0.7, box_score_thresh=0.05
     ) -> List[Dict[str, Tensor]]:
         """Perform final filtering to produce detections
 
@@ -219,7 +217,7 @@ class YOLOv1(_YOLO):
         lambda_obj: float = 1,
         lambda_noobj: float = 0.5,
         lambda_class: float = 1,
-        lambda_coords: float = 5.,
+        lambda_coords: float = 5.0,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05,
         head_hidden_nodes: int = 512,  # In the original paper, 4096
@@ -227,17 +225,11 @@ class YOLOv1(_YOLO):
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
-        backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None
+        backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None,
     ) -> None:
 
         super().__init__(
-            num_classes,
-            rpn_nms_thresh,
-            box_score_thresh,
-            lambda_obj,
-            lambda_noobj,
-            lambda_class,
-            lambda_coords
+            num_classes, rpn_nms_thresh, box_score_thresh, lambda_obj, lambda_noobj, lambda_class, lambda_coords
         )
 
         if act_layer is None:
@@ -249,25 +241,64 @@ class YOLOv1(_YOLO):
         self.backbone = DarknetBodyV1(layout, in_channels, stem_channels, act_layer, backbone_norm_layer)
 
         self.block4 = nn.Sequential(
-            *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)),
-            *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)),
-            *conv_sequence(1024, 1024, act_layer, norm_layer, drop_layer, conv_layer,
-                           kernel_size=3, padding=1, bias=(norm_layer is None)))
+            *conv_sequence(
+                1024,
+                1024,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                1024,
+                1024,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                stride=2,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                1024,
+                1024,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                1024,
+                1024,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                bias=(norm_layer is None),
+            ),
+        )
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(1024 * 7 ** 2, head_hidden_nodes),
+            nn.Linear(1024 * 7**2, head_hidden_nodes),
             act_layer,
             nn.Dropout(0.5),
-            nn.Linear(head_hidden_nodes, 7 ** 2 * (num_anchors * 5 + num_classes)))
+            nn.Linear(head_hidden_nodes, 7**2 * (num_anchors * 5 + num_classes)),
+        )
         self.num_anchors = num_anchors
 
-        init_module(self.block4, 'leaky_relu')
-        init_module(self.classifier, 'leaky_relu')
+        init_module(self.block4, "leaky_relu")
+        init_module(self.classifier, "leaky_relu")
 
     def _format_outputs(self, x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """Formats convolutional layer output
@@ -286,11 +317,11 @@ class YOLOv1(_YOLO):
         # (B, H * W * (num_anchors * 5 + num_classes)) --> (B, H, W, num_anchors * 5 + num_classes)
         x = x.reshape(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
-        b_scores = x[..., -self.num_classes:]
+        b_scores = x[..., -self.num_classes :]
         # Repeat for anchors to keep compatibility across YOLO versions
         b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
         #  (B, H, W, num_anchors * 5 + num_classes) -->  (B, H, W, num_anchors, 5)
-        x = x[..., :self.num_anchors * 5].reshape(b, h, w, self.num_anchors, 5)
+        x = x[..., : self.num_anchors * 5].reshape(b, h, w, self.num_anchors, 5)
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
         c_y = torch.arange(h, dtype=torch.float, device=x.device)
@@ -315,9 +346,7 @@ class YOLOv1(_YOLO):
         return out
 
     def forward(
-        self,
-        x: Tensor,
-        target: Optional[List[Dict[str, Tensor]]] = None
+        self, x: Tensor, target: Optional[List[Dict[str, Tensor]]] = None
     ) -> Union[Dict[str, Tensor], List[Dict[str, Tensor]]]:
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
         or the list of detections in eval mode.
@@ -355,12 +384,7 @@ class YOLOv1(_YOLO):
 
 
 def _yolo(
-    arch: str,
-    pretrained: bool,
-    progress: bool,
-    pretrained_backbone: bool,
-    layout: List[List[int]],
-    **kwargs: Any
+    arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, layout: List[List[int]], **kwargs: Any
 ) -> YOLOv1:
 
     if pretrained:
@@ -370,11 +394,16 @@ def _yolo(
     model = YOLOv1(layout, **kwargs)
     # Load backbone pretrained parameters
     if pretrained_backbone:
-        load_pretrained_params(model.backbone, default_cfgs[arch]['backbone']['url'], progress,
-                               key_replacement=('features.', ''), key_filter='features.')
+        load_pretrained_params(
+            model.backbone,
+            default_cfgs[arch]["backbone"]["url"],
+            progress,
+            key_replacement=("features.", ""),
+            key_filter="features.",
+        )
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -446,7 +475,7 @@ def yolov1(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     """
 
     return _yolo(
-        'yolov1',
+        "yolov1",
         pretrained,
         progress,
         pretrained_backbone,

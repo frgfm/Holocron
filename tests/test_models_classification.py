@@ -16,7 +16,7 @@ def _test_classification_model(name, num_classes=10):
     assert out.shape[0] == x.shape[0]
     assert out.shape[-1] == num_classes
 
-    # Check backprop is OK
+    # Check backprop is OK
     target = torch.zeros(batch_size, dtype=torch.long)
     model.train()
     out = model(x)
@@ -47,18 +47,35 @@ def test_repvgg_reparametrize():
 @pytest.mark.parametrize(
     "arch",
     [
-        'darknet24', 'darknet19', 'darknet53', 'cspdarknet53', 'cspdarknet53_mish',
-        'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
-        'resnext50_32x4d', 'resnext101_32x8d',
-        'resnet50d',
-        'res2net50_26w_4s',
-        'tridentnet50',
-        'pyconv_resnet50', 'pyconvhg_resnet50',
-        'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x',
-        'sknet50', 'sknet101', 'sknet152',
-        'repvgg_a0', 'repvgg_b0',
+        "darknet24",
+        "darknet19",
+        "darknet53",
+        "cspdarknet53",
+        "cspdarknet53_mish",
+        "resnet18",
+        "resnet34",
+        "resnet50",
+        "resnet101",
+        "resnet152",
+        "resnext50_32x4d",
+        "resnext101_32x8d",
+        "resnet50d",
+        "res2net50_26w_4s",
+        "tridentnet50",
+        "pyconv_resnet50",
+        "pyconvhg_resnet50",
+        "rexnet1_0x",
+        "rexnet1_3x",
+        "rexnet1_5x",
+        "rexnet2_0x",
+        "rexnet2_2x",
+        "sknet50",
+        "sknet101",
+        "sknet152",
+        "repvgg_a0",
+        "repvgg_b0",
     ],
 )
 def test_classification_model(arch):
-    num_classes = 1000 if arch in ['rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x'] else 10
+    num_classes = 1000 if arch in ["rexnet1_0x", "rexnet1_3x", "rexnet1_5x", "rexnet2_0x"] else 10
     _test_classification_model(arch, num_classes)

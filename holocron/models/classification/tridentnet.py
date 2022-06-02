@@ -13,13 +13,13 @@ from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .resnet import ResNet, _ResBlock
 
-__all__ = ['Tridentneck', 'tridentnet50']
+__all__ = ["Tridentneck", "tridentnet50"]
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'tridentnet50': {
+    "tridentnet50": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/tridentnet50_224-98b4ce9c.pth',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/tridentnet50_224-98b4ce9c.pth",
     },
 }
 
@@ -45,10 +45,21 @@ class TridentConv2d(nn.Conv2d):
             dilations = [1 + idx for idx in range(self.num_branches)]
 
         # Use shared weight to apply the convolution
-        out = torch.cat([F.conv2d(_x, self.weight, self.bias, self.stride,
-                                  tuple(dilation * p for p in self.padding),  # type: ignore[misc]
-                                  (dilation,) * len(self.dilation), self.groups)
-                         for _x, dilation in zip(torch.chunk(x, self.num_branches, 1), dilations)], 1)
+        out = torch.cat(
+            [
+                F.conv2d(
+                    _x,
+                    self.weight,
+                    self.bias,
+                    self.stride,
+                    tuple(dilation * p for p in self.padding),  # type: ignore[misc]
+                    (dilation,) * len(self.dilation),
+                    self.groups,
+                )
+                for _x, dilation in zip(torch.chunk(x, self.num_branches, 1), dilations)
+            ],
+            1,
+        )
 
         return out
 
@@ -70,25 +81,62 @@ class Tridentneck(_ResBlock):
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if act_layer is None:
             act_layer = nn.ReLU(inplace=True)
 
-        width = int(planes * (base_width / 64.)) * groups
-        # Concatenate along the channel axis and enlarge BN to leverage parallelization
+        width = int(planes * (base_width / 64.0)) * groups
+        # Concatenate along the channel axis and enlarge BN to leverage parallelization
         super().__init__(
-            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, TridentConv2d, bn_channels=3 * width,
-                            kernel_size=1, stride=1, bias=(norm_layer is None), dilation=1),
-             *conv_sequence(width, width, act_layer, norm_layer, drop_layer, TridentConv2d, bn_channels=3 * width,
-                            kernel_size=3, stride=stride,
-                            padding=1, groups=groups, bias=(norm_layer is None), dilation=3),
-             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, TridentConv2d,
-                            bn_channels=3 * planes * self.expansion,
-                            kernel_size=1, stride=1, bias=(norm_layer is None), dilation=1)],
-            downsample, act_layer)
+            [
+                *conv_sequence(
+                    inplanes,
+                    width,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    TridentConv2d,
+                    bn_channels=3 * width,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                    dilation=1,
+                ),
+                *conv_sequence(
+                    width,
+                    width,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    TridentConv2d,
+                    bn_channels=3 * width,
+                    kernel_size=3,
+                    stride=stride,
+                    padding=1,
+                    groups=groups,
+                    bias=(norm_layer is None),
+                    dilation=3,
+                ),
+                *conv_sequence(
+                    width,
+                    planes * self.expansion,
+                    None,
+                    norm_layer,
+                    drop_layer,
+                    TridentConv2d,
+                    bn_channels=3 * planes * self.expansion,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                    dilation=1,
+                ),
+            ],
+            downsample,
+            act_layer,
+        )
 
 
 def _tridentnet(
@@ -104,7 +152,7 @@ def _tridentnet(
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -121,4 +169,4 @@ def tridentnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any)
         torch.nn.Module: classification model
     """
 
-    return _tridentnet('tridentnet50', pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
+    return _tridentnet("tridentnet50", pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)

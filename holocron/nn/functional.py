@@ -10,9 +10,21 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 
-__all__ = ['hard_mish', 'nl_relu', 'focal_loss', 'multilabel_cross_entropy', 'complement_cross_entropy',
-           'mutual_channel_loss', 'norm_conv2d', 'add2d', 'dropblock2d', 'z_pool', 'concat_downsample2d',
-           'dice_loss', 'poly_loss']
+__all__ = [
+    "hard_mish",
+    "nl_relu",
+    "focal_loss",
+    "multilabel_cross_entropy",
+    "complement_cross_entropy",
+    "mutual_channel_loss",
+    "norm_conv2d",
+    "add2d",
+    "dropblock2d",
+    "z_pool",
+    "concat_downsample2d",
+    "dice_loss",
+    "poly_loss",
+]
 
 
 def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
@@ -30,7 +42,7 @@ def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
     return 0.5 * x * (x + 2).clamp(min=0, max=2)
 
 
-def nl_relu(x: Tensor, beta: float = 1., inplace: bool = False) -> Tensor:
+def nl_relu(x: Tensor, beta: float = 1.0, inplace: bool = False) -> Tensor:
     """Implements the natural logarithm ReLU activation function
 
     Args:
@@ -51,8 +63,8 @@ def focal_loss(
     target: Tensor,
     weight: Optional[Tensor] = None,
     ignore_index: int = -100,
-    reduction: str = 'mean',
-    gamma: float = 2.
+    reduction: str = "mean",
+    gamma: float = 2.0,
 ) -> Tensor:
     """Implements the focal loss from
     `"Focal Loss for Dense Object Detection" <https://arxiv.org/pdf/1708.02002.pdf>`_
@@ -72,7 +84,7 @@ def focal_loss(
     # log(P[class]) = log_softmax(score)[class]
     logpt = F.log_softmax(x, dim=1)
 
-    # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
+    # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
     logpt = logpt.transpose(1, 0).flatten(1).gather(0, target.view(1, -1)).squeeze()
     # Ignore index (set loss contribution to 0)
     valid_idxs = torch.ones(target.view(-1).shape[0], dtype=torch.bool, device=x.device)
@@ -93,9 +105,9 @@ def focal_loss(
     loss = -1 * (1 - pt) ** gamma * logpt
 
     # Loss reduction
-    if reduction == 'sum':
+    if reduction == "sum":
         loss = loss[valid_idxs].sum()
-    elif reduction == 'mean':
+    elif reduction == "mean":
         loss = loss[valid_idxs].mean()
     else:
         # if no reduction, reshape tensor like target
@@ -125,7 +137,7 @@ def concat_downsample2d(x: Tensor, scale_factor: int) -> Tensor:
     # N * C * H * W --> N * C * (H/scale_factor) * scale_factor * (W/scale_factor) * scale_factor
     x = x.view(b, c, h // scale_factor, scale_factor, w // scale_factor, scale_factor)
     x = x.permute(0, 3, 5, 1, 2, 4).contiguous()
-    x = x.view(b, int(c * scale_factor ** 2), h // scale_factor, w // scale_factor)
+    x = x.view(b, int(c * scale_factor**2), h // scale_factor, w // scale_factor)
 
     return x
 
@@ -143,11 +155,7 @@ def z_pool(x: Tensor, dim: int) -> Tensor:
 
 
 def multilabel_cross_entropy(
-    x: Tensor,
-    target: Tensor,
-    weight: Optional[Tensor] = None,
-    ignore_index: int = -100,
-    reduction: str = 'mean'
+    x: Tensor, target: Tensor, weight: Optional[Tensor] = None, ignore_index: int = -100, reduction: str = "mean"
 ) -> Tensor:
     """Implements the cross entropy loss for multi-label targets
 
@@ -175,17 +183,17 @@ def multilabel_cross_entropy(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt = logpt * weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[attr-defined]
+        logpt = logpt * weight.view(1, -1, *([1] * (x.ndim - 2)))
 
-    # CE Loss
-    loss = - target * logpt
+    # CE Loss
+    loss = -target * logpt
 
     # Loss reduction
-    if reduction == 'sum':
+    if reduction == "sum":
         loss = loss[:, valid_idxs].sum()
     else:
         loss = loss[:, valid_idxs].sum(dim=1)
-        if reduction == 'mean':
+        if reduction == "mean":
             loss = loss.mean()
 
     return loss
@@ -196,8 +204,8 @@ def complement_cross_entropy(
     target: Tensor,
     weight: Optional[Tensor] = None,
     ignore_index: int = -100,
-    reduction: str = 'mean',
-    gamma: float = -1
+    reduction: str = "mean",
+    gamma: float = -1,
 ) -> Tensor:
     """Implements the complement cross entropy loss from
     `"Imbalanced Image Classification with Complement Cross Entropy" <https://arxiv.org/pdf/2009.02189.pdf>`_
@@ -225,12 +233,12 @@ def complement_cross_entropy(
     pt = F.softmax(x, dim=1)
     pt = pt / (1 - pt.transpose(0, 1).gather(0, target.unsqueeze(0)).transpose(0, 1))
 
-    loss = - 1 / (x.shape[1] - 1) * pt * torch.log(pt)
+    loss = -1 / (x.shape[1] - 1) * pt * torch.log(pt)
 
     # Nullify contributions to the loss
     # TODO: vectorize or write CUDA extension
     for class_idx in torch.unique(target):
-        loss[:, class_idx][target == class_idx] = 0.
+        loss[:, class_idx][target == class_idx] = 0.0
 
     # Ignore index (set loss contribution to 0)
     valid_idxs = torch.ones(loss.shape[1], dtype=torch.bool, device=x.device)
@@ -242,14 +250,14 @@ def complement_cross_entropy(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        loss = loss * weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[attr-defined]
+        loss = loss * weight.view(1, -1, *([1] * (x.ndim - 2)))
 
     # Loss reduction
-    if reduction == 'sum':
+    if reduction == "sum":
         loss = loss[:, valid_idxs].sum()
     else:
         loss = loss[:, valid_idxs].sum(dim=1)
-        if reduction == 'mean':
+        if reduction == "mean":
             loss = loss.mean()
 
     # Smooth the labels
@@ -261,9 +269,9 @@ def mutual_channel_loss(
     target: Tensor,
     weight: Optional[Tensor] = None,
     ignore_index: int = -100,
-    reduction: str = 'mean',
+    reduction: str = "mean",
     xi: int = 2,
-    alpha: float = 1.
+    alpha: float = 1.0,
 ) -> Tensor:
     """Implements the mutual channel loss from
     `"The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification"
@@ -290,7 +298,7 @@ def mutual_channel_loss(
 
     # CWA
     base_mask = torch.zeros(xi, device=x.device)
-    base_mask[:ceil(xi / 2)] = 1
+    base_mask[: ceil(xi / 2)] = 1
     chan_mask = torch.zeros((cnum, xi), device=x.device)
     for idx in range(cnum):
         chan_mask[idx] = base_mask[torch.randperm(xi)]
@@ -311,9 +319,9 @@ def mutual_channel_loss(
 
     diversity_loss = div_out.mean(dim=1)
 
-    if reduction == 'sum':
+    if reduction == "sum":
         diversity_loss = diversity_loss.sum()
-    elif reduction == 'mean':
+    elif reduction == "mean":
         diversity_loss = diversity_loss.mean()
     else:
         diversity_loss = diversity_loss.view(b, *spatial_dims)
@@ -331,7 +339,7 @@ def _xcorr2d(
     dilation: Union[int, Tuple[int, int]] = 1,
     groups: int = 1,
     normalize_slices: bool = False,
-    eps: float = 1e-14
+    eps: float = 1e-14,
 ) -> Tensor:
     """Implements cross-correlation operation"""
 
@@ -357,7 +365,7 @@ def _xcorr2d(
         x += bias
     x = x.transpose(1, 2)
 
-    # Check output shape
+    # Check output shape
     if isinstance(padding, int):
         padding = (padding, padding)
     if isinstance(stride, int):
@@ -389,7 +397,7 @@ def norm_conv2d(
     padding: Union[int, Tuple[int, int]] = 0,
     dilation: Union[int, Tuple[int, int]] = 1,
     groups: int = 1,
-    eps: float = 1e-14
+    eps: float = 1e-14,
 ) -> Tensor:
     """Implements a normalized convolution operations in 2D. Based on the `implementation
     <https://github.com/kimdongsuk1/NormalizedCNN>`_ by the paper's author.
@@ -440,7 +448,7 @@ def add2d(
     dilation: Union[int, Tuple[int, int]] = 1,
     groups: int = 1,
     normalize_slices: bool = False,
-    eps: float = 1e-14
+    eps: float = 1e-14,
 ) -> Tensor:
     """Implements an adder operation in 2D from `"AdderNet: Do We Really Need Multiplications in Deep Learning?"
     <https://arxiv.org/pdf/1912.13200.pdf>`_. See :class:`~holocron.nn.Add2d` for details and output shape.
@@ -487,14 +495,13 @@ def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = Fa
         return x
 
     # cf. Eq (1) from the paper
-    gamma = drop_prob / block_size ** 2
+    gamma = drop_prob / block_size**2
 
     # Sample a mask for the centers of blocks that will be dropped
     mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= gamma).to(dtype=x.dtype)
 
     # Expand zero positions to block size
-    mask = 1 - F.max_pool2d(mask, kernel_size=(block_size, block_size),
-                            stride=(1, 1), padding=block_size // 2)
+    mask = 1 - F.max_pool2d(mask, kernel_size=(block_size, block_size), stride=(1, 1), padding=block_size // 2)
 
     # Avoid NaNs
     one_count = mask.sum()
@@ -515,7 +522,7 @@ def dice_loss(
     x: Tensor,
     target: Tensor,
     weight: Optional[Tensor] = None,
-    gamma: float = 1.,
+    gamma: float = 1.0,
     eps: float = 1e-8,
 ) -> Tensor:
     """Implements the dice loss from `"V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image
@@ -552,10 +559,10 @@ def dice_loss(
 def poly_loss(
     x: Tensor,
     target: Tensor,
-    eps: float = 2.,
+    eps: float = 2.0,
     weight: Optional[Tensor] = None,
     ignore_index: int = -100,
-    reduction: str = 'mean',
+    reduction: str = "mean",
 ) -> Tensor:
     """Implements the Poly1 loss from `"PolyLoss: A Polynomial Expansion Perspective of Classification Loss
     Functions" <https://arxiv.org/pdf/2204.12511.pdf>`_.
@@ -575,7 +582,7 @@ def poly_loss(
     # log(P[class]) = log_softmax(score)[class]
     logpt = F.log_softmax(x, dim=1)
 
-    # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
+    # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
     logpt = logpt.transpose(1, 0).flatten(1).gather(0, target.view(1, -1)).squeeze()
     # Ignore index (set loss contribution to 0)
     valid_idxs = torch.ones(target.view(-1).shape[0], dtype=torch.bool, device=x.device)
@@ -593,9 +600,9 @@ def poly_loss(
         logpt = weight.gather(0, target.data.view(-1)) * logpt
 
     # Loss reduction
-    if reduction == 'sum':
+    if reduction == "sum":
         loss = loss[valid_idxs].sum()
-    elif reduction == 'mean':
+    elif reduction == "mean":
         loss = loss[valid_idxs].mean()
     else:
         # if no reduction, reshape tensor like target

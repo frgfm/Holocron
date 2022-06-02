@@ -20,7 +20,7 @@ from holocron import models
 def main(args):
 
     if args.device is None:
-        args.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        args.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
     device = torch.device(args.device)
 
@@ -28,7 +28,7 @@ def main(args):
     model = models.__dict__[args.arch](pretrained=args.pretrained).eval().to(device=device)
 
     # RepVGG
-    if args.arch.startswith('repvgg'):
+    if args.arch.startswith("repvgg"):
         model.reparametrize()
 
     # Input
@@ -51,15 +51,17 @@ def main(args):
     print(f"mean {1000 * _timings.mean():.2f}ms, std {1000 * _timings.std():.2f}ms")
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Holocron model latency benchmark',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Holocron model latency benchmark", formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument("arch", type=str, help="Architecture to use")
     parser.add_argument("--size", type=int, default=224, help="The image input size")
-    parser.add_argument("--device", type=str, default=None, help='Default device to perform computation on')
+    parser.add_argument("--device", type=str, default=None, help="Default device to perform computation on")
     parser.add_argument("--it", type=int, default=100, help="Number of iterations to run")
-    parser.add_argument("--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo",
-                        action="store_true")
+    parser.add_argument(
+        "--pretrained", dest="pretrained", help="Use pre-trained models from the modelzoo", action="store_true"
+    )
     args = parser.parse_args()
 
     main(args)

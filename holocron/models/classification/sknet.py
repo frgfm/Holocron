@@ -14,30 +14,29 @@ from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .resnet import ResNet, _ResBlock
 
-__all__ = ['SoftAttentionLayer', 'SKConv2d', 'SKBottleneck', 'sknet50', 'sknet101', 'sknet152']
+__all__ = ["SoftAttentionLayer", "SKConv2d", "SKBottleneck", "sknet50", "sknet101", "sknet152"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'sknet50': {
+    "sknet50": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/sknet50_224-5d2160f2.pth',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/sknet50_224-5d2160f2.pth",
     },
-    'sknet101': {
+    "sknet101": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': None,
+        "input_shape": (3, 224, 224),
+        "url": None,
     },
-    'sknet152': {
+    "sknet152": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': None,
+        "input_shape": (3, 224, 224),
+        "url": None,
     },
 }
 
 
 class SoftAttentionLayer(nn.Sequential):
-
     def __init__(
         self,
         channels: int,
@@ -45,19 +44,33 @@ class SoftAttentionLayer(nn.Sequential):
         out_multiplier: int = 1,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
-        drop_layer: Optional[Callable[..., nn.Module]] = None
+        drop_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__(
             GlobalAvgPool2d(flatten=False),
-            *conv_sequence(channels, max(channels // sa_ratio, 32), act_layer, norm_layer, drop_layer,
-                           kernel_size=1, stride=1, bias=(norm_layer is None)),
-            *conv_sequence(max(channels // sa_ratio, 32), channels * out_multiplier,
-                           nn.Sigmoid(), None, drop_layer, kernel_size=1, stride=1)
+            *conv_sequence(
+                channels,
+                max(channels // sa_ratio, 32),
+                act_layer,
+                norm_layer,
+                drop_layer,
+                kernel_size=1,
+                stride=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(
+                max(channels // sa_ratio, 32),
+                channels * out_multiplier,
+                nn.Sigmoid(),
+                None,
+                drop_layer,
+                kernel_size=1,
+                stride=1,
+            ),
         )
 
 
 class SKConv2d(nn.Module):
-
     def __init__(
         self,
         in_channels: int,
@@ -67,13 +80,28 @@ class SKConv2d(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__()
-        self.path_convs = nn.ModuleList([
-            nn.Sequential(*conv_sequence(in_channels, out_channels, act_layer, norm_layer, drop_layer, kernel_size=3,
-                                         bias=(norm_layer is None), dilation=idx + 1, padding=idx + 1, **kwargs))
-            for idx in range(m)])
+        self.path_convs = nn.ModuleList(
+            [
+                nn.Sequential(
+                    *conv_sequence(
+                        in_channels,
+                        out_channels,
+                        act_layer,
+                        norm_layer,
+                        drop_layer,
+                        kernel_size=3,
+                        bias=(norm_layer is None),
+                        dilation=idx + 1,
+                        padding=idx + 1,
+                        **kwargs,
+                    )
+                )
+                for idx in range(m)
+            ]
+        )
         self.sa = SoftAttentionLayer(out_channels, sa_ratio, m, act_layer, norm_layer, drop_layer)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -105,17 +133,41 @@ class SKBottleneck(_ResBlock):
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
 
-        width = int(planes * (base_width / 64.)) * groups
+        width = int(planes * (base_width / 64.0)) * groups
         super().__init__(
-            [*conv_sequence(inplanes, width, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1,
-                            stride=1, bias=(norm_layer is None), **kwargs),
-             SKConv2d(width, width, 2, 16, act_layer, norm_layer, drop_layer, groups=groups, stride=stride),
-             *conv_sequence(width, planes * self.expansion, None, norm_layer, drop_layer, conv_layer, kernel_size=1,
-                            stride=1, bias=(norm_layer is None), **kwargs)],
-            downsample, act_layer)
+            [
+                *conv_sequence(
+                    inplanes,
+                    width,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    conv_layer,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                    **kwargs,
+                ),
+                SKConv2d(width, width, 2, 16, act_layer, norm_layer, drop_layer, groups=groups, stride=stride),
+                *conv_sequence(
+                    width,
+                    planes * self.expansion,
+                    None,
+                    norm_layer,
+                    drop_layer,
+                    conv_layer,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                    **kwargs,
+                ),
+            ],
+            downsample,
+            act_layer,
+        )
 
 
 def _sknet(
@@ -132,7 +184,7 @@ def _sknet(
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -149,7 +201,7 @@ def sknet50(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> R
         torch.nn.Module: classification model
     """
 
-    return _sknet('sknet50', pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
+    return _sknet("sknet50", pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
 
 
 def sknet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -164,7 +216,7 @@ def sknet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _sknet('sknet101', pretrained, progress, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
+    return _sknet("sknet101", pretrained, progress, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
 
 
 def sknet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
@@ -179,4 +231,4 @@ def sknet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
         torch.nn.Module: classification model
     """
 
-    return _sknet('sknet152', pretrained, progress, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)
+    return _sknet("sknet152", pretrained, progress, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)

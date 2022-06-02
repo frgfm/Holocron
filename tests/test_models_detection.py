@@ -18,9 +18,9 @@ def _test_detection_model(name, input_size):
     assert isinstance(out, list)
     assert len(out) == x.shape[0]
     if len(out) > 0:
-        assert isinstance(out[0].get('boxes'), torch.Tensor)
-        assert isinstance(out[0].get('scores'), torch.Tensor)
-        assert isinstance(out[0].get('labels'), torch.Tensor)
+        assert isinstance(out[0].get("boxes"), torch.Tensor)
+        assert isinstance(out[0].get("scores"), torch.Tensor)
+        assert isinstance(out[0].get("labels"), torch.Tensor)
 
     # Check that list of Tensors does not change output
     x_list = [torch.rand(3, *input_size) for _ in range(batch_size)]
@@ -56,7 +56,7 @@ def _test_detection_model(name, input_size):
         assert subloss.requires_grad
         assert not torch.isnan(subloss)
 
-    # Loss computation with no GT
+    # Loss computation with no GT
     gt_boxes = [torch.zeros((0, 4)) for _ in num_boxes]
     gt_labels = [torch.zeros(0, dtype=torch.long) for _ in num_boxes]
     loss = model(x, [dict(boxes=boxes, labels=labels) for boxes, labels in zip(gt_boxes, gt_labels)])
@@ -65,9 +65,9 @@ def _test_detection_model(name, input_size):
 @pytest.mark.parametrize(
     "arch, input_shape",
     [
-        ['yolov1', (448, 448)],
-        ['yolov2', (416, 416)],
-        ['yolov4', (608, 608)],
+        ["yolov1", (448, 448)],
+        ["yolov2", (416, 416)],
+        ["yolov4", (608, 608)],
     ],
 )
 def test_detection_model(arch, input_shape):

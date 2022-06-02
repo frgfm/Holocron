@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 from torch import einsum, nn
 
-__all__ = ['LambdaLayer']
+__all__ = ["LambdaLayer"]
 
 
 class LambdaLayer(nn.Module):
@@ -29,6 +29,7 @@ class LambdaLayer(nn.Module):
         num_heads (int, optional): number of attention heads
         dim_u (int, optional): intra-depth dimension
     """
+
     def __init__(
         self,
         in_channels: int,
@@ -37,17 +38,17 @@ class LambdaLayer(nn.Module):
         n: Optional[int] = None,
         r: Optional[int] = None,
         num_heads: int = 4,
-        dim_u: int = 1
+        dim_u: int = 1,
     ) -> None:
         super().__init__()
         self.u = dim_u
         self.num_heads = num_heads
 
         if out_channels % num_heads != 0:
-            raise AssertionError('values dimension must be divisible by number of heads for multi-head query')
+            raise AssertionError("values dimension must be divisible by number of heads for multi-head query")
         dim_v = out_channels // num_heads
 
-        # Project input and context to get queries, keys & values
+        # Project input and context to get queries, keys & values
         self.to_q = nn.Conv2d(in_channels, dim_k * num_heads, 1, bias=False)
         self.to_k = nn.Conv2d(in_channels, dim_k * dim_u, 1, bias=False)
         self.to_v = nn.Conv2d(in_channels, dim_v * dim_u, 1, bias=False)
@@ -58,13 +59,13 @@ class LambdaLayer(nn.Module):
         self.local_contexts = r is not None
         if r is not None:
             if r % 2 != 1:
-                raise AssertionError('Receptive kernel size should be odd')
+                raise AssertionError("Receptive kernel size should be odd")
             self.padding = r // 2
-            self.R = nn.Parameter(torch.randn(dim_k, dim_u, 1, r, r))
+            self.R = nn.Parameter(torch.randn(dim_k, dim_u, 1, r, r))  # type: ignore[attr-defined]
         else:
             if n is None:
-                raise AssertionError('You must specify the total sequence length (h x w)')
-            self.pos_emb = nn.Parameter(torch.randn(n, n, dim_k, dim_u))
+                raise AssertionError("You must specify the total sequence length (h x w)")
+            self.pos_emb = nn.Parameter(torch.randn(n, n, dim_k, dim_u))  # type: ignore[attr-defined]
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, _, h, w = x.shape
@@ -89,18 +90,18 @@ class LambdaLayer(nn.Module):
         k = k.softmax(dim=-1)
 
         # Content function
-        λc = einsum('b u k m, b u v m -> b k v', k, v)
-        Yc = einsum('b h k n, b k v -> b n h v', q, λc)
+        λc = einsum("b u k m, b u v m -> b k v", k, v)
+        Yc = einsum("b h k n, b k v -> b n h v", q, λc)
 
         # Position function
         if self.local_contexts:
             # B x dim_u x dim_v x (H * W) -> B x dim_u x dim_v x H x W
             v = v.reshape(b, self.u, v.shape[2], h, w)
             λp = F.conv3d(v, self.R, padding=(0, self.padding, self.padding))
-            Yp = einsum('b h k n, b k v n -> b n h v', q, λp.flatten(3))
+            Yp = einsum("b h k n, b k v n -> b n h v", q, λp.flatten(3))
         else:
-            λp = einsum('n m k u, b u v m -> b n k v', self.pos_emb, v)
-            Yp = einsum('b h k n, b n k v -> b n h v', q, λp)
+            λp = einsum("n m k u, b u v m -> b n k v", self.pos_emb, v)
+            Yp = einsum("b h k n, b n k v -> b n h v", q, λp)
 
         Y = Yc + Yp
         # B x (H * W) x num_heads x dim_v -> B x (num_heads * dim_v) x H x W

@@ -14,40 +14,39 @@ from holocron.nn import GlobalAvgPool2d, init
 from ..presets import IMAGENET
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ['SEBlock', 'ReXBlock', 'ReXNet', 'rexnet1_0x', 'rexnet1_3x', 'rexnet1_5x', 'rexnet2_0x', 'rexnet2_2x']
+__all__ = ["SEBlock", "ReXBlock", "ReXNet", "rexnet1_0x", "rexnet1_3x", "rexnet1_5x", "rexnet2_0x", "rexnet2_2x"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'rexnet1_0x': {
+    "rexnet1_0x": {
         **IMAGENET,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth",
     },
-    'rexnet1_3x': {
+    "rexnet1_3x": {
         **IMAGENET,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth",
     },
-    'rexnet1_5x': {
+    "rexnet1_5x": {
         **IMAGENET,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth",
     },
-    'rexnet2_0x': {
+    "rexnet2_0x": {
         **IMAGENET,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth",
     },
-    'rexnet2_2x': {
+    "rexnet2_2x": {
         **IMAGENET,
-        'input_shape': (3, 224, 224),
-        'url': None,
+        "input_shape": (3, 224, 224),
+        "url": None,
     },
 }
 
 
 class SEBlock(nn.Module):
-
     def __init__(
         self,
         channels: int,
@@ -59,10 +58,18 @@ class SEBlock(nn.Module):
         super().__init__()
         self.pool = GlobalAvgPool2d(flatten=False)
         self.conv = nn.Sequential(
-            *conv_sequence(channels, channels // se_ratio, act_layer, norm_layer, drop_layer,
-                           kernel_size=1, stride=1, bias=(norm_layer is None)),
-            *conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer,
-                           kernel_size=1, stride=1))
+            *conv_sequence(
+                channels,
+                channels // se_ratio,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                kernel_size=1,
+                stride=1,
+                bias=(norm_layer is None),
+            ),
+            *conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer, kernel_size=1, stride=1),
+        )
 
     def forward(self, x):
 
@@ -99,26 +106,51 @@ class ReXBlock(nn.Module):
         _layers = []
         if t != 1:
             dw_channels = in_channels * t
-            _layers.extend(conv_sequence(in_channels, dw_channels, nn.SiLU(inplace=True), norm_layer, drop_layer,
-                                         kernel_size=1, stride=1, bias=(norm_layer is None)))
+            _layers.extend(
+                conv_sequence(
+                    in_channels,
+                    dw_channels,
+                    nn.SiLU(inplace=True),
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=1,
+                    stride=1,
+                    bias=(norm_layer is None),
+                )
+            )
         else:
             dw_channels = in_channels
 
-        _layers.extend(conv_sequence(dw_channels, dw_channels, None, norm_layer, drop_layer, kernel_size=3,
-                                     stride=stride, padding=1, bias=(norm_layer is None), groups=dw_channels))
+        _layers.extend(
+            conv_sequence(
+                dw_channels,
+                dw_channels,
+                None,
+                norm_layer,
+                drop_layer,
+                kernel_size=3,
+                stride=stride,
+                padding=1,
+                bias=(norm_layer is None),
+                groups=dw_channels,
+            )
+        )
 
         if use_se:
             _layers.append(SEBlock(dw_channels, se_ratio, act_layer, norm_layer, drop_layer))
 
         _layers.append(act_layer)
-        _layers.extend(conv_sequence(dw_channels, channels, None, norm_layer, drop_layer, kernel_size=1,
-                                     stride=1, bias=(norm_layer is None)))
+        _layers.extend(
+            conv_sequence(
+                dw_channels, channels, None, norm_layer, drop_layer, kernel_size=1, stride=1, bias=(norm_layer is None)
+            )
+        )
         self.conv = nn.Sequential(*_layers)
 
     def forward(self, x):
         out = self.conv(x)
         if self.use_shortcut:
-            out[:, :self.in_channels] += x
+            out[:, : self.in_channels] += x
 
         return out
 
@@ -163,8 +195,17 @@ class ReXNet(nn.Sequential):
 
         ses = [False] * (num_blocks[0] + num_blocks[1]) + [use_se] * sum(num_blocks[2:])
 
-        _layers = conv_sequence(in_channels, chans[0], act_layer, norm_layer, drop_layer,
-                                kernel_size=3, stride=2, padding=1, bias=(norm_layer is None))
+        _layers = conv_sequence(
+            in_channels,
+            chans[0],
+            act_layer,
+            norm_layer,
+            drop_layer,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            bias=(norm_layer is None),
+        )
 
         t = 1
         for in_c, c, s, se in zip(chans[:-1], chans[1:], strides, ses):
@@ -172,33 +213,42 @@ class ReXNet(nn.Sequential):
             t = 6
 
         pen_channels = int(width_mult * 1280)
-        _layers.extend(conv_sequence(chans[-1], pen_channels, act_layer, norm_layer, drop_layer,
-                                     kernel_size=1, stride=1, padding=0, bias=(norm_layer is None)))
+        _layers.extend(
+            conv_sequence(
+                chans[-1],
+                pen_channels,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+                bias=(norm_layer is None),
+            )
+        )
 
-        super().__init__(OrderedDict([
-            ('features', nn.Sequential(*_layers)),
-            ('pool', GlobalAvgPool2d(flatten=True)),
-            ('head', nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes)))]))
+        super().__init__(
+            OrderedDict(
+                [
+                    ("features", nn.Sequential(*_layers)),
+                    ("pool", GlobalAvgPool2d(flatten=True)),
+                    ("head", nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes))),
+                ]
+            )
+        )
 
         # Init all layers
-        init.init_module(self, nonlinearity='relu')
+        init.init_module(self, nonlinearity="relu")
 
 
-def _rexnet(
-    arch: str,
-    pretrained: bool,
-    progress: bool,
-    width_mult: float,
-    depth_mult: float,
-    **kwargs: Any
-) -> ReXNet:
+def _rexnet(arch: str, pretrained: bool, progress: bool, width_mult: float, depth_mult: float, **kwargs: Any) -> ReXNet:
 
     # Build the model
     model = ReXNet(width_mult, depth_mult, **kwargs)
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -216,7 +266,7 @@ def rexnet1_0x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet1_0x', pretrained, progress, 1, 1, **kwargs)
+    return _rexnet("rexnet1_0x", pretrained, progress, 1, 1, **kwargs)
 
 
 def rexnet1_3x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
@@ -232,7 +282,7 @@ def rexnet1_3x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet1_3x', pretrained, progress, 1.3, 1, **kwargs)
+    return _rexnet("rexnet1_3x", pretrained, progress, 1.3, 1, **kwargs)
 
 
 def rexnet1_5x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
@@ -248,7 +298,7 @@ def rexnet1_5x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet1_5x', pretrained, progress, 1.5, 1, **kwargs)
+    return _rexnet("rexnet1_5x", pretrained, progress, 1.5, 1, **kwargs)
 
 
 def rexnet2_0x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
@@ -264,7 +314,7 @@ def rexnet2_0x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet2_0x', pretrained, progress, 2, 1, **kwargs)
+    return _rexnet("rexnet2_0x", pretrained, progress, 2, 1, **kwargs)
 
 
 def rexnet2_2x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
@@ -280,4 +330,4 @@ def rexnet2_2x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -
         torch.nn.Module: classification model
     """
 
-    return _rexnet('rexnet2_2x', pretrained, progress, 2.2, 1, **kwargs)
+    return _rexnet("rexnet2_2x", pretrained, progress, 2.2, 1, **kwargs)

@@ -10,7 +10,7 @@ import torch
 from torch import Tensor
 from torch.nn.functional import one_hot
 
-__all__ = ['Mixup']
+__all__ = ["Mixup"]
 
 
 class Mixup(torch.nn.Module):

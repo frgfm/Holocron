@@ -16,25 +16,24 @@ from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .darknetv3 import ResBlock
 
-__all__ = ['DarknetV4', 'cspdarknet53', 'cspdarknet53_mish']
+__all__ = ["DarknetV4", "cspdarknet53", "cspdarknet53_mish"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    'cspdarknet53': {
+    "cspdarknet53": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_224-d2a17b18.pt',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_224-d2a17b18.pt",
     },
-    'cspdarknet53_mish': {
+    "cspdarknet53_mish": {
         **IMAGENETTE,
-        'input_shape': (3, 224, 224),
-        'url': 'https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_mish_256-32d8ec68.pt',
+        "input_shape": (3, 224, 224),
+        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/cspdarknet53_mish_256-32d8ec68.pt",
     },
 }
 
 
 class CSPStage(nn.Module):
-
     def __init__(
         self,
         in_channels: int,
@@ -43,27 +42,70 @@ class CSPStage(nn.Module):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
         compression = 2 if num_blocks > 1 else 1
-        self.base_layer = nn.Sequential(*conv_sequence(in_channels, out_channels,
-                                                       act_layer, norm_layer, drop_layer, conv_layer,
-                                                       kernel_size=3, padding=1, stride=2, bias=(norm_layer is None)),
-                                        # Share the conv
-                                        *conv_sequence(out_channels, 2 * out_channels // compression,
-                                                       act_layer, norm_layer, drop_layer, conv_layer,
-                                                       kernel_size=1, bias=(norm_layer is None)))
-        self.main = nn.Sequential(*[ResBlock(out_channels // compression,
-                                             out_channels // compression if num_blocks > 1 else in_channels,
-                                             act_layer, norm_layer, drop_layer, conv_layer)
-                                    for _ in range(num_blocks)],
-                                  *conv_sequence(out_channels // compression, out_channels // compression,
-                                                 act_layer, norm_layer, drop_layer, conv_layer,
-                                                 kernel_size=1, bias=(norm_layer is None)))
-        self.transition = nn.Sequential(*conv_sequence(2 * out_channels // compression, out_channels,
-                                                       act_layer, norm_layer, drop_layer, conv_layer,
-                                                       kernel_size=1, bias=(norm_layer is None)))
+        self.base_layer = nn.Sequential(
+            *conv_sequence(
+                in_channels,
+                out_channels,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=3,
+                padding=1,
+                stride=2,
+                bias=(norm_layer is None),
+            ),
+            # Share the conv
+            *conv_sequence(
+                out_channels,
+                2 * out_channels // compression,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
+        )
+        self.main = nn.Sequential(
+            *[
+                ResBlock(
+                    out_channels // compression,
+                    out_channels // compression if num_blocks > 1 else in_channels,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    conv_layer,
+                )
+                for _ in range(num_blocks)
+            ],
+            *conv_sequence(
+                out_channels // compression,
+                out_channels // compression,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            ),
+        )
+        self.transition = nn.Sequential(
+            *conv_sequence(
+                2 * out_channels // compression,
+                out_channels,
+                act_layer,
+                norm_layer,
+                drop_layer,
+                conv_layer,
+                kernel_size=1,
+                bias=(norm_layer is None),
+            )
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.base_layer(x)
@@ -72,7 +114,6 @@ class CSPStage(nn.Module):
 
 
 class DarknetBodyV4(nn.Sequential):
-
     def __init__(
         self,
         layout: List[Tuple[int, int]],
@@ -82,7 +123,7 @@ class DarknetBodyV4(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
 
         super().__init__()
@@ -94,13 +135,38 @@ class DarknetBodyV4(nn.Sequential):
 
         in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
-        super().__init__(OrderedDict([
-            ('stem', nn.Sequential(*conv_sequence(in_channels, stem_channels,
-                                                  act_layer, norm_layer, drop_layer, conv_layer,
-                                                  kernel_size=3, padding=1, bias=(norm_layer is None)))),
-            ('stages', nn.Sequential(*[CSPStage(_in_chans, out_chans, num_blocks,
-                                                act_layer, norm_layer, drop_layer, conv_layer)
-                                       for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)]))])
+        super().__init__(
+            OrderedDict(
+                [
+                    (
+                        "stem",
+                        nn.Sequential(
+                            *conv_sequence(
+                                in_channels,
+                                stem_channels,
+                                act_layer,
+                                norm_layer,
+                                drop_layer,
+                                conv_layer,
+                                kernel_size=3,
+                                padding=1,
+                                bias=(norm_layer is None),
+                            )
+                        ),
+                    ),
+                    (
+                        "stages",
+                        nn.Sequential(
+                            *[
+                                CSPStage(
+                                    _in_chans, out_chans, num_blocks, act_layer, norm_layer, drop_layer, conv_layer
+                                )
+                                for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)
+                            ]
+                        ),
+                    ),
+                ]
+            )
         )
 
         self.num_features = num_features
@@ -133,16 +199,32 @@ class DarknetV4(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None
+        conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
 
-        super().__init__(OrderedDict([
-            ('features', DarknetBodyV4(layout, in_channels, stem_channels, num_features,
-                                       act_layer, norm_layer, drop_layer, conv_layer)),
-            ('pool', GlobalAvgPool2d(flatten=True)),
-            ('classifier', nn.Linear(layout[-1][0], num_classes))]))
+        super().__init__(
+            OrderedDict(
+                [
+                    (
+                        "features",
+                        DarknetBodyV4(
+                            layout,
+                            in_channels,
+                            stem_channels,
+                            num_features,
+                            act_layer,
+                            norm_layer,
+                            drop_layer,
+                            conv_layer,
+                        ),
+                    ),
+                    ("pool", GlobalAvgPool2d(flatten=True)),
+                    ("classifier", nn.Linear(layout[-1][0], num_classes)),
+                ]
+            )
+        )
 
-        init_module(self, 'leaky_relu')
+        init_module(self, "leaky_relu")
 
 
 def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int, int]], **kwargs: Any) -> DarknetV4:
@@ -151,7 +233,7 @@ def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
     # Load pretrained parameters
     if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]['url'], progress)
+        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
     return model
 
@@ -168,7 +250,7 @@ def cspdarknet53(pretrained: bool = False, progress: bool = True, **kwargs: Any)
         torch.nn.Module: classification model
     """
 
-    return _darknet('cspdarknet53', pretrained, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)
+    return _darknet("cspdarknet53", pretrained, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)
 
 
 def cspdarknet53_mish(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> DarknetV4:
@@ -184,13 +266,9 @@ def cspdarknet53_mish(pretrained: bool = False, progress: bool = True, **kwargs:
         torch.nn.Module: classification model
     """
 
-    kwargs['act_layer'] = nn.Mish(inplace=True)
-    kwargs['drop_layer'] = DropBlock2d
+    kwargs["act_layer"] = nn.Mish(inplace=True)
+    kwargs["drop_layer"] = DropBlock2d
 
     return _darknet(
-        'cspdarknet53_mish',
-        pretrained,
-        progress,
-        [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)],
-        **kwargs
+        "cspdarknet53_mish", pretrained, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs
     )

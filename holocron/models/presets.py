@@ -3,12 +3,12 @@
 # This program is licensed under the Apache License version 2.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
 
-__all__ = ['IMAGENET', 'IMAGENETTE', 'CIFAR10']
+__all__ = ["IMAGENET", "IMAGENETTE", "CIFAR10"]
 
 IMAGENET = {
-    'mean': (0.485, 0.456, 0.406),
-    'std': (0.229, 0.224, 0.225),
-    'classes': [
+    "mean": (0.485, 0.456, 0.406),
+    "std": (0.229, 0.224, 0.225),
+    "classes": [
         "tench",
         "goldfish",
         "great white shark",
@@ -1013,40 +1013,40 @@ IMAGENET = {
 }
 
 IMAGENETTE = {
-    'mean': IMAGENET['mean'],
-    'std': IMAGENET['std'],
-    'classes': [
-        'tench',
-        'English springer',
-        'cassette player',
-        'chain saw',
-        'church',
-        'French horn',
-        'garbage truck',
-        'gas pump',
-        'golf ball',
-        'parachute',
-    ]
+    "mean": IMAGENET["mean"],
+    "std": IMAGENET["std"],
+    "classes": [
+        "tench",
+        "English springer",
+        "cassette player",
+        "chain saw",
+        "church",
+        "French horn",
+        "garbage truck",
+        "gas pump",
+        "golf ball",
+        "parachute",
+    ],
 }
 
 _CIFAR = {
-    'mean': (0.5071, 0.4866, 0.4409),
-    'std': (0.2673, 0.2564, 0.2761),
+    "mean": (0.5071, 0.4866, 0.4409),
+    "std": (0.2673, 0.2564, 0.2761),
 }
 
 CIFAR10 = {
-    'mean': _CIFAR['mean'],
-    'std': _CIFAR['std'],
-    'classes': [
-        'airplane',
-        'automobile',
-        'bird',
-        'cat',
-        'deer',
-        'dog',
-        'frog',
-        'horse',
-        'ship',
-        'truck',
-    ]
+    "mean": _CIFAR["mean"],
+    "std": _CIFAR["std"],
+    "classes": [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck",
+    ],
 }
