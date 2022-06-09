@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.nn.modules.downsample - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -201,7 +201,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -230,16 +231,16 @@
 
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ConcatDownsample2d"</span><span class="p">,</span> <span class="s2">"ConcatDownsample2dJit"</span><span class="p">,</span> <span class="s2">"GlobalAvgPool2d"</span><span class="p">,</span> <span class="s2">"BlurPool2d"</span><span class="p">,</span> <span class="s2">"SPP"</span><span class="p">,</span> <span class="s2">"ZPool"</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ConcatDownsample2d&quot;</span><span class="p">,</span> <span class="s2">&quot;ConcatDownsample2dJit&quot;</span><span class="p">,</span> <span class="s2">&quot;GlobalAvgPool2d&quot;</span><span class="p">,</span> <span class="s2">&quot;BlurPool2d&quot;</span><span class="p">,</span> <span class="s2">&quot;SPP&quot;</span><span class="p">,</span> <span class="s2">&quot;ZPool&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="ConcatDownsample2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ConcatDownsample2d">[docs]</a><span class="k">class</span> <span class="nc">ConcatDownsample2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">"""Implements a loss-less downsampling operation described in `"YOLO9000: Better, Faster, Stronger"</span>
+    <span class="sd">&quot;&quot;&quot;Implements a loss-less downsampling operation described in `&quot;YOLO9000: Better, Faster, Stronger&quot;</span>
 <span class="sd">    &lt;https://pjreddie.com/media/files/papers/YOLO9000.pdf&gt;`_ by stacking adjacent information on the channel dimension.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        scale_factor (int): spatial scaling factor</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -252,12 +253,12 @@
 
 <span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>  <span class="c1"># type: ignore[attr-defined]</span>
 <span class="k">class</span> <span class="nc">ConcatDownsample2dJit</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">"""Implements a loss-less downsampling operation described in `"YOLO9000: Better, Faster, Stronger"</span>
+    <span class="sd">&quot;&quot;&quot;Implements a loss-less downsampling operation described in `&quot;YOLO9000: Better, Faster, Stronger&quot;</span>
 <span class="sd">    &lt;https://pjreddie.com/media/files/papers/YOLO9000.pdf&gt;`_ by stacking adjacent information on the channel dimension.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        scale_factor (int): spatial scaling factor</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="n">scale_factor</span>
@@ -268,12 +269,12 @@
 
 
 <div class="viewcode-block" id="GlobalAvgPool2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.GlobalAvgPool2d">[docs]</a><span class="k">class</span> <span class="nc">GlobalAvgPool2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">"""Fast implementation of global average pooling from `"TResNet: High Performance GPU-Dedicated Architecture"</span>
+    <span class="sd">&quot;&quot;&quot;Fast implementation of global average pooling from `&quot;TResNet: High Performance GPU-Dedicated Architecture&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2003.13630.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        flatten (bool, optional): whether spatial dimensions should be squeezed</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flatten</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -286,7 +287,7 @@
         <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">inplace_str</span> <span class="o">=</span> <span class="s2">"flatten=True"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="n">inplace_str</span> <span class="o">=</span> <span class="s2">&quot;flatten=True&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
         <span class="k">return</span> <span class="n">inplace_str</span></div>
 
 
@@ -296,9 +297,9 @@
 
 
 <div class="viewcode-block" id="BlurPool2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.BlurPool2d">[docs]</a><span class="k">class</span> <span class="nc">BlurPool2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">"""Ross Wightman's `implementation</span>
+    <span class="sd">&quot;&quot;&quot;Ross Wightman&#39;s `implementation</span>
 <span class="sd">    &lt;https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/layers/blur_pool.py&gt;`_ of blur pooling</span>
-<span class="sd">    module as described in `"Making Convolutional Networks Shift-Invariant Again"</span>
+<span class="sd">    module as described in `&quot;Making Convolutional Networks Shift-Invariant Again&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1904.11486.pdf&gt;`_.</span>
 
 <span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.1.3/blurpool.png</span>
@@ -310,7 +311,7 @@
 <span class="sd">        stride (int, optional): downsampling filter stride</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: the transformed tensor.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -340,16 +341,16 @@
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="si">}</span><span class="s2">, kernel_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="si">}</span><span class="s2">, stride=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="si">}</span><span class="s2">"</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="si">}</span><span class="s2">, kernel_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="si">}</span><span class="s2">, stride=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 
 <div class="viewcode-block" id="SPP"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.SPP">[docs]</a><span class="k">class</span> <span class="nc">SPP</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">):</span>
-    <span class="sd">"""SPP layer from `"Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition"</span>
+    <span class="sd">&quot;&quot;&quot;SPP layer from `&quot;Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1406.4729.pdf&gt;`_.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        kernel_sizes (list&lt;int&gt;): kernel sizes of each pooling</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_sizes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">([</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">k_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">k_size</span> <span class="ow">in</span> <span class="n">kernel_sizes</span><span class="p">])</span>
@@ -360,12 +361,12 @@
 
 
 <div class="viewcode-block" id="ZPool"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ZPool">[docs]</a><span class="k">class</span> <span class="nc">ZPool</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">"""Z-pool layer from `"Rotate to Attend: Convolutional Triplet Attention Module"</span>
+    <span class="sd">&quot;&quot;&quot;Z-pool layer from `&quot;Rotate to Attend: Convolutional Triplet Attention Module&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2010.03045.pdf&gt;`_.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dim: dimension to pool</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -415,6 +416,7 @@
 </div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/scripts/furo.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>

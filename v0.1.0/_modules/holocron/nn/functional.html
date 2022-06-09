@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.nn.functional - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -191,7 +191,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -208,31 +209,31 @@
           <h1>Source code for holocron.nn.functional</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">'''</span>
+<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">Functional interface</span>
-<span class="sd">'''</span>
+<span class="sd">&#39;&#39;&#39;</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'mish'</span><span class="p">,</span> <span class="s1">'nl_relu'</span><span class="p">,</span> <span class="s1">'focal_loss'</span><span class="p">,</span> <span class="s1">'multilabel_cross_entropy'</span><span class="p">,</span> <span class="s1">'ls_cross_entropy'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mish&#39;</span><span class="p">,</span> <span class="s1">&#39;nl_relu&#39;</span><span class="p">,</span> <span class="s1">&#39;focal_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;multilabel_cross_entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;ls_cross_entropy&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="mish"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.mish">[docs]</a><span class="k">def</span> <span class="nf">mish</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="sd">"""Implements the Mish activation function</span>
+    <span class="sd">&quot;&quot;&quot;Implements the Mish activation function</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor): input tensor</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor[x.size()]: output tensor</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">softplus</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="nl_relu"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.nl_relu">[docs]</a><span class="k">def</span> <span class="nf">nl_relu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">"""Implements the natural logarithm ReLU activation function</span>
+    <span class="sd">&quot;&quot;&quot;Implements the natural logarithm ReLU activation function</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor): input tensor</span>
@@ -240,7 +241,7 @@
 <span class="sd">        inplace (bool): whether the operation should be performed inplace</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor[x.size()]: output tensor</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu_</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">out</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
@@ -248,9 +249,9 @@
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="focal_loss"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.focal_loss">[docs]</a><span class="k">def</span> <span class="nf">focal_loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">'mean'</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-    <span class="sd">"""Implements the focal loss from</span>
-<span class="sd">    `"Focal Loss for Dense Object Detection" &lt;https://arxiv.org/pdf/1708.02002.pdf&gt;`_</span>
+<div class="viewcode-block" id="focal_loss"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.focal_loss">[docs]</a><span class="k">def</span> <span class="nf">focal_loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements the focal loss from</span>
+<span class="sd">    `&quot;Focal Loss for Dense Object Detection&quot; &lt;https://arxiv.org/pdf/1708.02002.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor[N, K, ...]): input tensor</span>
@@ -262,7 +263,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: loss reduced with `reduction` method</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># log(P[class]) = log_softmax(score)[class]</span>
     <span class="n">logpt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -288,9 +289,9 @@
     <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">pt</span><span class="p">)</span> <span class="o">**</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">logpt</span>
 
     <span class="c1"># Loss reduction</span>
-    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">'sum'</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">'mean'</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
         <span class="c1"># Ignore contribution to the loss if target is `ignore_index`</span>
         <span class="k">if</span> <span class="n">ignore_index</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="p">[</span><span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ignore_index</span><span class="p">]</span>
@@ -303,8 +304,8 @@
 
 
 <div class="viewcode-block" id="concat_downsample2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.concat_downsample2d">[docs]</a><span class="k">def</span> <span class="nf">concat_downsample2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">):</span>
-    <span class="sd">"""Implements a loss-less downsampling operation described in</span>
-<span class="sd">    `"YOLO9000: Better, Faster, Stronger" &lt;https://pjreddie.com/media/files/papers/YOLO9000.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;Implements a loss-less downsampling operation described in</span>
+<span class="sd">    `&quot;YOLO9000: Better, Faster, Stronger&quot; &lt;https://pjreddie.com/media/files/papers/YOLO9000.pdf&gt;`_</span>
 <span class="sd">    by stacking adjacent information on the channel dimension.</span>
 
 <span class="sd">    Args:</span>
@@ -313,12 +314,12 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor[N, 4C, H / 2, W / 2]: downsampled tensor</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">h</span> <span class="o">%</span> <span class="n">scale_factor</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">w</span> <span class="o">%</span> <span class="n">scale_factor</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">"Spatial size of input tensor must be multiples of `scale_factor`"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;Spatial size of input tensor must be multiples of `scale_factor`&quot;</span><span class="p">)</span>
     <span class="n">new_h</span><span class="p">,</span> <span class="n">new_w</span> <span class="o">=</span> <span class="n">h</span> <span class="o">//</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">w</span> <span class="o">//</span> <span class="n">scale_factor</span>
 
     <span class="c1"># N * C * H * W --&gt; N * C * (H/scale_factor) * scale_factor * (W/scale_factor) * scale_factor</span>
@@ -331,8 +332,8 @@
     <span class="k">return</span> <span class="n">out</span></div>
 
 
-<div class="viewcode-block" id="multilabel_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.multilabel_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">multilabel_cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">'mean'</span><span class="p">):</span>
-    <span class="sd">"""Implements the cross entropy loss for multi-label targets</span>
+<div class="viewcode-block" id="multilabel_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.multilabel_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">multilabel_cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements the cross entropy loss for multi-label targets</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor[N, K, ...]): input tensor</span>
@@ -343,7 +344,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: loss reduced with `reduction` method</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># log(P[class]) = log_softmax(score)[class]</span>
     <span class="n">logpt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -363,19 +364,19 @@
     <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span> <span class="n">target</span> <span class="o">*</span> <span class="n">logpt</span>
 
     <span class="c1"># Loss reduction</span>
-    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">'sum'</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">'mean'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">loss</span></div>
 
 
-<div class="viewcode-block" id="ls_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.ls_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">ls_cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">'mean'</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-    <span class="sd">"""Implements the label smoothing cross entropy loss from</span>
-<span class="sd">    `"Attention Is All You Need" &lt;https://arxiv.org/pdf/1706.03762.pdf&gt;`_</span>
+<div class="viewcode-block" id="ls_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.ls_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">ls_cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implements the label smoothing cross entropy loss from</span>
+<span class="sd">    `&quot;Attention Is All You Need&quot; &lt;https://arxiv.org/pdf/1706.03762.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor[N, K, ...]): input tensor</span>
@@ -387,7 +388,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor: loss reduced with `reduction` method</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">eps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">)</span>
@@ -407,11 +408,11 @@
         <span class="n">logpt</span> <span class="o">*=</span> <span class="n">weight</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Loss reduction</span>
-    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">'sum'</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">logpt</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">logpt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">'mean'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
     <span class="c1"># Smooth the labels</span>
@@ -459,6 +460,7 @@
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>

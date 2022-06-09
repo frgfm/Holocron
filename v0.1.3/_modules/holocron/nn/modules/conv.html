@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.nn.modules.conv - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -196,7 +196,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -221,7 +222,7 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'NormConv2d'</span><span class="p">,</span> <span class="s1">'Add2d'</span><span class="p">,</span> <span class="s1">'SlimConv2d'</span><span class="p">,</span> <span class="s1">'PyConv2d'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;NormConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;Add2d&#39;</span><span class="p">,</span> <span class="s1">&#39;SlimConv2d&#39;</span><span class="p">,</span> <span class="s1">&#39;PyConv2d&#39;</span><span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">_NormConvNd</span><span class="p">(</span><span class="n">_ConvNd</span><span class="p">):</span>
@@ -249,7 +250,7 @@
 
 
 <div class="viewcode-block" id="NormConv2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NormConv2d">[docs]</a><span class="k">class</span> <span class="nc">NormConv2d</span><span class="p">(</span><span class="n">_NormConvNd</span><span class="p">):</span>
-    <span class="sd">"""Implements the normalized convolution module from `"Normalized Convolutional Neural Network"</span>
+    <span class="sd">&quot;&quot;&quot;Implements the normalized convolution module from `&quot;Normalized Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2005.05274v2.pdf&gt;`_.</span>
 
 <span class="sd">    In the simplest case, the output value of the layer with input size</span>
@@ -280,11 +281,11 @@
 <span class="sd">            channels to output channels. Default: 1</span>
 <span class="sd">        bias (bool, optional): If ``True``, adds a learnable bias to the</span>
 <span class="sd">            output. Default: ``True``</span>
-<span class="sd">        padding_mode (string, optional): ``'zeros'``, ``'reflect'``,</span>
-<span class="sd">            ``'replicate'`` or ``'circular'``. Default: ``'zeros'``</span>
+<span class="sd">        padding_mode (string, optional): ``&#39;zeros&#39;``, ``&#39;reflect&#39;``,</span>
+<span class="sd">            ``&#39;replicate&#39;`` or ``&#39;circular&#39;``. Default: ``&#39;zeros&#39;``</span>
 <span class="sd">        eps (float, optional): a value added to the denominator for numerical stability.</span>
 <span class="sd">            Default: 1e-14</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -296,7 +297,7 @@
         <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'zeros'</span><span class="p">,</span>
+        <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;zeros&#39;</span><span class="p">,</span>
         <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-14</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">kernel_size</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">)</span>
@@ -308,7 +309,7 @@
             <span class="kc">False</span><span class="p">,</span> <span class="n">_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">padding_mode</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding_mode</span> <span class="o">!=</span> <span class="s1">'zeros'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding_mode</span> <span class="o">!=</span> <span class="s1">&#39;zeros&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">norm_conv2d</span><span class="p">(</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed_padding_repeated_twice</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_mode</span><span class="p">),</span>
                                  <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="n">_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>  <span class="c1"># type: ignore[arg-type]</span>
                                  <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
@@ -317,7 +318,7 @@
 
 
 <div class="viewcode-block" id="Add2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.Add2d">[docs]</a><span class="k">class</span> <span class="nc">Add2d</span><span class="p">(</span><span class="n">_NormConvNd</span><span class="p">):</span>
-    <span class="sd">"""Implements the adder module from `"AdderNet: Do We Really Need Multiplications in Deep Learning?"</span>
+    <span class="sd">&quot;&quot;&quot;Implements the adder module from `&quot;AdderNet: Do We Really Need Multiplications in Deep Learning?&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1912.13200.pdf&gt;`_.</span>
 
 <span class="sd">    In the simplest case, the output value of the layer at position :math:`(m, n)` in channel :math:`c`</span>
@@ -345,13 +346,13 @@
 <span class="sd">            channels to output channels. Default: 1</span>
 <span class="sd">        bias (bool, optional): If ``True``, adds a learnable bias to the</span>
 <span class="sd">            output. Default: ``True``</span>
-<span class="sd">        padding_mode (string, optional): ``'zeros'``, ``'reflect'``,</span>
-<span class="sd">            ``'replicate'`` or ``'circular'``. Default: ``'zeros'``</span>
+<span class="sd">        padding_mode (string, optional): ``&#39;zeros&#39;``, ``&#39;reflect&#39;``,</span>
+<span class="sd">            ``&#39;replicate&#39;`` or ``&#39;circular&#39;``. Default: ``&#39;zeros&#39;``</span>
 <span class="sd">        normalize_slices (bool, optional): whether slices should be normalized before performing cross-correlation.</span>
 <span class="sd">            Default: False</span>
 <span class="sd">        eps (float, optional): a value added to the denominator for numerical stability.</span>
 <span class="sd">            Default: 1e-14</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -363,7 +364,7 @@
         <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'zeros'</span><span class="p">,</span>
+        <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;zeros&#39;</span><span class="p">,</span>
         <span class="n">normalize_slices</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-14</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -376,7 +377,7 @@
             <span class="kc">False</span><span class="p">,</span> <span class="n">_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">padding_mode</span><span class="p">,</span> <span class="n">normalize_slices</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding_mode</span> <span class="o">!=</span> <span class="s1">'zeros'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding_mode</span> <span class="o">!=</span> <span class="s1">&#39;zeros&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">add2d</span><span class="p">(</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reversed_padding_repeated_twice</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_mode</span><span class="p">),</span>
                            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="n">_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>  <span class="c1"># type: ignore[arg-type]</span>
                            <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_slices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
@@ -385,8 +386,8 @@
 
 
 <div class="viewcode-block" id="SlimConv2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.SlimConv2d">[docs]</a><span class="k">class</span> <span class="nc">SlimConv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">"""Implements the convolution module from `"SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks</span>
-<span class="sd">    by Weights Flipping" &lt;https://arxiv.org/pdf/2003.07469.pdf&gt;`_.</span>
+    <span class="sd">&quot;&quot;&quot;Implements the convolution module from `&quot;SlimConv: Reducing Channel Redundancy in Convolutional Neural Networks</span>
+<span class="sd">    by Weights Flipping&quot; &lt;https://arxiv.org/pdf/2003.07469.pdf&gt;`_.</span>
 
 <span class="sd">    First, we compute channel-wise weights as follows:</span>
 
@@ -450,11 +451,11 @@
 <span class="sd">            channels to output channels. Default: 1</span>
 <span class="sd">        bias (bool, optional): If ``True``, adds a learnable bias to the</span>
 <span class="sd">            output. Default: ``True``</span>
-<span class="sd">        padding_mode (string, optional): ``'zeros'``, ``'reflect'``,</span>
-<span class="sd">            ``'replicate'`` or ``'circular'``. Default: ``'zeros'``</span>
+<span class="sd">        padding_mode (string, optional): ``&#39;zeros&#39;``, ``&#39;reflect&#39;``,</span>
+<span class="sd">            ``&#39;replicate&#39;`` or ``&#39;circular&#39;``. Default: ``&#39;zeros&#39;``</span>
 <span class="sd">        r (int, optional): squeezing divider. Default: 32</span>
 <span class="sd">        L (int, optional): minimum squeezed channels. Default: 8</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -465,7 +466,7 @@
         <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'zeros'</span><span class="p">,</span>
+        <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;zeros&#39;</span><span class="p">,</span>
         <span class="n">r</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
         <span class="n">L</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -501,8 +502,8 @@
 
 
 <div class="viewcode-block" id="PyConv2d"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.PyConv2d">[docs]</a><span class="k">class</span> <span class="nc">PyConv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">):</span>
-    <span class="sd">"""Implements the convolution module from `"Pyramidal Convolution: Rethinking Convolutional Neural Networks for</span>
-<span class="sd">    Visual Recognition" &lt;https://arxiv.org/pdf/2006.11538.pdf&gt;`_.</span>
+    <span class="sd">&quot;&quot;&quot;Implements the convolution module from `&quot;Pyramidal Convolution: Rethinking Convolutional Neural Networks for</span>
+<span class="sd">    Visual Recognition&quot; &lt;https://arxiv.org/pdf/2006.11538.pdf&gt;`_.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        in_channels (int): Number of channels in the input image</span>
@@ -513,7 +514,7 @@
 <span class="sd">            the input. Default: 0</span>
 <span class="sd">        groups (list(int), optional): Number of blocked connections from input</span>
 <span class="sd">            channels to output channels. Default: 1</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -540,7 +541,7 @@
                 <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">idx</span><span class="p">),</span> <span class="n">out_chan</span><span class="p">)</span>
                                 <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">out_chan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_levels</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">out_chans</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
             <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_levels</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The argument `group` is expected to be a list of integer of size `num_levels`."</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The argument `group` is expected to be a list of integer of size `num_levels`.&quot;</span><span class="p">)</span>
             <span class="n">paddings</span> <span class="o">=</span> <span class="p">[</span><span class="n">padding</span> <span class="o">+</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_levels</span><span class="p">)]</span>
 
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">([</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_chan</span><span class="p">,</span> <span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -595,6 +596,7 @@
 </div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/scripts/furo.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>

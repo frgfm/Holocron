@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.nn.modules.activation - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -195,7 +195,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -212,19 +213,19 @@
           <h1>Source code for holocron.nn.modules.activation</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">'''</span>
+<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">Activation modules</span>
-<span class="sd">'''</span>
+<span class="sd">&#39;&#39;&#39;</span>
 
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Mish'</span><span class="p">,</span> <span class="s1">'NLReLU'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Mish&#39;</span><span class="p">,</span> <span class="s1">&#39;NLReLU&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Mish"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.Mish">[docs]</a><span class="k">class</span> <span class="nc">Mish</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">"""Implements the Mish activation module from `"Mish: A Self Regularized Non-Monotonic Neural Activation Function"</span>
-<span class="sd">    &lt;https://arxiv.org/pdf/1908.08681.pdf&gt;`_"""</span>
+    <span class="sd">&quot;&quot;&quot;Implements the Mish activation module from `&quot;Mish: A Self Regularized Non-Monotonic Neural Activation Function&quot;</span>
+<span class="sd">    &lt;https://arxiv.org/pdf/1908.08681.pdf&gt;`_&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Mish</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -234,13 +235,13 @@
 
 
 <div class="viewcode-block" id="NLReLU"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.NLReLU">[docs]</a><span class="k">class</span> <span class="nc">NLReLU</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">"""Implements the Natural-Logarithm ReLU activation module from `"Natural-Logarithm-Rectified Activation</span>
-<span class="sd">    Function in Convolutional Neural Networks" &lt;https://arxiv.org/pdf/1908.03682.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;Implements the Natural-Logarithm ReLU activation module from `&quot;Natural-Logarithm-Rectified Activation</span>
+<span class="sd">    Function in Convolutional Neural Networks&quot; &lt;https://arxiv.org/pdf/1908.03682.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        inplace (bool): should the operation be performed inplace</span>
-<span class="sd">    """</span>
-    <span class="n">__constants__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'inplace'</span><span class="p">]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__constants__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;inplace&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">NLReLU</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -250,7 +251,7 @@
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">nl_relu</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">inplace_str</span> <span class="o">=</span> <span class="s1">'inplace=True'</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span> <span class="k">else</span> <span class="s1">''</span>
+        <span class="n">inplace_str</span> <span class="o">=</span> <span class="s1">&#39;inplace=True&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
         <span class="k">return</span> <span class="n">inplace_str</span></div>
 </pre></div>
         </article>
@@ -294,6 +295,7 @@
 </div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/scripts/furo.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>

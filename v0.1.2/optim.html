@@ -14,10 +14,10 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.utils" href="utils.html" /><link rel="prev" title="holocron.ops" href="ops.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.optim - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -196,7 +196,17 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/frgfm/holocron/edit//optim.rst" title="Edit this page">
+    <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
+      <line x1="13.5" y1="6.5" x2="17.5" y2="10.5" />
+    </svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -211,11 +221,11 @@
         </div>
         <article role="main">
           <section id="module-holocron.optim">
-<span id="holocron-optim"></span><h1>holocron.optim<a class="headerlink" href="#module-holocron.optim" title="Permalink to this headline">#</a></h1>
+<span id="holocron-optim"></span><h1>holocron.optim<a class="headerlink" href="#module-holocron.optim" title="Permalink to this heading">#</a></h1>
 <p>To use <a class="reference internal" href="#module-holocron.optim" title="holocron.optim"><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.optim</span></code></a> you have to construct an optimizer object, that will hold
 the current state and will update the parameters based on the computed gradients.</p>
 <section id="optimizers">
-<h2>Optimizers<a class="headerlink" href="#optimizers" title="Permalink to this headline">#</a></h2>
+<h2>Optimizers<a class="headerlink" href="#optimizers" title="Permalink to this heading">#</a></h2>
 <p>Implementations of recent parameter optimizer for Pytorch modules.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.optim.Lamb">
@@ -234,6 +244,7 @@ the current state and will update the parameters based on the computed gradients
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.optim.Lars">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">Lars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dampening</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nesterov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lars.html#Lars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.Lars" title="Permalink to this definition">#</a></dt>
@@ -253,6 +264,7 @@ parameter groups</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.optim.RAdam">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">RAdam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/radam.html#RAdam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.RAdam" title="Permalink to this definition">#</a></dt>
@@ -269,6 +281,7 @@ parameter groups</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.optim.RaLars">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">RaLars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_adaptive_momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/ralars.html#RaLars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.RaLars" title="Permalink to this definition">#</a></dt>
@@ -288,6 +301,7 @@ parameter groups</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.optim.TAdam">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">TAdam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/tadam.html#TAdam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.TAdam" title="Permalink to this definition">#</a></dt>
@@ -305,9 +319,10 @@ parameter groups</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="optimizer-wrappers">
-<h2>Optimizer wrappers<a class="headerlink" href="#optimizer-wrappers" title="Permalink to this headline">#</a></h2>
+<h2>Optimizer wrappers<a class="headerlink" href="#optimizer-wrappers" title="Permalink to this heading">#</a></h2>
 <p><a class="reference internal" href="#module-holocron.optim" title="holocron.optim"><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.optim</span></code></a> also implements optimizer wrappers.</p>
 <p>A base optimizer should always be passed to the wrapper; e.g., you
 should write your code this way:</p>
@@ -329,6 +344,7 @@ should write your code this way:</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.optim.wrapper.Scout">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.wrapper.</span></span><span class="sig-name descname"><span class="pre">Scout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/wrapper.html#Scout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.wrapper.Scout" title="Permalink to this definition">#</a></dt>
@@ -343,9 +359,10 @@ should write your code this way:</p>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="learning-rate-schedulers">
-<h2>Learning rate schedulers<a class="headerlink" href="#learning-rate-schedulers" title="Permalink to this headline">#</a></h2>
+<h2>Learning rate schedulers<a class="headerlink" href="#learning-rate-schedulers" title="Permalink to this heading">#</a></h2>
 <p><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.optim.lr_scheduler</span></code> provides several methods to adjust the learning
 rate based on the number of epochs. <a class="reference internal" href="#holocron.optim.lr_scheduler.OneCycleScheduler" title="holocron.optim.lr_scheduler.OneCycleScheduler"><code class="xref py py-class docutils literal notranslate"><span class="pre">holocron.optim.lr_scheduler.OneCycleScheduler</span></code></a>
 allows dynamic learning rate reducing based on some validation measurements.</p>
@@ -407,6 +424,7 @@ Default: -1</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 </section>
 
@@ -490,6 +508,7 @@ Default: -1</p></li>
 </div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>

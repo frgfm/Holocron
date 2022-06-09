@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.trainer.utils - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -196,7 +196,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -216,18 +217,18 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'freeze_bn'</span><span class="p">,</span> <span class="s1">'freeze_model'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;freeze_bn&#39;</span><span class="p">,</span> <span class="s1">&#39;freeze_model&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="freeze_bn"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.freeze_bn">[docs]</a><span class="k">def</span> <span class="nf">freeze_bn</span><span class="p">(</span><span class="n">mod</span><span class="p">:</span> <span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span><span class="p">:</span>
-    <span class="sd">"""Prevents parameter and stats from updating in Batchnorm layers that are frozen</span>
+    <span class="sd">&quot;&quot;&quot;Prevents parameter and stats from updating in Batchnorm layers that are frozen</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        mod (torch.nn.Module): model to train</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Loop on modules</span>
     <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mod</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
@@ -240,7 +241,7 @@
 
 
 <div class="viewcode-block" id="freeze_model"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.freeze_model">[docs]</a><span class="k">def</span> <span class="nf">freeze_model</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">last_frozen_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">frozen_bn_stat_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span><span class="p">:</span>
-    <span class="sd">"""Freeze a specific range of model layers</span>
+    <span class="sd">&quot;&quot;&quot;Freeze a specific range of model layers</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): model to train</span>
@@ -249,7 +250,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Loop on parameters</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">last_frozen_layer</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -261,7 +262,7 @@
             <span class="k">elif</span> <span class="ow">not</span> <span class="n">layer_reached</span><span class="p">:</span>
                 <span class="n">p</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">layer_reached</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unable to locate child module </span><span class="si">{</span><span class="n">last_frozen_layer</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to locate child module </span><span class="si">{</span><span class="n">last_frozen_layer</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Loop on modules</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">frozen_bn_stat_update</span><span class="p">:</span>
@@ -310,6 +311,7 @@
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>

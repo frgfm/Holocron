@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.trainer.detection - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -201,7 +201,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -229,11 +230,11 @@
 
 <span class="kn">from</span> <span class="nn">.core</span> <span class="kn">import</span> <span class="n">Trainer</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'DetectionTrainer'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DetectionTrainer&#39;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">assign_iou</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="sd">"""Assigns boxes by IoU"""</span>
+    <span class="sd">&quot;&quot;&quot;Assigns boxes by IoU&quot;&quot;&quot;</span>
     <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">)</span>
     <span class="n">iou</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">gt_kept</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;=</span> <span class="n">iou_threshold</span>
@@ -251,7 +252,7 @@
 
 
 <div class="viewcode-block" id="DetectionTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer">[docs]</a><span class="k">class</span> <span class="nc">DetectionTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">"""Object detection trainer class</span>
+    <span class="sd">&quot;&quot;&quot;Object detection trainer class</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): model to train</span>
@@ -264,14 +265,14 @@
 <span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
 <span class="sd">        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN</span>
 <span class="sd">        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_to_cuda</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
         <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]:</span>
-        <span class="sd">"""Move input and target to GPU"""</span>
+        <span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">_x</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">_x</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
         <span class="n">target</span> <span class="o">=</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span>
@@ -311,21 +312,21 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">loc_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'loc_err'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'loc_err'</span><span class="p">],</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"N/A"</span>
-        <span class="n">clf_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'clf_err'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'clf_err'</span><span class="p">],</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"N/A"</span>
-        <span class="n">det_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'det_err'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'det_err'</span><span class="p">],</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"N/A"</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">"Loc error: </span><span class="si">{</span><span class="n">loc_str</span><span class="si">}</span><span class="s2"> | Clf error: </span><span class="si">{</span><span class="n">clf_str</span><span class="si">}</span><span class="s2"> | Det error: </span><span class="si">{</span><span class="n">det_str</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">loc_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;loc_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;loc_err&#39;</span><span class="p">],</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;N/A&quot;</span>
+        <span class="n">clf_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;clf_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;clf_err&#39;</span><span class="p">],</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;N/A&quot;</span>
+        <span class="n">det_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;det_err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;det_err&#39;</span><span class="p">],</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;N/A&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Loc error: </span><span class="si">{</span><span class="n">loc_str</span><span class="si">}</span><span class="s2"> | Clf error: </span><span class="si">{</span><span class="n">clf_str</span><span class="si">}</span><span class="s2"> | Det error: </span><span class="si">{</span><span class="n">det_str</span><span class="si">}</span><span class="s2">&quot;</span>
 
 <div class="viewcode-block" id="DetectionTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-        <span class="sd">"""Evaluate the model on the validation set</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            iou_threshold (float, optional): IoU threshold for pair assignment</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: evaluation metrics</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="n">loc_assigns</span> <span class="o">=</span> <span class="mi">0</span>
@@ -341,18 +342,18 @@
                 <span class="n">detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">dets</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">detections</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">t</span><span class="p">[</span><span class="s1">'boxes'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dets</span><span class="p">[</span><span class="s1">'boxes'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span> <span class="o">=</span> <span class="n">assign_iou</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">'boxes'</span><span class="p">],</span> <span class="n">dets</span><span class="p">[</span><span class="s1">'boxes'</span><span class="p">],</span> <span class="n">iou_threshold</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dets</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span> <span class="o">=</span> <span class="n">assign_iou</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">],</span> <span class="n">dets</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">],</span> <span class="n">iou_threshold</span><span class="p">)</span>
                     <span class="n">loc_assigns</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_indices</span><span class="p">)</span>
-                    <span class="n">_correct</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">'labels'</span><span class="p">][</span><span class="n">gt_indices</span><span class="p">]</span> <span class="o">==</span> <span class="n">dets</span><span class="p">[</span><span class="s1">'labels'</span><span class="p">][</span><span class="n">pred_indices</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                    <span class="n">_correct</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">][</span><span class="n">gt_indices</span><span class="p">]</span> <span class="o">==</span> <span class="n">dets</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">][</span><span class="n">pred_indices</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
                     <span class="n">_correct</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">correct</span> <span class="o">+=</span> <span class="n">_correct</span>
                 <span class="n">clf_error</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_indices</span><span class="p">)</span> <span class="o">-</span> <span class="n">_correct</span>
-                <span class="n">loc_fn</span> <span class="o">+=</span> <span class="n">t</span><span class="p">[</span><span class="s1">'boxes'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_indices</span><span class="p">)</span>
-                <span class="n">loc_fp</span> <span class="o">+=</span> <span class="n">dets</span><span class="p">[</span><span class="s1">'boxes'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred_indices</span><span class="p">)</span>
-            <span class="n">num_samples</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">'boxes'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">)</span>
+                <span class="n">loc_fn</span> <span class="o">+=</span> <span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_indices</span><span class="p">)</span>
+                <span class="n">loc_fp</span> <span class="o">+=</span> <span class="n">dets</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred_indices</span><span class="p">)</span>
+            <span class="n">num_samples</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">)</span>
 
         <span class="n">nb_preds</span> <span class="o">=</span> <span class="n">num_samples</span> <span class="o">-</span> <span class="n">loc_fn</span> <span class="o">+</span> <span class="n">loc_fp</span>
         <span class="c1"># Localization</span>
@@ -404,6 +405,7 @@
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>

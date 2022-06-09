@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.ops.boxes - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -191,7 +191,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -208,20 +209,20 @@
           <h1>Source code for holocron.ops.boxes</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
-<span class="sd">'''</span>
+<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">Bounding box operations</span>
-<span class="sd">'''</span>
+<span class="sd">&#39;&#39;&#39;</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_iou</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'box_diou'</span><span class="p">,</span> <span class="s1">'box_ciou'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;box_diou&#39;</span><span class="p">,</span> <span class="s1">&#39;box_ciou&#39;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">iou_penalty</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
-    <span class="sd">"""Implements the penalty term for the Distance-IoU loss</span>
+    <span class="sd">&quot;&quot;&quot;Implements the penalty term for the Distance-IoU loss</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -229,7 +230,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor[M, N]: penalty term</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Diagonal length of the smallest enclosing box</span>
     <span class="n">c2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">boxes1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">boxes2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span><span class="p">))</span>
@@ -259,7 +260,7 @@
 
 
 <div class="viewcode-block" id="box_diou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_diou">[docs]</a><span class="k">def</span> <span class="nf">box_diou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
-    <span class="sd">"""Computes the Distance-IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf</span>
+    <span class="sd">&quot;&quot;&quot;Computes the Distance-IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -267,26 +268,26 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor[M, N]: Distance-IoU loss</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">)</span> <span class="o">+</span> <span class="n">iou_penalty</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">aspect_ratio</span><span class="p">(</span><span class="n">boxes</span><span class="p">):</span>
-    <span class="sd">"""Computes the aspect ratio of boxes</span>
+    <span class="sd">&quot;&quot;&quot;Computes the aspect ratio of boxes</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes (torch.Tensor[N, 4]): bounding boxes</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor[N]: aspect ratio</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan</span><span class="p">((</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span>
 
 
 <span class="k">def</span> <span class="nf">aspect_ratio_consistency</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
-    <span class="sd">"""Computes the aspect ratio consistency from the complete IoU loss</span>
+    <span class="sd">&quot;&quot;&quot;Computes the aspect ratio consistency from the complete IoU loss</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -294,7 +295,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.Tensor[M, N]: aspect ratio consistency</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">v</span> <span class="o">=</span> <span class="n">aspect_ratio</span><span class="p">(</span><span class="n">boxes1</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">aspect_ratio</span><span class="p">(</span><span class="n">boxes2</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">v</span><span class="o">.</span><span class="n">pow_</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
@@ -304,7 +305,7 @@
 
 
 <div class="viewcode-block" id="box_ciou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_ciou">[docs]</a><span class="k">def</span> <span class="nf">box_ciou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
-    <span class="sd">"""Computes the Complete IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf</span>
+    <span class="sd">&quot;&quot;&quot;Computes the Complete IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -319,7 +320,7 @@
 <span class="sd">        &gt;&gt;&gt; boxes1 = torch.tensor([[0, 0, 100, 100], [100, 100, 200, 200]], dtype=torch.float32)</span>
 <span class="sd">        &gt;&gt;&gt; boxes2 = torch.tensor([[50, 50, 150, 150]], dtype=torch.float32)</span>
 <span class="sd">        &gt;&gt;&gt; box_ciou(boxes1, boxes2)</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">)</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">aspect_ratio_consistency</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">)</span>
@@ -373,6 +374,7 @@
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>

@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.trainer.classification - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -201,7 +201,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -227,11 +228,11 @@
 
 <span class="kn">from</span> <span class="nn">.core</span> <span class="kn">import</span> <span class="n">Trainer</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'ClassificationTrainer'</span><span class="p">,</span> <span class="s1">'BinaryClassificationTrainer'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ClassificationTrainer&#39;</span><span class="p">,</span> <span class="s1">&#39;BinaryClassificationTrainer&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="ClassificationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer">[docs]</a><span class="k">class</span> <span class="nc">ClassificationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">"""Image classification trainer class</span>
+    <span class="sd">&quot;&quot;&quot;Image classification trainer class</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): model to train</span>
@@ -244,15 +245,15 @@
 <span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
 <span class="sd">        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN</span>
 <span class="sd">        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">"""Evaluate the model on the validation set</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: evaluation metrics</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
@@ -291,12 +292,12 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'val_loss'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> "</span>
-                <span class="sa">f</span><span class="s2">"(Acc@1: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'acc1'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">, Acc@5: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'acc5'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(Acc@1: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc1&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">, Acc@5: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc5&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BinaryClassificationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.BinaryClassificationTrainer">[docs]</a><span class="k">class</span> <span class="nc">BinaryClassificationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">"""Image binary classification trainer class</span>
+    <span class="sd">&quot;&quot;&quot;Image binary classification trainer class</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): model to train</span>
@@ -307,15 +308,15 @@
 <span class="sd">        gpu (int, optional): index of the GPU to use</span>
 <span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
 <span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BinaryClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.BinaryClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">"""Evaluate the model on the validation set</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: evaluation metrics</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
@@ -354,8 +355,8 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'val_loss'</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> "</span>
-                <span class="sa">f</span><span class="s2">"(Acc: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">'acc'</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation loss: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(Acc: </span><span class="si">{</span><span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;acc&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
 </pre></div>
         </article>
       </div>
@@ -398,6 +399,7 @@
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>

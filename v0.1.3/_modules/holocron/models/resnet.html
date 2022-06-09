@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.models.resnet - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -196,7 +196,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -220,27 +221,27 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Type</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'BasicBlock'</span><span class="p">,</span> <span class="s1">'Bottleneck'</span><span class="p">,</span> <span class="s1">'ResNet'</span><span class="p">,</span> <span class="s1">'resnet18'</span><span class="p">,</span> <span class="s1">'resnet34'</span><span class="p">,</span> <span class="s1">'resnet50'</span><span class="p">,</span> <span class="s1">'resnet101'</span><span class="p">,</span> <span class="s1">'resnet152'</span><span class="p">,</span>
-           <span class="s1">'resnext50_32x4d'</span><span class="p">,</span> <span class="s1">'resnext101_32x8d'</span><span class="p">,</span> <span class="s1">'resnet50d'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;BasicBlock&#39;</span><span class="p">,</span> <span class="s1">&#39;Bottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;ResNet&#39;</span><span class="p">,</span> <span class="s1">&#39;resnet18&#39;</span><span class="p">,</span> <span class="s1">&#39;resnet34&#39;</span><span class="p">,</span> <span class="s1">&#39;resnet50&#39;</span><span class="p">,</span> <span class="s1">&#39;resnet101&#39;</span><span class="p">,</span> <span class="s1">&#39;resnet152&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;resnext50_32x4d&#39;</span><span class="p">,</span> <span class="s1">&#39;resnext101_32x8d&#39;</span><span class="p">,</span> <span class="s1">&#39;resnet50d&#39;</span><span class="p">]</span>
 
 
 <span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">'resnet18'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'block'</span><span class="p">:</span> <span class="s1">'BasicBlock'</span><span class="p">,</span> <span class="s1">'num_blocks'</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
-                 <span class="s1">'url'</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">'resnet34'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'block'</span><span class="p">:</span> <span class="s1">'BasicBlock'</span><span class="p">,</span> <span class="s1">'num_blocks'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                 <span class="s1">'url'</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">'resnet50'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'block'</span><span class="p">:</span> <span class="s1">'Bottleneck'</span><span class="p">,</span> <span class="s1">'num_blocks'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                 <span class="s1">'url'</span><span class="p">:</span> <span class="s1">'https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50_256-5e6206e0.pth'</span><span class="p">},</span>
-    <span class="s1">'resnet101'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'block'</span><span class="p">:</span> <span class="s1">'Bottleneck'</span><span class="p">,</span> <span class="s1">'num_blocks'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                  <span class="s1">'url'</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">'resnet152'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'block'</span><span class="p">:</span> <span class="s1">'Bottleneck'</span><span class="p">,</span> <span class="s1">'num_blocks'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">86</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                  <span class="s1">'url'</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">'resnext50_32x4d'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'block'</span><span class="p">:</span> <span class="s1">'Bottleneck'</span><span class="p">,</span> <span class="s1">'num_blocks'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                        <span class="s1">'url'</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">'resnext101_32x8d'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'block'</span><span class="p">:</span> <span class="s1">'Bottleneck'</span><span class="p">,</span> <span class="s1">'num_blocks'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                         <span class="s1">'url'</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="s1">'resnet50d'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'block'</span><span class="p">:</span> <span class="s1">'Bottleneck'</span><span class="p">,</span> <span class="s1">'num_blocks'</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-                  <span class="s1">'url'</span><span class="p">:</span> <span class="s1">'https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50d_224-499c0b54.pth'</span><span class="p">},</span>
+    <span class="s1">&#39;resnet18&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;BasicBlock&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                 <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;resnet34&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;BasicBlock&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                 <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;resnet50&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;Bottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                 <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50_256-5e6206e0.pth&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;resnet101&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;Bottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                  <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;resnet152&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;Bottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">86</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                  <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;resnext50_32x4d&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;Bottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;resnext101_32x8d&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;Bottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                         <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s1">&#39;resnet50d&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="s1">&#39;Bottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;num_blocks&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                  <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50d_224-499c0b54.pth&#39;</span><span class="p">},</span>
 <span class="p">}</span>
 
 
@@ -273,7 +274,7 @@
             <span class="n">identity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
         <span class="n">out</span> <span class="o">+=</span> <span class="n">identity</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'activation'</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;activation&#39;</span><span class="p">):</span>
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">out</span>
@@ -413,12 +414,12 @@
             <span class="n">stride</span> <span class="o">=</span> <span class="mi">2</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([</span>
-            <span class="p">(</span><span class="s1">'features'</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_layers</span><span class="p">)),</span>
-            <span class="p">(</span><span class="s1">'pool'</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
-            <span class="p">(</span><span class="s1">'head'</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_repeats</span> <span class="o">*</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">))]))</span>
+            <span class="p">(</span><span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_layers</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s1">&#39;head&#39;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_repeats</span> <span class="o">*</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">))]))</span>
 
         <span class="c1"># Init all layers</span>
-        <span class="n">init</span><span class="o">.</span><span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="s1">'relu'</span><span class="p">)</span>
+        <span class="n">init</span><span class="o">.</span><span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">)</span>
 
         <span class="c1"># Init shortcut</span>
         <span class="k">if</span> <span class="n">zero_init_residual</span><span class="p">:</span>
@@ -474,20 +475,20 @@
 <span class="k">def</span> <span class="nf">_resnet</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 
     <span class="c1"># Retrieve the correct block type</span>
-    <span class="n">block</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">'block'</span><span class="p">]]</span>
+    <span class="n">block</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;block&#39;</span><span class="p">]]</span>
 
     <span class="c1"># Build the model</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">ResNet</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">'num_blocks'</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ResNet</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;num_blocks&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="c1"># Load pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">'url'</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
+        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span>
 
 
 <div class="viewcode-block" id="resnet18"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet18">[docs]</a><span class="k">def</span> <span class="nf">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-    <span class="sd">"""ResNet-18 from</span>
-<span class="sd">    `"Deep Residual Learning for Image Recognition" &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;ResNet-18 from</span>
+<span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
@@ -495,14 +496,14 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">'resnet18'</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">&#39;resnet18&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="resnet34"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet34">[docs]</a><span class="k">def</span> <span class="nf">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-    <span class="sd">"""ResNet-34 from</span>
-<span class="sd">    `"Deep Residual Learning for Image Recognition" &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;ResNet-34 from</span>
+<span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
@@ -510,14 +511,14 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">'resnet34'</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">&#39;resnet34&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="resnet50"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet50">[docs]</a><span class="k">def</span> <span class="nf">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-    <span class="sd">"""ResNet-50 from</span>
-<span class="sd">    `"Deep Residual Learning for Image Recognition" &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;ResNet-50 from</span>
+<span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
@@ -525,14 +526,14 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">'resnet50'</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">&#39;resnet50&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="resnet50d"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet50d">[docs]</a><span class="k">def</span> <span class="nf">resnet50d</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-    <span class="sd">"""ResNet-50-D from</span>
-<span class="sd">    `"Bag of Tricks for Image Classification with Convolutional Neural Networks"</span>
+    <span class="sd">&quot;&quot;&quot;ResNet-50-D from</span>
+<span class="sd">    `&quot;Bag of Tricks for Image Classification with Convolutional Neural Networks&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1812.01187.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -541,14 +542,14 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">'resnet50d'</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">deep_stem</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">avg_downsample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">&#39;resnet50d&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">deep_stem</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">avg_downsample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="resnet101"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet101">[docs]</a><span class="k">def</span> <span class="nf">resnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-    <span class="sd">"""ResNet-101 from</span>
-<span class="sd">    `"Deep Residual Learning for Image Recognition" &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;ResNet-101 from</span>
+<span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
@@ -556,14 +557,14 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">'resnet101'</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">&#39;resnet101&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="resnet152"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet152">[docs]</a><span class="k">def</span> <span class="nf">resnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-    <span class="sd">"""ResNet-152 from</span>
-<span class="sd">    `"Deep Residual Learning for Image Recognition" &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;ResNet-152 from</span>
+<span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
@@ -571,14 +572,14 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">'resnet152'</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">&#39;resnet152&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="resnext50_32x4d"><a class="viewcode-back" href="../../../models.html#holocron.models.resnext50_32x4d">[docs]</a><span class="k">def</span> <span class="nf">resnext50_32x4d</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-    <span class="sd">"""ResNeXt-50 from</span>
-<span class="sd">    `"Aggregated Residual Transformations for Deep Neural Networks" &lt;https://arxiv.org/pdf/1611.05431.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;ResNeXt-50 from</span>
+<span class="sd">    `&quot;Aggregated Residual Transformations for Deep Neural Networks&quot; &lt;https://arxiv.org/pdf/1611.05431.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
@@ -586,16 +587,16 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span><span class="p">[</span><span class="s1">'width_per_group'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;width_per_group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">block_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">'resnext50_32x4d'</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">block_args</span><span class="o">=</span><span class="n">block_args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">&#39;resnext50_32x4d&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">block_args</span><span class="o">=</span><span class="n">block_args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="resnext101_32x8d"><a class="viewcode-back" href="../../../models.html#holocron.models.resnext101_32x8d">[docs]</a><span class="k">def</span> <span class="nf">resnext101_32x8d</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-    <span class="sd">"""ResNeXt-101 from</span>
-<span class="sd">    `"Aggregated Residual Transformations for Deep Neural Networks" &lt;https://arxiv.org/pdf/1611.05431.pdf&gt;`_</span>
+    <span class="sd">&quot;&quot;&quot;ResNeXt-101 from</span>
+<span class="sd">    `&quot;Aggregated Residual Transformations for Deep Neural Networks&quot; &lt;https://arxiv.org/pdf/1611.05431.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
@@ -603,11 +604,11 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwargs</span><span class="p">[</span><span class="s1">'width_per_group'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;width_per_group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
     <span class="n">block_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">'resnext101_32x8d'</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">block_args</span><span class="o">=</span><span class="n">block_args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s1">&#39;resnext101_32x8d&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">block_args</span><span class="o">=</span><span class="n">block_args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
         </article>
       </div>
@@ -650,6 +651,7 @@
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>

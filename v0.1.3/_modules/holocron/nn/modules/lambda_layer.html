@@ -13,10 +13,10 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>holocron.nn.modules.lambda_layer - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -196,7 +196,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -216,12 +217,12 @@
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'LambdaLayer'</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;LambdaLayer&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="LambdaLayer"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.LambdaLayer">[docs]</a><span class="k">class</span> <span class="nc">LambdaLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">"""Lambda layer from `"LambdaNetworks: Modeling long-range interactions without attention"</span>
-<span class="sd">    &lt;https://openreview.net/pdf?id=xTJEN-ggl1b&gt;`_. The implementation was adapted from `lucidrains'</span>
+    <span class="sd">&quot;&quot;&quot;Lambda layer from `&quot;LambdaNetworks: Modeling long-range interactions without attention&quot;</span>
+<span class="sd">    &lt;https://openreview.net/pdf?id=xTJEN-ggl1b&gt;`_. The implementation was adapted from `lucidrains&#39;</span>
 <span class="sd">    &lt;https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py&gt;`.</span>
 
 <span class="sd">    Args:</span>
@@ -232,7 +233,7 @@
 <span class="sd">        r (int, optional): receptive field for relative positional encoding</span>
 <span class="sd">        num_heads (int, optional): number of attention heads</span>
 <span class="sd">        dim_u (int, optional): intra-depth dimension</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -248,7 +249,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_heads</span> <span class="o">=</span> <span class="n">num_heads</span>
 
         <span class="k">if</span> <span class="n">out_channels</span> <span class="o">%</span> <span class="n">num_heads</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">'values dimension must be divisible by number of heads for multi-head query'</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;values dimension must be divisible by number of heads for multi-head query&#39;</span><span class="p">)</span>
         <span class="n">dim_v</span> <span class="o">=</span> <span class="n">out_channels</span> <span class="o">//</span> <span class="n">num_heads</span>
 
         <span class="c1"># Project input and context to get queries, keys &amp; values</span>
@@ -262,12 +263,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">local_contexts</span> <span class="o">=</span> <span class="n">r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">r</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">'Receptive kernel size should be odd'</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;Receptive kernel size should be odd&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">r</span> <span class="o">//</span> <span class="mi">2</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">dim_k</span><span class="p">,</span> <span class="n">dim_u</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">'You must specify the total sequence length (h x w)'</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">&#39;You must specify the total sequence length (h x w)&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pos_emb</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">dim_k</span><span class="p">,</span> <span class="n">dim_u</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -293,18 +294,18 @@
         <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Content function</span>
-        <span class="n">λc</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'b u k m, b u v m -&gt; b k v'</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-        <span class="n">Yc</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'b h k n, b k v -&gt; b n h v'</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">λc</span><span class="p">)</span>
+        <span class="n">λc</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;b u k m, b u v m -&gt; b k v&#39;</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">Yc</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;b h k n, b k v -&gt; b n h v&#39;</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">λc</span><span class="p">)</span>
 
         <span class="c1"># Position function</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_contexts</span><span class="p">:</span>
             <span class="c1"># B x dim_u x dim_v x (H * W) -&gt; B x dim_u x dim_v x H x W</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
             <span class="n">λp</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">))</span>
-            <span class="n">Yp</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'b h k n, b k v n -&gt; b n h v'</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">λp</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+            <span class="n">Yp</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;b h k n, b k v n -&gt; b n h v&#39;</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">λp</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">λp</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'n m k u, b u v m -&gt; b n k v'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_emb</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-            <span class="n">Yp</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'b h k n, b n k v -&gt; b n h v'</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">λp</span><span class="p">)</span>
+            <span class="n">λp</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;n m k u, b u v m -&gt; b n k v&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_emb</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="n">Yp</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;b h k n, b n k v -&gt; b n h v&#39;</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">λp</span><span class="p">)</span>
 
         <span class="n">Y</span> <span class="o">=</span> <span class="n">Yc</span> <span class="o">+</span> <span class="n">Yp</span>
         <span class="c1"># B x (H * W) x num_heads x dim_v -&gt; B x (num_heads * dim_v) x H x W</span>
@@ -352,6 +353,7 @@
 </div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/scripts/furo.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
