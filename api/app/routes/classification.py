@@ -4,9 +4,10 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 import torch
+from fastapi import APIRouter, File, UploadFile, status
+
 from app.schemas import ClsCandidate
 from app.vision import classification_model, classification_preprocessor, decode_image
-from fastapi import APIRouter, File, UploadFile, status
 
 router = APIRouter()
 
