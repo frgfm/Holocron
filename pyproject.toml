@@ -40,7 +40,7 @@ dependencies = [
     # Indirect deps
     # cf. https://github.com/advisories/GHSA-98vv-pw6r-q6q4
     # cf. https://github.com/pytorch/vision/issues/4934
-    "Pillow>8.3.2",
+    "Pillow>=8.4.0",
 ]
 
 [project.optional-dependencies]
@@ -87,9 +87,9 @@ dev = [
 ]
 
 [project.urls]
-documentation = "https://frgfm.github.io/holocron"
-repository = "https://github.com/frgfm/holocron"
-tracker = "https://github.com/frgfm/holocron/issues"
+documentation = "https://frgfm.github.io/Holocron"
+repository = "https://github.com/frgfm/Holocron"
+tracker = "https://github.com/frgfm/Holocron/issues"
 changelog = "https://frgfm.github.io/Holocron/latest/changelog.html"
 
 [tool.setuptools]
