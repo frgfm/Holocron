@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148140560-2"></script>
@@ -199,7 +199,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/frgfm/holocron/edit//models.rst" title="Edit this page">
+  <a class="muted-link" href="https://github.com/frgfm/holocron/edit/main/models.rst" title="Edit this page">
     <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
@@ -228,7 +228,7 @@ different tasks, including: image classification, pixelwise semantic
 segmentation, object detection, instance segmentation, person
 keypoint detection and video classification.</p>
 <p>The following datasets are available:</p>
-<div class="contents local topic" id="models">
+<nav class="contents local" id="models">
 <p class="topic-title">Models</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#classification" id="id16">Classification</a></p>
@@ -253,9 +253,9 @@ keypoint detection and video classification.</p>
 </ul>
 </li>
 </ul>
-</div>
+</nav>
 <section id="classification">
-<h2><a class="toc-backref" href="#id16">Classification</a><a class="headerlink" href="#classification" title="Permalink to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id16" role="doc-backlink">Classification</a><a class="headerlink" href="#classification" title="Permalink to this heading">#</a></h2>
 <p>Classification models expect a 4D image tensor as an input (N x C x H x W) and returns a 2D output (N x K).
 The output represents the classification scores for each output classes.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -263,23 +263,23 @@ The output represents the classification scores for each output classes.</p>
 </pre></div>
 </div>
 <section id="resnet">
-<h3><a class="toc-backref" href="#id17">ResNet</a><a class="headerlink" href="#resnet" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">ResNet</a><a class="headerlink" href="#resnet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.resnet18">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">resnet18</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/resnet.html#resnet18"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.resnet18" title="Permalink to this definition">#</a></dt>
 <dd><p>ResNet-18 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -291,16 +291,16 @@ The output represents the classification scores for each output classes.</p>
 <dd><p>ResNet-34 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -312,16 +312,16 @@ The output represents the classification scores for each output classes.</p>
 <dd><p>ResNet-50 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -333,16 +333,16 @@ The output represents the classification scores for each output classes.</p>
 <dd><p>ResNet-101 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -354,16 +354,16 @@ The output represents the classification scores for each output classes.</p>
 <dd><p>ResNet-152 from
 <a class="reference external" href="https://arxiv.org/pdf/1512.03385.pdf">“Deep Residual Learning for Image Recognition”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -375,16 +375,16 @@ The output represents the classification scores for each output classes.</p>
 <dd><p>ResNeXt-50 from
 <a class="reference external" href="https://arxiv.org/pdf/1611.05431.pdf">“Aggregated Residual Transformations for Deep Neural Networks”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -396,16 +396,16 @@ The output represents the classification scores for each output classes.</p>
 <dd><p>ResNeXt-101 from
 <a class="reference external" href="https://arxiv.org/pdf/1611.05431.pdf">“Aggregated Residual Transformations for Deep Neural Networks”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -417,16 +417,16 @@ The output represents the classification scores for each output classes.</p>
 <dd><p>ResNet-50-D from
 <a class="reference external" href="https://arxiv.org/pdf/1812.01187.pdf">“Bag of Tricks for Image Classification with Convolutional Neural Networks”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -434,23 +434,23 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="res2net">
-<h3><a class="toc-backref" href="#id18">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.res2net50_26w_4s">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">res2net50_26w_4s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/res2net.html#res2net50_26w_4s"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.res2net50_26w_4s" title="Permalink to this definition">#</a></dt>
 <dd><p>Res2Net-50 26wx4s from
 <a class="reference external" href="https://arxiv.org/pdf/1904.01169.pdf">“Res2Net: A New Multi-scale Backbone Architecture”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -458,23 +458,23 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="tridentnet">
-<h3><a class="toc-backref" href="#id19">TridentNet</a><a class="headerlink" href="#tridentnet" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">TridentNet</a><a class="headerlink" href="#tridentnet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.tridentnet50">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">tridentnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/tridentnet.html#tridentnet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.tridentnet50" title="Permalink to this definition">#</a></dt>
 <dd><p>TridentNet-50 from
 <a class="reference external" href="https://arxiv.org/pdf/1901.01892.pdf">“Scale-Aware Trident Networks for Object Detection”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -482,23 +482,23 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="pyconvresnet">
-<h3><a class="toc-backref" href="#id20">PyConvResNet</a><a class="headerlink" href="#pyconvresnet" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id20" role="doc-backlink">PyConvResNet</a><a class="headerlink" href="#pyconvresnet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.pyconv_resnet50">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">pyconv_resnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/pyconvresnet.html#pyconv_resnet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.pyconv_resnet50" title="Permalink to this definition">#</a></dt>
 <dd><p>PyConvResNet-50 from <a class="reference external" href="https://arxiv.org/pdf/2006.11538.pdf">“Pyramidal Convolution: Rethinking Convolutional Neural Networks
 for Visual Recognition”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -510,16 +510,16 @@ for Visual Recognition”</a></p>
 <dd><p>PyConvHGResNet-50 from <a class="reference external" href="https://arxiv.org/pdf/2006.11538.pdf">“Pyramidal Convolution: Rethinking Convolutional Neural Networks
 for Visual Recognition”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -527,23 +527,23 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="rexnet">
-<h3><a class="toc-backref" href="#id21">ReXNet</a><a class="headerlink" href="#rexnet" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">ReXNet</a><a class="headerlink" href="#rexnet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.rexnet1_0x">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">rexnet1_0x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/models/rexnet.html#rexnet1_0x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.rexnet1_0x" title="Permalink to this definition">#</a></dt>
 <dd><p>ReXNet-1.0x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -555,16 +555,16 @@ for Visual Recognition”</a></p>
 <dd><p>ReXNet-1.3x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -576,16 +576,16 @@ for Visual Recognition”</a></p>
 <dd><p>ReXNet-1.5x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -597,16 +597,16 @@ for Visual Recognition”</a></p>
 <dd><p>ReXNet-2.0x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -618,16 +618,16 @@ for Visual Recognition”</a></p>
 <dd><p>ReXNet-2.2x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -635,23 +635,23 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="sknet">
-<h3><a class="toc-backref" href="#id22">SKNet</a><a class="headerlink" href="#sknet" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id22" role="doc-backlink">SKNet</a><a class="headerlink" href="#sknet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.sknet50">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">sknet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/sknet.html#sknet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.sknet50" title="Permalink to this definition">#</a></dt>
 <dd><p>SKNet-50 from
 <a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">“Selective Kernel Networks”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -663,16 +663,16 @@ for Visual Recognition”</a></p>
 <dd><p>SKNet-152 from
 <a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">“Selective Kernel Networks”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -680,23 +680,23 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="darknet">
-<h3><a class="toc-backref" href="#id23">Darknet</a><a class="headerlink" href="#darknet" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id23" role="doc-backlink">Darknet</a><a class="headerlink" href="#darknet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.darknet24">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">darknet24</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DarknetV1</span></span></span><a class="reference internal" href="_modules/holocron/models/darknet.html#darknet24"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.darknet24" title="Permalink to this definition">#</a></dt>
 <dd><p>Darknet-24 from
 <a class="reference external" href="https://pjreddie.com/media/files/papers/yolo_1.pdf">“You Only Look Once: Unified, Real-Time Object Detection”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -708,16 +708,16 @@ for Visual Recognition”</a></p>
 <dd><p>Darknet-19 from
 <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -729,16 +729,16 @@ for Visual Recognition”</a></p>
 <dd><p>Darknet-53 from
 <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLOv3.pdf">“YOLOv3: An Incremental Improvement”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -750,16 +750,16 @@ for Visual Recognition”</a></p>
 <dd><p>CSP-Darknet-53 from
 <a class="reference external" href="https://arxiv.org/pdf/1911.11929.pdf">“CSPNet: A New Backbone that can Enhance Learning Capability of CNN”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -772,16 +772,16 @@ for Visual Recognition”</a></p>
 <a class="reference external" href="https://arxiv.org/pdf/1911.11929.pdf">“CSPNet: A New Backbone that can Enhance Learning Capability of CNN”</a>
 with Mish as activation layer and DropBlock as regularization layer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>classification model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -790,7 +790,7 @@ with Mish as activation layer and DropBlock as regularization layer.</p>
 </section>
 </section>
 <section id="object-detection">
-<h2><a class="toc-backref" href="#id24">Object Detection</a><a class="headerlink" href="#object-detection" title="Permalink to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id24" role="doc-backlink">Object Detection</a><a class="headerlink" href="#object-detection" title="Permalink to this heading">#</a></h2>
 <p>Object detection models expect a 4D image tensor as an input (N x C x H x W) and returns a list of dictionaries.
 Each dictionary has 3 keys: box coordinates, classification probability, classification label.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -798,7 +798,7 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
 </pre></div>
 </div>
 <section id="yolo">
-<h3><a class="toc-backref" href="#id25">YOLO</a><a class="headerlink" href="#yolo" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id25" role="doc-backlink">YOLO</a><a class="headerlink" href="#yolo" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.yolov1">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">yolov1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained_backbone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">YOLOv1</span></span></span><a class="reference internal" href="_modules/holocron/models/detection/yolo.html#yolov1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.yolov1" title="Permalink to this definition">#</a></dt>
@@ -855,17 +855,17 @@ and <span class="math notranslate nohighlight">\(\hat{p}_i(c)\)</span> is the pr
 </div>
 <p>where <span class="math notranslate nohighlight">\(\lambda_{coords}\)</span> is a positive coefficient (default: 5).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, displays a progress bar of the download to stderr</p></li>
 <li><p><strong>pretrained_backbone</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, backbone parameters will have been pretrained on Imagenette</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>detection module</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -894,17 +894,17 @@ as class <span class="math notranslate nohighlight">\(c\)</span>,
 and <span class="math notranslate nohighlight">\(\hat{p}_{ij}(c)\)</span> is the predicted probability of class <span class="math notranslate nohighlight">\(c\)</span> for the j-th anchor box
 in the i-th cell.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, displays a progress bar of the download to stderr</p></li>
 <li><p><strong>pretrained_backbone</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, backbone parameters will have been pretrained on Imagenette</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>detection module</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -920,17 +920,17 @@ in the i-th cell.</p>
 backbone, <a class="reference external" href="https://arxiv.org/pdf/1406.4729.pdf">SPP</a> and <a class="reference external" href="https://arxiv.org/pdf/1803.01534.pdf">PAN</a> in the
 neck.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, displays a progress bar of the download to stderr</p></li>
 <li><p><strong>pretrained_backbone</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, backbone parameters will have been pretrained on Imagenette</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>detection module</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -939,7 +939,7 @@ neck.</p>
 </section>
 </section>
 <section id="semantic-segmentation">
-<h2><a class="toc-backref" href="#id26">Semantic Segmentation</a><a class="headerlink" href="#semantic-segmentation" title="Permalink to this heading">#</a></h2>
+<h2><a class="toc-backref" href="#id26" role="doc-backlink">Semantic Segmentation</a><a class="headerlink" href="#semantic-segmentation" title="Permalink to this heading">#</a></h2>
 <p>Semantic segmentation models expect a 4D image tensor as an input (N x C x H x W) and returns a classification score
 tensor of size (N x K x Ho x Wo).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -947,23 +947,23 @@ tensor of size (N x K x Ho x Wo).</p>
 </pre></div>
 </div>
 <section id="u-net">
-<h3><a class="toc-backref" href="#id27">U-Net</a><a class="headerlink" href="#u-net" title="Permalink to this heading">#</a></h3>
+<h3><a class="toc-backref" href="#id27" role="doc-backlink">U-Net</a><a class="headerlink" href="#u-net" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.unet">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">unet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">UNet</span></span></span><a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.unet" title="Permalink to this definition">#</a></dt>
 <dd><p>U-Net from
 <a class="reference external" href="https://arxiv.org/pdf/1505.04597.pdf">“U-Net: Convolutional Networks for Biomedical Image Segmentation”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>semantic segmentation model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -975,16 +975,16 @@ tensor of size (N x K x Ho x Wo).</p>
 <dd><p>UNet+ from
 <a class="reference external" href="https://arxiv.org/pdf/1807.10165.pdf">“UNet++: A Nested U-Net Architecture for Medical Image Segmentation”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>semantic segmentation model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -996,16 +996,16 @@ tensor of size (N x K x Ho x Wo).</p>
 <dd><p>UNet++ from
 <a class="reference external" href="https://arxiv.org/pdf/1807.10165.pdf">“UNet++: A Nested U-Net Architecture for Medical Image Segmentation”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>semantic segmentation model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>
@@ -1017,16 +1017,16 @@ tensor of size (N x K x Ho x Wo).</p>
 <dd><p>UNet3+ from
 <a class="reference external" href="https://arxiv.org/pdf/2004.08790.pdf">“UNet 3+: A Full-Scale Connected UNet For Medical Image Segmentation”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
 <li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>semantic segmentation model</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.nn.Module</p>
 </dd>
 </dl>

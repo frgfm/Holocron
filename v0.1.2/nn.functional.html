@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148140560-2"></script>
@@ -198,7 +198,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/frgfm/holocron/edit//nn.functional.rst" title="Edit this page">
+  <a class="muted-link" href="https://github.com/frgfm/holocron/edit/main/nn.functional.rst" title="Edit this page">
     <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
@@ -229,13 +229,13 @@
 <span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">silu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#silu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.silu" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the SiLU activation function</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – input tensor</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>output tensor</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor[x.size()]</p>
 </dd>
 </dl>
@@ -246,13 +246,13 @@
 <span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">mish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#mish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.mish" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the Mish activation function</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – input tensor</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>output tensor</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor[x.size()]</p>
 </dd>
 </dl>
@@ -263,17 +263,17 @@
 <span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">nl_relu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#nl_relu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.nl_relu" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the natural logarithm ReLU activation function</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em>) – input tensor</p></li>
 <li><p><strong>beta</strong> (<em>float</em>) – beta used for NReLU</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – whether the operation should be performed inplace</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>output tensor</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor[x.size()]</p>
 </dd>
 </dl>
@@ -288,7 +288,7 @@
 <dd><p>Implements the focal loss from
 <a class="reference external" href="https://arxiv.org/pdf/1708.02002.pdf">“Focal Loss for Dense Object Detection”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>...</em><em>]</em>) – hard target tensor</p></li>
@@ -298,10 +298,10 @@
 <li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – gamma parameter of focal loss</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>loss reduced with <cite>reduction</cite> method</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
@@ -312,7 +312,7 @@
 <span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">multilabel_cross_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#multilabel_cross_entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.multilabel_cross_entropy" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the cross entropy loss for multi-label targets</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – target tensor</p></li>
@@ -321,10 +321,10 @@
 <li><p><strong>reduction</strong> (<em>str</em><em>, </em><em>optional</em>) – reduction method</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>loss reduced with <cite>reduction</cite> method</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
@@ -336,7 +336,7 @@
 <dd><p>Implements the label smoothing cross entropy loss from
 <a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">“Attention Is All You Need”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>K</em><em>, </em><em>...</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>target</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>...</em><em>]</em>) – target tensor</p></li>
@@ -346,10 +346,10 @@
 <li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>loss reduced with <cite>reduction</cite> method</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
@@ -364,7 +364,7 @@
 <dd><p>Implements a normalized convolution operations in 2D. Based on the <a class="reference external" href="https://github.com/kimdongsuk1/NormalizedCNN">implementation</a> by the paper’s author.
 See <a class="reference internal" href="nn.html#holocron.nn.NormConv2d" title="holocron.nn.NormConv2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormConv2d</span></code></a> for details and output shape.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>in_channels</em><em>, </em><em>H</em><em>, </em><em>W</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>out_channels</em><em>, </em><em>in_channels</em><em>, </em><em>Kh</em><em>, </em><em>Kw</em><em>]</em>) – filters</p></li>
@@ -399,7 +399,7 @@ Default: 1e-14</p></li>
 <span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">add2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_slices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-14</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#add2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.add2d" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements an adder operation in 2D from <a class="reference external" href="https://arxiv.org/pdf/1912.13200.pdf">“AdderNet: Do We Really Need Multiplications in Deep Learning?”</a>. See <a class="reference internal" href="nn.html#holocron.nn.Add2d" title="holocron.nn.Add2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">Add2d</span></code></a> for details and output shape.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>in_channels</em><em>, </em><em>H</em><em>, </em><em>W</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>out_channels</em><em>, </em><em>in_channels</em><em>, </em><em>Kh</em><em>, </em><em>Kw</em><em>]</em>) – filters</p></li>
@@ -438,7 +438,7 @@ Default: 1e-14</p></li>
 <span class="sig-prename descclassname"><span class="pre">holocron.nn.functional.</span></span><span class="sig-name descname"><span class="pre">dropblock2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_prob</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/functional.html#dropblock2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.functional.dropblock2d" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the dropblock operation from <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">“DropBlock: A regularization method for convolutional networks”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>drop_prob</strong> (<em>float</em>) – probability of dropping activation value</p></li>
 <li><p><strong>block_size</strong> (<em>int</em>) – size of each block that is expended from the sampled mask</p></li>
@@ -458,16 +458,16 @@ Default: 1e-14</p></li>
 <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a>
 by stacking adjacent information on the channel dimension.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.Tensor</em><em>[</em><em>N</em><em>, </em><em>C</em><em>, </em><em>H</em><em>, </em><em>W</em><em>]</em>) – input tensor</p></li>
 <li><p><strong>scale_factor</strong> (<em>int</em>) – spatial scaling factor</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>downsampled tensor</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor[N, scale_factor ** 2 * C, H / scale_factor, W / scale_factor]</p>
 </dd>
 </dl>

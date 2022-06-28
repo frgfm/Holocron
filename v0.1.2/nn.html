@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148140560-2"></script>
@@ -198,7 +198,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/frgfm/holocron/edit//nn.rst" title="Edit this page">
+  <a class="muted-link" href="https://github.com/frgfm/holocron/edit/main/nn.rst" title="Edit this page">
     <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
@@ -258,7 +258,7 @@ Function in Convolutional Neural Networks”</a></p>
 \[f(x) = ln(1 + \beta \cdot max(0, x))\]</div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em>) – should the operation be performed inplace</p>
 </dd>
 </dl>
@@ -286,7 +286,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 </div>
 <p>where <span class="math notranslate nohighlight">\(\gamma\)</span> is a positive focusing parameter.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – exponent parameter of the focal loss</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
@@ -302,7 +302,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">MultiLabelCrossEntropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MultiLabelCrossEntropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.MultiLabelCrossEntropy" title="Permalink to this definition">#</a></dt>
 <dd><p>Implementation of the cross-entropy loss for multi-label targets</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
@@ -318,7 +318,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dd><p>Implementation of the cross-entropy loss with label smoothing on hard target as described in
 <a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">“Attention Is All You Need”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
@@ -338,7 +338,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dd><p>Implements a Mixup wrapper as described in
 <a class="reference external" href="https://arxiv.org/pdf/1710.09412.pdf">“mixup: Beyond Empirical Risk Minimization”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>criterion</strong> (<em>callable</em>) – initial criterion to be used on normal sample &amp; targets</p>
 </dd>
 </dl>
@@ -366,7 +366,7 @@ can be precisely described as:</p>
 <span class="math notranslate nohighlight">\(H\)</span> is a height of input planes in pixels, and <span class="math notranslate nohighlight">\(W\)</span> is
 width in pixels.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
 <li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
@@ -405,7 +405,7 @@ can be precisely described as:</p>
 <span class="math notranslate nohighlight">\(H\)</span> is a height of input planes in pixels, and <span class="math notranslate nohighlight">\(W\)</span> is
 width in pixels.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
 <li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
@@ -484,7 +484,7 @@ followed by a convolution of kernel size <span class="math notranslate nohighlig
 </div>
 <p>where <span class="math notranslate nohighlight">\(\oplus\)</span> is the channel-wise concatenation.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
 <li><p><strong>kernel_size</strong> (<em>int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
@@ -514,7 +514,7 @@ output. Default: <code class="docutils literal notranslate"><span class="pre">Tr
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">DropBlock2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/dropblock.html#DropBlock2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.DropBlock2d" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the DropBlock module from <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">“DropBlock: A regularization method for convolutional networks”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>p</strong> (<em>float</em>) – probability of dropping activation value</p></li>
 <li><p><strong>block_size</strong> (<em>int</em>) – size of each block that is expended from the sampled mask</p></li>
@@ -532,7 +532,7 @@ output. Default: <code class="docutils literal notranslate"><span class="pre">Tr
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">ConcatDownsample2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#ConcatDownsample2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.ConcatDownsample2d" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements a loss-less downsampling operation described in <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a> by stacking adjacent information on the channel dimension.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>scale_factor</strong> (<em>int</em>) – spatial scaling factor</p>
 </dd>
 </dl>

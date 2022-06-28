@@ -2,7 +2,7 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148140560-2"></script>
@@ -204,7 +204,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/frgfm/holocron/edit//nn.rst" title="Edit this page">
+  <a class="muted-link" href="https://github.com/frgfm/holocron/edit/main/nn.rst" title="Edit this page">
     <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
@@ -253,7 +253,7 @@ Function in Convolutional Neural Networks”</a></p>
 \[f(x) = ln(1 + \beta \cdot max(0, x))\]</div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em>) – should the operation be performed inplace</p>
 </dd>
 </dl>
@@ -271,7 +271,7 @@ Function in Convolutional Neural Networks”</a></p>
 <p>where the <span class="math notranslate nohighlight">\(\mathbb{T}\)</span> is the spatial contextual feature extraction. It is a convolution filter of size
 <cite>kernel_size</cite>, same padding and groups equal to the number of input channels, followed by a batch normalization.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em>) – should the operation be performed inplace</p>
 </dd>
 </dl>
@@ -299,7 +299,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 </div>
 <p>where <span class="math notranslate nohighlight">\(\gamma\)</span> is a positive focusing parameter.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – exponent parameter of the focal loss</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
@@ -315,7 +315,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">MultiLabelCrossEntropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MultiLabelCrossEntropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.MultiLabelCrossEntropy" title="Permalink to this definition">#</a></dt>
 <dd><p>Implementation of the cross-entropy loss for multi-label targets</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
@@ -331,7 +331,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dd><p>Implements the complement cross entropy loss from
 <a class="reference external" href="https://arxiv.org/pdf/2009.02189.pdf">“Imbalanced Image Classification with Complement Cross Entropy”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – smoothing factor</p></li>
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
@@ -348,7 +348,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dd><p>Implements the mutual channel loss from
 <a class="reference external" href="https://arxiv.org/pdf/2002.04264.pdf">“The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification”</a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
@@ -366,7 +366,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dd><p>Implements the dice loss from <a class="reference external" href="https://arxiv.org/pdf/1606.04797.pdf">“V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image
 Segmentation”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – recall/precision control param</p></li>
@@ -392,7 +392,7 @@ of Samples”</a>.</p>
 <p>where <span class="math notranslate nohighlight">\(p\)</span> is the predicted probability for class <span class="math notranslate nohighlight">\(y\)</span>, <span class="math notranslate nohighlight">\(n_y\)</span> is the number of training
 samples for class <span class="math notranslate nohighlight">\(y\)</span>, and <span class="math notranslate nohighlight">\(\beta\)</span> is exponential factor.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>criterion</strong> (<em>torch.nn.Module</em>) – loss module</p></li>
 <li><p><strong>num_samples</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em>) – number of samples for each class</p></li>
@@ -424,7 +424,7 @@ can be precisely described as:</p>
 <span class="math notranslate nohighlight">\(H\)</span> is a height of input planes in pixels, and <span class="math notranslate nohighlight">\(W\)</span> is
 width in pixels.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
 <li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
@@ -464,7 +464,7 @@ can be precisely described as:</p>
 width in pixels.</p>
 <img alt="Add2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/add2d.png" />
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
 <li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
@@ -544,7 +544,7 @@ followed by a convolution of kernel size <span class="math notranslate nohighlig
 <p>where <span class="math notranslate nohighlight">\(\oplus\)</span> is the channel-wise concatenation.</p>
 <img alt="SlimConv2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/slimconv2d.png" />
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
 <li><p><strong>kernel_size</strong> (<em>int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
@@ -573,7 +573,7 @@ output. Default: <code class="docutils literal notranslate"><span class="pre">Tr
 Visual Recognition”</a>.</p>
 <img alt="PyConv2D schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/pyconv2d.png" />
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
 <li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
@@ -596,7 +596,7 @@ Recognition”</a>, adapted from the proposed PyTorch implementation in
 the paper.</p>
 <img alt="Involution2d schema" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/involutions.png" />
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
 <li><p><strong>kernel_size</strong> (<em>int</em>) – Size of the convolving kernel</p></li>
@@ -620,7 +620,7 @@ the input. Default: 0</p></li>
 <dd><p>Implements the DropBlock module from <a class="reference external" href="https://arxiv.org/pdf/1810.12890.pdf">“DropBlock: A regularization method for convolutional networks”</a></p>
 <img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/dropblock.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/dropblock.png" />
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>p</strong> (<em>float</em><em>, </em><em>optional</em>) – probability of dropping activation value</p></li>
 <li><p><strong>block_size</strong> (<em>int</em><em>, </em><em>optional</em>) – size of each block that is expended from the sampled mask</p></li>
@@ -638,7 +638,7 @@ the input. Default: 0</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">ConcatDownsample2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#ConcatDownsample2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.ConcatDownsample2d" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements a loss-less downsampling operation described in <a class="reference external" href="https://pjreddie.com/media/files/papers/YOLO9000.pdf">“YOLO9000: Better, Faster, Stronger”</a> by stacking adjacent information on the channel dimension.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>scale_factor</strong> (<em>int</em>) – spatial scaling factor</p>
 </dd>
 </dl>
@@ -649,7 +649,7 @@ the input. Default: 0</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">GlobalAvgPool2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flatten</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#GlobalAvgPool2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.GlobalAvgPool2d" title="Permalink to this definition">#</a></dt>
 <dd><p>Fast implementation of global average pooling from <a class="reference external" href="https://arxiv.org/pdf/2003.13630.pdf">“TResNet: High Performance GPU-Dedicated Architecture”</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>flatten</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether spatial dimensions should be squeezed</p>
 </dd>
 </dl>
@@ -662,17 +662,17 @@ the input. Default: 0</p></li>
 module as described in <a class="reference external" href="https://arxiv.org/pdf/1904.11486.pdf">“Making Convolutional Networks Shift-Invariant Again”</a>.</p>
 <img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/blurpool.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/blurpool.png" />
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>channels</strong> (<em>int</em>) – Number of input channels</p></li>
 <li><p><strong>kernel_size</strong> (<em>int</em><em>, </em><em>optional</em>) – binomial filter size for blurring. currently supports 3 (default) and 5.</p></li>
 <li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – downsampling filter stride</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the transformed tensor.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
@@ -683,7 +683,7 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">SPP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel_sizes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#SPP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.SPP" title="Permalink to this definition">#</a></dt>
 <dd><p>SPP layer from <a class="reference external" href="https://arxiv.org/pdf/1406.4729.pdf">“Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition”</a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>kernel_sizes</strong> (<em>list&lt;int&gt;</em>) – kernel sizes of each pooling</p>
 </dd>
 </dl>
@@ -694,7 +694,7 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">ZPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/downsample.html#ZPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.ZPool" title="Permalink to this definition">#</a></dt>
 <dd><p>Z-pool layer from <a class="reference external" href="https://arxiv.org/pdf/2010.03045.pdf">“Rotate to Attend: Convolutional Triplet Attention Module”</a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dim</strong> – dimension to pool</p>
 </dd>
 </dl>
@@ -709,7 +709,7 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 <dd><p>SAM layer from <a class="reference external" href="https://arxiv.org/pdf/1807.06521.pdf">“CBAM: Convolutional Block Attention Module”</a>
 modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">“YOLOv4: Optimal Speed and Accuracy of Object Detection”</a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>in_channels</strong> (<em>int</em>) – input channels</p>
 </dd>
 </dl>
@@ -721,7 +721,7 @@ modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934
 <dd><p>Lambda layer from <a class="reference external" href="https://openreview.net/pdf?id=xTJEN-ggl1b">“LambdaNetworks: Modeling long-range interactions without attention”</a>. The implementation was adapted from <a class="reference external" href="https://github.com/lucidrains/lambda-networks/blob/main/lambda_networks/lambda_networks.py">lucidrains’</a>.</p>
 <img alt="https://github.com/frgfm/Holocron/releases/download/v0.1.3/lambdalayer.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.1.3/lambdalayer.png" />
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>in_channels</strong> (<em>int</em>) – input channels</p></li>
 <li><p><strong>out_channels</strong> (<em>int</em><em>, </em><em>optional</em>) – output channels</p></li>
