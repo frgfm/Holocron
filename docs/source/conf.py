@@ -98,6 +98,7 @@ html_theme_options = {
         },
     ],
     "source_repository": "https://github.com/frgfm/holocron/",
+    "source_branch": "main",
     "sidebar_hide_name": False,
 }
 
