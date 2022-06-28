@@ -15,13 +15,13 @@ git clone https://github.com/frgfm/Holocron.git
 then from the repo root folder, you can start your container:
 
 ```shell
-PORT=8050 docker-compose up -d --build
+docker-compose up -d --build
 ```
-Once completed, your [FastAPI](https://fastapi.tiangolo.com/) server should be running on port 8050 (feel free to change this in the previous command).
+Once completed, your [FastAPI](https://fastapi.tiangolo.com/) server should be running on port 8080.
 
 ### Documentation and swagger
 
-FastAPI comes with many advantages including speed and OpenAPI features. For instance, once your server is running, you can access the automatically built documentation and swagger in your browser at: http://localhost:8050/docs
+FastAPI comes with many advantages including speed and OpenAPI features. For instance, once your server is running, you can access the automatically built documentation and swagger in your browser at: http://localhost:8080/docs
 
 
 ### Using the routes
@@ -39,7 +39,7 @@ with this snippet:
 import requests
 with open('/path/to/your/img.jpg', 'rb') as f:
     data = f.read()
-print(requests.post("http://localhost:8050/classification", files={'file': data}).json())
+print(requests.post("http://localhost:8080/classification", files={'file': data}).json())
 ```
 
 should yield
