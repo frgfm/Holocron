@@ -1,30 +1,34 @@
-{% set data = load_setup_py_data(setup_file='../setup.py', from_recipe_dir=True) %}
-
+# https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html#loading-data-from-other-files
+# https://github.com/conda/conda-build/pull/4480
+# for conda-build > 3.21.9
+# {% set pyproject = load_file_data('../pyproject.toml', from_recipe_dir=True) %}
+# {% set project = pyproject.get('project') %}
+# {% set urls = pyproject.get('project', {}).get('urls') %}
 package:
-  name: {{ data.name }}
-  version: "{{ data.version }}"
+  name: pylocron
+  version: "{{ environ.get('BUILD_VERSION') }}"
 
 source:
-  fn: {{ data.name }}-{{ data.version }}.tar.gz
-  url: ../dist/{{ data.name }}-{{ data.version }}.tar.gz
+  fn: pylocron-{{ environ.get('BUILD_VERSION') }}.tar.gz
+  url: ../dist/pylocron-{{ environ.get('BUILD_VERSION') }}.tar.gz
 
 build:
-  number: 0
   noarch: python
   script: python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
-
   host:
-    - python>=3.6
+    - python>=3.6, <4.0
+    - setuptools
 
   run:
-    - pytorch >=1.9.1
-    - torchvision >=0.10.1
+    - python>=3.6, <4.0
+    - pytorch >=1.9.1, <2.0.0
+    - torchvision >=0.10.1, <1.0.0
     - tqdm >=4.1.0
-    - numpy >=1.17.2
-    - fastprogress >=1.0.0
-    - matplotlib >=3.0.0
+    - numpy >=1.17.2, <2.0.0
+    - fastprogress >=1.0.0, <2.0.0
+    - matplotlib >=3.0.0, <4.0.0
     - pillow >=8.4.0
     - huggingface_hub >=0.4.0
 
@@ -42,12 +46,11 @@ test:
     - python
 
 about:
-  home: {{ data.get('url') }}
-  license: {{ data['license'] }}
-  license_url: https://github.com/frgfm/Holocron/blob/main/LICENSE
+  home: https://github.com/frgfm/Holocron
+  license: Apache 2.0
   license_file: LICENSE
-  summary: {{ data['description'] }}
-  description: |
-    {{ data['long_description'] | replace("\n", "\n    ") | replace("#", '\#')}}
+  summary: 'Modules, operations and models for computer vision in PyTorch'
+  # description: |
+  #   {{ data['long_description'] | replace("\n", "\n    ") | replace("#", '\#')}}
   doc_url: https://frgfm.github.io/Holocron/
-  dev_url: {{ data.get('url') }}
+  dev_url: https://github.com/frgfm/Holocron
