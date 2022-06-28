@@ -70,7 +70,7 @@ def load_pretrained_params(
     if url is None:
         logging.warning("Invalid model URL, using default initialization.")
     else:
-        state_dict = load_state_dict_from_url(url, progress=progress, map_location="cpu")
+        state_dict = load_state_dict_from_url(url, progress=progress, map_location="cpu")  # type: ignore[arg-type]
         if isinstance(key_filter, str):
             state_dict = {k: v for k, v in state_dict.items() if k.startswith(key_filter)}
         if isinstance(key_replacement, tuple):
