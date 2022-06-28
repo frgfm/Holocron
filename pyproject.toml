@@ -6,8 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "pylocron"
 description = "Modules, operations and models for computer vision in PyTorch"
 authors = [
-    {email = "fg-feedback@protonmail.com"},
-    {name = "François-Guillaume Fernandez"}
+    {name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.6,<4"
@@ -91,6 +90,7 @@ dev = [
 documentation = "https://frgfm.github.io/holocron"
 repository = "https://github.com/frgfm/holocron"
 tracker = "https://github.com/frgfm/holocron/issues"
+changelog = "https://frgfm.github.io/Holocron/latest/changelog.html"
 
 [tool.setuptools]
 zip-safe = true
