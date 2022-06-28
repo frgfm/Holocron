@@ -1,5 +1,5 @@
-gradio>=3.0.2
+gradio>=3.0.2,<4.0.0
 Pillow>=8.4.0
-onnxruntime>=1.10.0
-huggingface-hub>=0.4.0
-numpy>=1.19.5
+onnxruntime>=1.10.0,<2.0.0
+huggingface-hub>=0.4.0,<1.0.0
+numpy>=1.19.5,<2.0.0
