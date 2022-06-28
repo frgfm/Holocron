@@ -214,20 +214,20 @@ Looking for a boilerplate to deploy a model from Holocron with a REST API? Thank
 Run your API in a docker container as follows:
 
 ```shell
-PORT=8002 docker-compose up -d --build
+docker-compose up -d --build
 ```
 
-*In order to stop the container, use `PORT=8002 docker-compose down`*
+*In order to stop the container, use `docker-compose down`*
 
 #### What you have deployed
 
-Your API is now running on port 8002, with its documentation http://localhost:8002/redoc and requestable routes:
+Your API is now running on port 8080, with its documentation http://localhost:8080/redoc and requestable routes:
 
 ```python
 import requests
 with open('/path/to/your/img.jpeg', 'rb') as f:
     data = f.read()
-response = requests.post("http://localhost:8002/classification", files={'file': data}).json()
+response = requests.post("http://localhost:8080/classification", files={'file': data}).json()
 ```
 
 

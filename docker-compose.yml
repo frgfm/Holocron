@@ -1,12 +1,12 @@
 version: '3.7'
 
 services:
-  web:
+  holocron:
     build:
       context: .
-      dockerfile: Dockerfile-api
+      dockerfile: api/Dockerfile
     command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8080
     volumes:
       - ./api/:/usr/src/app/
     ports:
-      - ${PORT}:8080
+      - 8080:8080
