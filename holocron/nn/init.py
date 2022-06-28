@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd
 
 
-def init_module(module: nn.Module, nonlinearity: Optional[str] = None) -> None:
+def init_module(module: nn.Module, nonlinearity: str = "relu") -> None:
     """Initializes pytorch modules
 
     Args:
