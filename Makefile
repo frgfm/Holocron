@@ -16,11 +16,11 @@ test:
 	coverage run -m pytest tests/
 
 # Build documentation for current version
-docs-single-version:
+docs:
 	sphinx-build docs/source docs/_build -a
 
 # Check that docs can build
-docs:
+full-docs:
 	cd docs && bash build.sh
 
 # Run the Gradio demo
@@ -28,7 +28,7 @@ run-demo:
 	python demo/app.py --port 8080
 
 # Build the docker
-docker-package:
+docker:
 	docker build . -t holocron:python3.8.1-slim
 
 # Pin the dependencies
