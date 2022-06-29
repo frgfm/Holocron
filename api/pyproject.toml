@@ -1,0 +1,23 @@
+[build-system]
+requires = ["poetry>=1.0"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry]
+name = "holocron-api"
+version = "0.2.1.dev0"
+description = "Backend template for your Vision API with Holocron"
+authors = ["François-Guillaume Fernandez <fg-feedback@protonmail.com>"]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+uvicorn = ">=0.11.1"
+fastapi = ">=0.65.2,<1.0.0"
+pylocron = ">=0.2.0"
+python-multipart = "==0.0.5"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=5.3.2,<8.0.0"
+pytest-asyncio = ">=0.14.0,<1.0.0"
+httpx = ">=0.23.0"
+requests = "^2.20.0"
