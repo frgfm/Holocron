@@ -15,7 +15,7 @@ git clone https://github.com/frgfm/Holocron.git
 then from the repo root folder, you can start your container:
 
 ```shell
-docker-compose up -d --build
+make run-api
 ```
 Once completed, your [FastAPI](https://fastapi.tiangolo.com/) server should be running on port 8080.
 

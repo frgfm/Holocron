@@ -8,10 +8,10 @@ ENV PYTHONUNBUFFERED 1
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
 # copy requirements file
-COPY api/requirements.txt /app/api-requirements.txt
+COPY api/requirements.txt /app/requirements.txt
 
 RUN pip install --upgrade pip setuptools wheel \
-    && pip install -r /app/api-requirements.txt \
+    && pip install -r /app/requirements.txt \
     && pip cache purge \
     && rm -rf /root/.cache/pip
 
@@ -26,4 +26,4 @@ RUN pip install -e /tmp/. \
     && rm -rf /root/.cache/pip
 
 # copy project
-COPY api /app
+COPY api/app /app/app
