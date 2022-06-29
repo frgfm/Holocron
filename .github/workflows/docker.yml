@@ -11,10 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Cache Docker layers
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
       - name: Build docker image
         run: docker build . -t holocron:python3.8.1-slim
       - name: Run docker container
@@ -39,12 +35,9 @@ jobs:
       - name: Lock the requirements
         run: |
           cd api
-          poetry lock && poetry export -f requirements.txt --without-hashes --output requirements.txt
+          poetry lock
+          poetry export -f requirements.txt --without-hashes --output requirements.txt
           poetry export -f requirements.txt --without-hashes --dev --output requirements-dev.txt
-      - name: Cache Docker layers
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
       - name: Build & run docker
         run: cd api && docker-compose up -d --build
       - name: Docker sanity check
