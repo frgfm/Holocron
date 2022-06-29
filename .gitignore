@@ -107,3 +107,7 @@ holocron/version.py
 conda-dist/
 wandb/
 **/*.pt
+
+# requirements.txt
+api/requirements.txt
+api/requirements-dev.txt
