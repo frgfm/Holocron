@@ -1,0 +1,60 @@
+[build-system]
+requires = ["poetry>=1.0"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry]
+name = "holocron-api"
+version = "0.2.1.dev0"
+description = "Backend template for your Vision API with Holocron"
+authors = ["François-Guillaume Fernandez <fg-feedback@protonmail.com>"]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+uvicorn = ">=0.11.1"
+fastapi = ">=0.65.2,<1.0.0"
+pylocron = ">=0.2.0"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=5.3.2,<8.0.0"
+pytest-asyncio = ">=0.14.0,<1.0.0"
+httpx = ">=0.23.0"
+requests = "^2.20.0"
+flake8 = ">=3.9.0,<5.0.0"
+isort = "^5.7.0"
+mypy = ">=0.812,<1.0.0"
+pydocstyle = { version = "^6.0.0", extras = ["toml"] }
+black = "^22.1"
+
+[tool.mypy]
+files = "app/"
+show_error_codes = true
+pretty = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
+implicit_reexport = false
+
+[[tool.mypy.overrides]]
+module = [
+]
+ignore_missing_imports = true
+
+[tool.isort]
+profile = "black"
+line_length = 120
+src_paths = ["app/", "tests/"]
+skip_glob = ["**/__init__.py"]
+known_third_party = ["fastapi"]
+
+[tool.pydocstyle]
+select = "D300,D301,D417"
+match = ".*\\.py"
+
+[tool.coverage.run]
+source = ["app/"]
+
+[tool.black]
+line-length = 120
+target-version = ['py38']
