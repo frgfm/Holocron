@@ -38,9 +38,9 @@ jobs:
           poetry-version: 1.1.13
       - name: Lock the requirements
         run: |
-          cd api && poetry lock
-          cd api && poetry export -f requirements.txt --without-hashes --output requirements.txt
-          cd api && poetry export -f requirements.txt --without-hashes --dev --output requirements-dev.txt
+          cd api
+          poetry lock && poetry export -f requirements.txt --without-hashes --output requirements.txt
+          poetry export -f requirements.txt --without-hashes --dev --output requirements-dev.txt
       - name: Cache Docker layers
         uses: satackey/action-docker-layer-caching@v0.0.11
         # Ignore the failure of a step and avoid terminating the job.
@@ -54,6 +54,6 @@ jobs:
       - name: Run docker test
         run: |
           docker cp api/requirements-dev.txt api_holocron_1:/app/requirements-dev.txt
-          cd api && docker-compose exec -T holocron pip install -r requirements-dev.txt
+          docker-compose -f api/docker-compose.yml exec -T holocron pip install -r requirements-dev.txt
           docker cp api/tests api_holocron_1:/app/tests
-          cd api && docker-compose exec -T holocron pytest tests/
+          docker-compose -f api/docker-compose.yml exec -T holocron pytest tests/
