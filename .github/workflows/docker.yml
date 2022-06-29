@@ -46,14 +46,14 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
       - name: Build & run docker
-        run: docker-compose up -d --build
+        run: cd api && docker-compose up -d --build
       - name: Docker sanity check
         run: sleep 10 && nc -vz localhost 8080
       - name: Ping server
         run: curl http://localhost:8080/docs
       - name: Run docker test
         run: |
-          docker cp api/requirements-dev.txt holocron_api_1:/app/requirements-dev.txt
-          docker-compose exec -T api pip install -r requirements-dev.txt
-          docker cp api/tests holocron_api_1:/app/tests
-          docker-compose exec -T api pytest tests/
+          docker cp api/requirements-dev.txt api_holocron_1:/app/requirements-dev.txt
+          cd api && docker-compose exec -T holocron pip install -r requirements-dev.txt
+          docker cp api/tests api_holocron_1:/app/tests
+          cd api && docker-compose exec -T holocron pytest tests/
