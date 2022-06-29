@@ -214,6 +214,7 @@ Looking for a boilerplate to deploy a model from Holocron with a REST API? Thank
 Run your API in a docker container as follows:
 
 ```shell
+make lock-api
 make run-api
 ```
 

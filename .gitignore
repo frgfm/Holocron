@@ -107,3 +107,7 @@ holocron/version.py
 conda-dist/
 wandb/
 **/*.pt
+
+# API uses poetry
+api/requirements.txt
+api/requirements-dev.txt
