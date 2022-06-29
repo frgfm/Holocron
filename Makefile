@@ -31,7 +31,7 @@ run-demo:
 docker-package:
 	docker build . -t holocron:python3.8.1-slim
 
-# Run the docker
+# Pin the dependencies
 lock-api:
 	cd api && poetry lock
 	cd api && poetry export -f requirements.txt --without-hashes --output requirements.txt
