@@ -32,6 +32,12 @@ docker-package:
 	docker build . -t holocron:python3.8.1-slim
 
 # Run the docker
+lock-api:
+	cd api && poetry lock
+	cd api && poetry export -f requirements.txt --without-hashes --output requirements.txt
+	cd api && poetry export -f requirements.txt --without-hashes --dev --output requirements-dev.txt
+
+# Run the docker
 run-api:
 	docker-compose up -d --build
 
@@ -42,6 +48,8 @@ stop-api:
 # Run tests for the library
 test-api:
 	docker-compose up -d --build
-	docker-compose exec -T holocron pip install -r requirements-dev.txt
-	docker-compose exec -T holocron pytest tests/
+	docker cp api/requirements-dev.txt holocron_api_1:/app/requirements-dev.txt
+	docker-compose exec -T api pip install -r requirements-dev.txt
+	docker cp api/tests holocron_api_1:/app/tests
+	docker-compose exec -T api pytest tests/
 	docker-compose down
