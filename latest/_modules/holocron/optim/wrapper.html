@@ -235,12 +235,11 @@
     <span class="sd">&quot;&quot;&quot;Implements the Lookahead optimizer wrapper from `&quot;Lookahead Optimizer: k steps forward, 1 step back&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1907.08610.pdf&gt;`_.</span>
 
-<span class="sd">    Example::</span>
-<span class="sd">        &gt;&gt;&gt; from torch.optim import AdamW</span>
-<span class="sd">        &gt;&gt;&gt; from holocron.optim.wrapper import Lookahead</span>
-<span class="sd">        &gt;&gt;&gt; model = ...</span>
-<span class="sd">        &gt;&gt;&gt; opt = AdamW(model.parameters(), lr=3e-4)</span>
-<span class="sd">        &gt;&gt;&gt; opt_wrapper = Lookahead(opt)</span>
+<span class="sd">    &gt;&gt;&gt; from torch.optim import AdamW</span>
+<span class="sd">    &gt;&gt;&gt; from holocron.optim.wrapper import Lookahead</span>
+<span class="sd">    &gt;&gt;&gt; model = ...</span>
+<span class="sd">    &gt;&gt;&gt; opt = AdamW(model.parameters(), lr=3e-4)</span>
+<span class="sd">    &gt;&gt;&gt; opt_wrapper = Lookahead(opt)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        base_optimizer (torch.optim.optimizer.Optimizer): base parameter optimizer</span>
