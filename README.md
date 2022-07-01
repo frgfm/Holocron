@@ -7,7 +7,7 @@
     <img alt="CI Status" src="https://img.shields.io/github/workflow/status/frgfm/holocron/builds?label=CI&logo=github&style=flat-square">
   </a>
   <a href="https://frgfm.github.io/holocron">
-    <img src="https://img.shields.io/readthedocs/deezer-python.svg?logo=read-the-docs&style=flat-square" alt="Documentation Status">
+    <img src="https://img.shields.io/github/workflow/status/frgfm/Holocron/docs?label=docs&logo=read-the-docs&style=flat-square" alt="Documentation Status">
   </a>
   <a href="https://codecov.io/gh/frgfm/holocron">
     <img src="https://img.shields.io/codecov/c/github/frgfm/holocron.svg?logo=codecov&style=flat-square" alt="Test coverage percentage">
