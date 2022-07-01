@@ -16,7 +16,7 @@ test:
 	coverage run -m pytest tests/
 
 # Build documentation for current version
-docs:
+single-docs:
 	sphinx-build docs/source docs/_build -a
 
 # Check that docs can build
