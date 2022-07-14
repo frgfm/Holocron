@@ -5,8 +5,6 @@
 
 import os
 
-import holocron
-
 PROJECT_NAME: str = "Holocron API template"
 PROJECT_DESCRIPTION: str = "Template API for Computer Vision"
 VERSION: str = "0.2.1.dev0"
