@@ -125,6 +125,7 @@ line_length = 120
 src_paths = ["holocron", "tests", "references", "scripts", "docs", "demo", "api", ".github"]
 skip_glob = "**/__init__.py"
 known_third_party = ["torch", "torchvision", "fastprogress"]
+known_first_party = ["app"]
 
 [tool.pydocstyle]
 select = "D300,D301,D417"
