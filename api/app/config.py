@@ -5,9 +5,8 @@
 
 import os
 
-import holocron
-
 PROJECT_NAME: str = "Holocron API template"
 PROJECT_DESCRIPTION: str = "Template API for Computer Vision"
-VERSION: str = holocron.__version__
+VERSION: str = "0.2.1.dev0"
 DEBUG: bool = os.environ.get("DEBUG", "") != "False"
+HUB_REPO: str = "frgfm/rexnet1_5x"
