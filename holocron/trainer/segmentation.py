@@ -53,17 +53,7 @@ class SegmentationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            if self.amp:
-                with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
-                    # Forward
-                    out = self.model(x)
-                    # Loss computation
-                    _loss = self.criterion(out, target)
-            else:
-                # Forward
-                out = self.model(x)
-                # Loss computation
-                _loss = self.criterion(out, target)
+            _loss, out = self._get_loss(x, target, return_logits=True)
 
             # Safeguard for NaN loss
             if not torch.isnan(_loss) and not torch.isinf(_loss):

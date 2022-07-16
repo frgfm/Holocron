@@ -38,6 +38,13 @@ class MockBinaryClassificationDataset(Dataset):
         return self.n
 
 
+class MockBinaryClassificationDatasetBis(MockBinaryClassificationDataset):
+    """Mock dataset generating a random sample and a fixed zero probability"""
+
+    def __getitem__(self, idx):
+        return torch.rand((3, 32, 32)), 0
+
+
 class MockSegDataset(Dataset):
     """Mock dataset generating a random sample and a fixed zero target"""
 
@@ -181,6 +188,16 @@ def test_binary_classification_trainer():
     # Generate all dependencies
     model = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True), GlobalAvgPool2d(flatten=True), nn.Linear(32, 1))
     train_loader = DataLoader(MockBinaryClassificationDataset(num_it * batch_size), batch_size=batch_size)
+    optimizer = torch.optim.Adam(model.parameters())
+    criterion = nn.BCEWithLogitsLoss()
+
+    learner = trainer.BinaryClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
+
+    res = learner.evaluate()
+    assert 0 <= res["acc"] <= 1
+
+    # Check that it works also for incorrect shaped / data-formatted targets
+    train_loader = DataLoader(MockBinaryClassificationDatasetBis(num_it * batch_size), batch_size=batch_size)
     optimizer = torch.optim.Adam(model.parameters())
     criterion = nn.BCEWithLogitsLoss()
 
