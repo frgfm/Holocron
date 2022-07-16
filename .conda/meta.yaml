@@ -13,6 +13,7 @@ source:
   url: ../dist/pylocron-{{ environ.get('BUILD_VERSION') }}.tar.gz
 
 build:
+  number: 0
   noarch: python
   script: python setup.py install --single-version-externally-managed --record=record.txt
 

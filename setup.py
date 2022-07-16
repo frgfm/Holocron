@@ -7,21 +7,19 @@
 import os
 from pathlib import Path
 
-from packaging import parse
 from setuptools import setup
 
 PKG_NAME = "pylocron"
-VERSION = os.getenv("BUILD_VERSION", "0.2.2.dev0")
+VERSION = os.getenv("BUILD_VERSION", "0.2.1.dev0")
 
 
 if __name__ == "__main__":
 
-    version_index = str(parse(VERSION))
-    print(f"Building wheel {PKG_NAME}-{version_index}")
+    print(f"Building wheel {PKG_NAME}-{VERSION}")
 
     # Dynamically set the __version__ attribute
     cwd = Path(__file__).parent.absolute()
     with open(cwd.joinpath("holocron", "version.py"), "w", encoding="utf-8") as f:
-        f.write(f"__version__ = '{version_index}'\n")
+        f.write(f"__version__ = '{VERSION}'\n")
 
-    setup(name=PKG_NAME, version=version_index)
+    setup(name=PKG_NAME, version=VERSION)
