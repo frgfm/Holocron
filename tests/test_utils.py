@@ -45,6 +45,23 @@ def test_mixup():
     assert torch.all(mix_target.sum(dim=1) == 1.0)
     assert torch.all((mix_target > 0).sum(dim=1) == 1.0)
 
+    # Binary target
+    mix = utils.data.Mixup(1, alpha=0.5)
+    img = torch.rand((batch_size, *shape))
+    target = torch.concat((torch.zeros(batch_size // 2), torch.ones(batch_size - batch_size // 2)))
+    mix_img, mix_target = mix(img.clone(), target.clone())
+    assert img.shape == (batch_size, *shape)
+    assert not torch.equal(img, mix_img)
+    assert mix_target.dtype == torch.float32 and mix_target.shape == (batch_size, 1)
+
+    # Already in one-hot
+    mix = utils.data.Mixup(num_classes, alpha=0.2)
+    img, target = torch.rand((batch_size, *shape)), torch.rand((batch_size, num_classes))
+    mix_img, mix_target = mix(img.clone(), target.clone())
+    assert img.shape == (batch_size, *shape)
+    assert not torch.equal(img, mix_img)
+    assert mix_target.dtype == torch.float32 and mix_target.shape == (batch_size, num_classes)
+
 
 def _train_one_batch(model, x, target, optimizer, criterion, device):
     """Mock batch training function"""

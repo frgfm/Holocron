@@ -114,7 +114,7 @@ def main(args):
         num_classes = len(train_set.classes)
         collate_fn = default_collate
         if args.mixup_alpha > 0:
-            mix = Mixup(len(train_set.classes), alpha=0.2)
+            mix = Mixup(len(train_set.classes), alpha=args.mixup_alpha)
             collate_fn = lambda batch: mix(*default_collate(batch))  # noqa: E731
         train_loader = torch.utils.data.DataLoader(
             train_set,
