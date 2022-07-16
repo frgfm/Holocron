@@ -118,7 +118,7 @@ class BinaryClassificationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, top1, num_samples, num_valid_batches = 0., 0., 0, 0
+        val_loss, top1, num_samples, num_valid_batches = 0.0, 0.0, 0, 0
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
