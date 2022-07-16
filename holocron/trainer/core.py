@@ -174,18 +174,24 @@ class Trainer:
             # Update the params
             self.optimizer.step()
 
-    def _get_loss(self, x: Tensor, target: Tensor) -> Tensor:
+    def _get_loss(self, x: Tensor, target: Tensor, return_logits: bool = False) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         # AMP
         if self.amp:
             with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
                 # Forward
                 out = self.model(x)
                 # Loss computation
-                return self.criterion(out, target)
+                loss = self.criterion(out, target)
+                if return_logits:
+                    return loss, out
+                return loss
 
         # Forward
         out = self.model(x)
-        return self.criterion(out, target)
+        loss = self.criterion(out, target)
+        if return_logits:
+            return loss, out
+        return loss
 
     def _set_params(self, norm_weight_decay: Optional[float] = None) -> None:
         if not any(p.requires_grad for p in self.model.parameters()):

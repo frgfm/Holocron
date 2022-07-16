@@ -3,9 +3,10 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
-from typing import Dict
+from typing import Dict, Tuple, Union
 
 import torch
+from torch import Tensor
 
 from .core import Trainer
 
@@ -42,17 +43,7 @@ class ClassificationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            if self.amp:
-                with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
-                    # Forward
-                    out = self.model(x)
-                    # Loss computation
-                    _loss = self.criterion(out, target)
-            else:
-                # Forward
-                out = self.model(x)
-                # Loss computation
-                _loss = self.criterion(out, target)
+            _loss, out = self._get_loss(x, target, return_logits=True)
 
             # Safeguard for NaN loss
             if not torch.isnan(_loss) and not torch.isinf(_loss):
@@ -93,6 +84,30 @@ class BinaryClassificationTrainer(Trainer):
         amp (bool, optional): whether to use automatic mixed precision
     """
 
+    def _get_loss(
+        self, x: torch.Tensor, target: torch.Tensor, return_logits: bool = False
+    ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+        # In case target are stored as long
+        target = target.to(dtype=x.dtype)
+
+        # AMP
+        if self.amp:
+            with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
+                # Forward
+                out = self.model(x)
+                # Loss computation
+                loss = self.criterion(out, target.view_as(out))
+                if return_logits:
+                    return loss, out
+                return loss
+
+        # Forward
+        out = self.model(x)
+        loss = self.criterion(out, target.view_as(out))
+        if return_logits:
+            return loss, out
+        return loss
+
     @torch.inference_mode()
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the model on the validation set
@@ -107,28 +122,27 @@ class BinaryClassificationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
+            # In case target are stored as long
+            target = target.to(dtype=x.dtype)
+
+            # AMP
             if self.amp:
                 with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
                     # Forward
                     out = self.model(x)
-                    # Apply sigmoid
-                    out = torch.sigmoid(out)
                     # Loss computation
-                    _loss = self.criterion(out, target)
-            else:
-                # Forward
-                out = self.model(x)
-                # Apply sigmoid
-                out = torch.sigmoid(out)
-                # Loss computation
-                _loss = self.criterion(out, target)
+                    _loss = self.criterion(out, target.view_as(out))
+
+            # Forward
+            out = self.model(x)
+            _loss = self.criterion(out, target.view_as(out))
 
             # Safeguard for NaN loss
             if not torch.isnan(_loss) and not torch.isinf(_loss):
                 val_loss += _loss.item()
                 num_valid_batches += 1
 
-            top1 += int(torch.sum((target >= 0.5) == (out >= 0.5)).item())
+            top1 += int(torch.sum((target >= 0.5) == (torch.sigmoid(out) >= 0.5)).item())
 
             num_samples += x.shape[0]
 
