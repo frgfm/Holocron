@@ -118,7 +118,7 @@ class BinaryClassificationTrainer(Trainer):
 
         self.model.eval()
 
-        val_loss, top1, num_samples, num_valid_batches = 0.0, 0, 0, 0
+        val_loss, top1, num_samples, num_valid_batches = 0.0, 0.0, 0, 0
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
@@ -129,7 +129,7 @@ class BinaryClassificationTrainer(Trainer):
                 val_loss += _loss.item()
                 num_valid_batches += 1
 
-            top1 += int(torch.sum((target >= 0.5) == (torch.sigmoid(out) >= 0.5)).item())
+            top1 += torch.sum((target.view_as(out) >= 0.5) == (torch.sigmoid(out) >= 0.5)).item() / out[0].numel()
 
             num_samples += x.shape[0]
 
