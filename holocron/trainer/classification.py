@@ -129,7 +129,7 @@ class BinaryClassificationTrainer(Trainer):
                 val_loss += _loss.item()
                 num_valid_batches += 1
 
-            top1 += torch.sum((target >= 0.5) == (torch.sigmoid(out) >= 0.5)).item() / target[0].numel()
+            top1 += torch.sum((target.view_as(out) >= 0.5) == (torch.sigmoid(out) >= 0.5)).item() / out[0].numel()
 
             num_samples += x.shape[0]
 
