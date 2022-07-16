@@ -126,7 +126,7 @@ class Trainer:
             x, target = self.to_cuda(x, target)
 
             # Forward
-            batch_loss = self._get_loss(x, target)
+            batch_loss: Tensor = self._get_loss(x, target)  # type: ignore[assignment]
 
             # Backprop
             if not self.skip_nan_loss or torch.isfinite(batch_loss):
@@ -318,7 +318,7 @@ class Trainer:
             x, target = self.to_cuda(x, target)
 
             # Forward
-            batch_loss = self._get_loss(x, target)
+            batch_loss: Tensor = self._get_loss(x, target)  # type: ignore[assignment]
             self._backprop_step(batch_loss)
             # Update LR
             scheduler.step()
@@ -401,7 +401,7 @@ class Trainer:
 
         for _ in range(num_it):
             # Forward
-            batch_loss = self._get_loss(x, target)
+            batch_loss: Tensor = self._get_loss(x, target)  # type: ignore[assignment]
             # Backprop
             self._backprop_step(batch_loss)
 
