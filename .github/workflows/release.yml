@@ -80,7 +80,7 @@ jobs:
           mkdir conda-dist
           conda-build .conda/ -c pytorch -c fastai -c conda-forge --output-folder conda-dist
           ls -l conda-dist/noarch/*tar.bz2
-          anaconda upload conda-dist/noarch/*tar.bz2 -u frgfm
+          anaconda upload conda-dist/noarch/*tar.bz2
 
   conda-check:
     if: "!github.event.release.prerelease"
