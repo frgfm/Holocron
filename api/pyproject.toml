@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "holocron-api"
-version = "0.2.1.dev0"
+version = "0.2.2.dev0"
 description = "Backend template for your Vision API with Holocron"
 authors = ["François-Guillaume Fernandez <fg-feedback@protonmail.com>"]
 license = "Apache-2.0"
