@@ -219,17 +219,29 @@
           <h1>Source code for holocron.utils.misc</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
 
-<span class="c1"># This program is licensed under the Apache License version 2.</span>
-<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
+<span class="c1"># This program is licensed under the Apache License 2.0.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lr_finder&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lr_finder&quot;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="lr_finder"><a class="viewcode-back" href="../../../utils.html#holocron.utils.lr_finder">[docs]</a><span class="k">def</span> <span class="nf">lr_finder</span><span class="p">(</span><span class="n">batch_training_fn</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-              <span class="n">start_lr</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span> <span class="n">end_lr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">num_it</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">stop_div</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stop_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
+<div class="viewcode-block" id="lr_finder"><a class="viewcode-back" href="../../../utils.html#holocron.utils.lr_finder">[docs]</a><span class="k">def</span> <span class="nf">lr_finder</span><span class="p">(</span>
+    <span class="n">batch_training_fn</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">train_loader</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">start_lr</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span>
+    <span class="n">end_lr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">num_it</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">stop_div</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">stop_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">beta</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Learning rate finder as described in</span>
 <span class="sd">    `&quot;Cyclical Learning Rates for Training Neural Networks&quot; &lt;https://arxiv.org/pdf/1506.01186.pdf&gt;`_</span>
 
@@ -253,16 +265,16 @@
 
     <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span><span class="p">)</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
     <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">loader_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
     <span class="n">gamma</span> <span class="o">=</span> <span class="p">(</span><span class="n">end_lr</span> <span class="o">/</span> <span class="n">start_lr</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_it</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
     <span class="n">base_lr</span> <span class="o">=</span> <span class="n">start_lr</span>
-    <span class="n">avg_loss</span><span class="p">,</span> <span class="n">best_loss</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.</span>
+    <span class="n">avg_loss</span><span class="p">,</span> <span class="n">best_loss</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span>
     <span class="n">lrs</span><span class="p">,</span> <span class="n">losses</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">batch_idx</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_it</span><span class="p">)):</span>
 
@@ -287,7 +299,7 @@
         <span class="c1"># Update LR</span>
         <span class="n">base_lr</span> <span class="o">*=</span> <span class="n">gamma</span>
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
-            <span class="n">group</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">gamma</span>
+            <span class="n">group</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">gamma</span>
 
     <span class="k">return</span> <span class="n">lrs</span><span class="p">,</span> <span class="n">losses</span></div>
 </pre></div>

@@ -232,36 +232,8 @@
 different tasks, including: image classification, pixelwise semantic
 segmentation, object detection, instance segmentation, person
 keypoint detection and video classification.</p>
-<p>The following models are available:</p>
-<nav class="contents local" id="models">
-<p class="topic-title">Models</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="#classification" id="id30">Classification</a></p>
-<ul>
-<li><p><a class="reference internal" href="#resnet" id="id31">ResNet</a></p></li>
-<li><p><a class="reference internal" href="#res2net" id="id32">Res2Net</a></p></li>
-<li><p><a class="reference internal" href="#tridentnet" id="id33">TridentNet</a></p></li>
-<li><p><a class="reference internal" href="#pyconvresnet" id="id34">PyConvResNet</a></p></li>
-<li><p><a class="reference internal" href="#rexnet" id="id35">ReXNet</a></p></li>
-<li><p><a class="reference internal" href="#sknet" id="id36">SKNet</a></p></li>
-<li><p><a class="reference internal" href="#darknet" id="id37">Darknet</a></p></li>
-<li><p><a class="reference internal" href="#repvgg" id="id38">RepVGG</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#object-detection" id="id39">Object Detection</a></p>
-<ul>
-<li><p><a class="reference internal" href="#yolo" id="id40">YOLO</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#semantic-segmentation" id="id41">Semantic Segmentation</a></p>
-<ul>
-<li><p><a class="reference internal" href="#u-net" id="id42">U-Net</a></p></li>
-</ul>
-</li>
-</ul>
-</nav>
 <section id="classification">
-<h2><a class="toc-backref" href="#id30" role="doc-backlink">Classification</a><a class="headerlink" href="#classification" title="Permalink to this heading">#</a></h2>
+<h2>Classification<a class="headerlink" href="#classification" title="Permalink to this heading">#</a></h2>
 <p>Classification models expect a 4D image tensor as an input (N x C x H x W) and returns a 2D output (N x K).
 The output represents the classification scores for each output classes.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -269,7 +241,7 @@ The output represents the classification scores for each output classes.</p>
 </pre></div>
 </div>
 <section id="resnet">
-<h3><a class="toc-backref" href="#id31" role="doc-backlink">ResNet</a><a class="headerlink" href="#resnet" title="Permalink to this heading">#</a></h3>
+<h3>ResNet<a class="headerlink" href="#resnet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.resnet18">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">resnet18</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/resnet.html#resnet18"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.resnet18" title="Permalink to this definition">#</a></dt>
@@ -440,7 +412,7 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="res2net">
-<h3><a class="toc-backref" href="#id32" role="doc-backlink">Res2Net</a><a class="headerlink" href="#res2net" title="Permalink to this heading">#</a></h3>
+<h3>Res2Net<a class="headerlink" href="#res2net" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.res2net50_26w_4s">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">res2net50_26w_4s</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/res2net.html#res2net50_26w_4s"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.res2net50_26w_4s" title="Permalink to this definition">#</a></dt>
@@ -464,7 +436,7 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="tridentnet">
-<h3><a class="toc-backref" href="#id33" role="doc-backlink">TridentNet</a><a class="headerlink" href="#tridentnet" title="Permalink to this heading">#</a></h3>
+<h3>TridentNet<a class="headerlink" href="#tridentnet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.tridentnet50">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">tridentnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/tridentnet.html#tridentnet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.tridentnet50" title="Permalink to this definition">#</a></dt>
@@ -488,7 +460,7 @@ The output represents the classification scores for each output classes.</p>
 
 </section>
 <section id="pyconvresnet">
-<h3><a class="toc-backref" href="#id34" role="doc-backlink">PyConvResNet</a><a class="headerlink" href="#pyconvresnet" title="Permalink to this heading">#</a></h3>
+<h3>PyConvResNet<a class="headerlink" href="#pyconvresnet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.pyconv_resnet50">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">pyconv_resnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/pyconvresnet.html#pyconv_resnet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.pyconv_resnet50" title="Permalink to this definition">#</a></dt>
@@ -533,7 +505,7 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="rexnet">
-<h3><a class="toc-backref" href="#id35" role="doc-backlink">ReXNet</a><a class="headerlink" href="#rexnet" title="Permalink to this heading">#</a></h3>
+<h3>ReXNet<a class="headerlink" href="#rexnet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.rexnet1_0x">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">rexnet1_0x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ReXNet</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/rexnet.html#rexnet1_0x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.rexnet1_0x" title="Permalink to this definition">#</a></dt>
@@ -641,7 +613,7 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="sknet">
-<h3><a class="toc-backref" href="#id36" role="doc-backlink">SKNet</a><a class="headerlink" href="#sknet" title="Permalink to this heading">#</a></h3>
+<h3>SKNet<a class="headerlink" href="#sknet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.sknet50">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">sknet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResNet</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/sknet.html#sknet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.sknet50" title="Permalink to this definition">#</a></dt>
@@ -707,7 +679,7 @@ for Visual Recognition”</a></p>
 
 </section>
 <section id="darknet">
-<h3><a class="toc-backref" href="#id37" role="doc-backlink">Darknet</a><a class="headerlink" href="#darknet" title="Permalink to this heading">#</a></h3>
+<h3>Darknet<a class="headerlink" href="#darknet" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.darknet24">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">darknet24</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DarknetV1</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/darknet.html#darknet24"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.darknet24" title="Permalink to this definition">#</a></dt>
@@ -816,7 +788,7 @@ with Mish as activation layer and DropBlock as regularization layer.</p>
 
 </section>
 <section id="repvgg">
-<h3><a class="toc-backref" href="#id38" role="doc-backlink">RepVGG</a><a class="headerlink" href="#repvgg" title="Permalink to this heading">#</a></h3>
+<h3>RepVGG<a class="headerlink" href="#repvgg" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.repvgg_a0">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">repvgg_a0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RepVGG</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_a0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.repvgg_a0" title="Permalink to this definition">#</a></dt>
@@ -967,7 +939,7 @@ with Mish as activation layer and DropBlock as regularization layer.</p>
 </section>
 </section>
 <section id="object-detection">
-<h2><a class="toc-backref" href="#id39" role="doc-backlink">Object Detection</a><a class="headerlink" href="#object-detection" title="Permalink to this heading">#</a></h2>
+<h2>Object Detection<a class="headerlink" href="#object-detection" title="Permalink to this heading">#</a></h2>
 <p>Object detection models expect a 4D image tensor as an input (N x C x H x W) and returns a list of dictionaries.
 Each dictionary has 3 keys: box coordinates, classification probability, classification label.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -975,7 +947,7 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
 </pre></div>
 </div>
 <section id="yolo">
-<h3><a class="toc-backref" href="#id40" role="doc-backlink">YOLO</a><a class="headerlink" href="#yolo" title="Permalink to this heading">#</a></h3>
+<h3>YOLO<a class="headerlink" href="#yolo" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.detection.yolov1">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.detection.</span></span><span class="sig-name descname"><span class="pre">yolov1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained_backbone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">YOLOv1</span></span></span><a class="reference internal" href="_modules/holocron/models/detection/yolo.html#yolov1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.detection.yolov1" title="Permalink to this definition">#</a></dt>
@@ -1128,7 +1100,7 @@ and <span class="math notranslate nohighlight">\(loc^{GT}_k\)</span> is the k-th
 </section>
 </section>
 <section id="semantic-segmentation">
-<h2><a class="toc-backref" href="#id41" role="doc-backlink">Semantic Segmentation</a><a class="headerlink" href="#semantic-segmentation" title="Permalink to this heading">#</a></h2>
+<h2>Semantic Segmentation<a class="headerlink" href="#semantic-segmentation" title="Permalink to this heading">#</a></h2>
 <p>Semantic segmentation models expect a 4D image tensor as an input (N x C x H x W) and returns a classification score
 tensor of size (N x K x Ho x Wo).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">holocron.models</span> <span class="k">as</span> <span class="nn">models</span>
@@ -1136,7 +1108,7 @@ tensor of size (N x K x Ho x Wo).</p>
 </pre></div>
 </div>
 <section id="u-net">
-<h3><a class="toc-backref" href="#id42" role="doc-backlink">U-Net</a><a class="headerlink" href="#u-net" title="Permalink to this heading">#</a></h3>
+<h3>U-Net<a class="headerlink" href="#u-net" title="Permalink to this heading">#</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.segmentation.unet">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.segmentation.</span></span><span class="sig-name descname"><span class="pre">unet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">UNet</span></span></span><a class="reference internal" href="_modules/holocron/models/segmentation/unet.html#unet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.segmentation.unet" title="Permalink to this definition">#</a></dt>

@@ -28,6 +28,8 @@ Loss functions
 
 .. autoclass:: DiceLoss
 
+.. autoclass:: PolyLoss
+
 
 Loss wrappers
 --------------

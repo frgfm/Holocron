@@ -219,8 +219,8 @@
           <h1>Source code for holocron.models.detection.yolov2</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2020-2022, François-Guillaume Fernandez.</span>
 
-<span class="c1"># This program is licensed under the Apache License version 2.</span>
-<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
+<span class="c1"># This program is licensed under the Apache License 2.0.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -238,17 +238,15 @@
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
 <span class="kn">from</span> <span class="nn">.yolo</span> <span class="kn">import</span> <span class="n">_YOLO</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;YOLOv2&#39;</span><span class="p">,</span> <span class="s1">&#39;yolov2&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;YOLOv2&quot;</span><span class="p">,</span> <span class="s2">&quot;yolov2&quot;</span><span class="p">]</span>
 
 
 <span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;yolov2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;YOLOv2&#39;</span><span class="p">,</span> <span class="s1">&#39;backbone&#39;</span><span class="p">:</span> <span class="n">dark_cfgs</span><span class="p">[</span><span class="s1">&#39;darknet19&#39;</span><span class="p">],</span>
-               <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s2">&quot;yolov2&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;arch&quot;</span><span class="p">:</span> <span class="s2">&quot;YOLOv2&quot;</span><span class="p">,</span> <span class="s2">&quot;backbone&quot;</span><span class="p">:</span> <span class="n">dark_cfgs</span><span class="p">[</span><span class="s2">&quot;darknet19&quot;</span><span class="p">],</span> <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
 <span class="p">}</span>
 
 
 <span class="k">class</span> <span class="nc">YOLOv2</span><span class="p">(</span><span class="n">_YOLO</span><span class="p">):</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
@@ -267,17 +265,11 @@
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">backbone_norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">backbone_norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">num_classes</span><span class="p">,</span>
-            <span class="n">rpn_nms_thresh</span><span class="p">,</span>
-            <span class="n">box_score_thresh</span><span class="p">,</span>
-            <span class="n">lambda_obj</span><span class="p">,</span>
-            <span class="n">lambda_noobj</span><span class="p">,</span>
-            <span class="n">lambda_class</span><span class="p">,</span>
-            <span class="n">lambda_coords</span>
+            <span class="n">num_classes</span><span class="p">,</span> <span class="n">rpn_nms_thresh</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="p">,</span> <span class="n">lambda_obj</span><span class="p">,</span> <span class="n">lambda_noobj</span><span class="p">,</span> <span class="n">lambda_class</span><span class="p">,</span> <span class="n">lambda_coords</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -290,37 +282,79 @@
         <span class="c1"># Priors computed using K-means</span>
         <span class="k">if</span> <span class="n">anchors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># cf. https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-voc.cfg#L242</span>
-            <span class="n">anchors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.3221</span><span class="p">,</span> <span class="mf">1.73145</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.19275</span><span class="p">,</span> <span class="mf">4.00944</span><span class="p">],</span> <span class="p">[</span><span class="mf">5.05587</span><span class="p">,</span> <span class="mf">8.09892</span><span class="p">],</span>
-                                    <span class="p">[</span><span class="mf">9.47112</span><span class="p">,</span> <span class="mf">4.84053</span><span class="p">],</span> <span class="p">[</span><span class="mf">11.2364</span><span class="p">,</span> <span class="mf">10.0071</span><span class="p">]])</span> <span class="o">/</span> <span class="mi">13</span>
+            <span class="n">anchors</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                    <span class="p">[[</span><span class="mf">1.3221</span><span class="p">,</span> <span class="mf">1.73145</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.19275</span><span class="p">,</span> <span class="mf">4.00944</span><span class="p">],</span> <span class="p">[</span><span class="mf">5.05587</span><span class="p">,</span> <span class="mf">8.09892</span><span class="p">],</span> <span class="p">[</span><span class="mf">9.47112</span><span class="p">,</span> <span class="mf">4.84053</span><span class="p">],</span> <span class="p">[</span><span class="mf">11.2364</span><span class="p">,</span> <span class="mf">10.0071</span><span class="p">]]</span>
+                <span class="p">)</span>
+                <span class="o">/</span> <span class="mi">13</span>
+            <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV2</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_chanels</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span>
-                                      <span class="n">backbone_norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV2</span><span class="p">(</span>
+            <span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_chanels</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">backbone_norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">block5</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">passthrough_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">passthrough_ratio</span><span class="p">,</span>
-                                                              <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                                                              <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-                                               <span class="n">ConcatDownsample2d</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passthrough_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">passthrough_ratio</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">ConcatDownsample2d</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">block6</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">passthrough_ratio</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
-                           <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">passthrough_ratio</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="c1"># Each box has P_objectness, 4 coords, and score for each class</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">anchors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Register losses</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;anchors&#39;</span><span class="p">,</span> <span class="n">anchors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;anchors&quot;</span><span class="p">,</span> <span class="n">anchors</span><span class="p">)</span>
 
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block5</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passthrough_layer</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block6</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block5</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passthrough_layer</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block6</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
         <span class="c1"># Initialize the head like a linear (default Conv2D init is the same as Linear)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
@@ -377,9 +411,7 @@
         <span class="k">return</span> <span class="n">out</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
-        <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]:</span>
         <span class="sd">&quot;&quot;&quot;Perform detection on an image tensor and returns either the loss dictionary in training mode</span>
 <span class="sd">        or the list of detections in eval mode.</span>
@@ -415,12 +447,7 @@
 
 
 <span class="k">def</span> <span class="nf">_yolo</span><span class="p">(</span>
-    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv2</span><span class="p">:</span>
 
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
@@ -430,11 +457,16 @@
     <span class="n">model</span> <span class="o">=</span> <span class="n">YOLOv2</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="c1"># Load backbone pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained_backbone</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;backbone&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">,</span>
-                               <span class="n">key_replacement</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;features.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">key_filter</span><span class="o">=</span><span class="s1">&#39;features.&#39;</span><span class="p">)</span>
+        <span class="n">load_pretrained_params</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span>
+            <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;backbone&quot;</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>
+            <span class="n">progress</span><span class="p">,</span>
+            <span class="n">key_replacement</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;features.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="n">key_filter</span><span class="o">=</span><span class="s2">&quot;features.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="c1"># Load pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
+        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span>
 
@@ -472,10 +504,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">pretrained_backbone</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;backbone_norm_layer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrozenBatchNorm2d</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;backbone_norm_layer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrozenBatchNorm2d</span>
 
     <span class="k">return</span> <span class="n">_yolo</span><span class="p">(</span>
-        <span class="s1">&#39;yolov2&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;yolov2&quot;</span><span class="p">,</span>
         <span class="n">pretrained</span><span class="p">,</span>
         <span class="n">progress</span><span class="p">,</span>
         <span class="n">pretrained_backbone</span><span class="p">,</span>

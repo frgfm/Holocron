@@ -219,8 +219,8 @@
           <h1>Source code for holocron.models.detection.yolov4</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2020-2022, François-Guillaume Fernandez.</span>
 
-<span class="c1"># This program is licensed under the Apache License version 2.</span>
-<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
+<span class="c1"># This program is licensed under the Apache License 2.0.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -239,12 +239,11 @@
 <span class="kn">from</span> <span class="nn">..classification.darknetv4</span> <span class="kn">import</span> <span class="n">default_cfgs</span> <span class="k">as</span> <span class="n">dark_cfgs</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;YOLOv4&#39;</span><span class="p">,</span> <span class="s1">&#39;yolov4&#39;</span><span class="p">,</span> <span class="s1">&#39;PAN&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;YOLOv4&quot;</span><span class="p">,</span> <span class="s2">&quot;yolov4&quot;</span><span class="p">,</span> <span class="s2">&quot;PAN&quot;</span><span class="p">]</span>
 
 
 <span class="n">default_cfgs</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;yolov4&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arch&#39;</span><span class="p">:</span> <span class="s1">&#39;YOLOv4&#39;</span><span class="p">,</span> <span class="s1">&#39;backbone&#39;</span><span class="p">:</span> <span class="n">dark_cfgs</span><span class="p">[</span><span class="s1">&#39;cspdarknet53_mish&#39;</span><span class="p">],</span>
-               <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="s2">&quot;yolov4&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;arch&quot;</span><span class="p">:</span> <span class="s2">&quot;YOLOv4&quot;</span><span class="p">,</span> <span class="s2">&quot;backbone&quot;</span><span class="p">:</span> <span class="n">dark_cfgs</span><span class="p">[</span><span class="s2">&quot;cspdarknet53_mish&quot;</span><span class="p">],</span> <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
 <span class="p">}</span>
 
 
@@ -258,36 +257,98 @@
 <span class="sd">        drop_layer (callable, optional): regularization layer</span>
 <span class="sd">        conv_layer (callable, optional): convolutional layer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
-                                                  <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                                                  <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">up</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">up</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
-                                                  <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                                                  <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">convs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">up</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -304,29 +365,79 @@
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">fpn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
             <span class="n">SPP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">13</span><span class="p">]),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">4</span> <span class="o">*</span> <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">in_planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pan1</span> <span class="o">=</span> <span class="n">PAN</span><span class="p">(</span><span class="n">in_planes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pan2</span> <span class="o">=</span> <span class="n">PAN</span><span class="p">(</span><span class="n">in_planes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
 
@@ -340,23 +451,24 @@
 
 <span class="k">class</span> <span class="nc">YoloLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Scale-specific part of YoloHead&quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">anchors</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
-        <span class="n">scale_xy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span>
+        <span class="n">scale_xy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">iou_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.213</span><span class="p">,</span>
         <span class="n">lambda_obj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">lambda_noobj</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
-        <span class="n">lambda_class</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">.1</span><span class="p">,</span>
-        <span class="n">lambda_coords</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span>
+        <span class="n">lambda_class</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">lambda_coords</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">rpn_nms_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
         <span class="n">box_score_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
         <span class="n">ignore_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;anchors&#39;</span><span class="p">,</span> <span class="n">anchors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;anchors&quot;</span><span class="p">,</span> <span class="n">anchors</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">rpn_nms_thresh</span> <span class="o">=</span> <span class="n">rpn_nms_thresh</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">box_score_thresh</span> <span class="o">=</span> <span class="n">box_score_thresh</span>
@@ -409,11 +521,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span>
-        <span class="n">boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">b_o</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">b_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">rpn_nms_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
-        <span class="n">box_score_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
+        <span class="n">boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">b_o</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">rpn_nms_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">box_score_thresh</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]:</span>
 
         <span class="n">b_o</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">b_o</span><span class="p">)</span>
@@ -450,11 +558,7 @@
         <span class="k">return</span> <span class="n">detections</span>
 
     <span class="k">def</span> <span class="nf">_build_targets</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">pred_boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">b_o</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">b_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">b_o</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">b_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
 
         <span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_anchors</span> <span class="o">=</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span>
@@ -465,8 +569,8 @@
         <span class="n">obj_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_anchors</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">b_o</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">noobj_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_anchors</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">b_o</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
-        <span class="n">gt_boxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
-        <span class="n">gt_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
+        <span class="n">gt_boxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
+        <span class="n">gt_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
 
         <span class="c1"># GT coords --&gt; left, top, width, height</span>
         <span class="n">_boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -475,14 +579,18 @@
         <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">h</span>
         <span class="n">gt_centers</span> <span class="o">=</span> <span class="n">gt_centers</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
 
-        <span class="n">target_selection</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">_idx</span> <span class="k">for</span> <span class="n">_idx</span><span class="p">,</span> <span class="n">_boxes</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
-                                        <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">b_o</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">target_selection</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">_idx</span> <span class="k">for</span> <span class="n">_idx</span><span class="p">,</span> <span class="n">_boxes</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">b_o</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">target_selection</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
 
             <span class="c1"># Anchors IoU</span>
             <span class="n">gt_wh</span> <span class="o">=</span> <span class="n">_boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">_boxes</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">anchor_idxs</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="o">-</span><span class="n">gt_wh</span><span class="p">,</span> <span class="n">gt_wh</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
-                                  <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">anchor_idxs</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="o">-</span><span class="n">gt_wh</span><span class="p">,</span> <span class="n">gt_wh</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchors</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
             <span class="c1"># Assign boxes</span>
             <span class="n">obj_mask</span><span class="p">[</span><span class="n">target_selection</span><span class="p">,</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">gt_centers</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">anchor_idxs</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -496,7 +604,7 @@
                     <span class="c1"># Objectness target</span>
                     <span class="n">target_o</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]]</span> <span class="o">=</span> <span class="n">gt_ious</span>
                     <span class="c1"># Classification target</span>
-                    <span class="n">target_scores</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">gt_labels</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">gt_idxs</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">1.</span>
+                    <span class="n">target_scores</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">gt_labels</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">gt_idxs</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">1.0</span>
                     <span class="c1"># Ignore predictions</span>
                     <span class="n">gt_ious</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">noobj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]],</span> <span class="n">gt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
                     <span class="n">noobj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">noobj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]][</span><span class="n">gt_ious</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_thresh</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
@@ -516,26 +624,28 @@
         <span class="c1"># Bbox regression</span>
         <span class="n">bbox_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">b_o</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">_target</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">_target</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
-                <span class="n">bbox_loss</span> <span class="o">+=</span> <span class="n">ciou_loss</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]],</span> <span class="n">_target</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">_target</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                <span class="n">bbox_loss</span> <span class="o">+=</span> <span class="n">ciou_loss</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="n">obj_mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]],</span> <span class="n">_target</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
         <span class="n">b_o</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">b_o</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
-            <span class="n">obj_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_obj</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">b_o</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span> <span class="n">target_o</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">obj_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_obj</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">b_o</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span> <span class="n">target_o</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="n">noobj_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_noobj</span> <span class="o">*</span> <span class="n">b_o</span><span class="p">[</span><span class="n">noobj_mask</span><span class="p">]</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="n">bbox_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_coords</span> <span class="o">*</span> <span class="n">bbox_loss</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">clf_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_class</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
+            <span class="n">clf_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_class</span>
+            <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
                 <span class="n">b_scores</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span>
                 <span class="n">target_scores</span><span class="p">[</span><span class="n">obj_mask</span><span class="p">],</span>
-                <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">/</span> <span class="n">b_o</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]:</span>
         <span class="sd">&quot;&quot;&quot;Perform detection on an image tensor and returns either the loss dictionary in training mode</span>
 <span class="sd">        or the list of detections in eval mode.</span>
@@ -566,14 +676,22 @@
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
         <span class="c1"># cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1143</span>
         <span class="k">if</span> <span class="n">anchors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">anchors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span> <span class="p">[</span><span class="mi">19</span><span class="p">,</span> <span class="mi">36</span><span class="p">],</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">28</span><span class="p">]],</span>
-                                   <span class="p">[[</span><span class="mi">36</span><span class="p">,</span> <span class="mi">75</span><span class="p">],</span> <span class="p">[</span><span class="mi">76</span><span class="p">,</span> <span class="mi">55</span><span class="p">],</span> <span class="p">[</span><span class="mi">72</span><span class="p">,</span> <span class="mi">146</span><span class="p">]],</span>
-                                   <span class="p">[[</span><span class="mi">142</span><span class="p">,</span> <span class="mi">110</span><span class="p">],</span> <span class="p">[</span><span class="mi">192</span><span class="p">,</span> <span class="mi">243</span><span class="p">],</span> <span class="p">[</span><span class="mi">459</span><span class="p">,</span> <span class="mi">401</span><span class="p">]]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">/</span> <span class="mi">608</span>
+            <span class="n">anchors</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="p">[[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span> <span class="p">[</span><span class="mi">19</span><span class="p">,</span> <span class="mi">36</span><span class="p">],</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">28</span><span class="p">]],</span>
+                        <span class="p">[[</span><span class="mi">36</span><span class="p">,</span> <span class="mi">75</span><span class="p">],</span> <span class="p">[</span><span class="mi">76</span><span class="p">,</span> <span class="mi">55</span><span class="p">],</span> <span class="p">[</span><span class="mi">72</span><span class="p">,</span> <span class="mi">146</span><span class="p">]],</span>
+                        <span class="p">[[</span><span class="mi">142</span><span class="p">,</span> <span class="mi">110</span><span class="p">],</span> <span class="p">[</span><span class="mi">192</span><span class="p">,</span> <span class="mi">243</span><span class="p">],</span> <span class="p">[</span><span class="mi">459</span><span class="p">,</span> <span class="mi">401</span><span class="p">]],</span>
+                    <span class="p">],</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="o">/</span> <span class="mi">608</span>
+            <span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anchors</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">anchors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">anchors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
@@ -583,54 +701,132 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">head1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">yolo1</span> <span class="o">=</span> <span class="n">YoloLayer</span><span class="p">(</span><span class="n">anchors</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">scale_xy</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">pre_head2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                                                      <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_head2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">128</span><span class="p">,</span>
+                <span class="mi">256</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">head2_1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">256</span><span class="p">,</span>
+                <span class="mi">512</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">256</span><span class="p">,</span>
+                <span class="mi">512</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">head2_2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">yolo2</span> <span class="o">=</span> <span class="n">YoloLayer</span><span class="p">(</span><span class="n">anchors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">scale_xy</span><span class="o">=</span><span class="mf">1.1</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">pre_head3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                                                      <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_head3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">256</span><span class="p">,</span>
+                <span class="mi">512</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">head3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span>
-                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">512</span><span class="p">,</span>
+                <span class="mi">1024</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">512</span><span class="p">,</span>
+                <span class="mi">1024</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                <span class="mi">512</span><span class="p">,</span>
+                <span class="mi">1024</span><span class="p">,</span>
+                <span class="n">act_layer</span><span class="p">,</span>
+                <span class="n">norm_layer</span><span class="p">,</span>
+                <span class="n">drop_layer</span><span class="p">,</span>
+                <span class="n">conv_layer</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span> <span class="o">+</span> <span class="n">num_classes</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">yolo3</span> <span class="o">=</span> <span class="n">YoloLayer</span><span class="p">(</span><span class="n">anchors</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">scale_xy</span><span class="o">=</span><span class="mf">1.05</span><span class="p">)</span>
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
         <span class="c1"># Zero init</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">head1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">head1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
@@ -640,9 +836,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">head3</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">feats</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
-        <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]:</span>
         <span class="n">o1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head1</span><span class="p">(</span><span class="n">feats</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
@@ -662,10 +856,14 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
 
-            <span class="n">detections</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxes</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">det1</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">],</span> <span class="n">det2</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">],</span> <span class="n">det3</span><span class="p">[</span><span class="s1">&#39;boxes&#39;</span><span class="p">]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
-                               <span class="n">scores</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">det1</span><span class="p">[</span><span class="s1">&#39;scores&#39;</span><span class="p">],</span> <span class="n">det2</span><span class="p">[</span><span class="s1">&#39;scores&#39;</span><span class="p">],</span> <span class="n">det3</span><span class="p">[</span><span class="s1">&#39;scores&#39;</span><span class="p">]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
-                               <span class="n">labels</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">det1</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">],</span> <span class="n">det2</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">],</span> <span class="n">det3</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
-                          <span class="k">for</span> <span class="n">det1</span><span class="p">,</span> <span class="n">det2</span><span class="p">,</span> <span class="n">det3</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y3</span><span class="p">)]</span>
+            <span class="n">detections</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">boxes</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">det1</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">],</span> <span class="n">det2</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">],</span> <span class="n">det3</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                    <span class="n">scores</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">det1</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">],</span> <span class="n">det2</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">],</span> <span class="n">det3</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                    <span class="n">labels</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">det1</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">],</span> <span class="n">det2</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">],</span> <span class="n">det3</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">det1</span><span class="p">,</span> <span class="n">det2</span><span class="p">,</span> <span class="n">det3</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y3</span><span class="p">)</span>
+            <span class="p">]</span>
             <span class="k">return</span> <span class="n">detections</span>
 
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">y1</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">y2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">y3</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">y1</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
@@ -683,7 +881,7 @@
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">backbone_norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">backbone_norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -697,20 +895,19 @@
             <span class="n">drop_layer</span> <span class="o">=</span> <span class="n">DropBlock2d</span>
 
         <span class="c1"># backbone</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV4</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span>
-                                      <span class="n">backbone_norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">DarknetBodyV4</span><span class="p">(</span>
+            <span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">backbone_norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span>
+        <span class="p">)</span>
         <span class="c1"># neck</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neck</span> <span class="o">=</span> <span class="n">Neck</span><span class="p">([</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
         <span class="c1"># head</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">Yolov4Head</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">anchors</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
 
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
-        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
+        <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]:</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -739,11 +936,16 @@
     <span class="n">model</span> <span class="o">=</span> <span class="n">YOLOv4</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="c1"># Load backbone pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained_backbone</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;backbone&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">,</span>  <span class="c1"># type: ignore[index]</span>
-                               <span class="n">key_replacement</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;features.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">key_filter</span><span class="o">=</span><span class="s1">&#39;features.&#39;</span><span class="p">)</span>
+        <span class="n">load_pretrained_params</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span>
+            <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;backbone&quot;</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>  <span class="c1"># type: ignore[index]</span>
+            <span class="n">progress</span><span class="p">,</span>
+            <span class="n">key_replacement</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;features.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="n">key_filter</span><span class="o">=</span><span class="s2">&quot;features.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="c1"># Load pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
 
     <span class="k">return</span> <span class="n">model</span>
 
@@ -781,10 +983,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">pretrained_backbone</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;backbone_norm_layer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrozenBatchNorm2d</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;backbone_norm_layer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">FrozenBatchNorm2d</span>
 
     <span class="k">return</span> <span class="n">_yolo</span><span class="p">(</span>
-        <span class="s1">&#39;yolov4&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;yolov4&quot;</span><span class="p">,</span>
         <span class="n">pretrained</span><span class="p">,</span>
         <span class="n">progress</span><span class="p">,</span>
         <span class="n">pretrained_backbone</span><span class="p">,</span>

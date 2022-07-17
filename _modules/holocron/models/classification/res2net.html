@@ -219,8 +219,8 @@
           <h1>Source code for holocron.models.classification.res2net</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
 
-<span class="c1"># This program is licensed under the Apache License version 2.</span>
-<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0.txt&gt; for full license details.</span>
+<span class="c1"># This program is licensed under the Apache License 2.0.</span>
+<span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Implementation of Res2Net</span>
@@ -237,14 +237,14 @@
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
 <span class="kn">from</span> <span class="nn">.resnet</span> <span class="kn">import</span> <span class="n">ResNet</span><span class="p">,</span> <span class="n">_ResBlock</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Bottle2neck&#39;</span><span class="p">,</span> <span class="s1">&#39;res2net50_26w_4s&#39;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Bottle2neck&quot;</span><span class="p">,</span> <span class="s2">&quot;res2net50_26w_4s&quot;</span><span class="p">]</span>
 
 
 <span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;res2net50_26w_4s&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;res2net50_26w_4s&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">**</span><span class="n">IMAGENETTE</span><span class="p">,</span>
-        <span class="s1">&#39;input_shape&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
+        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth&quot;</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
 
@@ -260,17 +260,31 @@
         <span class="n">downsample</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">planes</span> <span class="o">//</span> <span class="n">scale</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                                         <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)))</span>
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">scale</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                    <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                        <span class="n">act_layer</span><span class="p">,</span>
+                        <span class="n">norm_layer</span><span class="p">,</span>
+                        <span class="n">drop_layer</span><span class="p">,</span>
+                        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+                        <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+                        <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">scale</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">downsample</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AvgPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -315,7 +329,7 @@
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">scale</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">norm_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span>
@@ -325,14 +339,34 @@
         <span class="c1"># Check if ScaleConv2d needs to downsample the identity branch</span>
         <span class="n">_downsample</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
-        <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">planes</span> <span class="o">*</span> <span class="p">(</span><span class="n">base_width</span> <span class="o">/</span> <span class="mf">64.</span><span class="p">)))</span> <span class="o">*</span> <span class="n">groups</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">planes</span> <span class="o">*</span> <span class="p">(</span><span class="n">base_width</span> <span class="o">/</span> <span class="mf">64.0</span><span class="p">)))</span> <span class="o">*</span> <span class="n">groups</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="p">[</span><span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">inplanes</span><span class="p">,</span> <span class="n">width</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                            <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
-             <span class="n">ScaleConv2d</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">width</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">_downsample</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">),</span>
-             <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span><span class="n">width</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="n">planes</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">expansion</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                            <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">))],</span>
-            <span class="n">downsample</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">)</span>
+            <span class="p">[</span>
+                <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                    <span class="n">inplanes</span><span class="p">,</span>
+                    <span class="n">width</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
+                    <span class="n">act_layer</span><span class="p">,</span>
+                    <span class="n">norm_layer</span><span class="p">,</span>
+                    <span class="n">drop_layer</span><span class="p">,</span>
+                    <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">ScaleConv2d</span><span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="n">width</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">_downsample</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">),</span>
+                <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                    <span class="n">width</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
+                    <span class="n">planes</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">expansion</span><span class="p">,</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">norm_layer</span><span class="p">,</span>
+                    <span class="n">drop_layer</span><span class="p">,</span>
+                    <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">downsample</span><span class="p">,</span>
+            <span class="n">act_layer</span><span class="p">,</span>
+        <span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_res2net</span><span class="p">(</span>
@@ -343,7 +377,7 @@
     <span class="n">out_chans</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
     <span class="n">width_per_group</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">scale</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
     <span class="c1"># Build the model</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">ResNet</span><span class="p">(</span>
@@ -352,12 +386,12 @@
         <span class="n">out_chans</span><span class="p">,</span>
         <span class="n">width_per_group</span><span class="o">=</span><span class="n">width_per_group</span><span class="p">,</span>
         <span class="n">block_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">),</span>
-        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">default_cfg</span> <span class="o">=</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>  <span class="c1"># type: ignore[assignment]</span>
     <span class="c1"># Load pretrained parameters</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
+        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span>
 
@@ -374,7 +408,7 @@
 <span class="sd">        torch.nn.Module: classification model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_res2net</span><span class="p">(</span><span class="s1">&#39;res2net50_26w_4s&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_res2net</span><span class="p">(</span><span class="s2">&quot;res2net50_26w_4s&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
         </article>
       </div>

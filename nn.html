@@ -376,6 +376,23 @@ Segmentation”</a></p>
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="holocron.nn.PolyLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">PolyLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#PolyLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.PolyLoss" title="Permalink to this definition">#</a></dt>
+<dd><p>Implements the Poly1 loss from <a class="reference external" href="https://arxiv.org/pdf/2204.12511.pdf">“PolyLoss: A Polynomial Expansion Perspective of Classification Loss
+Functions”</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weight</strong> (<em>torch.Tensor</em><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – epsilon 1 from the paper</p></li>
+<li><p><strong>ignore_index</strong> – int = -100,</p></li>
+<li><p><strong>reduction</strong> – str = ‘mean’,</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="loss-wrappers">
 <h2>Loss wrappers<a class="headerlink" href="#loss-wrappers" title="Permalink to this heading">#</a></h2>
