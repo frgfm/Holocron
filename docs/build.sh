@@ -6,17 +6,21 @@ function deploy_doc(){
     COMMIT=$(git rev-parse --short HEAD)
     echo "Creating doc at commit" $COMMIT "and pushing to folder $2"
     # Hotfix
-    sed -i "s/^torchvision.*/&,<0.11.0/" ../requirements.txt
+    if [ -d ../requirements.txt ]; then
+        sed -i "s/^torchvision.*/&,<0.11.0/" ../requirements.txt
+    fi
     sed -i "s/torchvision>=.*',/&,<0.11.0',/" ../setup.py
     sed -i "s/',,/,/" ../setup.py
     pip install -U ..
     git checkout ../setup.py
-    git checkout ../requirements.txt
+    if [ -d ../requirements.txt ]; then
+        git checkout ../requirements.txt
+    fi
     if [ ! -z "$2" ]
     then
         if [ "$2" == "latest" ]; then
             echo "Pushing main"
-            sphinx-build source _build -a && mkdir build && mkdir build/$2 && cp -a _build/* build/$2/
+            sphinx-build source _build -a && mkdir build/$2 && cp -a _build/* build/$2/
         elif [ -d build/$2 ]; then
             echo "Directory" $2 "already exists"
         else
@@ -32,8 +36,10 @@ function deploy_doc(){
     fi
 }
 
+# exit when any command fails
+set -e
 # You can find the commit for each tag on https://github.com/frgfm/holocron/tags
-if [ -d build ]; then rm -Rf build; fi
+if [ -d build ]; then rm -Rf build && mkdir build; fi
 cp -r source/_static .
 cp source/conf.py _conf.py
 git fetch --all --tags --unshallow
