@@ -20,20 +20,22 @@ function deploy_doc(){
     then
         if [ "$2" == "latest" ]; then
             echo "Pushing main"
-            sphinx-build source _build -a && mkdir build/$2 && cp -a _build/* build/$2/
+            mkdir build/$2
+            sphinx-build source build/$2 -a
         elif [ -d build/$2 ]; then
             echo "Directory" $2 "already exists"
         else
             echo "Pushing version" $2
             cp -r _static source/ && cp _conf.py source/conf.py
-            sphinx-build source _build -a
-            mkdir build/$2 && cp -a _build/* build/$2/ && git checkout source/ && git clean -f source/
+            mkdir build/$2
+            sphinx-build source build/$2 -a
         fi
     else
         echo "Pushing stable"
         cp -r _static source/ && cp _conf.py source/conf.py
-        sphinx-build source build -a && git checkout source/ && git clean -f source/
+        sphinx-build source build -a
     fi
+    git checkout source/ && git clean -f source/
 }
 
 # exit when any command fails
