@@ -23,12 +23,12 @@ function deploy_doc(){
             echo "Pushing version" $2
             cp -r _static source/ && cp _conf.py source/conf.py
             sphinx-build source _build -a
-            mkdir build/$2 && cp -a _build/* build/$2/ && rm -r source && git checkout source/
+            mkdir build/$2 && cp -a _build/* build/$2/ && git checkout source/ && git clean -f source/
         fi
     else
         echo "Pushing stable"
         cp -r _static source/ && cp _conf.py source/conf.py
-        sphinx-build source build -a && rm -r source && git checkout source/
+        sphinx-build source build -a && git checkout source/ && git clean -f source/
     fi
 }
 
