@@ -56,7 +56,8 @@ quality = [
     "black>=22.1,<23.0",
 ]
 docs = [
-    "sphinx>=3.0.0,!=3.5.0",
+    # cf. build issues with markdown extension in https://github.com/frgfm/Holocron/pull/232
+    "sphinx>=3.0.0,!=3.5.0,<5.1.0",
     "furo>=2022.3.4",
     "sphinxemoji>=0.1.8",
     "sphinx-copybutton>=0.3.1",
