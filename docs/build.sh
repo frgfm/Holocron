@@ -39,7 +39,8 @@ function deploy_doc(){
 # exit when any command fails
 set -e
 # You can find the commit for each tag on https://github.com/frgfm/holocron/tags
-if [ -d build ]; then rm -Rf build && mkdir build; fi
+if [ -d build ]; then rm -Rf build; fi
+mkdir build
 cp -r source/_static .
 cp source/conf.py _conf.py
 git fetch --all --tags --unshallow
