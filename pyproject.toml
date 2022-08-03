@@ -51,7 +51,7 @@ test = [
 quality = [
     "flake8>=3.9.0",
     "isort>=5.7.0",
-    "mypy>=0.812",
+    "mypy>=0.971",
     "pydocstyle[toml]>=6.0.0",
     "black>=22.1,<23.0",
 ]
