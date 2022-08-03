@@ -56,13 +56,13 @@ quality = [
     "black>=22.1,<23.0",
 ]
 docs = [
-    # cf. build issues with markdown extension in https://github.com/frgfm/Holocron/pull/232
-    "sphinx>=3.0.0,!=3.5.0,<5.1.0",
+    "sphinx>=3.0.0,!=3.5.0",
     "furo>=2022.3.4",
     "sphinxemoji>=0.1.8",
     "sphinx-copybutton>=0.3.1",
     "recommonmark>=0.7.1",
-    "sphinx-markdown-tables>=0.0.15",
+    # cf. build issues with markdown extension in https://github.com/frgfm/Holocron/pull/232
+    "sphinx-markdown-tables==0.0.15",
     # Indirect deps
     # cf. https://github.com/readthedocs/readthedocs.org/issues/9038
     "Jinja2<3.1",
