@@ -208,10 +208,7 @@ def main(args):
     if args.test_only:
         print("Running evaluation")
         eval_metrics = trainer.evaluate()
-        print(
-            f"Validation loss: {eval_metrics['val_loss']:.4} "
-            f"(Acc@1: {eval_metrics['acc1']:.2%}, Acc@5: {eval_metrics['acc5']:.2%})"
-        )
+        print(trainer._eval_metrics_str(eval_metrics))
         return
 
     if args.find_lr:
