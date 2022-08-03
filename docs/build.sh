@@ -20,14 +20,12 @@ function deploy_doc(){
     then
         if [ "$2" == "latest" ]; then
             echo "Pushing main"
-            mkdir build/$2
             sphinx-build source build/$2 -a
         elif [ -d build/$2 ]; then
             echo "Directory" $2 "already exists"
         else
             echo "Pushing version" $2
             cp -r _static source/ && cp _conf.py source/conf.py
-            mkdir build/$2
             sphinx-build source build/$2 -a
         fi
     else
