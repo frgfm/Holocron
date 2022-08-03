@@ -85,10 +85,10 @@ class DetectionTrainer(Trainer):
             with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
                 # Forward & loss computation
                 loss_dict = self.model(x, target)
-                return sum(loss_dict.values())  # type: ignore[return-value]
+                return sum(loss_dict.values())
         # Forward & loss computation
         loss_dict = self.model(x, target)
-        return sum(loss_dict.values())  # type: ignore[return-value]
+        return sum(loss_dict.values())
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, Optional[float]]) -> str:
