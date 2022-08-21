@@ -59,6 +59,7 @@ Object detection
    ops
    optim
    trainer
+   transforms
    utils
    utils.data
 
