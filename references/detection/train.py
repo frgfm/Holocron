@@ -23,6 +23,10 @@ from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
 from torchvision.models import detection as tv_detection
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
+
+import holocron
+from holocron.models import detection
+from holocron.trainer import DetectionTrainer
 from transforms import (
     CenterCrop,
     Compose,
@@ -33,10 +37,6 @@ from transforms import (
     VOCTargetTransform,
     convert_to_relative,
 )
-
-import holocron
-from holocron.models import detection
-from holocron.trainer import DetectionTrainer
 
 VOC_CLASSES = [
     "aeroplane",

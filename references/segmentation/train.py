@@ -22,11 +22,11 @@ from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
 from torchvision.models import segmentation as tv_segmentation
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
-from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 import holocron
 from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
+from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 VOC_CLASSES = [
     "background",
