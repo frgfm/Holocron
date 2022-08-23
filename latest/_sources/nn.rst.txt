@@ -62,6 +62,8 @@ Downsampling
 
 .. autoclass:: GlobalAvgPool2d
 
+.. autoclass:: GlobalMaxPool2d
+
 .. autoclass:: BlurPool2d
 
 .. autoclass:: SPP
