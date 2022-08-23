@@ -52,6 +52,23 @@ def test_globalavgpool2d():
     assert torch.equal(mod(x), ref(x).view(*x.shape[:2]))
 
 
+def test_globalmaxpool2d():
+
+    x = torch.rand(2, 4, 16, 16)
+
+    # Check that ops are doing the same thing
+    ref = nn.AdaptiveMaxPool2d(1)
+    mod = downsample.GlobalMaxPool2d(flatten=False)
+    out = mod(x)
+    assert torch.equal(out, ref(x))
+    assert out.data_ptr != x.data_ptr
+
+    # Check that flatten works
+    x = torch.rand(2, 4, 16, 16)
+    mod = downsample.GlobalMaxPool2d(flatten=True)
+    assert torch.equal(mod(x), ref(x).view(*x.shape[:2]))
+
+
 def test_blurpool2d():
 
     with pytest.raises(AssertionError):
