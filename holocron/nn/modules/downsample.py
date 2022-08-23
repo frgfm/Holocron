@@ -12,7 +12,15 @@ from torch import Tensor
 
 from .. import functional as F
 
-__all__ = ["ConcatDownsample2d", "ConcatDownsample2dJit", "GlobalAvgPool2d", "BlurPool2d", "SPP", "ZPool"]
+__all__ = [
+    "ConcatDownsample2d",
+    "ConcatDownsample2dJit",
+    "GlobalAvgPool2d",
+    "GlobalMaxPool2d",
+    "BlurPool2d",
+    "SPP",
+    "ZPool",
+]
 
 
 class ConcatDownsample2d(nn.Module):
@@ -66,6 +74,29 @@ class GlobalAvgPool2d(nn.Module):
             in_size = x.size()
             return x.view((in_size[0], in_size[1], -1)).mean(dim=2)
         return x.view(x.size(0), x.size(1), -1).mean(-1).view(x.size(0), x.size(1), 1, 1)
+
+    def extra_repr(self) -> str:
+        inplace_str = "flatten=True" if self.flatten else ""
+        return inplace_str
+
+
+class GlobalMaxPool2d(nn.Module):
+    """Fast implementation of global max pooling from `"TResNet: High Performance GPU-Dedicated Architecture"
+    <https://arxiv.org/pdf/2003.13630.pdf>`_
+
+    Args:
+        flatten (bool, optional): whether spatial dimensions should be squeezed
+    """
+
+    def __init__(self, flatten: bool = False) -> None:
+        super().__init__()
+        self.flatten = flatten
+
+    def forward(self, x: Tensor) -> Tensor:
+        if self.flatten:
+            in_size = x.size()
+            return x.view((in_size[0], in_size[1], -1)).max(dim=2).values
+        return x.view(x.size(0), x.size(1), -1).max(-1).values.view(x.size(0), x.size(1), 1, 1)
 
     def extra_repr(self) -> str:
         inplace_str = "flatten=True" if self.flatten else ""
