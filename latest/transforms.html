@@ -12,10 +12,10 @@
   gtag('js', new Date());
   gtag('config', 'UA-148140560-2');
 </script>
-    <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.utils.data" href="utils.data.html" /><link rel="prev" title="holocron.transforms" href="transforms.html" />
+    <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.utils" href="utils.html" /><link rel="prev" title="holocron.trainer" href="trainer.html" />
 
     <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.1.1, furo 2022.06.21"/>
-        <title>holocron.utils - Holocron</title>
+        <title>holocron.transforms - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
@@ -145,7 +145,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -178,8 +178,8 @@
 <li class="toctree-l1"><a class="reference internal" href="ops.html">holocron.ops</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optim.html">holocron.optim</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">holocron.trainer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="transforms.html">holocron.transforms</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">holocron.utils</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">holocron.transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">holocron.utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.data.html">holocron.utils.data</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
@@ -205,7 +205,7 @@
         </a>
         <div class="content-icon-container">
           <div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/frgfm/holocron/edit/main/docs/source/utils.rst" title="Edit this page">
+  <a class="muted-link" href="https://github.com/frgfm/holocron/edit/main/docs/source/transforms.rst" title="Edit this page">
     <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
@@ -221,50 +221,84 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="module-holocron.utils">
-<span id="holocron-utils"></span><h1>holocron.utils<a class="headerlink" href="#module-holocron.utils" title="Permalink to this heading">#</a></h1>
-<p><a class="reference internal" href="#module-holocron.utils" title="holocron.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.utils</span></code></a> provides some utilities for general usage.</p>
-<section id="miscellaneous">
-<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this heading">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="holocron.utils.lr_finder">
-<span class="sig-prename descclassname"><span class="pre">holocron.utils.</span></span><span class="sig-name descname"><span class="pre">lr_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_training_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_it</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_div</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/misc.html#lr_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.lr_finder" title="Permalink to this definition">#</a></dt>
-<dd><p>Learning rate finder as described in
-<a class="reference external" href="https://arxiv.org/pdf/1506.01186.pdf">“Cyclical Learning Rates for Training Neural Networks”</a></p>
+          <section id="module-holocron.transforms">
+<span id="holocron-transforms"></span><h1>holocron.transforms<a class="headerlink" href="#module-holocron.transforms" title="Permalink to this heading">#</a></h1>
+<p><a class="reference internal" href="#module-holocron.transforms" title="holocron.transforms"><code class="xref py py-mod docutils literal notranslate"><span class="pre">holocron.transforms</span></code></a> provides PIL and PyTorch tensor transformations.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="holocron.transforms.Resize">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.transforms.</span></span><span class="sig-name descname"><span class="pre">Resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'squish'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'constant'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/transforms/interpolation.html#Resize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.transforms.Resize" title="Permalink to this definition">#</a></dt>
+<dd><p>Implements a more flexible resizing scheme</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.2.1/resize_example.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.2.1/resize_example.png" />
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>batch_training_fn</strong> (<em>float</em>) – function used to train a model for a step</p></li>
-<li><p><strong>model</strong> (<em>torch.Tensor</em>) – model to train</p></li>
-<li><p><strong>train_loader</strong> (<em>torch.utils.data.DataLoader</em>) – training dataloader</p></li>
-<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – model parameter optimizer</p></li>
-<li><p><strong>criterion</strong> (<em>nn.Module</em>) – loss computation function</p></li>
-<li><p><strong>device</strong> (<em>torch.device</em><em>, </em><em>optional</em>) – device to perform iterations on</p></li>
-<li><p><strong>start_lr</strong> (<em>float</em>) – initial learning rate</p></li>
-<li><p><strong>end_lr</strong> (<em>float</em>) – peak learning rate</p></li>
-<li><p><strong>num_it</strong> (<em>int</em>) – number of iterations to perform</p></li>
-<li><p><strong>stop_div</strong> (<em>bool</em>) – should the evaluation be stopped if loss diverges</p></li>
-<li><p><strong>stop_threshold</strong> (<em>float</em>) – if stop_div is True, stops the evaluation when loss reaches stop_threshold * best_loss</p></li>
-<li><p><strong>beta</strong> (<em>float</em>) – smoothing parameter for loss</p></li>
+<li><p><strong>size</strong> – the desired height and width of the image in pixels</p></li>
+<li><p><strong>mode</strong> – the resizing scheme (“squish” is similar to PyTorch, “pad” will preserve the aspect ratio and pad)</p></li>
+<li><p><strong>pad_mode</strong> – padding mode when <cite>mode</cite> is “pad”</p></li>
+<li><p><strong>kwargs</strong> – the keyword arguments of <cite>torchvision.transforms.Resize</cite></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>list of used learning rates
-losses (list&lt;float&gt;): list of training losses</p>
+<dd class="field-even"><p>the resized image</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="holocron.transforms.Resize.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Image</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Image</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/holocron/transforms/interpolation.html#Resize.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.transforms.Resize.forward" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>PIL Image</em><em> or </em><em>Tensor</em>) – Image to be scaled.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Rescaled image.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>lrs (list&lt;float&gt;)</p>
+<dd class="field-odd"><p>PIL Image or Tensor</p>
 </dd>
 </dl>
 </dd></dl>
 
-</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="holocron.transforms.RandomZoomOut">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.transforms.</span></span><span class="sig-name descname"><span class="pre">RandomZoomOut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/transforms/interpolation.html#RandomZoomOut"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.transforms.RandomZoomOut" title="Permalink to this definition">#</a></dt>
+<dd><p>Implements a size reduction of the orignal image to provide a zoom out effect.</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.2.1/randomzoomout_example.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.2.1/randomzoomout_example.png" />
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> – the desired height and width of the image in pixels</p></li>
+<li><p><strong>scale</strong> – the range of relative area of the projected image to the desired size</p></li>
+<li><p><strong>kwargs</strong> – the keyword arguments of <cite>torchvision.transforms.functional.resize</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the resized image</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="holocron.transforms.RandomZoomOut.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Image</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Image</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/holocron/transforms/interpolation.html#RandomZoomOut.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.transforms.RandomZoomOut.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -272,23 +306,23 @@ losses (list&lt;float&gt;): list of training losses</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="utils.data.html">
+          <a class="next-page" href="utils.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">holocron.utils.data</div>
+                <div class="title">holocron.utils</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="transforms.html">
+          <a class="prev-page" href="trainer.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">holocron.transforms</div>
+                <div class="title">holocron.trainer</div>
                 
               </div>
             </a>
@@ -317,27 +351,8 @@ losses (list&lt;float&gt;): list of training losses</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            Contents
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">holocron.utils</a><ul>
-<li><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
