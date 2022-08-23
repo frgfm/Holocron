@@ -119,6 +119,7 @@ module = [
     "huggingface_hub",
     "fastprogress.*",
     "tqdm.*",
+    "PIL.*",
 ]
 ignore_missing_imports = true
 
