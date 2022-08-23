@@ -33,7 +33,7 @@ def test_resize():
     np_out = np.asarray(out)
     assert np.all(np_out[:, 8:-8] == 255) and np.all(np_out[:, :8] == 0) and np.all(np_out[:, -8:]) == 0
     # Squish
-    out = T.Resize((32, 32), mode="squish")(img1)
+    out = T.Resize((32, 32), mode="squish")(Image.fromarray(img1))
     assert np.all(np.asarray(out) == 255)
 
     # Tensor
@@ -58,20 +58,21 @@ def test_randomzoomout():
     with pytest.raises(AssertionError):
         T.Resize((16, 16), (1, 0.5))
 
-    img = np.full((16, 16, 3), 255, dtype=np.uint8)
+    pil_img = Image.fromarray(np.full((16, 16, 3), 255, dtype=np.uint8))
+    torch_img = torch.ones((3, 16, 16), dtype=torch.float32)
     tf = T.RandomZoomOut((32, 32))
     assert isinstance(tf, nn.Module)
 
     # PIL Image
-    out = tf(Image.fromarray(img))
+    out = tf(pil_img)
     assert isinstance(out, Image.Image)
     assert out.size == (32, 32)
     np_out = np.asarray(out)
     assert np.all(np_out[16, 16] == 255) and np_out.mean() < 255
 
     # Tensor
-    out = tf(torch.from_numpy(img).to(dtype=torch.float32).permute(2, 0, 1) / 255)
+    out = tf(torch_img)
     assert isinstance(out, torch.Tensor)
-    assert out.size == (32, 32)
+    assert out.shape == (3, 32, 32)
     np_out = np.asarray(out)
-    assert np.all(np_out[:, 16, 16] == 255) and np_out.mean() < 1
+    assert np.all(np_out[:, 16, 16] == 1) and np_out.mean() < 1
