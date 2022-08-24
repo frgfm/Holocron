@@ -233,33 +233,15 @@
 <section id="miscellaneous">
 <h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.utils.lr_finder">
-<span class="sig-prename descclassname"><span class="pre">holocron.utils.</span></span><span class="sig-name descname"><span class="pre">lr_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_training_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_it</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_div</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/utils/misc.html#lr_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.lr_finder" title="Permalink to this definition">#</a></dt>
-<dd><p>Learning rate finder as described in
-<a class="reference external" href="https://arxiv.org/pdf/1506.01186.pdf">“Cyclical Learning Rates for Training Neural Networks”</a></p>
+<dt class="sig sig-object py" id="holocron.utils.find_image_size">
+<span class="sig-prename descclassname"><span class="pre">holocron.utils.</span></span><span class="sig-name descname"><span class="pre">find_image_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Image</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/holocron/utils/misc.html#find_image_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.utils.find_image_size" title="Permalink to this definition">#</a></dt>
+<dd><p>Computes the best image size target for a given set of images</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>batch_training_fn</strong> (<em>float</em>) – function used to train a model for a step</p></li>
-<li><p><strong>model</strong> (<em>torch.Tensor</em>) – model to train</p></li>
-<li><p><strong>train_loader</strong> (<em>torch.utils.data.DataLoader</em>) – training dataloader</p></li>
-<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – model parameter optimizer</p></li>
-<li><p><strong>criterion</strong> (<em>nn.Module</em>) – loss computation function</p></li>
-<li><p><strong>device</strong> (<em>torch.device</em><em>, </em><em>optional</em>) – device to perform iterations on</p></li>
-<li><p><strong>start_lr</strong> (<em>float</em>) – initial learning rate</p></li>
-<li><p><strong>end_lr</strong> (<em>float</em>) – peak learning rate</p></li>
-<li><p><strong>num_it</strong> (<em>int</em>) – number of iterations to perform</p></li>
-<li><p><strong>stop_div</strong> (<em>bool</em>) – should the evaluation be stopped if loss diverges</p></li>
-<li><p><strong>stop_threshold</strong> (<em>float</em>) – if stop_div is True, stops the evaluation when loss reaches stop_threshold * best_loss</p></li>
-<li><p><strong>beta</strong> (<em>float</em>) – smoothing parameter for loss</p></li>
-</ul>
+<dd class="field-odd"><p><strong>dataset</strong> – an iterator yielding a PIL Image and a target object</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>list of used learning rates
-losses (list&lt;float&gt;): list of training losses</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>lrs (list&lt;float&gt;)</p>
+<dd class="field-even"><p>the suggested height and width to be used</p>
 </dd>
 </dl>
 </dd></dl>

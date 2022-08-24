@@ -11,4 +11,4 @@ holocron.utils
 Miscellaneous
 -------------
 
-.. autofunction:: lr_finder
+.. autofunction:: find_image_size

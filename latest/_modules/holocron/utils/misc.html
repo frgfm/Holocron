@@ -223,86 +223,94 @@
 <span class="c1"># This program is licensed under the Apache License 2.0.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.pool</span> <span class="kn">import</span> <span class="n">ThreadPool</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lr_finder&quot;</span><span class="p">]</span>
+<span class="n">Inp</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Inp&quot;</span><span class="p">)</span>
+<span class="n">Out</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Out&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="lr_finder"><a class="viewcode-back" href="../../../utils.html#holocron.utils.lr_finder">[docs]</a><span class="k">def</span> <span class="nf">lr_finder</span><span class="p">(</span>
-    <span class="n">batch_training_fn</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">,</span>
-    <span class="n">train_loader</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="p">,</span>
-    <span class="n">criterion</span><span class="p">,</span>
-    <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">start_lr</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span>
-    <span class="n">end_lr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">num_it</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">stop_div</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">stop_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">beta</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Learning rate finder as described in</span>
-<span class="sd">    `&quot;Cyclical Learning Rates for Training Neural Networks&quot; &lt;https://arxiv.org/pdf/1506.01186.pdf&gt;`_</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;parallel&quot;</span><span class="p">,</span> <span class="s2">&quot;find_image_size&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">parallel</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Inp</span><span class="p">],</span> <span class="n">Out</span><span class="p">],</span>
+    <span class="n">arr</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Inp</span><span class="p">],</span>
+    <span class="n">num_threads</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Out</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Download a file accessible via URL with mutiple retries</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        batch_training_fn (float): function used to train a model for a step</span>
-<span class="sd">        model (torch.Tensor): model to train</span>
-<span class="sd">        train_loader (torch.utils.data.DataLoader): training dataloader</span>
-<span class="sd">        optimizer (torch.optim.Optimizer): model parameter optimizer</span>
-<span class="sd">        criterion (nn.Module): loss computation function</span>
-<span class="sd">        device (torch.device, optional): device to perform iterations on</span>
-<span class="sd">        start_lr (float): initial learning rate</span>
-<span class="sd">        end_lr (float): peak learning rate</span>
-<span class="sd">        num_it (int): number of iterations to perform</span>
-<span class="sd">        stop_div (bool): should the evaluation be stopped if loss diverges</span>
-<span class="sd">        stop_threshold (float): if stop_div is True, stops the evaluation when loss reaches stop_threshold * best_loss</span>
-<span class="sd">        beta (float): smoothing parameter for loss</span>
+<span class="sd">        func (callable): function to be executed on multiple workers</span>
+<span class="sd">        arr (iterable): function argument&#39;s values</span>
+<span class="sd">        num_threads (int, optional): number of workers to be used for multiprocessing</span>
+<span class="sd">        kwargs: keyword arguments of tqdm</span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        lrs (list&lt;float&gt;): list of used learning rates</span>
-<span class="sd">        losses (list&lt;float&gt;): list of training losses</span>
+<span class="sd">        list: list of function&#39;s results</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">)</span>
+    <span class="n">num_threads</span> <span class="o">=</span> <span class="n">num_threads</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_threads</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">num_threads</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>  <span class="c1"># type: ignore[assignment]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">ThreadPool</span><span class="p">(</span><span class="n">num_threads</span><span class="p">)</span> <span class="k">as</span> <span class="n">tp</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">progress</span><span class="p">:</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">tp</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">arr</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">tp</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
-    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-    <span class="n">loader_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
-    <span class="n">gamma</span> <span class="o">=</span> <span class="p">(</span><span class="n">end_lr</span> <span class="o">/</span> <span class="n">start_lr</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_it</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="n">base_lr</span> <span class="o">=</span> <span class="n">start_lr</span>
-    <span class="n">avg_loss</span><span class="p">,</span> <span class="n">best_loss</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span>
-    <span class="n">lrs</span><span class="p">,</span> <span class="n">losses</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">batch_idx</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_it</span><span class="p">)):</span>
+    <span class="k">return</span> <span class="n">results</span>
 
-        <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">loader_iter</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-        <span class="c1"># Train for an iteration</span>
-        <span class="n">batch_loss</span> <span class="o">=</span> <span class="n">batch_training_fn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch_loss</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-            <span class="n">batch_loss</span> <span class="o">=</span> <span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<div class="viewcode-block" id="find_image_size"><a class="viewcode-back" href="../../../utils.html#holocron.utils.find_image_size">[docs]</a><span class="k">def</span> <span class="nf">find_image_size</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Computes the best image size target for a given set of images</span>
 
-        <span class="c1"># Record loss</span>
-        <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">avg_loss</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">batch_loss</span>
-        <span class="n">smoothed_loss</span> <span class="o">=</span> <span class="n">avg_loss</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">**</span> <span class="p">(</span><span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">batch_idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">smoothed_loss</span> <span class="o">&lt;</span> <span class="n">best_loss</span><span class="p">:</span>
-            <span class="n">best_loss</span> <span class="o">=</span> <span class="n">smoothed_loss</span>
+<span class="sd">    Args:</span>
+<span class="sd">        dataset: an iterator yielding a PIL Image and a target object</span>
 
-        <span class="k">if</span> <span class="n">stop_div</span> <span class="ow">and</span> <span class="n">batch_idx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">smoothed_loss</span> <span class="o">&gt;</span> <span class="n">stop_threshold</span> <span class="o">*</span> <span class="n">best_loss</span><span class="p">):</span>
-            <span class="k">break</span>
-        <span class="n">lrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base_lr</span><span class="p">)</span>
-        <span class="n">losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">smoothed_loss</span><span class="p">)</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        the suggested height and width to be used</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-        <span class="c1"># Update LR</span>
-        <span class="n">base_lr</span> <span class="o">*=</span> <span class="n">gamma</span>
-        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
-            <span class="n">group</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">gamma</span>
+    <span class="c1"># Record height &amp; width</span>
+    <span class="n">_shapes</span> <span class="o">=</span> <span class="n">parallel</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">lrs</span><span class="p">,</span> <span class="n">losses</span></div>
+    <span class="n">shapes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">_shapes</span><span class="p">)[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">ratios</span> <span class="o">=</span> <span class="n">shapes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">shapes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">sides</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">shapes</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">shapes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Compute median aspect ratio &amp; side</span>
+    <span class="n">median_ratio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span>
+    <span class="n">median_side</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">sides</span><span class="p">)</span>
+
+    <span class="n">height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">median_side</span> <span class="o">*</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">median_ratio</span><span class="p">)))</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">median_side</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">median_ratio</span><span class="p">)))</span>
+
+    <span class="c1"># Double histogram</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">ratios</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Aspect ratio (median: </span><span class="si">{</span><span class="n">median_ratio</span><span class="si">:</span><span class="s2">.2</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">median_ratio</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">sides</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Side (median: </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">median_side</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">median_side</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median image size: (</span><span class="si">{</span><span class="n">height</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
         </article>
       </div>

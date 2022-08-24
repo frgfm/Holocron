@@ -509,7 +509,8 @@
         <span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">num_it</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Gridsearch the optimal learning rate for the training</span>
+        <span class="sd">&quot;&quot;&quot;Gridsearch the optimal learning rate for the training as described in</span>
+<span class="sd">        `&quot;Cyclical Learning Rates for Training Neural Networks&quot; &lt;https://arxiv.org/pdf/1506.01186.pdf&gt;`_.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">           freeze_until (str, optional): last layer to freeze</span>

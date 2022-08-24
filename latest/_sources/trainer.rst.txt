@@ -21,8 +21,15 @@ Image classification
 .. autoclass:: BinaryClassificationTrainer
     :members:
 
+
+Semantic segmentation
+---------------------
+
 .. autoclass:: SegmentationTrainer
     :members:
+
+Object detection
+----------------
 
 .. autoclass:: DetectionTrainer
     :members:
