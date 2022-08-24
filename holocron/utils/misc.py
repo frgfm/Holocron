@@ -3,83 +3,91 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
-import torch
+import multiprocessing as mp
+from math import sqrt
+from multiprocessing.pool import ThreadPool
+from typing import Any, Callable, Optional, Sequence, Tuple, TypeVar
+
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
 from tqdm.auto import tqdm
 
-__all__ = ["lr_finder"]
+Inp = TypeVar("Inp")
+Out = TypeVar("Out")
 
 
-def lr_finder(
-    batch_training_fn,
-    model,
-    train_loader,
-    optimizer,
-    criterion,
-    device=None,
-    start_lr=1e-7,
-    end_lr=10,
-    num_it=100,
-    stop_div=True,
-    stop_threshold=2,
-    beta=0.9,
-):
-    """Learning rate finder as described in
-    `"Cyclical Learning Rates for Training Neural Networks" <https://arxiv.org/pdf/1506.01186.pdf>`_
+__all__ = ["parallel", "find_image_size"]
+
+
+def parallel(
+    func: Callable[[Inp], Out],
+    arr: Sequence[Inp],
+    num_threads: Optional[int] = None,
+    progress: bool = False,
+    **kwargs: Any,
+) -> Sequence[Out]:
+    """Download a file accessible via URL with mutiple retries
 
     Args:
-        batch_training_fn (float): function used to train a model for a step
-        model (torch.Tensor): model to train
-        train_loader (torch.utils.data.DataLoader): training dataloader
-        optimizer (torch.optim.Optimizer): model parameter optimizer
-        criterion (nn.Module): loss computation function
-        device (torch.device, optional): device to perform iterations on
-        start_lr (float): initial learning rate
-        end_lr (float): peak learning rate
-        num_it (int): number of iterations to perform
-        stop_div (bool): should the evaluation be stopped if loss diverges
-        stop_threshold (float): if stop_div is True, stops the evaluation when loss reaches stop_threshold * best_loss
-        beta (float): smoothing parameter for loss
+        func (callable): function to be executed on multiple workers
+        arr (iterable): function argument's values
+        num_threads (int, optional): number of workers to be used for multiprocessing
+        kwargs: keyword arguments of tqdm
+
     Returns:
-        lrs (list<float>): list of used learning rates
-        losses (list<float>): list of training losses
+        list: list of function's results
     """
 
-    if device is None:
-        if torch.cuda.is_available():
-            device = torch.device("cuda:0")
+    num_threads = num_threads if isinstance(num_threads, int) else min(16, mp.cpu_count())
+    if num_threads < 2:
+        if progress:
+            results = list(map(func, tqdm(arr, total=len(arr), **kwargs)))
         else:
-            device = torch.device("cpu")
+            results = map(func, arr)  # type: ignore[assignment]
+    else:
+        with ThreadPool(num_threads) as tp:
+            if progress:
+                results = list(tqdm(tp.imap(func, arr), total=len(arr), **kwargs))
+            else:
+                results = tp.map(func, arr)
 
-    model.train()
-    model = model.to(device)
-    loader_iter = iter(train_loader)
-    gamma = (end_lr / start_lr) ** (1 / (num_it - 1))
-    base_lr = start_lr
-    avg_loss, best_loss = 0, 0.0
-    lrs, losses = [], []
-    for batch_idx in tqdm(range(num_it)):
+    return results
 
-        x, target = loader_iter.next()
-        # Train for an iteration
-        batch_loss = batch_training_fn(model, x, target, optimizer, criterion, device)
 
-        if not isinstance(batch_loss, float):
-            batch_loss = batch_loss.item()
+def find_image_size(dataset: Sequence[Tuple[Image.Image, Any]], **kwargs: Any) -> None:
+    """Computes the best image size target for a given set of images
 
-        # Record loss
-        avg_loss = beta * avg_loss + (1 - beta) * batch_loss
-        smoothed_loss = avg_loss / (1 - beta ** (batch_idx + 1))
-        if batch_idx == 0 or smoothed_loss < best_loss:
-            best_loss = smoothed_loss
+    Args:
+        dataset: an iterator yielding a PIL Image and a target object
 
-        if stop_div and batch_idx > 0 and (smoothed_loss > stop_threshold * best_loss):
-            break
-        lrs.append(base_lr)
-        losses.append(smoothed_loss)
+    Returns:
+        the suggested height and width to be used
+    """
 
-        # Update LR
-        base_lr *= gamma
-        for group in optimizer.param_groups:
-            group["lr"] *= gamma
+    # Record height & width
+    _shapes = parallel(lambda x: x[0].size, dataset, progress=True)
 
-    return lrs, losses
+    shapes = np.asarray(_shapes)[:, ::-1]
+    ratios = shapes[:, 0] / shapes[:, 1]
+    sides = np.sqrt(shapes[:, 0] * shapes[:, 1])
+
+    # Compute median aspect ratio & side
+    median_ratio = np.median(ratios)
+    median_side = np.median(sides)
+
+    height = int(round(median_side * sqrt(median_ratio)))
+    width = int(round(median_side / sqrt(median_ratio)))
+
+    # Double histogram
+    fig, axes = plt.subplots(1, 2)
+    axes[0].hist(ratios, bins=30, alpha=0.7)
+    axes[0].title.set_text(f"Aspect ratio (median: {median_ratio:.2})")
+    axes[0].grid(True, linestyle="--", axis="x")
+    axes[0].axvline(median_ratio, color="r")
+    axes[1].hist(sides, bins=30, alpha=0.7)
+    axes[1].title.set_text(f"Side (median: {int(median_side)})")
+    axes[1].grid(True, linestyle="--", axis="x")
+    axes[1].axvline(median_side, color="r")
+    fig.suptitle(f"Median image size: ({height}, {width})")
+    plt.show(**kwargs)
