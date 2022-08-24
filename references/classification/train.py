@@ -15,8 +15,8 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import torch.nn as nn
 import wandb
+from torch import nn
 from torch.utils.data import RandomSampler, SequentialSampler
 from torch.utils.data._utils.collate import default_collate
 from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
@@ -30,6 +30,7 @@ from holocron.models.presets import IMAGENETTE
 from holocron.optim import AdaBelief, AdamP
 from holocron.trainer import ClassificationTrainer
 from holocron.utils.data import Mixup
+from holocron.utils.misc import find_image_size
 
 
 def worker_init_fn(worker_id: int) -> None:
@@ -110,6 +111,12 @@ def main(args):
                 ),
                 download=True,
             )
+
+        # Suggest size
+        if args.find_size:
+            print("Looking for optimal image size")
+            find_image_size(train_set)
+            return
 
         num_classes = len(train_set.classes)
         collate_fn = default_collate
@@ -281,16 +288,17 @@ def get_parser():
     )
     parser.add_argument("--img-size", default=224, type=int, help="image size")
     parser.add_argument("--label-smoothing", default=0.1, type=float, help="label smoothing to apply")
-    parser.add_argument("--opt", default="adam", type=str, help="optimizer")
+    parser.add_argument("--opt", default="adamp", type=str, help="optimizer")
     parser.add_argument("--sched", default="onecycle", type=str, help="Scheduler to be used")
     parser.add_argument("--lr", default=1e-3, type=float, help="initial learning rate")
     parser.add_argument("--wd", "--weight-decay", default=0, type=float, help="weight decay", dest="weight_decay")
     parser.add_argument("--norm-wd", default=None, type=float, help="weight decay of norm parameters")
     parser.add_argument("--mixup-alpha", default=0, type=float, help="Mixup alpha factor")
     parser.add_argument("--find-lr", action="store_true", help="Should you run LR Finder")
+    parser.add_argument("--find-size", dest="find_size", action="store_true", help="Should you run Image size Finder")
     parser.add_argument("--check-setup", action="store_true", help="Check your training setup")
     parser.add_argument("--show-samples", action="store_true", help="Whether training samples should be displayed")
-    parser.add_argument("--output-file", default="./model.pth", help="path where to save")
+    parser.add_argument("--output-file", default="./checkpoint.pth", help="path where to save")
     parser.add_argument("--resume", default="", help="resume from checkpoint")
     parser.add_argument("--test-only", help="Only test the model", action="store_true")
     parser.add_argument("--pretrained", action="store_true", help="Use pre-trained models from the modelzoo")

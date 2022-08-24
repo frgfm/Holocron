@@ -289,7 +289,8 @@ class Trainer:
         norm_weight_decay: Optional[float] = None,
         num_it: int = 100,
     ) -> None:
-        """Gridsearch the optimal learning rate for the training
+        """Gridsearch the optimal learning rate for the training as described in
+        `"Cyclical Learning Rates for Training Neural Networks" <https://arxiv.org/pdf/1506.01186.pdf>`_.
 
         Args:
            freeze_until (str, optional): last layer to freeze

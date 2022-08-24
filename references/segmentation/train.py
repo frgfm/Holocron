@@ -26,6 +26,7 @@ from torchvision.transforms.functional import InterpolationMode, to_pil_image
 import holocron
 from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
+from holocron.utils.misc import find_image_size
 from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 VOC_CLASSES = [
@@ -139,6 +140,12 @@ def main(args):
                 ]
             ),
         )
+
+        # Suggest size
+        if args.find_size:
+            print("Looking for optimal image size")
+            find_image_size(train_set)
+            return
 
         train_loader = torch.utils.data.DataLoader(
             train_set,
@@ -321,12 +328,13 @@ def get_parser():
     parser.add_argument("--loss", default="crossentropy", type=str, help="loss")
     parser.add_argument("--label-smoothing", default=0.1, type=float, help="label smoothing")
     parser.add_argument("--bg-factor", default=1, type=float, help="Class weight of background in the loss")
-    parser.add_argument("--opt", default="adam", type=str, help="optimizer")
+    parser.add_argument("--opt", default="adamp", type=str, help="optimizer")
     parser.add_argument("--sched", default="onecycle", type=str, help="scheduler")
     parser.add_argument("--lr", default=0.1, type=float, help="initial learning rate")
     parser.add_argument("--wd", "--weight-decay", default=0, type=float, help="weight decay", dest="weight_decay")
     parser.add_argument("--norm-wd", default=None, type=float, help="weight decay of norm parameters")
     parser.add_argument("--find-lr", action="store_true", help="Should you run LR Finder")
+    parser.add_argument("--find-size", dest="find_size", action="store_true", help="Should you run Image size Finder")
     parser.add_argument("--check-setup", action="store_true", help="Check your training setup")
     parser.add_argument("--output-file", default="./model.pth", help="path where to save")
     parser.add_argument("--resume", default="", help="resume from checkpoint")
