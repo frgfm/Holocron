@@ -30,8 +30,6 @@ def freeze_bn(mod: nn.Module) -> None:
             m.track_running_stats = False
             m.eval()
 
-    return mod
-
 
 def freeze_model(
     model: nn.Module,
