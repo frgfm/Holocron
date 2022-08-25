@@ -64,7 +64,7 @@ def test_randomzoomout():
 
     pil_img = Image.fromarray(np.full((64, 64, 3), 255, dtype=np.uint8))
     torch_img = torch.ones((3, 64, 64), dtype=torch.float32)
-    tf = T.RandomZoomOut((32, 32), scale=(.5, .99))
+    tf = T.RandomZoomOut((32, 32), scale=(0.5, 0.99))
     assert isinstance(tf, nn.Module)
 
     # PIL Image
