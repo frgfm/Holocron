@@ -3,6 +3,7 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
+from enum import Enum
 from math import sqrt
 from typing import Any, Tuple, Union
 
@@ -13,6 +14,15 @@ from torchvision.transforms import transforms as T
 from torchvision.transforms.functional import pad, resize
 
 __all__ = ["Resize", "RandomZoomOut"]
+
+
+class ResizeMethod(Enum):
+    """Resize methods
+    Available methods are ``squish``, ``pad``.
+    """
+
+    SQUISH = "squish"
+    PAD = "pad"
 
 
 def _get_image_shape(image: Union[Image.Image, torch.Tensor]) -> Tuple[int, int]:
@@ -28,10 +38,15 @@ def _get_image_shape(image: Union[Image.Image, torch.Tensor]) -> Tuple[int, int]
 
 
 class Resize(T.Resize):
-    """Implements a more flexible resizing scheme
+    """Implements a more flexible resizing scheme.
 
     .. image:: https://github.com/frgfm/Holocron/releases/download/v0.2.1/resize_example.png
         :align: center
+
+    >>> from holocron.transforms import Resize
+    >>> pil_img = ...
+    >>> tf = Resize((224, 224), mode="pad")
+    >>> resized_img = tf(pil_img)
 
     Args:
         size: the desired height and width of the image in pixels
@@ -43,8 +58,14 @@ class Resize(T.Resize):
         the resized image
     """
 
-    def __init__(self, size: Tuple[int, int], mode: str = "squish", pad_mode: str = "constant", **kwargs: Any):
-        assert mode in ("squish", "pad")
+    def __init__(
+        self,
+        size: Tuple[int, int],
+        mode: ResizeMethod = ResizeMethod.SQUISH,
+        pad_mode: str = "constant",
+        **kwargs: Any,
+    ) -> None:
+        assert isinstance(mode, ResizeMethod)
         assert isinstance(size, (tuple, list)) and len(size) == 2 and all(s > 0 for s in size)
         super().__init__(size, **kwargs)
         self.mode = mode
@@ -61,7 +82,7 @@ class Resize(T.Resize):
         return _h, _w
 
     def forward(self, image: Union[Image.Image, torch.Tensor]) -> Union[Image.Image, torch.Tensor]:
-        if self.mode == "squish":
+        if self.mode == ResizeMethod.SQUISH:
             return super().forward(image)
         else:
             h, w = self.get_params(image)
@@ -78,6 +99,11 @@ class RandomZoomOut(nn.Module):
 
     .. image:: https://github.com/frgfm/Holocron/releases/download/v0.2.1/randomzoomout_example.png
         :align: center
+
+    >>> from holocron.transforms import RandomZoomOut
+    >>> pil_img = ...
+    >>> tf = RandomZoomOut((224, 224), scale=(0.3, 1.))
+    >>> resized_img = tf(pil_img)
 
     Args:
         size: the desired height and width of the image in pixels

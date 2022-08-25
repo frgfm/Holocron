@@ -8,7 +8,7 @@ from torch.nn.modules.conv import _ConvNd
 
 
 def init_module(module: nn.Module, nonlinearity: str = "relu") -> None:
-    """Initializes pytorch modules
+    """Initializes pytorch modules.
 
     Args:
         module: module to initialize

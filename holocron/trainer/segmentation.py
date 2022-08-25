@@ -13,7 +13,7 @@ __all__ = ["SegmentationTrainer"]
 
 
 class SegmentationTrainer(Trainer):
-    """Semantic segmentation trainer class
+    """Semantic segmentation trainer class.
 
     Args:
         model (torch.nn.Module): model to train

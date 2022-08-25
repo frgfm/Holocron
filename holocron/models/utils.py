@@ -30,6 +30,27 @@ def conv_sequence(
     blurpool: bool = False,
     **kwargs: Any,
 ) -> List[nn.Module]:
+    """Builds a sequence of convolutional layers.
+
+    >>> from torch import nn
+    >>> from holocron.models.utils import conv_sequence
+    >>> layers = conv_sequence(3, 32, nn.ReLU(), norm_layer=nn.Batchnorm2d(32), kernel_size=3, blurpool=True)
+
+    Args:
+        in_channels: number of channels of the input tensor
+        out_channels: number of convolutional filters
+        act_layer: the non linearity layer to apply
+        norm_layer: the normalization layer
+        drop_layer: the dropout-like layer for regularization
+        conv_layer: if specified, replaces `torch.nn.Conv2d` as the convolutional layer
+        bn_channels: if specified, replaces the normalization channels
+        attention_layer: the self attention layer
+        blurpool: whether blur pooling should be applied
+        kwargs: the keyword arguments of the conv_layer
+
+    Returns:
+        a list of layers
+    """
 
     if conv_layer is None:
         conv_layer = nn.Conv2d
@@ -79,7 +100,11 @@ def load_pretrained_params(
 
 
 def fuse_conv_bn(conv: nn.Conv2d, bn: nn.BatchNorm2d) -> Tuple[torch.Tensor, torch.Tensor]:
-    """Fuse convolution and batch normalization layers into a convolution with bias
+    """Fuse convolution and batch normalization layers into a convolution with bias.
+
+    >>> from torch import nn
+    >>> from holocron.utils import fuse_conv_bn
+    >>> fuse_conv_bn(nn.Conv2d(3, 32, 3), nn.Batchnorm2d(32))
 
     Args:
         conv: the convolutional layer
@@ -107,6 +132,9 @@ def fuse_conv_bn(conv: nn.Conv2d, bn: nn.BatchNorm2d) -> Tuple[torch.Tensor, tor
 
 def model_from_hf_hub(repo_id: str, **kwargs: Any) -> nn.Module:
     """Instantiate & load a pretrained model from HF hub.
+
+    >>> from holocron.models.utils import model_from_hf_hub
+    >>> model = model_from_hf_hub("frgfm/rexnet1_0x")
 
     Args:
         repo_id: HuggingFace model hub repo

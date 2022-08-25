@@ -83,7 +83,7 @@ def _test_trainer(
     learner: trainer.Trainer, num_it: int, ref_param: str, freeze_until: Optional[str] = None, lr: float = 1e-3
 ) -> None:
 
-    learner.model = trainer.utils.freeze_model(learner.model.train(), freeze_until)
+    trainer.utils.freeze_model(learner.model.train(), freeze_until)
     learner._reset_opt(lr)
     # Update param groups & LR
     learner.save(learner.output_file)

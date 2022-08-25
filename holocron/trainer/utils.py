@@ -11,14 +11,16 @@ from torch.nn.modules.batchnorm import _BatchNorm
 __all__ = ["freeze_bn", "freeze_model", "split_normalization_params"]
 
 
-def freeze_bn(mod: nn.Module) -> nn.Module:
+def freeze_bn(mod: nn.Module) -> None:
     """Prevents parameter and stats from updating in Batchnorm layers that are frozen
+
+    >>> from holocron.models import rexnet1_0x
+    >>> from holocron.trainer.utils import freeze_bn
+    >>> model = rexnet1_0x()
+    >>> freeze_bn(model)
 
     Args:
         mod (torch.nn.Module): model to train
-
-    Returns:
-        torch.nn.Module: model
     """
 
     # Loop on modules
@@ -28,21 +30,23 @@ def freeze_bn(mod: nn.Module) -> nn.Module:
             m.track_running_stats = False
             m.eval()
 
-    return mod
-
 
 def freeze_model(
-    model: nn.Module, last_frozen_layer: Optional[str] = None, frozen_bn_stat_update: bool = False
-) -> nn.Module:
-    """Freeze a specific range of model layers
+    model: nn.Module,
+    last_frozen_layer: Optional[str] = None,
+    frozen_bn_stat_update: bool = False,
+) -> None:
+    """Freeze a specific range of model layers.
+
+    >>> from holocron.models import rexnet1_0x
+    >>> from holocron.trainer.utils import freeze_model
+    >>> model = rexnet1_0x()
+    >>> freeze_model(model)
 
     Args:
         model (torch.nn.Module): model to train
         last_frozen_layer (str, optional): last layer to freeze. Assumes layers have been registered in forward order
         frozen_bn_stat_update (bool, optional): force stats update in BN layers that are frozen
-
-    Returns:
-        torch.nn.Module: model
     """
 
     # Unfreeze everything
@@ -65,9 +69,7 @@ def freeze_model(
 
     # Loop on modules
     if not frozen_bn_stat_update:
-        model = freeze_bn(model)
-
-    return model
+        freeze_bn(model)
 
 
 def split_normalization_params(

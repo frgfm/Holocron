@@ -117,7 +117,7 @@ class Trainer:
         Args:
             mb (fastprogress.master_bar): primary progress bar
         """
-        self.model = freeze_bn(self.model.train())
+        freeze_bn(self.model.train())
 
         nan_cnt = 0
 
@@ -241,7 +241,7 @@ class Trainer:
         sched_type: str = "onecycle",
         norm_weight_decay: Optional[float] = None,
     ) -> None:
-        """Train the model for a given number of epochs
+        """Train the model for a given number of epochs.
 
         Args:
             num_epochs (int): number of epochs to train
@@ -251,7 +251,7 @@ class Trainer:
             norm_weight_decay (float, optional): weight decay to apply to normalization parameters
         """
 
-        self.model = freeze_model(self.model.train(), freeze_until)
+        freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
         self._reset_opt(lr, norm_weight_decay)
         # Scheduler
@@ -303,7 +303,7 @@ class Trainer:
         if num_it > len(self.train_loader):
             raise ValueError("the value of `num_it` needs to be lower than the number of available batches")
 
-        self.model = freeze_model(self.model.train(), freeze_until)
+        freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
         self._reset_opt(start_lr, norm_weight_decay)
         gamma = (end_lr / start_lr) ** (1 / (num_it - 1))
@@ -388,7 +388,7 @@ class Trainer:
             num_it (int, optional): number of iterations to perform
         """
 
-        self.model = freeze_model(self.model.train(), freeze_until)
+        freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
         self._reset_opt(lr, norm_weight_decay)
 

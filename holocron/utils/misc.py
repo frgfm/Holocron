@@ -27,7 +27,10 @@ def parallel(
     progress: bool = False,
     **kwargs: Any,
 ) -> Sequence[Out]:
-    """Download a file accessible via URL with mutiple retries
+    """Performs parallel tasks by leveraging multi-threading.
+
+    >>> from holocron.utils.misc import parallel
+    >>> parallel(lambda x: x ** 2, list(range(10)))
 
     Args:
         func (callable): function to be executed on multiple workers
