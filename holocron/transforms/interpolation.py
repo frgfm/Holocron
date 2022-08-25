@@ -82,7 +82,7 @@ class Resize(T.Resize):
         return _h, _w
 
     def forward(self, image: Union[Image.Image, torch.Tensor]) -> Union[Image.Image, torch.Tensor]:
-        if self.mode == "squish":
+        if self.mode == ResizeMethod.SQUISH:
             return super().forward(image)
         else:
             h, w = self.get_params(image)
