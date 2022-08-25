@@ -14,7 +14,7 @@ __all__ = ["ClassificationTrainer", "BinaryClassificationTrainer"]
 
 
 class ClassificationTrainer(Trainer):
-    """Image classification trainer class
+    """Image classification trainer class.
 
     Args:
         model (torch.nn.Module): model to train
@@ -71,7 +71,7 @@ class ClassificationTrainer(Trainer):
 
 
 class BinaryClassificationTrainer(Trainer):
-    """Image binary classification trainer class
+    """Image binary classification trainer class.
 
     Args:
         model (torch.nn.Module): model to train

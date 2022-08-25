@@ -28,7 +28,7 @@ class _Activation(nn.Module):
 
 
 class HardMish(_Activation):
-    r"""Implements the Had Mish activation module from `"H-Mish" <https://github.com/digantamisra98/H-Mish>`_
+    r"""Implements the Had Mish activation module from `"H-Mish" <https://github.com/digantamisra98/H-Mish>`_.
 
     This activation is computed as follows:
 
@@ -42,7 +42,7 @@ class HardMish(_Activation):
 
 class NLReLU(_Activation):
     r"""Implements the Natural-Logarithm ReLU activation module from `"Natural-Logarithm-Rectified Activation
-    Function in Convolutional Neural Networks" <https://arxiv.org/pdf/1908.03682.pdf>`_
+    Function in Convolutional Neural Networks" <https://arxiv.org/pdf/1908.03682.pdf>`_.
 
     This activation is computed as follows:
 
@@ -59,7 +59,7 @@ class NLReLU(_Activation):
 
 class FReLU(nn.Module):
     r"""Implements the Funnel activation module from `"Funnel Activation for Visual Recognition"
-    <https://arxiv.org/pdf/2007.11824.pdf>`_
+    <https://arxiv.org/pdf/2007.11824.pdf>`_.
 
     This activation is computed as follows:
 

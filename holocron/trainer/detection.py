@@ -33,7 +33,7 @@ def assign_iou(gt_boxes: Tensor, pred_boxes: Tensor, iou_threshold: float = 0.5)
 
 
 class DetectionTrainer(Trainer):
-    """Object detection trainer class
+    """Object detection trainer class.
 
     Args:
         model (torch.nn.Module): model to train
@@ -99,7 +99,7 @@ class DetectionTrainer(Trainer):
 
     @torch.inference_mode()
     def evaluate(self, iou_threshold: float = 0.5) -> Dict[str, Optional[float]]:
-        """Evaluate the model on the validation set
+        """Evaluate the model on the validation set.
 
         Args:
             iou_threshold (float, optional): IoU threshold for pair assignment

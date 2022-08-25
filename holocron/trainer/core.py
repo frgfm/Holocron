@@ -241,7 +241,7 @@ class Trainer:
         sched_type: str = "onecycle",
         norm_weight_decay: Optional[float] = None,
     ) -> None:
-        """Train the model for a given number of epochs
+        """Train the model for a given number of epochs.
 
         Args:
             num_epochs (int): number of epochs to train
