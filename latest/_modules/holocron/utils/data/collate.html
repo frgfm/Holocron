@@ -235,17 +235,17 @@
 
 <div class="viewcode-block" id="Mixup"><a class="viewcode-back" href="../../../../utils.data.html#holocron.utils.data.Mixup">[docs]</a><span class="k">class</span> <span class="nc">Mixup</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Implements a batch collate function with MixUp strategy from</span>
-<span class="sd">    `&quot;mixup: Beyond Empirical Risk Minimization&quot; &lt;https://arxiv.org/pdf/1710.09412.pdf&gt;`_</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        num_classes: number of expected classes</span>
-<span class="sd">        alpha: mixup factor</span>
+<span class="sd">    `&quot;mixup: Beyond Empirical Risk Minimization&quot; &lt;https://arxiv.org/pdf/1710.09412.pdf&gt;`_.</span>
 
 <span class="sd">    &gt;&gt;&gt; import torch</span>
 <span class="sd">    &gt;&gt;&gt; from torch.utils.data._utils.collate import default_collate</span>
 <span class="sd">    &gt;&gt;&gt; from holocron.utils.data import Mixup</span>
 <span class="sd">    &gt;&gt;&gt; mix = Mixup(num_classes=10, alpha=0.4)</span>
 <span class="sd">    &gt;&gt;&gt; loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=lambda b: mix(*default_collate(b)))</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_classes: number of expected classes</span>
+<span class="sd">        alpha: mixup factor</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

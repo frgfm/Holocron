@@ -253,7 +253,7 @@
 
 
 <div class="viewcode-block" id="DetectionTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer">[docs]</a><span class="k">class</span> <span class="nc">DetectionTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Object detection trainer class</span>
+    <span class="sd">&quot;&quot;&quot;Object detection trainer class.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): model to train</span>
@@ -319,7 +319,7 @@
 
 <div class="viewcode-block" id="DetectionTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
+        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            iou_threshold (float, optional): IoU threshold for pair assignment</span>

@@ -223,6 +223,7 @@
 <span class="c1"># This program is licensed under the Apache License 2.0.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -233,6 +234,15 @@
 <span class="kn">from</span> <span class="nn">torchvision.transforms.functional</span> <span class="kn">import</span> <span class="n">pad</span><span class="p">,</span> <span class="n">resize</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Resize&quot;</span><span class="p">,</span> <span class="s2">&quot;RandomZoomOut&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">ResizeMethod</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Resize methods</span>
+<span class="sd">    Available methods are ``squish``, ``pad``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">SQUISH</span> <span class="o">=</span> <span class="s2">&quot;squish&quot;</span>
+    <span class="n">PAD</span> <span class="o">=</span> <span class="s2">&quot;pad&quot;</span>
 
 
 <span class="k">def</span> <span class="nf">_get_image_shape</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
@@ -248,10 +258,15 @@
 
 
 <div class="viewcode-block" id="Resize"><a class="viewcode-back" href="../../../transforms.html#holocron.transforms.Resize">[docs]</a><span class="k">class</span> <span class="nc">Resize</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">Resize</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements a more flexible resizing scheme</span>
+    <span class="sd">&quot;&quot;&quot;Implements a more flexible resizing scheme.</span>
 
 <span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.2.1/resize_example.png</span>
 <span class="sd">        :align: center</span>
+
+<span class="sd">    &gt;&gt;&gt; from holocron.transforms import Resize</span>
+<span class="sd">    &gt;&gt;&gt; pil_img = ...</span>
+<span class="sd">    &gt;&gt;&gt; tf = Resize((224, 224), mode=&quot;pad&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; resized_img = tf(pil_img)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        size: the desired height and width of the image in pixels</span>
@@ -263,8 +278,14 @@
 <span class="sd">        the resized image</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;squish&quot;</span><span class="p">,</span> <span class="n">pad_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;squish&quot;</span><span class="p">,</span> <span class="s2">&quot;pad&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">ResizeMethod</span> <span class="o">=</span> <span class="n">ResizeMethod</span><span class="o">.</span><span class="n">SQUISH</span><span class="p">,</span>
+        <span class="n">pad_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">ResizeMethod</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">s</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">size</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
@@ -281,7 +302,7 @@
         <span class="k">return</span> <span class="n">_h</span><span class="p">,</span> <span class="n">_w</span>
 
 <div class="viewcode-block" id="Resize.forward"><a class="viewcode-back" href="../../../transforms.html#holocron.transforms.Resize.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;squish&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">ResizeMethod</span><span class="o">.</span><span class="n">SQUISH</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
@@ -298,6 +319,11 @@
 
 <span class="sd">    .. image:: https://github.com/frgfm/Holocron/releases/download/v0.2.1/randomzoomout_example.png</span>
 <span class="sd">        :align: center</span>
+
+<span class="sd">    &gt;&gt;&gt; from holocron.transforms import RandomZoomOut</span>
+<span class="sd">    &gt;&gt;&gt; pil_img = ...</span>
+<span class="sd">    &gt;&gt;&gt; tf = RandomZoomOut((224, 224), scale=(0.3, 1.))</span>
+<span class="sd">    &gt;&gt;&gt; resized_img = tf(pil_img)</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        size: the desired height and width of the image in pixels</span>

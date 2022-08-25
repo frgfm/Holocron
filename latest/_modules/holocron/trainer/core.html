@@ -337,7 +337,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            mb (fastprogress.master_bar): primary progress bar</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_bn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">())</span>
+        <span class="n">freeze_bn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">())</span>
 
         <span class="n">nan_cnt</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -461,7 +461,7 @@
         <span class="n">sched_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;onecycle&quot;</span><span class="p">,</span>
         <span class="n">norm_weight_decay</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Train the model for a given number of epochs</span>
+        <span class="sd">&quot;&quot;&quot;Train the model for a given number of epochs.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            num_epochs (int): number of epochs to train</span>
@@ -471,7 +471,7 @@
 <span class="sd">            norm_weight_decay (float, optional): weight decay to apply to normalization parameters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
+        <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">)</span>
         <span class="c1"># Scheduler</span>
@@ -523,7 +523,7 @@
         <span class="k">if</span> <span class="n">num_it</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;the value of `num_it` needs to be lower than the number of available batches&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
+        <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">start_lr</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">)</span>
         <span class="n">gamma</span> <span class="o">=</span> <span class="p">(</span><span class="n">end_lr</span> <span class="o">/</span> <span class="n">start_lr</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_it</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
@@ -608,7 +608,7 @@
 <span class="sd">            num_it (int, optional): number of iterations to perform</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
+        <span class="n">freeze_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(),</span> <span class="n">freeze_until</span><span class="p">)</span>
         <span class="c1"># Update param groups &amp; LR</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">norm_weight_decay</span><span class="p">)</span>
 

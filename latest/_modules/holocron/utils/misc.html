@@ -247,7 +247,10 @@
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Out</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Download a file accessible via URL with mutiple retries</span>
+    <span class="sd">&quot;&quot;&quot;Performs parallel tasks by leveraging multi-threading.</span>
+
+<span class="sd">    &gt;&gt;&gt; from holocron.utils.misc import parallel</span>
+<span class="sd">    &gt;&gt;&gt; parallel(lambda x: x ** 2, list(range(10)))</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        func (callable): function to be executed on multiple workers</span>
