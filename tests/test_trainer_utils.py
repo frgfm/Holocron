@@ -15,7 +15,7 @@ def test_freeze_bn():
     # Freeze & forward
     for p in mod.parameters():
         p.requires_grad_(False)
-    mod = trainer.freeze_bn(mod)
+    trainer.freeze_bn(mod)
     for _ in range(10):
         _ = mod(torch.rand((1, 3, 32, 32)))
     # Check that stats were not updated
@@ -28,7 +28,7 @@ def test_freeze_model():
 
     # Simple model
     mod = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True), nn.Conv2d(32, 64, 3), nn.ReLU(inplace=True))
-    mod = trainer.freeze_model(mod, "0")
+    trainer.freeze_model(mod, "0")
     # Check that the correct layers were frozen
     assert not any(p.requires_grad for p in mod[0].parameters())
     assert all(p.requires_grad for p in mod[2].parameters())
@@ -38,6 +38,6 @@ def test_freeze_model():
     # Freeze last layer
     for p in mod[-1].parameters():
         p.requires_grad_(False)
-    mod = trainer.freeze_model(mod, "0")
+    trainer.freeze_model(mod, "0")
     # Ensure the last layer is now unfrozen
     assert all(p.requires_grad for p in mod[-1].parameters())
