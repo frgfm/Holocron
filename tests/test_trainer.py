@@ -289,6 +289,7 @@ def test_detection_trainer(tmpdir_factory):
         optimizer,
         output_file=file_path,
         gpu=0 if torch.cuda.is_available() else None,
+        gradient_clip=0.1,
     )
 
     _test_trainer(learner, num_it, "roi_heads.box_predictor.cls_score.weight", "backbone", 5e-4)
@@ -302,5 +303,6 @@ def test_detection_trainer(tmpdir_factory):
         output_file=file_path,
         gpu=0 if torch.cuda.is_available() else None,
         amp=True,
+        gradient_clip=0.1,
     )
     _test_trainer(learner, num_it, "roi_heads.box_predictor.cls_score.weight", "backbone", 5e-4)
