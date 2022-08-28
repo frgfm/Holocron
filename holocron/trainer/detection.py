@@ -57,28 +57,6 @@ class DetectionTrainer(Trainer):
         target = [{k: v.cuda(non_blocking=True) for k, v in t.items()} for t in target]
         return x, target
 
-    def _backprop_step(self, loss: Tensor, grad_clip: float = 0.1) -> None:
-        # Clean gradients
-        self.optimizer.zero_grad()
-        # Backpropate the loss
-        if self.amp:
-            self.scaler.scale(loss).backward()
-            # Safeguard for Gradient explosion
-            if isinstance(grad_clip, float):
-                self.scaler.unscale_(self.optimizer)
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)  # type: ignore[attr-defined]
-
-            # Update the params
-            self.scaler.step(self.optimizer)
-            self.scaler.update()
-        else:
-            loss.backward()
-            # Safeguard for Gradient explosion
-            if isinstance(grad_clip, float):
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)  # type: ignore[attr-defined]
-            # Update the params
-            self.optimizer.step()
-
     def _get_loss(self, x: List[Tensor], target: List[Dict[str, Tensor]]) -> Tensor:  # type: ignore[override]
         # AMP
         if self.amp:
