@@ -24,6 +24,24 @@ __all__ = ["Trainer"]
 
 
 class Trainer:
+    """Baseline trainer class.
+
+    Args:
+        model: model to train
+        train_loader: training loader
+        val_loader: validation loader
+        criterion: loss criterion
+        optimizer: parameter optimizer
+        gpu: index of the GPU to use
+        output_file: path where checkpoints will be saved
+        amp: whether to use automatic mixed precision
+        skip_nan_loss: whether the optimizer step should be skipped when the loss is NaN
+        nan_tolerance: number of consecutive batches with NaN loss before stopping the training
+        gradient_acc: number of batches to accumulate the gradient of before performing the update step
+        gradient_clip: the gradient clip value
+        on_epoch_end: callback triggered at the end of an epoch
+    """
+
     def __init__(
         self,
         model: nn.Module,
