@@ -125,6 +125,28 @@ def _test_trainer(
     # Check that params were updated
     assert not torch.equal(learner.model.state_dict()[ref_param], model_w)
 
+    # Gradient accumulation
+    learner.load(checkpoint)
+    assert torch.equal(learner.model.state_dict()[ref_param], model_w)
+    learner.model.train()
+    learner.gradient_acc = 2
+    learner._reset_opt(lr)
+    train_iter = iter(learner.train_loader)
+    assert all(torch.all(p.grad == 0) for p in learner.model.parameters() if p.requires_grad)
+    x, target = next(train_iter)
+    x, target = learner.to_cuda(x, target)
+    loss = learner._get_loss(x, target)
+    learner._backprop_step(loss)
+    assert torch.equal(learner.model.state_dict()[ref_param], model_w)
+    assert all(torch.any(p.grad != 0) for p in learner.model.parameters() if p.requires_grad)
+    # With accumulation of 2, the update step is performed every 2 batches
+    x, target = next(train_iter)
+    x, target = learner.to_cuda(x, target)
+    loss = learner._get_loss(x, target)
+    learner._backprop_step(loss)
+    assert not torch.equal(learner.model.state_dict()[ref_param], model_w)
+    assert all(torch.all(p.grad == 0) for p in learner.model.parameters() if p.requires_grad)
+
 
 def test_classification_trainer(tmpdir_factory):
 
