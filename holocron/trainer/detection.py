@@ -36,16 +36,19 @@ class DetectionTrainer(Trainer):
     """Object detection trainer class.
 
     Args:
-        model (torch.nn.Module): model to train
-        train_loader (torch.utils.data.DataLoader): training loader
-        val_loader (torch.utils.data.DataLoader): validation loader
-        criterion (None): loss criterion
-        optimizer (torch.optim.Optimizer): parameter optimizer
-        gpu (int, optional): index of the GPU to use
-        output_file (str, optional): path where checkpoints will be saved
-        amp (bool, optional): whether to use automatic mixed precision
-        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN
-        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch
+        model: model to train
+        train_loader: training loader
+        val_loader: validation loader
+        criterion: loss criterion
+        optimizer: parameter optimizer
+        gpu: index of the GPU to use
+        output_file: path where checkpoints will be saved
+        amp: whether to use automatic mixed precision
+        skip_nan_loss: whether the optimizer step should be skipped when the loss is NaN
+        nan_tolerance: number of consecutive batches with NaN loss before stopping the training
+        gradient_acc: number of batches to accumulate the gradient of before performing the update step
+        gradient_clip: the gradient clip value
+        on_epoch_end: callback triggered at the end of an epoch
     """
 
     @staticmethod
@@ -56,28 +59,6 @@ class DetectionTrainer(Trainer):
         x = [_x.cuda(non_blocking=True) for _x in x]
         target = [{k: v.cuda(non_blocking=True) for k, v in t.items()} for t in target]
         return x, target
-
-    def _backprop_step(self, loss: Tensor, grad_clip: float = 0.1) -> None:
-        # Clean gradients
-        self.optimizer.zero_grad()
-        # Backpropate the loss
-        if self.amp:
-            self.scaler.scale(loss).backward()
-            # Safeguard for Gradient explosion
-            if isinstance(grad_clip, float):
-                self.scaler.unscale_(self.optimizer)
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)  # type: ignore[attr-defined]
-
-            # Update the params
-            self.scaler.step(self.optimizer)
-            self.scaler.update()
-        else:
-            loss.backward()
-            # Safeguard for Gradient explosion
-            if isinstance(grad_clip, float):
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), grad_clip)  # type: ignore[attr-defined]
-            # Update the params
-            self.optimizer.step()
 
     def _get_loss(self, x: List[Tensor], target: List[Dict[str, Tensor]]) -> Tensor:  # type: ignore[override]
         # AMP

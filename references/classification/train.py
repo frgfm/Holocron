@@ -204,6 +204,7 @@ def main(args):
         optimizer,
         args.device,
         args.output_file,
+        gradient_acc=args.grad_acc,
         amp=args.amp,
         on_epoch_end=log_wb,
     )
@@ -282,6 +283,7 @@ def get_parser():
     parser.add_argument("--freeze-until", default=None, type=str, help="Last layer to freeze")
     parser.add_argument("--device", default=None, type=int, help="device")
     parser.add_argument("-b", "--batch-size", default=32, type=int, help="batch size")
+    parser.add_argument("--grad-acc", default=1, type=int, help="Number of batches to accumulate the gradient of")
     parser.add_argument("--epochs", default=20, type=int, help="number of total epochs to run")
     parser.add_argument(
         "-j", "--workers", default=min(os.cpu_count(), 16), type=int, help="number of data loading workers"

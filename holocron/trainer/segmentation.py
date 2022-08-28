@@ -16,17 +16,19 @@ class SegmentationTrainer(Trainer):
     """Semantic segmentation trainer class.
 
     Args:
-        model (torch.nn.Module): model to train
-        train_loader (torch.utils.data.DataLoader): training loader
-        val_loader (torch.utils.data.DataLoader): validation loader
-        criterion (torch.nn.Module): loss criterion
-        optimizer (torch.optim.Optimizer): parameter optimizer
-        gpu (int, optional): index of the GPU to use
-        output_file (str, optional): path where checkpoints will be saved
-        num_classes (int): number of output classes
-        amp (bool, optional): whether to use automatic mixed precision
-        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN
-        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch
+        model: model to train
+        train_loader: training loader
+        val_loader: validation loader
+        criterion: loss criterion
+        optimizer: parameter optimizer
+        gpu: index of the GPU to use
+        output_file: path where checkpoints will be saved
+        amp: whether to use automatic mixed precision
+        skip_nan_loss: whether the optimizer step should be skipped when the loss is NaN
+        nan_tolerance: number of consecutive batches with NaN loss before stopping the training
+        gradient_acc: number of batches to accumulate the gradient of before performing the update step
+        gradient_clip: the gradient clip value
+        on_epoch_end: callback triggered at the end of an epoch
     """
 
     def __init__(self, *args: Any, num_classes: int = 10, **kwargs: Any) -> None:

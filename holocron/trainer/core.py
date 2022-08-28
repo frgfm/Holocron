@@ -24,6 +24,24 @@ __all__ = ["Trainer"]
 
 
 class Trainer:
+    """Baseline trainer class.
+
+    Args:
+        model: model to train
+        train_loader: training loader
+        val_loader: validation loader
+        criterion: loss criterion
+        optimizer: parameter optimizer
+        gpu: index of the GPU to use
+        output_file: path where checkpoints will be saved
+        amp: whether to use automatic mixed precision
+        skip_nan_loss: whether the optimizer step should be skipped when the loss is NaN
+        nan_tolerance: number of consecutive batches with NaN loss before stopping the training
+        gradient_acc: number of batches to accumulate the gradient of before performing the update step
+        gradient_clip: the gradient clip value
+        on_epoch_end: callback triggered at the end of an epoch
+    """
+
     def __init__(
         self,
         model: nn.Module,
@@ -36,6 +54,8 @@ class Trainer:
         amp: bool = False,
         skip_nan_loss: bool = False,
         nan_tolerance: int = 5,
+        gradient_acc: int = 1,
+        gradient_clip: Optional[float] = None,
         on_epoch_end: Optional[Callable[[Dict[str, float]], Any]] = None,
     ) -> None:
         self.model = model
@@ -48,6 +68,8 @@ class Trainer:
         self.on_epoch_end = on_epoch_end
         self.skip_nan_loss = skip_nan_loss
         self.nan_tolerance = nan_tolerance
+        self.gradient_acc = gradient_acc
+        self.grad_clip = gradient_clip
 
         # Output file
         self.output_file = output_file
@@ -56,6 +78,7 @@ class Trainer:
         self.step = 0
         self.start_epoch = 0
         self.epoch = 0
+        self._grad_count = 0
         self.min_loss = math.inf
         self.gpu = gpu
         self._params: Tuple[ParamSeq, ParamSeq] = ([], [])
@@ -161,18 +184,30 @@ class Trainer:
         return x, target
 
     def _backprop_step(self, loss: Tensor) -> None:
-        # Clean gradients
-        self.optimizer.zero_grad()
         # Backpropate the loss
+        self._grad_count += 1
         if self.amp:
+            # Backprop
             self.scaler.scale(loss).backward()
-            # Update the params
-            self.scaler.step(self.optimizer)
-            self.scaler.update()
+            # Safeguard for Gradient explosion
+            if isinstance(self.grad_clip, float):
+                self.scaler.unscale_(self.optimizer)
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)  # type: ignore[attr-defined]
+            if self._grad_count == self.gradient_acc:
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+                self.optimizer.zero_grad()
+                self._grad_count = 0
         else:
+            # Backprop
             loss.backward()
-            # Update the params
-            self.optimizer.step()
+            # Safeguard for Gradient explosion
+            if isinstance(self.grad_clip, float):
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)  # type: ignore[attr-defined]
+            if self._grad_count == self.gradient_acc:
+                self.optimizer.step()
+                self.optimizer.zero_grad()
+                self._grad_count = 0
 
     def _get_loss(self, x: Tensor, target: Tensor, return_logits: bool = False) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         # AMP
@@ -216,6 +251,7 @@ class Trainer:
             for _params, _wd in zip(self._params, wd_groups):
                 if len(_params) > 0:
                     self.optimizer.add_param_group(dict(params=_params, weight_decay=_wd))
+        self.optimizer.zero_grad()
 
     @torch.inference_mode()
     def evaluate(self):
