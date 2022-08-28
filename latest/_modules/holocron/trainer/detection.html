@@ -256,16 +256,19 @@
     <span class="sd">&quot;&quot;&quot;Object detection trainer class.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model (torch.nn.Module): model to train</span>
-<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
-<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
-<span class="sd">        criterion (None): loss criterion</span>
-<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
-<span class="sd">        gpu (int, optional): index of the GPU to use</span>
-<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
-<span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
-<span class="sd">        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN</span>
-<span class="sd">        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch</span>
+<span class="sd">        model: model to train</span>
+<span class="sd">        train_loader: training loader</span>
+<span class="sd">        val_loader: validation loader</span>
+<span class="sd">        criterion: loss criterion</span>
+<span class="sd">        optimizer: parameter optimizer</span>
+<span class="sd">        gpu: index of the GPU to use</span>
+<span class="sd">        output_file: path where checkpoints will be saved</span>
+<span class="sd">        amp: whether to use automatic mixed precision</span>
+<span class="sd">        skip_nan_loss: whether the optimizer step should be skipped when the loss is NaN</span>
+<span class="sd">        nan_tolerance: number of consecutive batches with NaN loss before stopping the training</span>
+<span class="sd">        gradient_acc: number of batches to accumulate the gradient of before performing the update step</span>
+<span class="sd">        gradient_clip: the gradient clip value</span>
+<span class="sd">        on_epoch_end: callback triggered at the end of an epoch</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@staticmethod</span>
@@ -276,28 +279,6 @@
         <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">_x</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">_x</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
         <span class="n">target</span> <span class="o">=</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span>
-
-    <span class="k">def</span> <span class="nf">_backprop_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">grad_clip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Clean gradients</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="c1"># Backpropate the loss</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-            <span class="c1"># Safeguard for Gradient explosion</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grad_clip</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">unscale_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">grad_clip</span><span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span>
-
-            <span class="c1"># Update the params</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-            <span class="c1"># Safeguard for Gradient explosion</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grad_clip</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">grad_clip</span><span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span>
-            <span class="c1"># Update the params</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>  <span class="c1"># type: ignore[override]</span>
         <span class="c1"># AMP</span>

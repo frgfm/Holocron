@@ -237,16 +237,19 @@
     <span class="sd">&quot;&quot;&quot;Image classification trainer class.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model (torch.nn.Module): model to train</span>
-<span class="sd">        train_loader (torch.utils.data.DataLoader): training loader</span>
-<span class="sd">        val_loader (torch.utils.data.DataLoader): validation loader</span>
-<span class="sd">        criterion (torch.nn.Module): loss criterion</span>
-<span class="sd">        optimizer (torch.optim.Optimizer): parameter optimizer</span>
-<span class="sd">        gpu (int, optional): index of the GPU to use</span>
-<span class="sd">        output_file (str, optional): path where checkpoints will be saved</span>
-<span class="sd">        amp (bool, optional): whether to use automatic mixed precision</span>
-<span class="sd">        skip_nan_loss (bool, optional): whether the optimizer step should be skipped when the loss is NaN</span>
-<span class="sd">        on_epoch_end (Callable[[Dict[str, float]], Any]): callback triggered at the end of an epoch</span>
+<span class="sd">        model: model to train</span>
+<span class="sd">        train_loader: training loader</span>
+<span class="sd">        val_loader: validation loader</span>
+<span class="sd">        criterion: loss criterion</span>
+<span class="sd">        optimizer: parameter optimizer</span>
+<span class="sd">        gpu: index of the GPU to use</span>
+<span class="sd">        output_file: path where checkpoints will be saved</span>
+<span class="sd">        amp: whether to use automatic mixed precision</span>
+<span class="sd">        skip_nan_loss: whether the optimizer step should be skipped when the loss is NaN</span>
+<span class="sd">        nan_tolerance: number of consecutive batches with NaN loss before stopping the training</span>
+<span class="sd">        gradient_acc: number of batches to accumulate the gradient of before performing the update step</span>
+<span class="sd">        gradient_clip: the gradient clip value</span>
+<span class="sd">        on_epoch_end: callback triggered at the end of an epoch</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
