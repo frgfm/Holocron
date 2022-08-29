@@ -114,7 +114,6 @@ class Trainer:
                 epoch=self.epoch,
                 step=self.step,
                 min_loss=self.min_loss,
-                optimizer=self.optimizer.state_dict(),
                 model=self.model.state_dict(),
             ),
             output_file,
@@ -131,7 +130,6 @@ class Trainer:
         self.epoch = self.start_epoch
         self.step = state["step"]
         self.min_loss = state["min_loss"]
-        self.optimizer.load_state_dict(state["optimizer"])
         self.model.load_state_dict(state["model"])
 
     def _fit_epoch(self, mb: ConsoleMasterBar) -> None:
@@ -189,11 +187,11 @@ class Trainer:
         if self.amp:
             # Backprop
             self.scaler.scale(loss).backward()
-            # Safeguard for Gradient explosion
-            if isinstance(self.grad_clip, float):
-                self.scaler.unscale_(self.optimizer)
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)  # type: ignore[attr-defined]
             if self._grad_count == self.gradient_acc:
+                # Safeguard for Gradient explosion
+                if isinstance(self.grad_clip, float):
+                    self.scaler.unscale_(self.optimizer)
+                    nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)  # type: ignore[attr-defined]
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
                 self.optimizer.zero_grad()
@@ -201,10 +199,10 @@ class Trainer:
         else:
             # Backprop
             loss.backward()
-            # Safeguard for Gradient explosion
-            if isinstance(self.grad_clip, float):
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)  # type: ignore[attr-defined]
             if self._grad_count == self.gradient_acc:
+                # Safeguard for Gradient explosion
+                if isinstance(self.grad_clip, float):
+                    nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)  # type: ignore[attr-defined]
                 self.optimizer.step()
                 self.optimizer.zero_grad()
                 self._grad_count = 0

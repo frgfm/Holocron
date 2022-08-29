@@ -186,6 +186,8 @@ def test_classification_trainer(tmpdir_factory):
         gpu=0 if torch.cuda.is_available() else None,
         amp=True,
     )
+    # Top losses
+    learner.plot_top_losses((0, 0, 0), (1, 1, 1), [str(idx) for idx in range(5)], block=False)
     _test_trainer(learner, num_it, "3.weight", None)
 
 

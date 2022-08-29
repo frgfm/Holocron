@@ -37,24 +37,29 @@ def worker_init_fn(worker_id: int) -> None:
     np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
 
 
-def plot_samples(images, targets, num_samples=4):
+def plot_samples(images, targets, num_samples=8):
     # Unnormalize image
     nb_samples = min(num_samples, images.shape[0])
-    _, axes = plt.subplots(1, nb_samples, figsize=(20, 5))
+    num_cols = min(nb_samples, 4)
+    num_rows = int(math.ceil(nb_samples / num_cols))
+    _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
         img *= torch.tensor(IMAGENETTE["std"]).view(-1, 1, 1)
         img += torch.tensor(IMAGENETTE["mean"]).view(-1, 1, 1)
         img = to_pil_image(img)
 
-        axes[idx].imshow(img)
-        axes[idx].axis("off")
+        _row = int(idx / num_cols)
+        _col = idx - _row * num_cols
+
+        axes[_row][_col].imshow(img)
+        axes[_row][_col].axis("off")
         if targets.ndim == 1:
-            axes[idx].set_title(IMAGENETTE["classes"][targets[idx].item()])
+            axes[_row][_col].set_title(IMAGENETTE["classes"][targets[idx].item()])
         else:
             class_idcs = torch.where(targets[idx] > 0)[0]
             _info = [f"{IMAGENETTE['classes'][_idx.item()]} ({targets[idx, _idx]:.2f})" for _idx in class_idcs]
-            axes[idx].set_title(" ".join(_info))
+            axes[_row][_col].set_title(" ".join(_info))
 
     plt.show()
 
@@ -219,6 +224,11 @@ def main(args):
         print(trainer._eval_metrics_str(eval_metrics))
         return
 
+    if args.plot_loss:
+        print("Checking top losses")
+        trainer.plot_top_losses(IMAGENETTE["mean"], IMAGENETTE["std"], IMAGENETTE["classes"])
+        return
+
     if args.find_lr:
         print("Looking for optimal LR")
         trainer.find_lr(args.freeze_until, num_it=min(len(train_loader), 100), norm_weight_decay=args.norm_wd)
@@ -303,6 +313,7 @@ def get_parser():
     parser.add_argument("--output-file", default="./checkpoint.pth", help="path where to save")
     parser.add_argument("--resume", default="", help="resume from checkpoint")
     parser.add_argument("--test-only", help="Only test the model", action="store_true")
+    parser.add_argument("--plot-loss", help="Check the top losses of the model", action="store_true")
     parser.add_argument("--pretrained", action="store_true", help="Use pre-trained models from the modelzoo")
     parser.add_argument("--amp", help="Use Automatic Mixed Precision", action="store_true")
     parser.add_argument("--wb", action="store_true", help="Log to Weights & Biases")
