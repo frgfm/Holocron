@@ -183,10 +183,7 @@ def main(args):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    # model = classification.__dict__[args.arch](args.pretrained, num_classes=num_classes)
-    from holocron.models.utils import model_from_hf_hub
-
-    model = model_from_hf_hub("frgfm/rexnet1_0x")
+    model = classification.__dict__[args.arch](args.pretrained, num_classes=num_classes)
 
     criterion = nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
 
