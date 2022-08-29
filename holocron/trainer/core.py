@@ -114,7 +114,6 @@ class Trainer:
                 epoch=self.epoch,
                 step=self.step,
                 min_loss=self.min_loss,
-                optimizer=self.optimizer.state_dict(),
                 model=self.model.state_dict(),
             ),
             output_file,
@@ -131,7 +130,6 @@ class Trainer:
         self.epoch = self.start_epoch
         self.step = state["step"]
         self.min_loss = state["min_loss"]
-        self.optimizer.load_state_dict(state["optimizer"])
         self.model.load_state_dict(state["model"])
 
     def _fit_epoch(self, mb: ConsoleMasterBar) -> None:
