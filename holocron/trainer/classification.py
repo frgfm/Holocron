@@ -96,7 +96,7 @@ class ClassificationTrainer(Trainer):
 
         # Switch to unreduced loss
         _reduction = self.criterion.reduction
-        self.criterion.reduction = "none"
+        self.criterion.reduction = "none"  # type: ignore[assignment]
         self.model.eval()
 
         train_iter = iter(self.train_loader)
@@ -105,7 +105,7 @@ class ClassificationTrainer(Trainer):
             x, target = self.to_cuda(x, target)
 
             # Forward
-            batch_loss, logits = self._get_loss(x, target, return_logits=True)  # type: ignore[assignment]
+            batch_loss, logits = self._get_loss(x, target, return_logits=True)
 
             if torch.any(batch_loss > losses.min()):
                 idcs = np.concatenate((losses, batch_loss.cpu().numpy())).argsort()[-num_samples:]
