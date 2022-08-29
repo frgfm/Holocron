@@ -147,6 +147,11 @@ def _test_trainer(
     assert not torch.equal(learner.model.state_dict()[ref_param], model_w)
     assert all(torch.all(p.grad == 0) for p in learner.model.parameters() if p.requires_grad)
 
+    # Top losses
+    learner.load(checkpoint)
+    assert torch.equal(learner.model.state_dict()[ref_param], model_w)
+    learner.plot_top_losses(block=False)
+
 
 def test_classification_trainer(tmpdir_factory):
 
