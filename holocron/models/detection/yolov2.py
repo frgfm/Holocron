@@ -36,10 +36,10 @@ class YOLOv2(_YOLO):
         stem_chanels: int = 32,
         anchors: Optional[Tensor] = None,
         passthrough_ratio: int = 8,
-        lambda_obj: float = 5,
-        lambda_noobj: float = 1,
+        lambda_obj: float = 1,
+        lambda_noobj: float = 0.5,
         lambda_class: float = 1,
-        lambda_coords: float = 1,
+        lambda_coords: float = 5,
         rpn_nms_thresh: float = 0.7,
         box_score_thresh: float = 0.05,
         act_layer: Optional[nn.Module] = None,
@@ -144,6 +144,16 @@ class YOLOv2(_YOLO):
     def num_anchors(self) -> int:
         return self.anchors.shape[0]  # type: ignore[index, return-value]
 
+    @staticmethod
+    def to_isoboxes(b_coords: Tensor, grid_shape: Tuple[int, int], clamp: bool = False) -> Tensor:
+        xy = b_coords[..., :2]
+        wh = b_coords[..., 2:]
+        pred_xyxy = torch.cat((xy - wh / 2, xy + wh / 2), dim=-1).reshape(*b_coords.shape)
+        if clamp:
+            pred_xyxy.clamp_(0, 1)
+
+        return pred_xyxy
+
     def _format_outputs(self, x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         """Formats convolutional layer output
 
@@ -159,6 +169,9 @@ class YOLOv2(_YOLO):
         b, _, h, w = x.shape
         # (B, C, H, W) --> (B, H, W, num_anchors, 5 + num_classes)
         x = x.reshape(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
+        # Classification scores
+        b_scores = F.softmax(x[..., -self.num_classes :], dim=-1)
+
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
         c_y = torch.arange(h, dtype=torch.float, device=x.device)
@@ -171,8 +184,6 @@ class YOLOv2(_YOLO):
         b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness
         b_o = torch.sigmoid(x[..., 4])
-        # Classification scores
-        b_scores = F.softmax(x[..., 5:], dim=-1)
 
         return b_coords, b_o, b_scores
 
@@ -224,7 +235,7 @@ class YOLOv2(_YOLO):
         b_scores = b_scores.reshape(b_scores.shape[0], -1, self.num_classes)
 
         # Stack detections into a list
-        return self.post_process(b_coords, b_o, b_scores, self.rpn_nms_thresh, self.box_score_thresh)
+        return self.post_process(b_coords, b_o, b_scores, out.shape[-2:], self.rpn_nms_thresh, self.box_score_thresh)
 
 
 def _yolo(
