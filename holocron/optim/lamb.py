@@ -10,8 +10,34 @@ from torch.optim.optimizer import Optimizer
 
 
 class LAMB(Optimizer):
-    """Implements the Lamb optimizer from `"Large batch optimization for deep learning: training BERT in 76 minutes"
+    r"""Implements the Lamb optimizer from `"Large batch optimization for deep learning: training BERT in 76 minutes"
     <https://arxiv.org/pdf/1904.00962v3.pdf>`_.
+
+    The estimation of momentums is described as follows, :math:`\forall t \geq 1`:
+
+    .. math::
+        m_t \leftarrow \beta_1 m_{t-1} + (1 - \beta_1) g_t \\
+        v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
+
+    where :math:`g_t` is the gradient of :math:`\theta_t`,
+    :math:`\beta_1, \beta_2 \in [0, 1]^3` are the exponential average smoothing coefficients,
+    :math:`m_0 = 0,\ v_0 = 0`.
+
+    Then we correct their biases using:
+
+    .. math::
+        \hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\
+        \hat{v_t} \leftarrow \frac{v_t}{1 - \beta_2^t}
+
+    And finally the update step is performed using the following rule:
+
+    .. math::
+        r_t \leftarrow \frac{\hat{m_t}}{\sqrt{\hat{v_t}} + \epsilon} \\
+        \theta_t \leftarrow \theta_{t-1} - \alpha \phi(\lVert \theta_t \rVert) \frac{r_t + \lambda \theta_t}{\lVert r_t + \theta_t \rVert}
+
+    where :math:`\theta_t` is the parameter value at step :math:`t` (:math:`\theta_0` being the initialization value),
+    :math:`\phi` is a clipping function,
+    :math:`\alpha` is the learning rate, :math:`\lambda \geq 0` is the weight decay, :math:`\epsilon > 0`.
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
