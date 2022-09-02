@@ -12,8 +12,34 @@ from . import functional as F
 
 
 class TAdam(Optimizer):
-    """Implements the TAdam optimizer from `"TAdam: A Robust Stochastic Gradient Optimizer"
+    r"""Implements the TAdam optimizer from `"TAdam: A Robust Stochastic Gradient Optimizer"
     <https://arxiv.org/pdf/2003.00179.pdf>`_.
+
+    The estimation of momentums is described as follows, :math:`\forall t \geq 1`:
+
+    .. math::
+        w_t \leftarrow (\nu + d) \Big(\nu + \sum\limits_{j} \frac{(g_t^j - m_{t-1}^j)^2}{v_{t-1} + \epsilon} \Big)^{-1} \\
+        m_t \leftarrow \frac{W_{t-1}}{W_{t-1} + w_t} m_{t-1} + \frac{w_t}{W_{t-1} + w_t} g_t \\
+        v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) (g_t - g_{t-1})
+
+    where :math:`g_t` is the gradient of :math:`\theta_t`,
+    :math:`\beta_1, \beta_2 \in [0, 1]^3` are the exponential average smoothing coefficients,
+    :math:`m_0 = 0,\ v_0 = 0,\ W_0 = \frac{\beta_1}{1 - \beta_1}`;
+    :math:`\nu` is the degrees of freedom and :math:`d` if the number of dimensions of the parameter gradient.
+
+    Then we correct their biases using:
+
+    .. math::
+        \hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\
+        \hat{v_t} \leftarrow \frac{v_t}{1 - \beta_2^t}
+
+    And finally the update step is performed using the following rule:
+
+    .. math::
+        \theta_t \leftarrow \theta_{t-1} - \alpha \frac{\hat{m_t}}{\sqrt{\hat{v_t}} + \epsilon}
+
+    where :math:`\theta_t` is the parameter value at step :math:`t` (:math:`\theta_0` being the initialization value),
+    :math:`\alpha` is the learning rate, :math:`\epsilon > 0`.
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
