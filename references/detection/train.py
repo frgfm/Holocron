@@ -28,16 +28,7 @@ import holocron
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 from holocron.utils.misc import find_image_size
-from transforms import (
-    CenterCrop,
-    Compose,
-    ImageTransform,
-    RandomHorizontalFlip,
-    RandomResizedCrop,
-    Resize,
-    VOCTargetTransform,
-    convert_to_relative,
-)
+from transforms import Compose, ImageTransform, RandomHorizontalFlip, Resize, VOCTargetTransform, convert_to_relative
 
 VOC_CLASSES = [
     "aeroplane",
@@ -110,8 +101,6 @@ def main(args):
 
     # Data loading
     normalize = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    crop_pct = 0.875
-    scale_size = int(math.floor(args.img_size / crop_pct))
 
     train_loader, val_loader = None, None
 
@@ -126,9 +115,7 @@ def main(args):
             transforms=Compose(
                 [
                     VOCTargetTransform(VOC_CLASSES),
-                    RandomResizedCrop(
-                        (args.img_size, args.img_size), scale=(0.3, 1.0), interpolation=interpolation_mode
-                    ),
+                    Resize((args.img_size, args.img_size), interpolation=interpolation_mode),
                     RandomHorizontalFlip(),
                     convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
                     ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
@@ -175,8 +162,7 @@ def main(args):
             transforms=Compose(
                 [
                     VOCTargetTransform(VOC_CLASSES),
-                    Resize(scale_size, interpolation=interpolation_mode),
-                    CenterCrop(args.img_size),
+                    Resize((args.img_size, args.img_size), interpolation=interpolation_mode),
                     convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
                     ImageTransform(T.PILToTensor()),
                     ImageTransform(T.ConvertImageDtype(torch.float32)),
