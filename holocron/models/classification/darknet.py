@@ -75,6 +75,7 @@ class DarknetBodyV1(nn.Sequential):
                 ]
             )
         )
+        init_module(self, "leaky_relu")
 
     @staticmethod
     def _make_layer(

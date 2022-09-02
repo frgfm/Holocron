@@ -48,5 +48,5 @@ python train.py imagenette2-320/ --arch darknet53 --lr 5e-3 -b 32 -j 16 --epochs
 | repvgg_a0        | 91.18 (8.82)     | 24.74M  |       | bilinear      | 224        |
 | repvgg_b0        | 89.61 (9.39)     | 31.85M  |       | bilinear      | 224        |
 | res2net50_26w_4s | 89.58 (99.26)    | 23.67M  | 4.28G | bilinear      | 224        |
-| darnet24         | 91.57 (8.43)    | 22.40M  | 4.21G | bilinear      | 224        |
+| darnet24         | 91.57 (8.43)     | 22.40M  | 4.21G | bilinear      | 224        |
 | resnet50         | 84.36 (15.64)    | 23.53M  | 4.11G | bilinear      | 224        |
