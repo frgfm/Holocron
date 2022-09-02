@@ -12,8 +12,39 @@ from . import functional as F
 
 
 class AdamP(Adam):
-    """Implements the AdamP optimizer from `"AdamP: Slowing Down the Slowdown for Momentum Optimizers on
+    r"""Implements the AdamP optimizer from `"AdamP: Slowing Down the Slowdown for Momentum Optimizers on
     Scale-invariant Weights" <https://arxiv.org/pdf/2006.08217.pdf>`_.
+
+    The estimation of momentums is described as follows, :math:`\forall t \geq 1`:
+
+    .. math::
+        m_t \leftarrow \beta_1 m_{t-1} + (1 - \beta_1) g_t \\
+        v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
+
+    where :math:`g_t` is the gradient of :math:`\theta_t`,
+    :math:`\beta_1, \beta_2 \in [0, 1]^3` are the exponential average smoothing coefficients,
+    :math:`m_0 = g_0,\ v_0 = 0`.
+
+    Then we correct their biases using:
+
+    .. math::
+        \hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\
+        \hat{v_t} \leftarrow \frac{v_t}{1 - \beta_2^t}
+
+    And finally the update step is performed using the following rule:
+
+    .. math::
+        p_t \leftarrow \frac{\hat{m_t}}{\sqrt{\hat{n_t} + \epsilon}} \\
+        q_t \leftarrow \begin{cases}
+          \prod_{\theta_t}(p_t) & if\ cos(\theta_t, g_t) < \delta / \sqrt{dim(\theta)}\\
+          p_t & \text{otherwise}\\
+        \end{cases} \\
+        \theta_t \leftarrow \theta_{t-1} - \alpha q_t
+
+    where :math:`\theta_t` is the parameter value at step :math:`t` (:math:`\theta_0` being the initialization value),
+    :math:`\prod_{\theta_t}(p_t)` is the projection of :math:`p_t` onto the tangent space of :math:`\theta_t`,
+    :math:`cos(\theta_t, g_t)` is the cosine similarity between :math:`\theta_t` and :math:`g_t`,
+    :math:`\alpha` is the learning rate, :math:`\delta > 0`, :math:`\epsilon > 0`.
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
