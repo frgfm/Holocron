@@ -62,3 +62,7 @@ def test_adabelief():
 
 def test_adamp():
     _test_optimizer("AdamP")
+
+
+def test_adan():
+    _test_optimizer("Adan")
