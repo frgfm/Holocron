@@ -41,11 +41,11 @@ def _test_optimizer(name: str, **kwargs: Any) -> None:
 
 
 def test_lars():
-    _test_optimizer("Lars", momentum=0.9, weight_decay=2e-5)
+    _test_optimizer("LARS", momentum=0.9, weight_decay=2e-5)
 
 
 def test_lamb():
-    _test_optimizer("Lamb", weight_decay=2e-5)
+    _test_optimizer("LAMB", weight_decay=2e-5)
 
 
 def test_ralars():

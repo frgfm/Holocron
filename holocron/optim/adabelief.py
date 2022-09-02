@@ -12,8 +12,32 @@ from . import functional as F
 
 
 class AdaBelief(Adam):
-    """Implements the AdaBelief optimizer from `"AdaBelief Optimizer: Adapting Stepsizes by the Belief in
+    r"""Implements the AdaBelief optimizer from `"AdaBelief Optimizer: Adapting Stepsizes by the Belief in
     Observed Gradients" <https://arxiv.org/pdf/2010.07468.pdf>`_.
+
+    The estimation of momentums is described as follows, :math:`\forall t \geq 1`:
+
+    .. math::
+        m_t \leftarrow \beta_1 m_{t-1} + (1 - \beta_1) g_t \\
+        s_t \leftarrow \beta_2 s_{t-1} + (1 - \beta_2) (g_t - m_t)^2 + \epsilon
+
+    where :math:`g_t` is the gradient of :math:`\theta_t`,
+    :math:`\beta_1, \beta_2 \in [0, 1]^3` are the exponential average smoothing coefficients,
+    :math:`m_0 = 0,\ s_0 = 0`, :math:`\epsilon > 0`.
+
+    Then we correct their biases using:
+
+    .. math::
+        \hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\
+        \hat{s_t} \leftarrow \frac{s_t}{1 - \beta_2^t}
+
+    And finally the update step is performed using the following rule:
+
+    .. math::
+        \theta_t \leftarrow \theta_{t-1} - \alpha \frac{\hat{m_t}}{\sqrt{\hat{s_t}} + \epsilon}
+
+    where :math:`\theta_t` is the parameter value at step :math:`t` (:math:`\theta_0` being the initialization value),
+    :math:`\alpha` is the learning rate, :math:`\epsilon > 0`.
 
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
