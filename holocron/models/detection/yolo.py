@@ -96,7 +96,6 @@ class _YOLO(nn.Module):
             gt_idcs = gt_centers.to(dtype=torch.long)
 
             # Assign GT to anchors
-            gt_assignments = []
             for _idx in range(gt_boxes[idx].shape[0]):
                 # Assign the anchor inside the cell
                 _iou = box_iou(gt_boxes[idx][_idx].unsqueeze(0), pred_xyxy[idx, gt_idcs[_idx, 1], gt_idcs[_idx, 0]])
@@ -173,7 +172,9 @@ class _YOLO(nn.Module):
 
         # Convert box coords
         pred_xyxy = self.to_isoboxes(
-            b_coords.reshape(-1, *grid_shape, self.num_anchors, 4), grid_shape, clamp=True
+            b_coords.reshape(-1, *grid_shape, self.num_anchors, 4),  # type: ignore[call-overload]
+            grid_shape,
+            clamp=True,
         ).reshape(b_o.shape[0], -1, 4)
 
         detections = []

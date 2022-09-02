@@ -235,7 +235,14 @@ class YOLOv2(_YOLO):
         b_scores = b_scores.reshape(b_scores.shape[0], -1, self.num_classes)
 
         # Stack detections into a list
-        return self.post_process(b_coords, b_o, b_scores, out.shape[-2:], self.rpn_nms_thresh, self.box_score_thresh)
+        return self.post_process(
+            b_coords,
+            b_o,
+            b_scores,
+            out.shape[-2:],  # type: ignore[arg-type]
+            self.rpn_nms_thresh,
+            self.box_score_thresh,
+        )
 
 
 def _yolo(
