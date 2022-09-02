@@ -412,7 +412,8 @@ class Trainer:
         lr: float = 3e-4,
         norm_weight_decay: Optional[float] = None,
         num_it: int = 100,
-    ) -> bool:
+        **kwargs: Any,
+    ) -> None:
         """Check whether you can overfit one batch
 
         Args:
@@ -445,4 +446,8 @@ class Trainer:
 
             _losses.append(batch_loss.item())
 
-        return _losses[-1] < _losses[0]
+        plt.plot(np.arange(len(_losses)), _losses)
+        plt.xlabel("Optimization steps")
+        plt.ylabel("Training loss")
+        plt.grid(True, linestyle="--", axis="x")
+        plt.show(**kwargs)

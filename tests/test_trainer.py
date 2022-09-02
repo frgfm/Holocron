@@ -90,7 +90,7 @@ def _test_trainer(
     checkpoint = torch.load(learner.output_file, map_location="cpu")
     model_w = learner.model.state_dict()[ref_param].clone()
     # Check setup
-    assert learner.check_setup(freeze_until, num_it=num_it)
+    learner.check_setup(freeze_until, num_it=num_it, block=False)
 
     # LR Find
     learner.load(checkpoint)
