@@ -72,18 +72,23 @@ def collate_fn(batch):
     return imgs, target
 
 
-def plot_samples(images, targets):
+def plot_samples(images, targets, num_samples=8):
     # Unnormalize image
-    nb_samples = 4
-    _, axes = plt.subplots(1, nb_samples, figsize=(20, 5))
+    nb_samples = min(num_samples, len(images))
+    num_cols = min(nb_samples, 4)
+    num_rows = int(math.ceil(nb_samples / num_cols))
+    _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
         img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
         img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
         img = to_pil_image(img)
 
-        axes[idx].imshow(img)
-        axes[idx].axis("off")
+        _row = int(idx / num_cols)
+        _col = idx - _row * num_cols
+
+        axes[_row][_col].imshow(img)
+        axes[_row][_col].axis("off")
         for box, label in zip(targets[idx]["boxes"], targets[idx]["labels"]):
             xmin = int(box[0] * images[idx].shape[-1])
             ymin = int(box[1] * images[idx].shape[-2])
@@ -91,8 +96,8 @@ def plot_samples(images, targets):
             ymax = int(box[3] * images[idx].shape[-2])
 
             rect = Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor="lime", facecolor="none")
-            axes[idx].add_patch(rect)
-            axes[idx].text(xmin, ymin, VOC_CLASSES[label.item()], color="lime", fontsize=12)
+            axes[_row][_col].add_patch(rect)
+            axes[_row][_col].text(xmin, ymin, VOC_CLASSES[label.item()], color="lime", fontsize=12)
 
     plt.show()
 
