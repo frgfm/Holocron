@@ -68,14 +68,14 @@ class LARS(Optimizer):
         defaults = dict(lr=lr, momentum=momentum, dampening=dampening, weight_decay=weight_decay, nesterov=nesterov)
         if nesterov and (momentum <= 0 or dampening != 0):
             raise ValueError("Nesterov momentum requires a momentum and zero dampening")
-        super(Lars, self).__init__(params, defaults)
+        super().__init__(params, defaults)
         # LARS arguments
         self.scale_clip = scale_clip
         if self.scale_clip is None:
             self.scale_clip = (0.0, 10.0)
 
     def __setstate__(self, state: Dict[str, torch.Tensor]):
-        super(Lars, self).__setstate__(state)
+        super().__setstate__(state)
         for group in self.param_groups:
             group.setdefault("nesterov", False)
 

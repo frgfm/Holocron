@@ -18,7 +18,8 @@ class TAdam(Optimizer):
     The estimation of momentums is described as follows, :math:`\forall t \geq 1`:
 
     .. math::
-        w_t \leftarrow (\nu + d) \Big(\nu + \sum\limits_{j} \frac{(g_t^j - m_{t-1}^j)^2}{v_{t-1} + \epsilon} \Big)^{-1} \\
+        w_t \leftarrow (\nu + d) \Big(\nu + \sum\limits_{j}
+        \frac{(g_t^j - m_{t-1}^j)^2}{v_{t-1} + \epsilon} \Big)^{-1} \\
         m_t \leftarrow \frac{W_{t-1}}{W_{t-1} + w_t} m_{t-1} + \frac{w_t}{W_{t-1} + w_t} g_t \\
         v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) (g_t - g_{t-1})
 

@@ -33,7 +33,8 @@ class LAMB(Optimizer):
 
     .. math::
         r_t \leftarrow \frac{\hat{m_t}}{\sqrt{\hat{v_t}} + \epsilon} \\
-        \theta_t \leftarrow \theta_{t-1} - \alpha \phi(\lVert \theta_t \rVert) \frac{r_t + \lambda \theta_t}{\lVert r_t + \theta_t \rVert}
+        \theta_t \leftarrow \theta_{t-1} - \alpha \phi(\lVert \theta_t \rVert)
+        \frac{r_t + \lambda \theta_t}{\lVert r_t + \theta_t \rVert}
 
     where :math:`\theta_t` is the parameter value at step :math:`t` (:math:`\theta_0` being the initialization value),
     :math:`\phi` is a clipping function,
@@ -66,7 +67,7 @@ class LAMB(Optimizer):
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError(f"Invalid beta parameter at index 1: {betas[1]}")
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
-        super(Lamb, self).__init__(params, defaults)
+        super().__init__(params, defaults)
         # LARS arguments
         self.scale_clip = scale_clip
         if self.scale_clip is None:
