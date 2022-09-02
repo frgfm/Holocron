@@ -28,16 +28,7 @@ import holocron
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 from holocron.utils.misc import find_image_size
-from transforms import (
-    CenterCrop,
-    Compose,
-    ImageTransform,
-    RandomHorizontalFlip,
-    RandomResizedCrop,
-    Resize,
-    VOCTargetTransform,
-    convert_to_relative,
-)
+from transforms import Compose, ImageTransform, RandomHorizontalFlip, Resize, VOCTargetTransform, convert_to_relative
 
 VOC_CLASSES = [
     "aeroplane",
@@ -72,18 +63,23 @@ def collate_fn(batch):
     return imgs, target
 
 
-def plot_samples(images, targets):
+def plot_samples(images, targets, num_samples=8):
     # Unnormalize image
-    nb_samples = 4
-    _, axes = plt.subplots(1, nb_samples, figsize=(20, 5))
+    nb_samples = min(num_samples, len(images))
+    num_cols = min(nb_samples, 4)
+    num_rows = int(math.ceil(nb_samples / num_cols))
+    _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
         img *= torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
         img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
         img = to_pil_image(img)
 
-        axes[idx].imshow(img)
-        axes[idx].axis("off")
+        _row = int(idx / num_cols)
+        _col = idx - _row * num_cols
+
+        axes[_row][_col].imshow(img)
+        axes[_row][_col].axis("off")
         for box, label in zip(targets[idx]["boxes"], targets[idx]["labels"]):
             xmin = int(box[0] * images[idx].shape[-1])
             ymin = int(box[1] * images[idx].shape[-2])
@@ -91,8 +87,8 @@ def plot_samples(images, targets):
             ymax = int(box[3] * images[idx].shape[-2])
 
             rect = Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor="lime", facecolor="none")
-            axes[idx].add_patch(rect)
-            axes[idx].text(xmin, ymin, VOC_CLASSES[label.item()], color="lime", fontsize=12)
+            axes[_row][_col].add_patch(rect)
+            axes[_row][_col].text(xmin, ymin, VOC_CLASSES[label.item()], color="lime", fontsize=12)
 
     plt.show()
 
@@ -105,8 +101,6 @@ def main(args):
 
     # Data loading
     normalize = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    crop_pct = 0.875
-    scale_size = int(math.floor(args.img_size / crop_pct))
 
     train_loader, val_loader = None, None
 
@@ -121,9 +115,7 @@ def main(args):
             transforms=Compose(
                 [
                     VOCTargetTransform(VOC_CLASSES),
-                    RandomResizedCrop(
-                        (args.img_size, args.img_size), scale=(0.3, 1.0), interpolation=interpolation_mode
-                    ),
+                    Resize((args.img_size, args.img_size), interpolation=interpolation_mode),
                     RandomHorizontalFlip(),
                     convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
                     ImageTransform(T.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.1, hue=0.02)),
@@ -170,8 +162,7 @@ def main(args):
             transforms=Compose(
                 [
                     VOCTargetTransform(VOC_CLASSES),
-                    Resize(scale_size, interpolation=interpolation_mode),
-                    CenterCrop(args.img_size),
+                    Resize((args.img_size, args.img_size), interpolation=interpolation_mode),
                     convert_to_relative if args.source == "holocron" else lambda x, y: (x, y),
                     ImageTransform(T.PILToTensor()),
                     ImageTransform(T.ConvertImageDtype(torch.float32)),
@@ -243,16 +234,15 @@ def main(args):
 
     if args.find_lr:
         print("Looking for optimal LR")
-        trainer.find_lr(args.freeze_until, norm_weight_decay=args.norm_weight_decay, num_it=min(len(train_loader), 100))
+        trainer.find_lr(args.freeze_until, norm_weight_decay=args.norm_wd, num_it=min(len(train_loader), 100))
         trainer.plot_recorder()
         return
 
     if args.check_setup:
         print("Checking batch overfitting")
-        is_ok = trainer.check_setup(
-            args.freeze_until, args.lr, norm_weight_decay=args.norm_weight_decay, num_it=min(len(train_loader), 100)
+        trainer.check_setup(
+            args.freeze_until, args.lr, norm_weight_decay=args.norm_wd, num_it=min(len(train_loader), 100)
         )
-        print(is_ok)
         return
 
     # Training monitoring
@@ -281,7 +271,7 @@ def main(args):
 
     print("Start training")
     start_time = time.time()
-    trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched, norm_weight_decay=args.norm_weight_decay)
+    trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched, norm_weight_decay=args.norm_wd)
     total_time_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     print(f"Training time {total_time_str}")
 

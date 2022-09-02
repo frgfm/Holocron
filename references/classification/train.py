@@ -237,10 +237,9 @@ def main(args):
 
     if args.check_setup:
         print("Checking batch overfitting")
-        is_ok = trainer.check_setup(
+        trainer.check_setup(
             args.freeze_until, args.lr, norm_weight_decay=args.norm_wd, num_it=min(len(train_loader), 100)
         )
-        print(is_ok)
         return
 
     # Training monitoring
