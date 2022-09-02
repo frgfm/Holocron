@@ -60,7 +60,7 @@ class Adan(Adam):
         weight_decay: float = 0.0,
         amsgrad: bool = False,
     ) -> None:
-        super().__init__(params, lr, betas, eps, weight_decay, amsgrad)
+        super().__init__(params, lr, betas, eps, weight_decay, amsgrad)  # type: ignore[arg-type]
 
     @torch.no_grad()
     def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
