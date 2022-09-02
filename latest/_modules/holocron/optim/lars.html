@@ -229,9 +229,33 @@
 <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span>
 
 
-<div class="viewcode-block" id="Lars"><a class="viewcode-back" href="../../../optim.html#holocron.optim.Lars">[docs]</a><span class="k">class</span> <span class="nc">Lars</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
+<div class="viewcode-block" id="LARS"><a class="viewcode-back" href="../../../optim.html#holocron.optim.LARS">[docs]</a><span class="k">class</span> <span class="nc">LARS</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the LARS optimizer from `&quot;Large batch training of convolutional networks&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1708.03888.pdf&gt;`_.</span>
+
+<span class="sd">    The estimation of global and local learning rates is described as follows, :math:`\forall t \geq 1`:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \alpha_t \leftarrow \alpha (1 - t / T)^2 \\</span>
+<span class="sd">        \gamma_t \leftarrow \frac{\lVert \theta_t \rVert}{\lVert g_t \rVert  + \lambda \lVert \theta_t \rVert}</span>
+
+<span class="sd">    where :math:`\theta_t` is the parameter value at step :math:`t` (:math:`\theta_0` being the initialization value),</span>
+<span class="sd">    :math:`g_t` is the gradient of :math:`\theta_t`,</span>
+<span class="sd">    :math:`T` is the total number of steps,</span>
+<span class="sd">    :math:`\alpha` is the learning rate</span>
+<span class="sd">    :math:`\lambda \geq 0` is the weight decay.</span>
+
+<span class="sd">    Then we estimate the momentum using:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        v_t \leftarrow m v_{t-1} + \alpha_t \gamma_t (g_t + \lambda \theta_t)</span>
+
+<span class="sd">    where :math:`m` is the momentum and :math:`v_0 = 0`.</span>
+
+<span class="sd">    And finally the update step is performed using the following rule:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \theta_t \leftarrow \theta_{t-1} - v_t</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        params (iterable): iterable of parameters to optimize or dicts defining</span>
@@ -264,14 +288,14 @@
         <span class="n">defaults</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="n">momentum</span><span class="p">,</span> <span class="n">dampening</span><span class="o">=</span><span class="n">dampening</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="n">weight_decay</span><span class="p">,</span> <span class="n">nesterov</span><span class="o">=</span><span class="n">nesterov</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">nesterov</span> <span class="ow">and</span> <span class="p">(</span><span class="n">momentum</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">dampening</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Nesterov momentum requires a momentum and zero dampening&quot;</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Lars</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span>
         <span class="c1"># LARS arguments</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_clip</span> <span class="o">=</span> <span class="n">scale_clip</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_clip</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">scale_clip</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Lars</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
             <span class="n">group</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;nesterov&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 

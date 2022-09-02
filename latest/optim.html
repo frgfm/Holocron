@@ -235,27 +235,31 @@ the current state and will update the parameters based on the computed gradients
 <h2>Optimizers<a class="headerlink" href="#optimizers" title="Permalink to this heading">#</a></h2>
 <p>Implementations of recent parameter optimizer for Pytorch modules.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="holocron.optim.Lamb">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">Lamb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lamb.html#Lamb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.Lamb" title="Permalink to this definition">#</a></dt>
-<dd><p>Implements the Lamb optimizer from <a class="reference external" href="https://arxiv.org/pdf/1904.00962v3.pdf">“Large batch optimization for deep learning: training BERT in 76 minutes”</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
-<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
-<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – beta coefficients used for running averages (default: (0.9, 0.999))</p></li>
-<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
-<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
-<li><p><strong>scale_clip</strong> (<em>tuple</em><em>, </em><em>optional</em>) – the lower and upper bounds for the weight norm in local LR of LARS</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="holocron.optim.Lars">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">Lars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dampening</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nesterov</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lars.html#Lars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.Lars" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="holocron.optim.LARS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">LARS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dampening</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nesterov</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lars.html#LARS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.LARS" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the LARS optimizer from <a class="reference external" href="https://arxiv.org/pdf/1708.03888.pdf">“Large batch training of convolutional networks”</a>.</p>
+<p>The estimation of global and local learning rates is described as follows, <span class="math notranslate nohighlight">\(\forall t \geq 1\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\alpha_t \leftarrow \alpha (1 - t / T)^2 \\
+\gamma_t \leftarrow \frac{\lVert \theta_t \rVert}{\lVert g_t \rVert  + \lambda \lVert \theta_t \rVert}\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\theta_t\)</span> is the parameter value at step <span class="math notranslate nohighlight">\(t\)</span> (<span class="math notranslate nohighlight">\(\theta_0\)</span> being the initialization value),
+<span class="math notranslate nohighlight">\(g_t\)</span> is the gradient of <span class="math notranslate nohighlight">\(\theta_t\)</span>,
+<span class="math notranslate nohighlight">\(T\)</span> is the total number of steps,
+<span class="math notranslate nohighlight">\(\alpha\)</span> is the learning rate
+<span class="math notranslate nohighlight">\(\lambda \geq 0\)</span> is the weight decay.</p>
+<p>Then we estimate the momentum using:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[v_t \leftarrow m v_{t-1} + \alpha_t \gamma_t (g_t + \lambda \theta_t)\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(m\)</span> is the momentum and <span class="math notranslate nohighlight">\(v_0 = 0\)</span>.</p>
+<p>And finally the update step is performed using the following rule:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\theta_t \leftarrow \theta_{t-1} - v_t\]</div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -266,6 +270,49 @@ parameter groups</p></li>
 <li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
 <li><p><strong>dampening</strong> (<em>float</em><em>, </em><em>optional</em>) – dampening for momentum (default: 0)</p></li>
 <li><p><strong>nesterov</strong> (<em>bool</em><em>, </em><em>optional</em>) – enables Nesterov momentum (default: False)</p></li>
+<li><p><strong>scale_clip</strong> (<em>tuple</em><em>, </em><em>optional</em>) – the lower and upper bounds for the weight norm in local LR of LARS</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="holocron.optim.LAMB">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">LAMB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/lamb.html#LAMB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.LAMB" title="Permalink to this definition">#</a></dt>
+<dd><p>Implements the Lamb optimizer from <a class="reference external" href="https://arxiv.org/pdf/1904.00962v3.pdf">“Large batch optimization for deep learning: training BERT in 76 minutes”</a>.</p>
+<p>The estimation of momentums is described as follows, <span class="math notranslate nohighlight">\(\forall t \geq 1\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}m_t \leftarrow \beta_1 m_{t-1} + (1 - \beta_1) g_t \\
+v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) g_t^2\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(g_t\)</span> is the gradient of <span class="math notranslate nohighlight">\(\theta_t\)</span>,
+<span class="math notranslate nohighlight">\(\beta_1, \beta_2 \in [0, 1]^3\)</span> are the exponential average smoothing coefficients,
+<span class="math notranslate nohighlight">\(m_0 = 0,\ v_0 = 0\)</span>.</p>
+<p>Then we correct their biases using:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\
+\hat{v_t} \leftarrow \frac{v_t}{1 - \beta_2^t}\end{split}\]</div>
+</div>
+<p>And finally the update step is performed using the following rule:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}r_t \leftarrow \frac{\hat{m_t}}{\sqrt{\hat{v_t}} + \epsilon} \\
+\theta_t \leftarrow \theta_{t-1} - \alpha \phi(\lVert \theta_t \rVert)
+\frac{r_t + \lambda \theta_t}{\lVert r_t + \theta_t \rVert}\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\theta_t\)</span> is the parameter value at step <span class="math notranslate nohighlight">\(t\)</span> (<span class="math notranslate nohighlight">\(\theta_0\)</span> being the initialization value),
+<span class="math notranslate nohighlight">\(\phi\)</span> is a clipping function,
+<span class="math notranslate nohighlight">\(\alpha\)</span> is the learning rate, <span class="math notranslate nohighlight">\(\lambda \geq 0\)</span> is the weight decay, <span class="math notranslate nohighlight">\(\epsilon &gt; 0\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<em>iterable</em>) – iterable of parameters to optimize or dicts defining parameter groups</p></li>
+<li><p><strong>lr</strong> (<em>float</em><em>, </em><em>optional</em>) – learning rate</p></li>
+<li><p><strong>betas</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – beta coefficients used for running averages (default: (0.9, 0.999))</p></li>
+<li><p><strong>eps</strong> (<em>float</em><em>, </em><em>optional</em>) – term added to the denominator to improve numerical stability (default: 1e-8)</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em><em>, </em><em>optional</em>) – weight decay (L2 penalty) (default: 0)</p></li>
 <li><p><strong>scale_clip</strong> (<em>tuple</em><em>, </em><em>optional</em>) – the lower and upper bounds for the weight norm in local LR of LARS</p></li>
 </ul>
 </dd>
@@ -296,6 +343,31 @@ parameter groups</p></li>
 <dt class="sig sig-object py" id="holocron.optim.TAdam">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">TAdam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amsgrad</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dof</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/tadam.html#TAdam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.TAdam" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the TAdam optimizer from <a class="reference external" href="https://arxiv.org/pdf/2003.00179.pdf">“TAdam: A Robust Stochastic Gradient Optimizer”</a>.</p>
+<p>The estimation of momentums is described as follows, <span class="math notranslate nohighlight">\(\forall t \geq 1\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}w_t \leftarrow (\nu + d) \Big(\nu + \sum\limits_{j}
+\frac{(g_t^j - m_{t-1}^j)^2}{v_{t-1} + \epsilon} \Big)^{-1} \\
+m_t \leftarrow \frac{W_{t-1}}{W_{t-1} + w_t} m_{t-1} + \frac{w_t}{W_{t-1} + w_t} g_t \\
+v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) (g_t - g_{t-1})\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(g_t\)</span> is the gradient of <span class="math notranslate nohighlight">\(\theta_t\)</span>,
+<span class="math notranslate nohighlight">\(\beta_1, \beta_2 \in [0, 1]^3\)</span> are the exponential average smoothing coefficients,
+<span class="math notranslate nohighlight">\(m_0 = 0,\ v_0 = 0,\ W_0 = \frac{\beta_1}{1 - \beta_1}\)</span>;
+<span class="math notranslate nohighlight">\(\nu\)</span> is the degrees of freedom and <span class="math notranslate nohighlight">\(d\)</span> if the number of dimensions of the parameter gradient.</p>
+<p>Then we correct their biases using:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\
+\hat{v_t} \leftarrow \frac{v_t}{1 - \beta_2^t}\end{split}\]</div>
+</div>
+<p>And finally the update step is performed using the following rule:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\theta_t \leftarrow \theta_{t-1} - \alpha \frac{\hat{m_t}}{\sqrt{\hat{v_t}} + \epsilon}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\theta_t\)</span> is the parameter value at step <span class="math notranslate nohighlight">\(t\)</span> (<span class="math notranslate nohighlight">\(\theta_0\)</span> being the initialization value),
+<span class="math notranslate nohighlight">\(\alpha\)</span> is the learning rate, <span class="math notranslate nohighlight">\(\epsilon &gt; 0\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -315,6 +387,28 @@ parameter groups</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">AdaBelief</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amsgrad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">foreach</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capturable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/adabelief.html#AdaBelief"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.AdaBelief" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the AdaBelief optimizer from <a class="reference external" href="https://arxiv.org/pdf/2010.07468.pdf">“AdaBelief Optimizer: Adapting Stepsizes by the Belief in
 Observed Gradients”</a>.</p>
+<p>The estimation of momentums is described as follows, <span class="math notranslate nohighlight">\(\forall t \geq 1\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}m_t \leftarrow \beta_1 m_{t-1} + (1 - \beta_1) g_t \\
+s_t \leftarrow \beta_2 s_{t-1} + (1 - \beta_2) (g_t - m_t)^2 + \epsilon\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(g_t\)</span> is the gradient of <span class="math notranslate nohighlight">\(\theta_t\)</span>,
+<span class="math notranslate nohighlight">\(\beta_1, \beta_2 \in [0, 1]^3\)</span> are the exponential average smoothing coefficients,
+<span class="math notranslate nohighlight">\(m_0 = 0,\ s_0 = 0\)</span>, <span class="math notranslate nohighlight">\(\epsilon &gt; 0\)</span>.</p>
+<p>Then we correct their biases using:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\
+\hat{s_t} \leftarrow \frac{s_t}{1 - \beta_2^t}\end{split}\]</div>
+</div>
+<p>And finally the update step is performed using the following rule:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\theta_t \leftarrow \theta_{t-1} - \alpha \frac{\hat{m_t}}{\sqrt{\hat{s_t}} + \epsilon}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\theta_t\)</span> is the parameter value at step <span class="math notranslate nohighlight">\(t\)</span> (<span class="math notranslate nohighlight">\(\theta_0\)</span> being the initialization value),
+<span class="math notranslate nohighlight">\(\alpha\)</span> is the learning rate, <span class="math notranslate nohighlight">\(\epsilon &gt; 0\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -334,6 +428,35 @@ Observed Gradients”</a>.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.optim.</span></span><span class="sig-name descname"><span class="pre">AdamP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.9,</span> <span class="pre">0.999)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amsgrad</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/optim/adamp.html#AdamP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.optim.AdamP" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the AdamP optimizer from <a class="reference external" href="https://arxiv.org/pdf/2006.08217.pdf">“AdamP: Slowing Down the Slowdown for Momentum Optimizers on
 Scale-invariant Weights”</a>.</p>
+<p>The estimation of momentums is described as follows, <span class="math notranslate nohighlight">\(\forall t \geq 1\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}m_t \leftarrow \beta_1 m_{t-1} + (1 - \beta_1) g_t \\
+v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) g_t^2\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(g_t\)</span> is the gradient of <span class="math notranslate nohighlight">\(\theta_t\)</span>,
+<span class="math notranslate nohighlight">\(\beta_1, \beta_2 \in [0, 1]^3\)</span> are the exponential average smoothing coefficients,
+<span class="math notranslate nohighlight">\(m_0 = g_0,\ v_0 = 0\)</span>.</p>
+<p>Then we correct their biases using:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}\hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\
+\hat{v_t} \leftarrow \frac{v_t}{1 - \beta_2^t}\end{split}\]</div>
+</div>
+<p>And finally the update step is performed using the following rule:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}p_t \leftarrow \frac{\hat{m_t}}{\sqrt{\hat{n_t} + \epsilon}} \\
+q_t \leftarrow \begin{cases}
+  \prod_{\theta_t}(p_t) &amp; if\ cos(\theta_t, g_t) &lt; \delta / \sqrt{dim(\theta)}\\
+  p_t &amp; \text{otherwise}\\
+\end{cases} \\
+\theta_t \leftarrow \theta_{t-1} - \alpha q_t\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\theta_t\)</span> is the parameter value at step <span class="math notranslate nohighlight">\(t\)</span> (<span class="math notranslate nohighlight">\(\theta_0\)</span> being the initialization value),
+<span class="math notranslate nohighlight">\(\prod_{\theta_t}(p_t)\)</span> is the projection of <span class="math notranslate nohighlight">\(p_t\)</span> onto the tangent space of <span class="math notranslate nohighlight">\(\theta_t\)</span>,
+<span class="math notranslate nohighlight">\(cos(\theta_t, g_t)\)</span> is the cosine similarity between <span class="math notranslate nohighlight">\(\theta_t\)</span> and <span class="math notranslate nohighlight">\(g_t\)</span>,
+<span class="math notranslate nohighlight">\(\alpha\)</span> is the learning rate, <span class="math notranslate nohighlight">\(\delta &gt; 0\)</span>, <span class="math notranslate nohighlight">\(\epsilon &gt; 0\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

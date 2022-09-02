@@ -13,9 +13,9 @@ Optimizers
 
 Implementations of recent parameter optimizer for Pytorch modules.
 
-.. autoclass:: Lamb
+.. autoclass:: LARS
 
-.. autoclass:: Lars
+.. autoclass:: LAMB
 
 .. autoclass:: RaLars
 

@@ -232,8 +232,39 @@
 
 
 <div class="viewcode-block" id="AdamP"><a class="viewcode-back" href="../../../optim.html#holocron.optim.AdamP">[docs]</a><span class="k">class</span> <span class="nc">AdamP</span><span class="p">(</span><span class="n">Adam</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the AdamP optimizer from `&quot;AdamP: Slowing Down the Slowdown for Momentum Optimizers on</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements the AdamP optimizer from `&quot;AdamP: Slowing Down the Slowdown for Momentum Optimizers on</span>
 <span class="sd">    Scale-invariant Weights&quot; &lt;https://arxiv.org/pdf/2006.08217.pdf&gt;`_.</span>
+
+<span class="sd">    The estimation of momentums is described as follows, :math:`\forall t \geq 1`:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        m_t \leftarrow \beta_1 m_{t-1} + (1 - \beta_1) g_t \\</span>
+<span class="sd">        v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) g_t^2</span>
+
+<span class="sd">    where :math:`g_t` is the gradient of :math:`\theta_t`,</span>
+<span class="sd">    :math:`\beta_1, \beta_2 \in [0, 1]^3` are the exponential average smoothing coefficients,</span>
+<span class="sd">    :math:`m_0 = g_0,\ v_0 = 0`.</span>
+
+<span class="sd">    Then we correct their biases using:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \hat{m_t} \leftarrow \frac{m_t}{1 - \beta_1^t} \\</span>
+<span class="sd">        \hat{v_t} \leftarrow \frac{v_t}{1 - \beta_2^t}</span>
+
+<span class="sd">    And finally the update step is performed using the following rule:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        p_t \leftarrow \frac{\hat{m_t}}{\sqrt{\hat{n_t} + \epsilon}} \\</span>
+<span class="sd">        q_t \leftarrow \begin{cases}</span>
+<span class="sd">          \prod_{\theta_t}(p_t) &amp; if\ cos(\theta_t, g_t) &lt; \delta / \sqrt{dim(\theta)}\\</span>
+<span class="sd">          p_t &amp; \text{otherwise}\\</span>
+<span class="sd">        \end{cases} \\</span>
+<span class="sd">        \theta_t \leftarrow \theta_{t-1} - \alpha q_t</span>
+
+<span class="sd">    where :math:`\theta_t` is the parameter value at step :math:`t` (:math:`\theta_0` being the initialization value),</span>
+<span class="sd">    :math:`\prod_{\theta_t}(p_t)` is the projection of :math:`p_t` onto the tangent space of :math:`\theta_t`,</span>
+<span class="sd">    :math:`cos(\theta_t, g_t)` is the cosine similarity between :math:`\theta_t` and :math:`g_t`,</span>
+<span class="sd">    :math:`\alpha` is the learning rate, :math:`\delta &gt; 0`, :math:`\epsilon &gt; 0`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        params (iterable): iterable of parameters to optimize or dicts defining parameter groups</span>
