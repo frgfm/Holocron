@@ -13,6 +13,30 @@ class LARS(Optimizer):
     r"""Implements the LARS optimizer from `"Large batch training of convolutional networks"
     <https://arxiv.org/pdf/1708.03888.pdf>`_.
 
+    The estimation of global and local learning rates is described as follows, :math:`\forall t \geq 1`:
+
+    .. math::
+        \alpha_t \leftarrow \alpha (1 - t / T)^2 \\
+        \gamma_t \leftarrow \frac{\lVert \theta_t \rVert}{\lVert g_t \rVert  + \lambda \lVert \theta_t \rVert}
+
+    where :math:`\theta_t` is the parameter value at step :math:`t` (:math:`\theta_0` being the initialization value),
+    :math:`g_t` is the gradient of :math:`\theta_t`,
+    :math:`T` is the total number of steps,
+    :math:`\alpha` is the learning rate
+    :math:`\lambda \geq 0` is the weight decay.
+
+    Then we estimate the momentum using:
+
+    .. math::
+        v_t \leftarrow m v_{t-1} + \alpha_t \gamma_t (g_t + \lambda \theta_t)
+
+    where :math:`m` is the momentum and :math:`v_0 = 0`.
+
+    And finally the update step is performed using the following rule:
+
+    .. math::
+        \theta_t \leftarrow \theta_{t-1} - v_t
+
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining
             parameter groups
