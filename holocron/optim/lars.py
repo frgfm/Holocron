@@ -9,7 +9,7 @@ import torch
 from torch.optim.optimizer import Optimizer
 
 
-class Lars(Optimizer):
+class LARS(Optimizer):
     r"""Implements the LARS optimizer from `"Large batch training of convolutional networks"
     <https://arxiv.org/pdf/1708.03888.pdf>`_.
 

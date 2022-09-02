@@ -9,7 +9,7 @@ import torch
 from torch.optim.optimizer import Optimizer
 
 
-class Lamb(Optimizer):
+class LAMB(Optimizer):
     """Implements the Lamb optimizer from `"Large batch optimization for deep learning: training BERT in 76 minutes"
     <https://arxiv.org/pdf/1904.00962v3.pdf>`_.
 
