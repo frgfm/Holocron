@@ -154,7 +154,9 @@ class ClassificationTrainer(Trainer):
                 axes[_row][_col].title.set_text(f"{loss:.3} / {prob:.2} / {target:.2}")
             # Loss, pred (prob), target
             else:
-                axes[_row][_col].title.set_text(f"{loss:.3} / {classes[pred]} ({prob:.1%}) / {classes[target]}")
+                axes[_row][_col].title.set_text(
+                    f"{loss:.3} / {classes[pred]} ({prob:.1%}) / {classes[target]}"  # type: ignore[index]
+                )
             axes[_row][_col].axis("off")
             idx += 1
 
