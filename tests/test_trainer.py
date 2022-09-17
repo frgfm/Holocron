@@ -225,10 +225,13 @@ def test_binary_classification_trainer():
     optimizer = torch.optim.Adam(model.parameters())
     criterion = nn.BCEWithLogitsLoss()
 
-    learner = trainer.BinaryClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
+    learner = trainer.BinaryClassificationTrainer(model, train_loader, train_loader, criterion, optimizer, amp=True)
 
     res = learner.evaluate()
     assert 0 <= res["acc"] <= 1
+
+    # Top losses
+    learner.plot_top_losses((0, 0, 0), (1, 1, 1), block=False)
 
 
 def test_segmentation_trainer(tmpdir_factory):
