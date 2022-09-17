@@ -37,6 +37,8 @@ class ClassificationTrainer(Trainer):
         on_epoch_end: callback triggered at the end of an epoch
     """
 
+    is_binary: bool = False
+
     @torch.inference_mode()
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the model on the validation set
@@ -82,16 +84,16 @@ class ClassificationTrainer(Trainer):
         self,
         mean: Tuple[float, float, float],
         std: Tuple[float, float, float],
-        classes: Sequence[str],
+        classes: Union[Sequence[str], None] = None,
         num_samples: int = 12,
         **kwargs: Any,
     ) -> None:
 
-        # Record loss, pred, prob, target, image
+        # Record loss, prob, target, image
         losses = np.zeros(num_samples, dtype=np.float32)
         preds = np.zeros(num_samples, dtype=int)
         probs = np.zeros(num_samples, dtype=np.float32)
-        targets = np.zeros(num_samples, dtype=int)
+        targets = np.zeros(num_samples, dtype=np.float32 if self.is_binary else int)
         images = [None] * num_samples
 
         # Switch to unreduced loss
@@ -107,22 +109,31 @@ class ClassificationTrainer(Trainer):
             # Forward
             batch_loss, logits = self._get_loss(x, target, return_logits=True)
 
+            # Binary
+            if self.is_binary:
+                batch_loss = batch_loss.squeeze(1)
+                _probs = torch.sigmoid(logits.squeeze(1))
+            else:
+                _probs = torch.softmax(logits, 1).max(dim=1).values
+
             if torch.any(batch_loss > losses.min()):
                 idcs = np.concatenate((losses, batch_loss.cpu().numpy())).argsort()[-num_samples:]
                 kept_idcs = [idx for idx in idcs if idx < num_samples]
                 added_idcs = [idx - num_samples for idx in idcs if idx >= num_samples]
                 # Update
                 losses = np.concatenate((losses[kept_idcs], batch_loss.cpu().numpy()[added_idcs]))
-                preds = np.concatenate((preds[kept_idcs], logits[added_idcs].argmax(dim=1).cpu().numpy()))
-                probs = np.concatenate(
-                    (probs[kept_idcs], torch.softmax(logits[added_idcs], 1).max(dim=1).values.cpu().numpy())
-                )
+                probs = np.concatenate((probs[kept_idcs], _probs.cpu().numpy()))
+                if not self.is_binary:
+                    preds = np.concatenate((preds[kept_idcs], logits[added_idcs].argmax(dim=1).cpu().numpy()))
                 targets = np.concatenate((targets[kept_idcs], target[added_idcs].cpu().numpy()))
                 _imgs = x[added_idcs].cpu() * torch.tensor(std).view(-1, 1, 1)
                 _imgs += torch.tensor(mean).view(-1, 1, 1)
                 images = [images[idx] for idx in kept_idcs] + [to_pil_image(img) for img in _imgs]
 
         self.criterion.reduction = _reduction
+
+        if not self.is_binary and classes is None:
+            raise AssertionError("arg 'classes' must be specified for multi-class classification")
 
         # Final sort
         _idcs = losses.argsort()[::-1]
@@ -138,15 +149,19 @@ class ClassificationTrainer(Trainer):
             _row = int(idx / num_cols)
             _col = idx - num_cols * _row
             axes[_row][_col].imshow(img)
-            # Loss, pred, prob, target
-            axes[_row][_col].title.set_text(f"{loss:.3} / {classes[pred]} ({prob:.1%}) / {classes[target]}")
+            # Loss, prob, target
+            if self.is_binary:
+                axes[_row][_col].title.set_text(f"{loss:.3} / {prob:.2} / {target:.2}")
+            # Loss, pred (prob), target
+            else:
+                axes[_row][_col].title.set_text(f"{loss:.3} / {classes[pred]} ({prob:.1%}) / {classes[target]}")
             axes[_row][_col].axis("off")
             idx += 1
 
         plt.show(**kwargs)
 
 
-class BinaryClassificationTrainer(Trainer):
+class BinaryClassificationTrainer(ClassificationTrainer):
     """Image binary classification trainer class.
 
     Args:
@@ -159,6 +174,8 @@ class BinaryClassificationTrainer(Trainer):
         output_file (str, optional): path where checkpoints will be saved
         amp (bool, optional): whether to use automatic mixed precision
     """
+
+    is_binary: bool = True
 
     def _get_loss(
         self, x: torch.Tensor, target: torch.Tensor, return_logits: bool = False
