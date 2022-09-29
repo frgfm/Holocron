@@ -74,6 +74,12 @@ def test_repvgg_reparametrize():
         "sknet152",
         "repvgg_a0",
         "repvgg_b0",
+        "convnext_micro",
+        "convnext_tiny",
+        "convnext_small",
+        "convnext_base",
+        "convnext_large",
+        "convnext_xl",
     ],
 )
 def test_classification_model(arch):
