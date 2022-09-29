@@ -14,7 +14,7 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.nn" href="nn.html" /><link rel="prev" title="Installation" href="installing.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.1.1, furo 2022.09.15"/>
+    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>holocron.models - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
@@ -1100,21 +1100,70 @@ tensor of size (N x K x Ho x Wo).</p>
             <ul>
 <li><a class="reference internal" href="#">holocron.models</a><ul>
 <li><a class="reference internal" href="#classification">Classification</a><ul>
-<li><a class="reference internal" href="#resnet">ResNet</a></li>
-<li><a class="reference internal" href="#res2net">Res2Net</a></li>
-<li><a class="reference internal" href="#tridentnet">TridentNet</a></li>
-<li><a class="reference internal" href="#pyconvresnet">PyConvResNet</a></li>
-<li><a class="reference internal" href="#rexnet">ReXNet</a></li>
-<li><a class="reference internal" href="#sknet">SKNet</a></li>
-<li><a class="reference internal" href="#darknet">Darknet</a></li>
+<li><a class="reference internal" href="#resnet">ResNet</a><ul>
+<li><a class="reference internal" href="#holocron.models.resnet18"><code class="docutils literal notranslate"><span class="pre">resnet18()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.resnet34"><code class="docutils literal notranslate"><span class="pre">resnet34()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.resnet50"><code class="docutils literal notranslate"><span class="pre">resnet50()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.resnet101"><code class="docutils literal notranslate"><span class="pre">resnet101()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.resnet152"><code class="docutils literal notranslate"><span class="pre">resnet152()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.resnext50_32x4d"><code class="docutils literal notranslate"><span class="pre">resnext50_32x4d()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.resnext101_32x8d"><code class="docutils literal notranslate"><span class="pre">resnext101_32x8d()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.resnet50d"><code class="docutils literal notranslate"><span class="pre">resnet50d()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#res2net">Res2Net</a><ul>
+<li><a class="reference internal" href="#holocron.models.res2net50_26w_4s"><code class="docutils literal notranslate"><span class="pre">res2net50_26w_4s()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tridentnet">TridentNet</a><ul>
+<li><a class="reference internal" href="#holocron.models.tridentnet50"><code class="docutils literal notranslate"><span class="pre">tridentnet50()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pyconvresnet">PyConvResNet</a><ul>
+<li><a class="reference internal" href="#holocron.models.pyconv_resnet50"><code class="docutils literal notranslate"><span class="pre">pyconv_resnet50()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.pyconvhg_resnet50"><code class="docutils literal notranslate"><span class="pre">pyconvhg_resnet50()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rexnet">ReXNet</a><ul>
+<li><a class="reference internal" href="#holocron.models.rexnet1_0x"><code class="docutils literal notranslate"><span class="pre">rexnet1_0x()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.rexnet1_3x"><code class="docutils literal notranslate"><span class="pre">rexnet1_3x()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.rexnet1_5x"><code class="docutils literal notranslate"><span class="pre">rexnet1_5x()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.rexnet2_0x"><code class="docutils literal notranslate"><span class="pre">rexnet2_0x()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.rexnet2_2x"><code class="docutils literal notranslate"><span class="pre">rexnet2_2x()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sknet">SKNet</a><ul>
+<li><a class="reference internal" href="#holocron.models.sknet50"><code class="docutils literal notranslate"><span class="pre">sknet50()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.sknet152"><code class="docutils literal notranslate"><span class="pre">sknet152()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#darknet">Darknet</a><ul>
+<li><a class="reference internal" href="#holocron.models.darknet24"><code class="docutils literal notranslate"><span class="pre">darknet24()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.darknet19"><code class="docutils literal notranslate"><span class="pre">darknet19()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.darknet53"><code class="docutils literal notranslate"><span class="pre">darknet53()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.cspdarknet53"><code class="docutils literal notranslate"><span class="pre">cspdarknet53()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.cspdarknet53_mish"><code class="docutils literal notranslate"><span class="pre">cspdarknet53_mish()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#object-detection">Object Detection</a><ul>
-<li><a class="reference internal" href="#yolo">YOLO</a></li>
+<li><a class="reference internal" href="#yolo">YOLO</a><ul>
+<li><a class="reference internal" href="#holocron.models.yolov1"><code class="docutils literal notranslate"><span class="pre">yolov1()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.yolov2"><code class="docutils literal notranslate"><span class="pre">yolov2()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.yolov4"><code class="docutils literal notranslate"><span class="pre">yolov4()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#semantic-segmentation">Semantic Segmentation</a><ul>
-<li><a class="reference internal" href="#u-net">U-Net</a></li>
+<li><a class="reference internal" href="#u-net">U-Net</a><ul>
+<li><a class="reference internal" href="#holocron.models.unet"><code class="docutils literal notranslate"><span class="pre">unet()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.unetp"><code class="docutils literal notranslate"><span class="pre">unetp()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.unetpp"><code class="docutils literal notranslate"><span class="pre">unetpp()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.unet3p"><code class="docutils literal notranslate"><span class="pre">unet3p()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -1133,6 +1182,7 @@ tensor of size (N x K x Ho x Wo).</p>
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>

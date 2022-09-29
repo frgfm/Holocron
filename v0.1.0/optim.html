@@ -14,7 +14,7 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.utils" href="utils.html" /><link rel="prev" title="holocron.ops" href="ops.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.1.1, furo 2022.09.15"/>
+    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>holocron.optim - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
@@ -467,9 +467,22 @@ Default: -1</p></li>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">holocron.optim</a><ul>
-<li><a class="reference internal" href="#optimizers">Optimizers</a></li>
-<li><a class="reference internal" href="#optimizer-wrappers">Optimizer wrappers</a></li>
-<li><a class="reference internal" href="#learning-rate-schedulers">Learning rate schedulers</a></li>
+<li><a class="reference internal" href="#optimizers">Optimizers</a><ul>
+<li><a class="reference internal" href="#holocron.optim.Lamb"><code class="docutils literal notranslate"><span class="pre">Lamb</span></code></a></li>
+<li><a class="reference internal" href="#holocron.optim.Lars"><code class="docutils literal notranslate"><span class="pre">Lars</span></code></a></li>
+<li><a class="reference internal" href="#holocron.optim.RAdam"><code class="docutils literal notranslate"><span class="pre">RAdam</span></code></a></li>
+<li><a class="reference internal" href="#holocron.optim.RaLars"><code class="docutils literal notranslate"><span class="pre">RaLars</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#optimizer-wrappers">Optimizer wrappers</a><ul>
+<li><a class="reference internal" href="#holocron.optim.wrapper.Lookahead"><code class="docutils literal notranslate"><span class="pre">Lookahead</span></code></a></li>
+<li><a class="reference internal" href="#holocron.optim.wrapper.Scout"><code class="docutils literal notranslate"><span class="pre">Scout</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#learning-rate-schedulers">Learning rate schedulers</a><ul>
+<li><a class="reference internal" href="#holocron.optim.lr_scheduler.OneCycleScheduler"><code class="docutils literal notranslate"><span class="pre">OneCycleScheduler</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -486,6 +499,7 @@ Default: -1</p></li>
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>

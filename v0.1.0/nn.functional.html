@@ -14,7 +14,7 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.ops" href="ops.html" /><link rel="prev" title="holocron.nn" href="nn.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.1.1, furo 2022.09.15"/>
+    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>holocron.nn.functional - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
@@ -425,9 +425,21 @@ by stacking adjacent information on the channel dimension.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">holocron.nn.functional</a><ul>
-<li><a class="reference internal" href="#non-linear-activations">Non-linear activations</a></li>
-<li><a class="reference internal" href="#loss-functions">Loss functions</a></li>
-<li><a class="reference internal" href="#downsampling">Downsampling</a></li>
+<li><a class="reference internal" href="#non-linear-activations">Non-linear activations</a><ul>
+<li><a class="reference internal" href="#holocron.nn.functional.mish"><code class="docutils literal notranslate"><span class="pre">mish()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.nn.functional.nl_relu"><code class="docutils literal notranslate"><span class="pre">nl_relu()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#loss-functions">Loss functions</a><ul>
+<li><a class="reference internal" href="#holocron.nn.functional.focal_loss"><code class="docutils literal notranslate"><span class="pre">focal_loss()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.nn.functional.multilabel_cross_entropy"><code class="docutils literal notranslate"><span class="pre">multilabel_cross_entropy()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.nn.functional.ls_cross_entropy"><code class="docutils literal notranslate"><span class="pre">ls_cross_entropy()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#downsampling">Downsampling</a><ul>
+<li><a class="reference internal" href="#holocron.nn.functional.concat_downsample2d"><code class="docutils literal notranslate"><span class="pre">concat_downsample2d()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -444,6 +456,7 @@ by stacking adjacent information on the channel dimension.</p>
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>

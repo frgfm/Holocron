@@ -14,7 +14,7 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.nn" href="nn.html" /><link rel="prev" title="holocron" href="index.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.1.1, furo 2022.09.15"/>
+    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>holocron.models - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
@@ -510,13 +510,29 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
             <ul>
 <li><a class="reference internal" href="#">holocron.models</a><ul>
 <li><a class="reference internal" href="#classification">Classification</a><ul>
-<li><a class="reference internal" href="#res2net">Res2Net</a></li>
-<li><a class="reference internal" href="#res2next">Res2NeXt</a></li>
-<li><a class="reference internal" href="#darknet">Darknet</a></li>
+<li><a class="reference internal" href="#res2net">Res2Net</a><ul>
+<li><a class="reference internal" href="#holocron.models.Res2Net"><code class="docutils literal notranslate"><span class="pre">Res2Net</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.res2net"><code class="docutils literal notranslate"><span class="pre">res2net()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#res2next">Res2NeXt</a><ul>
+<li><a class="reference internal" href="#holocron.models.res2next"><code class="docutils literal notranslate"><span class="pre">res2next()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#darknet">Darknet</a><ul>
+<li><a class="reference internal" href="#holocron.models.darknet24"><code class="docutils literal notranslate"><span class="pre">darknet24()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.darknet19"><code class="docutils literal notranslate"><span class="pre">darknet19()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.darknet53"><code class="docutils literal notranslate"><span class="pre">darknet53()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#object-detection">Object Detection</a><ul>
-<li><a class="reference internal" href="#yolo">YOLO</a></li>
+<li><a class="reference internal" href="#yolo">YOLO</a><ul>
+<li><a class="reference internal" href="#holocron.models.yolov1"><code class="docutils literal notranslate"><span class="pre">yolov1()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.yolov2"><code class="docutils literal notranslate"><span class="pre">yolov2()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -535,6 +551,7 @@ Each dictionary has 3 keys: box coordinates, classification probability, classif
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>

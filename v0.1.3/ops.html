@@ -14,7 +14,7 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.optim" href="optim.html" /><link rel="prev" title="holocron.nn.functional" href="nn.functional.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.1.1, furo 2022.09.15"/>
+    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>holocron.ops - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
@@ -406,7 +406,12 @@ and <span class="math notranslate nohighlight">\(v\)</span> is the aspect ratio 
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">holocron.ops</a><ul>
-<li><a class="reference internal" href="#boxes">Boxes</a></li>
+<li><a class="reference internal" href="#boxes">Boxes</a><ul>
+<li><a class="reference internal" href="#holocron.ops.box_giou"><code class="docutils literal notranslate"><span class="pre">box_giou()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.ops.diou_loss"><code class="docutils literal notranslate"><span class="pre">diou_loss()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.ops.ciou_loss"><code class="docutils literal notranslate"><span class="pre">ciou_loss()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -423,6 +428,7 @@ and <span class="math notranslate nohighlight">\(v\)</span> is the aspect ratio 
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
