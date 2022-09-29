@@ -116,6 +116,21 @@ RepVGG
 .. autofunction:: repvgg_b3
 
 
+ConvNeXt
+--------
+.. autofunction:: convnext_micro
+
+.. autofunction:: convnext_tiny
+
+.. autofunction:: convnext_small
+
+.. autofunction:: convnext_base
+
+.. autofunction:: convnext_large
+
+.. autofunction:: convnext_xl
+
+
 
 Object Detection
 ================
