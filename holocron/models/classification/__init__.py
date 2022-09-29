@@ -1,3 +1,4 @@
+from .convnext import *
 from .darknet import *
 from .darknetv2 import *
 from .darknetv3 import *
