@@ -57,12 +57,14 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
 
 class LayerNorm2d(nn.LayerNorm):
     """Compatibility wrapper of LayerNorm on 2D tensors"""
+
     def forward(self, x: Tensor) -> Tensor:
         return super().forward(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
 
 
 class LayerScale(nn.Module):
     """Learnable channel-wise scaling"""
+
     def __init__(self, chans: int, scale: float = 1e-6) -> None:
         super().__init__()
         self.register_parameter("weight", nn.Parameter(scale * torch.ones(chans)))  # type: ignore[attr-defined]
