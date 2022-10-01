@@ -3,6 +3,7 @@ from .darknet import *
 from .darknetv2 import *
 from .darknetv3 import *
 from .darknetv4 import *
+from .mobileone import *
 from .pyconvresnet import *
 from .repvgg import *
 from .res2net import *
