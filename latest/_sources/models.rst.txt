@@ -101,6 +101,14 @@ Darknet
 
 RepVGG
 ------
+
+The RepVGG architecture key aspect to have different block architectures between training and inference modes. The goal is to combine the original VGG speed and the block design of ResNet.
+
+.. image:: https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg.png
+        :align: center
+
+In order to do so, the block is designed in a similar fashion as a ResNet bottleneck but in a way that all branches can be fused into a single one. The more complex training architecture improves gradient flow and overall optimization, while its inference counterpart is optimized for minimum latency and memory usage. 
+
 .. autofunction:: repvgg_a0
 
 .. autofunction:: repvgg_a1
@@ -118,6 +126,18 @@ RepVGG
 
 ConvNeXt
 --------
+
+The ConvNeXt architecture compiles tricks from transformer-based vision models to improve a pure convolutional model.
+
+.. image:: https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext.png
+        :align: center
+
+The key takeaways from the paper are the following:
+* update the stem convolution to act like a patchify layer of transformers
+* increase block kernel size to 7
+* switch to depth-wise convolutions
+* reduce the amount of activations and normalization layers
+
 .. autofunction:: convnext_micro
 
 .. autofunction:: convnext_tiny
@@ -130,6 +150,26 @@ ConvNeXt
 
 .. autofunction:: convnext_xl
 
+
+MobileOne
+---------
+
+The MobileOne architecture key takeaway is to optimize the model for inference speed at inference time on mobile device. It reuses the reparametrization concept of RepVGG while adding overparametrization in the block branches.
+
+.. image:: https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone.png
+        :align: center
+
+Each block is composed of two consecutive reparametrizeable blocks (in a similar fashion than RepVGG):
+- a depth-wise convolutional block
+- a point-wise convolutional block
+
+.. autofunction:: mobileone_s0
+
+.. autofunction:: mobileone_s1
+
+.. autofunction:: mobileone_s2
+
+.. autofunction:: mobileone_s3
 
 
 Object Detection

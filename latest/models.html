@@ -14,10 +14,10 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.nn" href="nn.html" /><link rel="prev" title="Holocron Notebooks" href="notebooks.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
+    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>holocron.models - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom_theme.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -790,6 +790,9 @@ with Mish as activation layer and DropBlock as regularization layer.</p>
 </section>
 <section id="repvgg">
 <h3>RepVGG<a class="headerlink" href="#repvgg" title="Permalink to this heading">#</a></h3>
+<p>The RepVGG architecture key aspect to have different block architectures between training and inference modes. The goal is to combine the original VGG speed and the block design of ResNet.</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg.png" />
+<p>In order to do so, the block is designed in a similar fashion as a ResNet bottleneck but in a way that all branches can be fused into a single one. The more complex training architecture improves gradient flow and overall optimization, while its inference counterpart is optimized for minimum latency and memory usage.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.repvgg_a0">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">repvgg_a0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RepVGG</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/repvgg.html#repvgg_a0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.repvgg_a0" title="Permalink to this definition">#</a></dt>
@@ -940,6 +943,13 @@ with Mish as activation layer and DropBlock as regularization layer.</p>
 </section>
 <section id="convnext">
 <h3>ConvNeXt<a class="headerlink" href="#convnext" title="Permalink to this heading">#</a></h3>
+<p>The ConvNeXt architecture compiles tricks from transformer-based vision models to improve a pure convolutional model.</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext.png" />
+<p>The key takeaways from the paper are the following:
+* update the stem convolution to act like a patchify layer of transformers
+* increase block kernel size to 7
+* switch to depth-wise convolutions
+* reduce the amount of activations and normalization layers</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.convnext_micro">
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">convnext_micro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConvNeXt</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/convnext.html#convnext_micro"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.convnext_micro" title="Permalink to this definition">#</a></dt>
@@ -1050,6 +1060,98 @@ with Mish as activation layer and DropBlock as regularization layer.</p>
 <span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">convnext_xl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConvNeXt</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/convnext.html#convnext_xl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.convnext_xl" title="Permalink to this definition">#</a></dt>
 <dd><p>ConvNeXt-XL from
 <a class="reference external" href="https://arxiv.org/pdf/2201.03545.pdf">“A ConvNet for the 2020s”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="mobileone">
+<h3>MobileOne<a class="headerlink" href="#mobileone" title="Permalink to this heading">#</a></h3>
+<p>The MobileOne architecture key takeaway is to optimize the model for inference speed at inference time on mobile device. It reuses the reparametrization concept of RepVGG while adding overparametrization in the block branches.</p>
+<img alt="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone.png" />
+<p>Each block is composed of two consecutive reparametrizeable blocks (in a similar fashion than RepVGG):
+- a depth-wise convolutional block
+- a point-wise convolutional block</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="holocron.models.mobileone_s0">
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">mobileone_s0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MobileOne</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/mobileone.html#mobileone_s0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.mobileone_s0" title="Permalink to this definition">#</a></dt>
+<dd><p>MobileOne-S0 from
+<a class="reference external" href="https://arxiv.org/pdf/2206.04040.pdf">“An Improved One millisecond Mobile Backbone”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="holocron.models.mobileone_s1">
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">mobileone_s1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MobileOne</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/mobileone.html#mobileone_s1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.mobileone_s1" title="Permalink to this definition">#</a></dt>
+<dd><p>MobileOne-S1 from
+<a class="reference external" href="https://arxiv.org/pdf/2206.04040.pdf">“An Improved One millisecond Mobile Backbone”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="holocron.models.mobileone_s2">
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">mobileone_s2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MobileOne</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/mobileone.html#mobileone_s2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.mobileone_s2" title="Permalink to this definition">#</a></dt>
+<dd><p>MobileOne-S2 from
+<a class="reference external" href="https://arxiv.org/pdf/2206.04040.pdf">“An Improved One millisecond Mobile Backbone”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="holocron.models.mobileone_s3">
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">mobileone_s3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MobileOne</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/mobileone.html#mobileone_s3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.mobileone_s3" title="Permalink to this definition">#</a></dt>
+<dd><p>MobileOne-S3 from
+<a class="reference external" href="https://arxiv.org/pdf/2206.04040.pdf">“An Improved One millisecond Mobile Backbone”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1525,6 +1627,13 @@ with a ReXNet-1.3x backbone used as encoder, and more advanced upscaling blocks 
 <li><a class="reference internal" href="#holocron.models.convnext_base"><code class="docutils literal notranslate"><span class="pre">convnext_base()</span></code></a></li>
 <li><a class="reference internal" href="#holocron.models.convnext_large"><code class="docutils literal notranslate"><span class="pre">convnext_large()</span></code></a></li>
 <li><a class="reference internal" href="#holocron.models.convnext_xl"><code class="docutils literal notranslate"><span class="pre">convnext_xl()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mobileone">MobileOne</a><ul>
+<li><a class="reference internal" href="#holocron.models.mobileone_s0"><code class="docutils literal notranslate"><span class="pre">mobileone_s0()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.mobileone_s1"><code class="docutils literal notranslate"><span class="pre">mobileone_s1()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.mobileone_s2"><code class="docutils literal notranslate"><span class="pre">mobileone_s2()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.mobileone_s3"><code class="docutils literal notranslate"><span class="pre">mobileone_s3()</span></code></a></li>
 </ul>
 </li>
 </ul>
