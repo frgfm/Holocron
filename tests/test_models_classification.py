@@ -80,6 +80,10 @@ def test_repvgg_reparametrize():
         "convnext_base",
         "convnext_large",
         "convnext_xl",
+        "mobileone_s0",
+        "mobileone_s1",
+        "mobileone_s2",
+        "mobileone_s3",
     ],
 )
 def test_classification_model(arch):
