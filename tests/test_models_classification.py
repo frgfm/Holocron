@@ -44,6 +44,24 @@ def test_repvgg_reparametrize():
         assert torch.allclose(out, model(x), atol=1e-5)
 
 
+def test_mobileone_reparametrize():
+    num_classes = 10
+    batch_size = 2
+    x = torch.rand((batch_size, 3, 224, 224))
+    model = classification.mobileone_s0(pretrained=False, num_classes=num_classes).eval()
+    with torch.no_grad():
+        out = model(x)
+
+    # Reparametrize
+    model.reparametrize()
+    # Check that there is no longer any Conv1x1 or BatchNorm
+    for mod in model.modules():
+        assert not isinstance(mod, nn.BatchNorm2d)
+    # Check that values are still matching
+    with torch.no_grad():
+        assert torch.allclose(out, model(x), atol=1e-5)
+
+
 @pytest.mark.parametrize(
     "arch",
     [
@@ -80,6 +98,10 @@ def test_repvgg_reparametrize():
         "convnext_base",
         "convnext_large",
         "convnext_xl",
+        "mobileone_s0",
+        "mobileone_s1",
+        "mobileone_s2",
+        "mobileone_s3",
     ],
 )
 def test_classification_model(arch):
