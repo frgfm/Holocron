@@ -85,16 +85,18 @@ class DepthConvBlock(nn.ModuleList):
     def reparametrize(self) -> nn.Conv2d:
         _chans = self[1][0].in_channels
         # Fuse the conv & BN
-        _conv = nn.Conv2d(_chans, _chans, 3, padding=1, bias=True, groups=_chans).to(self[0].bias.data.device)
+        _conv = nn.Conv2d(_chans, _chans, 3, padding=1, bias=True, stride=self[1][0].stride, groups=_chans).to(
+            self[1][0].weight.data.device
+        )
         _conv.weight.data.zero_()
         _conv.bias.data.zero_()  # type: ignore[union-attr]
-        bn_idx, conv1_idx, branch_idx = (None, 0, 1) if isinstance(self[0], nn.Conv2d) else (0, 1, 2)
+        bn_idx, conv1_idx, branch_idx = (None, 0, 1) if isinstance(self[0], nn.Sequential) else (0, 1, 2)
         # BN branch
         if isinstance(bn_idx, int):
             bn = self[bn_idx]
             scale_factor = bn.weight.data / torch.sqrt(bn.running_var + bn.eps)
             _conv.bias.data += bn.bias.data - scale_factor * bn.running_mean  # type: ignore[union-attr]
-            _conv.weight.data[..., 1, 1] += scale_factor
+            _conv.weight.data[..., 1, 1] += scale_factor.unsqueeze(1)
 
         # Conv 1x1 branch
         _k, _b = fuse_conv_bn(self[conv1_idx][0], self[conv1_idx][1])
@@ -102,8 +104,8 @@ class DepthConvBlock(nn.ModuleList):
         _conv.weight.data[..., 1:2, 1:2] += _k
 
         # Conv 3x3 branches
-        for mod_seq in self[branch_idx:]:
-            _k, _b = fuse_conv_bn(mod_seq[0], mod_seq[1])
+        for mod_idx in range(branch_idx, len(self)):
+            _k, _b = fuse_conv_bn(self[mod_idx][0], self[mod_idx][1])
             _conv.bias.data += _b  # type: ignore[union-attr]
             _conv.weight.data += _k
 
@@ -125,9 +127,7 @@ class PointConvBlock(nn.ModuleList):
         _layers = [norm_layer(out_channels)] if out_channels == in_channels else []
         _layers.extend(
             [
-                nn.Sequential(
-                    *conv_sequence(in_channels, out_channels, kernel_size=1, norm_layer=norm_layer, groups=in_channels)
-                )
+                nn.Sequential(*conv_sequence(in_channels, out_channels, kernel_size=1, norm_layer=norm_layer))
                 for _ in range(num_blocks)
             ]
         )
@@ -139,20 +139,21 @@ class PointConvBlock(nn.ModuleList):
     def reparametrize(self) -> nn.Conv2d:
         in_chans, out_chans = self[1][0].in_channels, self[1][0].out_channels
         # Fuse the conv & BN
-        _conv = nn.Conv2d(in_chans, out_chans, 1, bias=True, groups=in_chans).to(self[0].bias.data.device)
+        _conv = nn.Conv2d(in_chans, out_chans, 1, bias=True).to(self[1][0].weight.data.device)
         _conv.weight.data.zero_()
         _conv.bias.data.zero_()  # type: ignore[union-attr]
-        bn_idx, branch_idx = (None, 0) if isinstance(self[0], nn.Conv2d) else (0, 1)
+        bn_idx, branch_idx = (None, 0) if isinstance(self[0], nn.Sequential) else (0, 1)
         # BN branch
         if isinstance(bn_idx, int):
-            bn = self[0]
+            bn = self[bn_idx]
             scale_factor = bn.weight.data / torch.sqrt(bn.running_var + bn.eps)
             _conv.bias.data += bn.bias.data - scale_factor * bn.running_mean  # type: ignore[union-attr]
-            _conv.weight.data += scale_factor
+            for chan_idx in range(_conv.weight.data.shape[0]):
+                _conv.weight.data[chan_idx, chan_idx] += scale_factor[chan_idx]
 
-        # Conv 1x1 branches
-        for mod_seq in self[branch_idx:]:
-            _k, _b = fuse_conv_bn(mod_seq[0], mod_seq[1])
+        # Conv branches
+        for mod_idx in range(branch_idx, len(self)):
+            _k, _b = fuse_conv_bn(self[mod_idx][0], self[mod_idx][1])
             _conv.bias.data += _b  # type: ignore[union-attr]
             _conv.weight.data += _k
 
@@ -188,7 +189,7 @@ class MobileOneBlock(nn.Sequential):
     def reparametrize(self) -> None:
         """Reparametrize the depth-wise & point-wise blocks"""
         self[0] = self[0].reparametrize()
-        self[1] = self[1].reparametrize()
+        self[2] = self[2].reparametrize()
 
 
 class MobileOne(nn.Sequential):
@@ -243,6 +244,15 @@ class MobileOne(nn.Sequential):
 
         # Init all layers
         init.init_module(self, nonlinearity="relu")
+
+    def reparametrize(self) -> None:
+        """Reparametrize the block by fusing convolutions and BN in each branch, then fusing all branches"""
+        self.features: nn.Sequential
+        # Stem
+        self.features[0].reparametrize()
+        for stage in self.features[1:]:
+            for block in stage:
+                block.reparametrize()
 
 
 def _mobileone(
