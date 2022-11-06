@@ -1,47 +1,47 @@
-module: models:
+'module: models':
 - holocron/models/*
 
-module: nn:
+'module: nn':
 - holocron/nn/*
 
-module: ops:
+'module: ops':
 - holocron/ops/*
 
-module: optim:
+'module: optim':
 - holocron/optim/*
 
-module: trainer:
+'module: trainer':
 - holocron/trainer/*
 
-module: transforms:
+'module: transforms':
 - holocron/transforms/*
 
-module: utils:
+'module: utils':
 - holocron/utils/*
 
-ext: api:
+'ext: api':
 - api/*
 
-ext: demo:
+'ext: demo':
 - demo/*
 
-ext: docs:
+'ext: docs':
 - docs/*
 
-ext: references:
+'ext: references':
 - references/*
 
-ext: scripts:
+'ext: scripts':
 - scripts/*
 
-ext: tests:
+'ext: tests':
 - tests/*
 
-topic: ci:
+'topic: ci':
 - .github/*
 
-topic: documentation:
+'topic: documentation':
 - notebooks/*
 
-topic: build:
+'topic: build':
 - setup.py
