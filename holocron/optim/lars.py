@@ -8,6 +8,8 @@ from typing import Callable, Dict, Iterable, Optional, Tuple
 import torch
 from torch.optim.optimizer import Optimizer
 
+__all__ = ["LARS"]
+
 
 class LARS(Optimizer):
     r"""Implements the LARS optimizer from `"Large batch training of convolutional networks"
@@ -101,29 +103,33 @@ class LARS(Optimizer):
                 if p.grad is None:
                     continue
                 d_p = p.grad.data
-                if weight_decay != 0:
-                    d_p.add_(p.data, alpha=weight_decay)
-                if momentum != 0:
-                    param_state = self.state[p]
-                    if "momentum_buffer" not in param_state:
-                        buf = param_state["momentum_buffer"] = torch.clone(d_p).detach()
-                    else:
-                        buf = param_state["momentum_buffer"]
-                        buf.mul_(momentum).add_(d_p, alpha=1 - dampening)
-                    if nesterov:
-                        d_p = d_p.add(buf, alpha=momentum)
-                    else:
-                        d_p = buf
 
                 # LARS
-                p_norm = p.data.pow(2).sum().sqrt()
-                update_norm = d_p.pow(2).sum().sqrt()
+                p_norm = torch.norm(p.data)
+                denom = torch.norm(d_p)
+                if weight_decay != 0:
+                    d_p.add_(p.data, alpha=weight_decay)
+                    denom.add_(p_norm, alpha=weight_decay)
                 # Compute the local LR
-                if p_norm == 0 or update_norm == 0:
+                if p_norm == 0 or denom == 0:
                     local_lr = 1
                 else:
-                    local_lr = p_norm / update_norm
+                    local_lr = p_norm / denom
 
-                p.data.add_(d_p, alpha=-group["lr"] * local_lr)
+                if momentum == 0:
+                    p.data.add_(d_p, alpha=-group["lr"] * local_lr)
+                else:
+                    param_state = self.state[p]
+                    if "momentum_buffer" not in param_state:
+                        momentum_buffer = param_state["momentum_buffer"] = torch.clone(d_p).detach()
+                    else:
+                        momentum_buffer = param_state["momentum_buffer"]
+                        momentum_buffer.mul_(momentum).add_(d_p, alpha=1 - dampening)
+                    if nesterov:
+                        d_p = d_p.add(momentum_buffer, alpha=momentum)
+                    else:
+                        d_p = momentum_buffer
+                    p.data.add_(d_p, alpha=-group["lr"] * local_lr)
+                    self.state[p]["momentum_buffer"] = momentum_buffer
 
         return loss
