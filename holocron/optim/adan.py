@@ -3,12 +3,12 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
-from typing import Callable, Iterable, Optional, Tuple
+import math
+from typing import Callable, Iterable, List, Optional, Tuple
 
 import torch
+from torch import Tensor
 from torch.optim import Adam
-
-from . import functional as F
 
 
 class Adan(Adam):
@@ -119,7 +119,7 @@ class Adan(Adam):
                     state_steps.append(state["step"])
 
             beta1, beta2, beta3 = group["betas"]
-            F.adan(
+            adan(
                 params_with_grad,
                 grads,
                 prev_grads,
@@ -138,3 +138,62 @@ class Adan(Adam):
             )
 
         return loss
+
+
+def adan(
+    params: List[Tensor],
+    grads: List[Tensor],
+    prev_grads: List[Tensor],
+    exp_avgs: List[Tensor],
+    exp_avg_sqs: List[Tensor],
+    exp_avg_deltas: List[Tensor],
+    max_exp_avg_deltas: List[Tensor],
+    state_steps: List[int],
+    amsgrad: bool,
+    beta1: float,
+    beta2: float,
+    beta3: float,
+    lr: float,
+    weight_decay: float,
+    eps: float,
+) -> None:
+    r"""Functional API that performs Adan algorithm computation.
+    See :class:`~holocron.optim.Adan` for details.
+    """
+
+    for i, param in enumerate(params):
+
+        grad = grads[i]
+        exp_avg = exp_avgs[i]
+        exp_avg_sq = exp_avg_sqs[i]
+        exp_avg_delta = exp_avg_deltas[i]
+        prev_grad = prev_grads[i]
+        step = state_steps[i]
+
+        bias_correction1 = 1 - beta1**step
+        bias_correction2 = 1 - beta2**step
+        bias_correction3 = 1 - beta3**step
+
+        if weight_decay != 0:
+            grad = grad.add(param, alpha=weight_decay)
+
+        # Decay the first and second moment running average coefficient
+        exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
+        delta_grad = grad - prev_grad
+        exp_avg_sq.mul_(beta2).add_(delta_grad, alpha=1 - beta2)
+        _tmp = grad + beta2 * delta_grad
+        exp_avg_delta.mul_(beta3).addcmul_(_tmp, _tmp, value=1 - beta3)
+        if amsgrad:
+            # Maintains the maximum of all 2nd moment running avg. till now
+            torch.maximum(max_exp_avg_deltas[i], exp_avg_delta, out=max_exp_avg_deltas[i])
+            # Use the max. for normalizing running avg. of gradient
+            denom = (max_exp_avg_deltas[i].sqrt() / math.sqrt(bias_correction3)).add_(eps)
+        else:
+            denom = (exp_avg_delta.sqrt() / math.sqrt(bias_correction3)).add_(eps)
+
+        # Extra step
+        pt = (exp_avg / bias_correction1 + beta2 * exp_avg_sq / bias_correction2) / denom
+
+        param.add_(pt, alpha=-lr)
+        if weight_decay != 0:
+            param /= 1 + weight_decay * lr
