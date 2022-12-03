@@ -11,6 +11,9 @@ from torch import Tensor
 from torch.optim.optimizer import Optimizer
 
 
+__all__ = ["TAdam", "tadam"]
+
+
 class TAdam(Optimizer):
     r"""Implements the TAdam optimizer from `"TAdam: A Robust Stochastic Gradient Optimizer"
     <https://arxiv.org/pdf/2003.00179.pdf>`_.

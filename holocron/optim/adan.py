@@ -10,6 +10,8 @@ import torch
 from torch import Tensor
 from torch.optim import Adam
 
+__all__ = ["Adan", "adan"]
+
 
 class Adan(Adam):
     r"""Implements the Adan optimizer from `"Adan: Adaptive Nesterov Momentum Algorithm for Faster Optimizing Deep

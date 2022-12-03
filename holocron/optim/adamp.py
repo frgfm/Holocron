@@ -8,9 +8,10 @@ from typing import Callable, Iterable, List, Optional, Tuple
 
 import torch
 from torch import Tensor
+from torch.nn import functional as F
 from torch.optim import Adam
 
-from . import functional as F
+__all__ = ["AdamP", "adamp"]
 
 
 class AdamP(Adam):
