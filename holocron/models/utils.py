@@ -9,7 +9,7 @@ from typing import Any, Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from huggingface_hub import hf_hub_download
+from huggingface_hub.file_download import hf_hub_download
 from torch.hub import load_state_dict_from_url
 
 from holocron import models
@@ -91,7 +91,7 @@ def load_pretrained_params(
     if url is None:
         logging.warning("Invalid model URL, using default initialization.")
     else:
-        state_dict = load_state_dict_from_url(url, progress=progress, map_location="cpu")  # type: ignore[arg-type]
+        state_dict = load_state_dict_from_url(url, progress=progress, map_location="cpu")
         if isinstance(key_filter, str):
             state_dict = {k: v for k, v in state_dict.items() if k.startswith(key_filter)}
         if isinstance(key_replacement, tuple):
