@@ -127,6 +127,6 @@ jobs:
           architecture: x64
       - name: Run bandit
         run: |
-          pip install bandit
+          pip install bandit[toml]
           bandit --version
           bandit -r . -c pyproject.toml
