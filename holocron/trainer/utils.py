@@ -75,7 +75,7 @@ def freeze_model(
 def split_normalization_params(
     model: nn.Module,
     norm_classes: Optional[List[type]] = None,
-) -> Tuple[List[nn.Parameter], List[nn.Parameter]]:  # type: ignore[name-defined]
+) -> Tuple[List[nn.Parameter], List[nn.Parameter]]:
     # Borrowed from https://github.com/pytorch/vision/blob/main/torchvision/ops/_utils.py
     # Adapted from https://github.com/facebookresearch/ClassyVision/blob/659d7f78/classy_vision/generic/util.py#L501
     if not norm_classes:
@@ -87,8 +87,8 @@ def split_normalization_params(
 
     classes = tuple(norm_classes)
 
-    norm_params: List[nn.Parameter] = []  # type: ignore[name-defined]
-    other_params: List[nn.Parameter] = []  # type: ignore[name-defined]
+    norm_params: List[nn.Parameter] = []
+    other_params: List[nn.Parameter] = []
     for module in model.modules():
         if next(module.children(), None):
             other_params.extend(p for p in module.parameters(recurse=False) if p.requires_grad)

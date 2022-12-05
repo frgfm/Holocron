@@ -13,12 +13,12 @@ import torch
 from fastprogress import master_bar, progress_bar
 from fastprogress.fastprogress import ConsoleMasterBar
 from torch import Tensor, nn
-from torch.optim.lr_scheduler import CosineAnnealingLR, MultiplicativeLR, OneCycleLR  # type: ignore[attr-defined]
+from torch.optim.lr_scheduler import CosineAnnealingLR, MultiplicativeLR, OneCycleLR, _LRScheduler
 from torch.utils.data import DataLoader
 
 from .utils import freeze_bn, freeze_model, split_normalization_params
 
-ParamSeq = Sequence[torch.nn.Parameter]  # type: ignore[name-defined]
+ParamSeq = Sequence[torch.nn.Parameter]
 
 __all__ = ["Trainer"]
 
@@ -260,6 +260,7 @@ class Trainer:
         raise NotImplementedError
 
     def _reset_scheduler(self, lr: float, num_epochs: int, sched_type: str = "onecycle") -> None:
+        self.scheduler: _LRScheduler
         if sched_type == "onecycle":
             self.scheduler = OneCycleLR(self.optimizer, lr, num_epochs * len(self.train_loader))
         elif sched_type == "cosine":

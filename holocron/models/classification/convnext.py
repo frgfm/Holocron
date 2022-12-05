@@ -67,7 +67,7 @@ class LayerScale(nn.Module):
 
     def __init__(self, chans: int, scale: float = 1e-6) -> None:
         super().__init__()
-        self.register_parameter("weight", nn.Parameter(scale * torch.ones(chans)))  # type: ignore[attr-defined]
+        self.register_parameter("weight", nn.Parameter(scale * torch.ones(chans)))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x * self.weight.reshape(1, -1, *((1,) * (x.ndim - 2)))  # type: ignore[operator]

@@ -61,11 +61,11 @@ class LambdaLayer(nn.Module):
             if r % 2 != 1:
                 raise AssertionError("Receptive kernel size should be odd")
             self.padding = r // 2
-            self.R = nn.Parameter(torch.randn(dim_k, dim_u, 1, r, r))  # type: ignore[attr-defined]
+            self.R = nn.Parameter(torch.randn(dim_k, dim_u, 1, r, r))
         else:
             if n is None:
                 raise AssertionError("You must specify the total sequence length (h x w)")
-            self.pos_emb = nn.Parameter(torch.randn(n, n, dim_k, dim_u))  # type: ignore[attr-defined]
+            self.pos_emb = nn.Parameter(torch.randn(n, n, dim_k, dim_u))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, _, h, w = x.shape
