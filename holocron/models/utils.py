@@ -9,7 +9,7 @@ from typing import Any, Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from huggingface_hub import hf_hub_download
+from huggingface_hub.file_download import hf_hub_download
 from torch.hub import load_state_dict_from_url
 
 from holocron import models
