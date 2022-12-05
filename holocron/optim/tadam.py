@@ -10,7 +10,6 @@ import torch
 from torch import Tensor
 from torch.optim.optimizer import Optimizer
 
-
 __all__ = ["TAdam", "tadam"]
 
 
