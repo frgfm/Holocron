@@ -52,7 +52,7 @@ class LARS(Optimizer):
 
     def __init__(
         self,
-        params: Iterable[torch.nn.Parameter],  # type: ignore[name-defined]
+        params: Iterable[torch.nn.Parameter],
         lr: float = 1e-3,
         momentum: float = 0.0,
         dampening: float = 0.0,

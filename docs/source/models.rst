@@ -160,8 +160,8 @@ The MobileOne architecture key takeaway is to optimize the model for inference s
         :align: center
 
 Each block is composed of two consecutive reparametrizeable blocks (in a similar fashion than RepVGG):
-- a depth-wise convolutional block
-- a point-wise convolutional block
+* a depth-wise convolutional block
+* a point-wise convolutional block
 
 .. autofunction:: mobileone_s0
 
