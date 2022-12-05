@@ -15,6 +15,9 @@
   <a href="https://github.com/ambv/black">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square" alt="black">
   </a>
+  <a href="https://github.com/PyCQA/bandit">
+    <img src="https://img.shields.io/badge/security-bandit-yellow.svg?style=flat-square" alt="bandit">
+  </a>
   <a href="https://www.codacy.com/gh/frgfm/Holocron/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frgfm/Holocron&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/49fc8908c44b45d3b64131e49558f1e9"/></a>
 </p>
 <p align="center">
