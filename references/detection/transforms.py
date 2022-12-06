@@ -7,8 +7,6 @@
 Transformation for object detection
 """
 
-import random
-
 import torch
 from torchvision.transforms import functional as F
 from torchvision.transforms import transforms
@@ -121,7 +119,7 @@ def convert_to_relative(image, target):
 
 class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
     def __call__(self, image, target):
-        if random.random() < self.p:
+        if torch.rand(1).item() < self.p:
             _, width = image.size
             image = F.hflip(image)
             target["boxes"][:, [0, 2]] = width - target["boxes"][:, [0, 2]]

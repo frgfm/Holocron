@@ -7,8 +7,6 @@
 Transformation for semantic segmentation
 """
 
-import random
-
 import numpy as np
 import torch
 from torchvision.transforms import InterpolationMode
@@ -62,7 +60,7 @@ class RandomResize(object):
         if self.min_size == self.max_size:
             size = self.min_size
         else:
-            size = random.randint(self.min_size, self.max_size)
+            size = torch.randint(self.min_size, self.max_size, (1,)).item()
         image = F.resize(image, size, interpolation=self.interpolation)
         target = F.resize(target, size, interpolation=InterpolationMode.NEAREST)
         return image, target
@@ -76,7 +74,7 @@ class RandomHorizontalFlip(object):
         self.prob = prob
 
     def __call__(self, image, target):
-        if random.random() < self.prob:
+        if torch.rand(1).item() < self.prob:
             image = F.hflip(image)
             # Flip the segmentation
             target = F.hflip(target)
