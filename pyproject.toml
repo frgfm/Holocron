@@ -40,12 +40,14 @@ dependencies = [
     # Indirect deps
     # cf. https://github.com/advisories/GHSA-98vv-pw6r-q6q4
     # cf. https://github.com/pytorch/vision/issues/4934
-    "Pillow>=8.4.0",
+    # https://github.com/frgfm/Holocron/security/dependabot/5
+    "Pillow>=8.4.0,!=9.2.0",
 ]
 
 [project.optional-dependencies]
 test = [
-    "pytest>=5.3.2",
+    # cf. https://github.com/frgfm/Holocron/security/dependabot/4
+    "pytest>=7.2.0",
     "coverage[toml]>=4.5.4",
 ]
 quality = [

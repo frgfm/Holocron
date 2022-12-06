@@ -195,6 +195,7 @@ class MobileOneBlock(nn.Sequential):
 class MobileOne(nn.Sequential):
     def __init__(
         self,
+        num_blocks: List[int],
         width_multipliers: List[float],
         overparam_factor: int = 1,
         num_classes: int = 10,
@@ -207,9 +208,7 @@ class MobileOne(nn.Sequential):
             norm_layer = nn.BatchNorm2d
         if act_layer is None:
             act_layer = nn.ReLU(inplace=True)
-        self.dilation = 1
 
-        num_blocks = [2, 8, 10, 1]
         base_planes = [64, 128, 256, 512]
         planes = [int(round(mult * chans)) for mult, chans in zip(width_multipliers, base_planes)]
 
@@ -265,6 +264,7 @@ def _mobileone(
 ) -> MobileOne:
     # Build the model
     model = MobileOne(
+        [2, 8, 10, 1],
         width_multipliers,
         overparam_factor,
         **kwargs,

@@ -53,7 +53,7 @@ class Adan(Adam):
 
     def __init__(
         self,
-        params: Iterable[torch.nn.Parameter],  # type: ignore[name-defined]
+        params: Iterable[torch.nn.Parameter],
         lr: float = 1e-3,
         betas: Tuple[float, float, float] = (0.98, 0.92, 0.99),
         eps: float = 1e-8,
