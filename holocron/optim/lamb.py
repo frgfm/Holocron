@@ -8,6 +8,8 @@ from typing import Callable, Iterable, Optional, Tuple
 import torch
 from torch.optim.optimizer import Optimizer
 
+__all__ = ["LAMB"]
+
 
 class LAMB(Optimizer):
     r"""Implements the Lamb optimizer from `"Large batch optimization for deep learning: training BERT in 76 minutes"

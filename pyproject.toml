@@ -75,7 +75,7 @@ docs = [
 ]
 dev = [
     # test
-    "pytest>=5.3.2",
+    "pytest>=7.2.0",
     "coverage[toml]>=4.5.4",
     # style
     "flake8>=3.9.0",
