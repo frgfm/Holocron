@@ -59,7 +59,7 @@ def test_mobileone_reparametrize():
         assert not isinstance(mod, nn.BatchNorm2d)
     # Check that values are still matching
     with torch.no_grad():
-        assert torch.allclose(out, model(x), atol=1e-4)
+        assert torch.allclose(out, model(x), atol=1e-3)
 
 
 @pytest.mark.parametrize(
