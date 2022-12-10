@@ -54,7 +54,6 @@ def main(args):
 
         return {class_name: float(conf) for class_name, conf in zip(cfg["classes"], probs)}
 
-
     interface = gr.Interface(
         fn=predict,
         inputs=gr.Image(type="pil"),
