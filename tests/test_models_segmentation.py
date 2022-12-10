@@ -1,10 +1,11 @@
+import os
 import pytest
 import torch
 
 from holocron.models import segmentation
 
 
-def _test_segmentation_model(name, input_shape, tmp_path):
+def _test_segmentation_model(name, input_shape, tmpdir_factory):
 
     num_classes = 10
     batch_size = 2
@@ -21,6 +22,7 @@ def _test_segmentation_model(name, input_shape, tmp_path):
     assert out.shape == (batch_size, num_classes, *input_shape)
 
     # Check ONNX export
+    tmp_path = os.path.join(str(tmpdir_factory.mktemp("onnx")), f"{name}.onnx")
     img_tensor = torch.rand((1, num_channels, *input_shape))
     with torch.no_grad():
         torch.onnx.export(model, img_tensor, tmp_path, export_params=True, opset_version=14)
@@ -39,5 +41,23 @@ def _test_segmentation_model(name, input_shape, tmp_path):
         ["unet3p", (320, 320)],
     ],
 )
-def test_segmentation_model(arch, input_shape):
+def test_segmentation_model(arch, input_shape, tmpdir_factory):
     _test_segmentation_model(arch, input_shape)
+
+
+@pytest.mark.parametrize(
+    "arch, input_shape",
+    [
+        ["unet", (256, 256)],
+        ["unet2", (256, 256)],
+        ["unetp", (256, 256)],
+        ["unetpp", (256, 256)],
+        ["unet3p", (320, 320)],
+    ],
+)
+def test_segmentation_onnx_export(arch, input_shape, tmpdir_factory):
+    model = segmentation.__dict__[arch](pretrained=False, num_classes=10).eval()
+    tmp_path = os.path.join(str(tmpdir_factory.mktemp("onnx")), f"{arch}.onnx")
+    img_tensor = torch.rand((1, 3, *input_shape))
+    with torch.no_grad():
+        torch.onnx.export(model, img_tensor, tmp_path, export_params=True, opset_version=14)

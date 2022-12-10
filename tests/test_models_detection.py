@@ -1,10 +1,11 @@
+import os
 import pytest
 import torch
 
 from holocron.models import detection
 
 
-def _test_detection_model(name, input_size, tmp_path):
+def _test_detection_model(name, input_size):
 
     num_classes = 10
     batch_size = 2
@@ -27,11 +28,6 @@ def _test_detection_model(name, input_size, tmp_path):
     with torch.no_grad():
         out_list = model(x_list)
         assert len(out_list) == len(out)
-
-    # Check ONNX export
-    img_tensor = torch.rand((1, 3, *input_size))
-    with torch.no_grad():
-        torch.onnx.export(model, img_tensor, tmp_path, export_params=True, opset_version=14)
 
     # Training mode without target
     model = model.train()
@@ -78,6 +74,22 @@ def _test_detection_model(name, input_size, tmp_path):
 )
 def test_detection_model(arch, input_shape):
     _test_detection_model(arch, input_shape)
+
+
+@pytest.mark.parametrize(
+    "arch, input_shape",
+    [
+        ["yolov1", (448, 448)],
+        ["yolov2", (416, 416)],
+        ["yolov4", (608, 608)],
+    ],
+)
+def test_detection_onnx_export(arch, input_shape, tmpdir_factory):
+    model = detection.__dict__[arch](pretrained=False, num_classes=10).eval()
+    tmp_path = os.path.join(str(tmpdir_factory.mktemp("onnx")), f"{arch}.onnx")
+    img_tensor = torch.rand((1, 3, *input_shape))
+    with torch.no_grad():
+        torch.onnx.export(model, img_tensor, tmp_path, export_params=True, opset_version=14)
 
 
 @torch.inference_mode()
