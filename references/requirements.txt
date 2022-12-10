@@ -1,2 +1,0 @@
-pylocron
-wandb>=0.10.31

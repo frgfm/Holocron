@@ -107,6 +107,7 @@ holocron/version.py
 conda-dist/
 wandb/
 **/*.pt
+.codecarbon.config
 
 # API uses poetry
 api/requirements.txt

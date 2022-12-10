@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import wandb
+from codecarbon import track_emissions
 from torch import nn
 from torch.utils.data import RandomSampler, SequentialSampler
 from torch.utils.data._utils.collate import default_collate
@@ -64,6 +65,7 @@ def plot_samples(images, targets, num_samples=8):
     plt.show()
 
 
+@track_emissions()
 def main(args):
 
     print(args)
