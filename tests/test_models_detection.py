@@ -4,7 +4,7 @@ import torch
 from holocron.models import detection
 
 
-def _test_detection_model(name, input_size):
+def _test_detection_model(name, input_size, tmp_path):
 
     num_classes = 10
     batch_size = 2
@@ -27,6 +27,11 @@ def _test_detection_model(name, input_size):
     with torch.no_grad():
         out_list = model(x_list)
         assert len(out_list) == len(out)
+
+    # Check ONNX export
+    img_tensor = torch.rand((1, 3, *input_size))
+    with torch.no_grad():
+        torch.onnx.export(model, img_tensor, tmp_path, export_params=True, opset_version=14)
 
     # Training mode without target
     model = model.train()

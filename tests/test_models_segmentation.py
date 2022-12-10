@@ -4,7 +4,7 @@ import torch
 from holocron.models import segmentation
 
 
-def _test_segmentation_model(name, input_shape):
+def _test_segmentation_model(name, input_shape, tmp_path):
 
     num_classes = 10
     batch_size = 2
@@ -19,6 +19,11 @@ def _test_segmentation_model(name, input_shape):
 
     assert isinstance(out, torch.Tensor)
     assert out.shape == (batch_size, num_classes, *input_shape)
+
+    # Check ONNX export
+    img_tensor = torch.rand((1, num_channels, *input_shape))
+    with torch.no_grad():
+        torch.onnx.export(model, img_tensor, tmp_path, export_params=True, opset_version=14)
 
 
 @pytest.mark.parametrize(

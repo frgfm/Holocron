@@ -5,7 +5,7 @@ from torch import nn
 from holocron.models import classification
 
 
-def _test_classification_model(name, num_classes=10):
+def _test_classification_model(name, num_classes=10, tmp_path):
 
     batch_size = 2
     x = torch.rand((batch_size, 3, 224, 224))
@@ -15,6 +15,11 @@ def _test_classification_model(name, num_classes=10):
 
     assert out.shape[0] == x.shape[0]
     assert out.shape[-1] == num_classes
+
+    # Check ONNX export
+    img_tensor = torch.rand((1, 3, 224, 224))
+    with torch.no_grad():
+        torch.onnx.export(model, img_tensor, tmp_path, export_params=True, opset_version=14)
 
     # Check backprop is OK
     target = torch.zeros(batch_size, dtype=torch.long)
