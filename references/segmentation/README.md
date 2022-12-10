@@ -43,4 +43,3 @@ Performances are evaluated on the validation set of the dataset using the mean I
 | unet_tvvgg11  |          | 32.17M |      | bilinear      | 256        |
 | unet_tvresnet34 |     | 36.25M |      | bilinear      | 256        |
 | unet_rexnet13 | 32.14    | 9.34M |      | bilinear      | 256        |
-

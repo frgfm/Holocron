@@ -14,4 +14,3 @@ holocron.transforms
 
 .. autoclass:: RandomZoomOut
     :members:
-
