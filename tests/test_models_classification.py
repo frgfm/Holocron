@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import torch
 from torch import nn
@@ -5,7 +7,7 @@ from torch import nn
 from holocron.models import classification
 
 
-def _test_classification_model(name, num_classes=10):
+def _test_classification_model(name, num_classes):
 
     batch_size = 2
     x = torch.rand((batch_size, 3, 224, 224))
@@ -105,5 +107,31 @@ def test_mobileone_reparametrize():
     ],
 )
 def test_classification_model(arch):
-    num_classes = 1000 if arch in ["rexnet1_0x", "rexnet1_3x", "rexnet1_5x", "rexnet2_0x"] else 10
+    num_classes = 1000 if arch.startswith("rexnet") else 10
     _test_classification_model(arch, num_classes)
+
+
+@pytest.mark.parametrize(
+    "arch",
+    [
+        "darknet24",
+        "darknet19",
+        "darknet53",
+        "cspdarknet53",
+        "resnet18",
+        "res2net50_26w_4s",
+        "tridentnet50",
+        "pyconv_resnet50",
+        "rexnet1_0x",
+        "sknet50",
+        "repvgg_a0",
+        "convnext_micro",
+        "mobileone_s0",
+    ],
+)
+def test_classification_onnx_export(arch, tmpdir_factory):
+    model = classification.__dict__[arch](pretrained=False, num_classes=10).eval()
+    tmp_path = os.path.join(str(tmpdir_factory.mktemp("onnx")), f"{arch}.onnx")
+    img_tensor = torch.rand((1, 3, 224, 224))
+    with torch.no_grad():
+        torch.onnx.export(model, img_tensor, tmp_path, export_params=True, opset_version=14)
