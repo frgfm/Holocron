@@ -107,7 +107,7 @@ The RepVGG architecture key aspect to have different block architectures between
 .. image:: https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg.png
         :align: center
 
-In order to do so, the block is designed in a similar fashion as a ResNet bottleneck but in a way that all branches can be fused into a single one. The more complex training architecture improves gradient flow and overall optimization, while its inference counterpart is optimized for minimum latency and memory usage. 
+In order to do so, the block is designed in a similar fashion as a ResNet bottleneck but in a way that all branches can be fused into a single one. The more complex training architecture improves gradient flow and overall optimization, while its inference counterpart is optimized for minimum latency and memory usage.
 
 .. autofunction:: repvgg_a0
 
