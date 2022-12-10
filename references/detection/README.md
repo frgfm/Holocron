@@ -23,7 +23,7 @@ python train.py VOC2012 --arch yolov2 --lr 1e-5 -b 32 -j 16 --epochs 20 --opt ra
 
 ### PASCAL VOC 2012
 
-Performances are evaluated on the validation set of the dataset. Since the mAP does not allow easy interpretation by humans, the performance metrics have been changed here. 
+Performances are evaluated on the validation set of the dataset. Since the mAP does not allow easy interpretation by humans, the performance metrics have been changed here.
 
 A prediction is considered as correct if it checks two criteria:
 
@@ -49,4 +49,3 @@ Here, the recall being the ratio of correctly predicted ground truth predictions
 | Model  | Loc@.5 | Clf@.5 | Det@.5 | Param # | MACs | Interpolation | Image size |
 | ------ | ------ | ------ | ------ | ------- | ---- | ------------- | ---------- |
 | yolov2 | 83.09  | 52.82  | 92.02  | 50.65M  |      | bilinear      | 416        |
-
