@@ -54,13 +54,11 @@ def main(args):
 
         return {class_name: float(conf) for class_name, conf in zip(cfg["classes"], probs)}
 
-    img = gr.inputs.Image(type="pil")
-    outputs = gr.outputs.Label(num_top_classes=3)
 
     interface = gr.Interface(
         fn=predict,
-        inputs=[img],
-        outputs=outputs,
+        inputs=gr.Image(type="pil"),
+        outputs=gr.Label(num_top_classes=3),
         title="Holocron: image classification demo",
         article=(
             "<p style='text-align: center'><a href='https://github.com/frgfm/Holocron'>"
