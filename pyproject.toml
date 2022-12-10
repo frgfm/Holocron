@@ -50,6 +50,10 @@ test = [
     "pytest>=7.2.0",
     "coverage[toml]>=4.5.4",
 ]
+training = [
+    "wandb>=0.10.31,<1.0.0",
+    "codecarbon>=2.0.0,<3.0.0",
+]
 quality = [
     "flake8>=3.9.0",
     "isort>=5.7.0",
