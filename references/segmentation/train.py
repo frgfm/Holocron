@@ -17,6 +17,7 @@ import torch
 import torch.nn as nn
 import torch.utils.data
 import wandb
+from codecarbon import track_emissions
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
@@ -108,6 +109,7 @@ def plot_predictions(images, preds, targets, ignore_index=None):
     plt.show()
 
 
+@track_emissions()
 def main(args):
 
     print(args)

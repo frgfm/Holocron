@@ -108,6 +108,8 @@ wandb/
 **/*.pt
 **/*.pth
 **/*.onnx
+.codecarbon.config
+
 
 # API uses poetry
 api/requirements.txt

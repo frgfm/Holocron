@@ -8,7 +8,7 @@ Ensure that you have holocron installed
 
 ```bash
 git clone https://github.com/frgfm/Holocron.git
-pip install -e Holocron/. --upgrade
+pip install -e "Holocron/.[training]"
 ```
 
 Download [Imagenette](https://s3.amazonaws.com/fast-ai-imageclas/imagenette2-320.tgz) and extract it where you want
