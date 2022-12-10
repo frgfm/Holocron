@@ -25,6 +25,7 @@ from torchvision.transforms import autoaugment as A
 from torchvision.transforms import transforms as T
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
 
+from holocron.models import classification
 from holocron.models.presets import CIFAR10 as CIF10
 from holocron.models.presets import IMAGENETTE
 from holocron.optim import AdaBelief, AdamP
