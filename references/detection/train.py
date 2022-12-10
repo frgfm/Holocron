@@ -17,6 +17,7 @@ import numpy as np
 import torch
 import torch.utils.data
 import wandb
+from codecarbon import track_emissions
 from matplotlib.patches import Rectangle
 from torch.utils.data import RandomSampler, SequentialSampler
 from torchvision import transforms as T
@@ -93,6 +94,7 @@ def plot_samples(images, targets, num_samples=8):
     plt.show()
 
 
+@track_emissions()
 def main(args):
 
     print(args)
