@@ -103,10 +103,11 @@ venv.bak/
 # mypy
 .mypy_cache/
 holocron/version.py
-*.pth
 conda-dist/
 wandb/
 **/*.pt
+**/*.pth
+**/*.onnx
 
 # API uses poetry
 api/requirements.txt
