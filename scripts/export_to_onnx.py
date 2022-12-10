@@ -41,7 +41,6 @@ def main(args):
         export_params=True,
         opset_version=14,
     )
-    
 
 
 if __name__ == "__main__":
