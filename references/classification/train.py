@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import wandb
+from codecarbon import track_emissions
 from torch import nn
 from torch.utils.data import RandomSampler, SequentialSampler
 from torch.utils.data._utils.collate import default_collate
@@ -24,7 +25,6 @@ from torchvision.transforms import autoaugment as A
 from torchvision.transforms import transforms as T
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
 
-from holocron.models import classification
 from holocron.models.presets import CIFAR10 as CIF10
 from holocron.models.presets import IMAGENETTE
 from holocron.optim import AdaBelief, AdamP
@@ -64,6 +64,7 @@ def plot_samples(images, targets, num_samples=8):
     plt.show()
 
 
+@track_emissions()
 def main(args):
 
     print(args)
