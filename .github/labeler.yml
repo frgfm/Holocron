@@ -42,6 +42,8 @@
 
 'topic: documentation':
 - notebooks/*
+- README.md
+- CONTRIBUTING.md
 
 'topic: build':
 - setup.py
