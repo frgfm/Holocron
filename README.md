@@ -3,11 +3,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/frgfm/holocron/actions?query=workflow%3Abuilds">
-    <img alt="CI Status" src="https://img.shields.io/github/workflow/status/frgfm/holocron/builds?label=CI&logo=github&style=flat-square">
+  <a href="https://github.com/frgfm/Holocron/actions/workflows/builds.yml">
+    <img alt="CI Status" src="https://img.shields.io/github/actions/workflow/status/frgfm/holocron/builds.yml?branch=main&label=CI&logo=github&style=flat-square">
   </a>
   <a href="https://frgfm.github.io/holocron">
-    <img src="https://img.shields.io/github/workflow/status/frgfm/Holocron/docs?label=docs&logo=read-the-docs&style=flat-square" alt="Documentation Status">
+    <img src="https://img.shields.io/github/actions/workflow/status/frgfm/Holocron/docs.yaml?branch=main&label=docs&logo=read-the-docs&style=flat-square" alt="Documentation Status">
   </a>
   <a href="https://codecov.io/gh/frgfm/holocron">
     <img src="https://img.shields.io/codecov/c/github/frgfm/holocron.svg?logo=codecov&style=flat-square" alt="Test coverage percentage">
