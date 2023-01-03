@@ -141,7 +141,6 @@ class ConvNeXt(nn.Sequential):
         planes: List[int],
         num_classes: int = 10,
         in_channels: int = 3,
-        stem_channels: int = 96,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
@@ -157,11 +156,11 @@ class ConvNeXt(nn.Sequential):
             act_layer = nn.GELU()
         self.dilation = 1
 
-        in_planes = stem_channels
+        planes[0]
         # Patchify-like stem
         _layers = conv_sequence(
             in_channels,
-            in_planes,
+            planes[0],
             None,
             norm_layer,
             drop_layer,
@@ -172,26 +171,24 @@ class ConvNeXt(nn.Sequential):
             bias=True,
         )
 
-        stage_idx, block_idx = 0, 0
+        block_idx = 0
         tot_blocks = sum(num_blocks)
-        for _num_blocks, _planes in zip(num_blocks, planes):
+        for _num_blocks, _planes, _oplanes in zip(num_blocks, planes, planes[1:] + [planes[-1]]):
 
             # adjust stochastic depth probability based on the depth of the stage block
             sd_probs = [stochastic_depth_prob * (block_idx + _idx) / (tot_blocks - 1.0) for _idx in range(_num_blocks)]
             _stage: List[nn.Module] = [
-                Bottlenext(in_planes, act_layer, norm_layer, drop_layer, stochastic_depth_prob=sd_prob)
+                Bottlenext(_planes, act_layer, norm_layer, drop_layer, stochastic_depth_prob=sd_prob)
                 for _idx, sd_prob in zip(range(_num_blocks), sd_probs)
             ]
-            if stage_idx < len(num_blocks) - 1:
+            if _planes != _oplanes:
                 _stage.append(
                     nn.Sequential(
-                        LayerNorm2d(in_planes),
-                        nn.Conv2d(in_planes, _planes, kernel_size=2, stride=2),
+                        LayerNorm2d(_planes),
+                        nn.Conv2d(_planes, _oplanes, kernel_size=2, stride=2),
                     )
                 )
-                in_planes = _planes
             _layers.append(nn.Sequential(*_stage))
-            stage_idx += 1
             block_idx += _num_blocks
 
         super().__init__(
@@ -202,8 +199,8 @@ class ConvNeXt(nn.Sequential):
                     (
                         "head",
                         nn.Sequential(
-                            nn.LayerNorm(in_planes, eps=1e-6),
-                            nn.Linear(in_planes, num_classes),
+                            nn.LayerNorm(planes[-1], eps=1e-6),
+                            nn.Linear(planes[-1], num_classes),
                         ),
                     ),
                 ]
@@ -253,15 +250,7 @@ def convnext_micro(pretrained: bool = False, progress: bool = True, **kwargs: An
         torch.nn.Module: classification model
     """
 
-    return _convnext(
-        "convnext_micro",
-        pretrained,
-        progress,
-        [3, 4, 6, 3],
-        [64, 128, 256, 512],
-        stem_channels=64,
-        **kwargs,
-    )
+    return _convnext("convnext_micro", pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
 
 
 def convnext_tiny(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
@@ -276,7 +265,7 @@ def convnext_tiny(pretrained: bool = False, progress: bool = True, **kwargs: Any
         torch.nn.Module: classification model
     """
 
-    return _convnext("convnext_tiny", pretrained, progress, [3, 3, 9, 3], [192, 384, 768, 768], **kwargs)
+    return _convnext("convnext_tiny", pretrained, progress, [3, 3, 9, 3], [96, 192, 384, 768], **kwargs)
 
 
 def convnext_small(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
