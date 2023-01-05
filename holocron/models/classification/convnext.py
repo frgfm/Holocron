@@ -1,4 +1,4 @@
-# Copyright (C) 2022, François-Guillaume Fernandez.
+# Copyright (C) 2022-2023, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -18,11 +18,36 @@ from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .resnet import _ResBlock
 
-__all__ = ["convnext_micro", "convnext_tiny", "convnext_small", "convnext_base", "convnext_large", "convnext_xl"]
+__all__ = [
+    "convnext_atto",
+    "convnext_femto",
+    "convnext_pico",
+    "convnext_nano",
+    "convnext_tiny",
+    "convnext_small",
+    "convnext_base",
+    "convnext_large",
+    "convnext_xl",
+]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    "convnext_micro": {
+    "convnext_atto": {
+        **IMAGENETTE,
+        "input_shape": (3, 224, 224),
+        "url": None,
+    },
+    "convnext_femto": {
+        **IMAGENETTE,
+        "input_shape": (3, 224, 224),
+        "url": None,
+    },
+    "convnext_pico": {
+        **IMAGENETTE,
+        "input_shape": (3, 224, 224),
+        "url": None,
+    },
+    "convnext_nano": {
         **IMAGENETTE,
         "input_shape": (3, 224, 224),
         "url": None,
@@ -141,7 +166,6 @@ class ConvNeXt(nn.Sequential):
         planes: List[int],
         num_classes: int = 10,
         in_channels: int = 3,
-        stem_channels: int = 96,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
@@ -157,11 +181,10 @@ class ConvNeXt(nn.Sequential):
             act_layer = nn.GELU()
         self.dilation = 1
 
-        in_planes = stem_channels
         # Patchify-like stem
         _layers = conv_sequence(
             in_channels,
-            in_planes,
+            planes[0],
             None,
             norm_layer,
             drop_layer,
@@ -172,26 +195,24 @@ class ConvNeXt(nn.Sequential):
             bias=True,
         )
 
-        stage_idx, block_idx = 0, 0
+        block_idx = 0
         tot_blocks = sum(num_blocks)
-        for _num_blocks, _planes in zip(num_blocks, planes):
+        for _num_blocks, _planes, _oplanes in zip(num_blocks, planes, planes[1:] + [planes[-1]]):
 
             # adjust stochastic depth probability based on the depth of the stage block
             sd_probs = [stochastic_depth_prob * (block_idx + _idx) / (tot_blocks - 1.0) for _idx in range(_num_blocks)]
             _stage: List[nn.Module] = [
-                Bottlenext(in_planes, act_layer, norm_layer, drop_layer, stochastic_depth_prob=sd_prob)
+                Bottlenext(_planes, act_layer, norm_layer, drop_layer, stochastic_depth_prob=sd_prob)
                 for _idx, sd_prob in zip(range(_num_blocks), sd_probs)
             ]
-            if stage_idx < len(num_blocks) - 1:
+            if _planes != _oplanes:
                 _stage.append(
                     nn.Sequential(
-                        LayerNorm2d(in_planes),
-                        nn.Conv2d(in_planes, _planes, kernel_size=2, stride=2),
+                        LayerNorm2d(_planes),
+                        nn.Conv2d(_planes, _oplanes, kernel_size=2, stride=2),
                     )
                 )
-                in_planes = _planes
             _layers.append(nn.Sequential(*_stage))
-            stage_idx += 1
             block_idx += _num_blocks
 
         super().__init__(
@@ -202,8 +223,8 @@ class ConvNeXt(nn.Sequential):
                     (
                         "head",
                         nn.Sequential(
-                            nn.LayerNorm(in_planes, eps=1e-6),
-                            nn.Linear(in_planes, num_classes),
+                            nn.LayerNorm(planes[-1], eps=1e-6),
+                            nn.Linear(planes[-1], num_classes),
                         ),
                     ),
                 ]
@@ -241,8 +262,8 @@ def _convnext(
     return model
 
 
-def convnext_micro(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
-    """Smaller variation of ConvNeXt from
+def convnext_atto(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+    """ConvNeXt-Atto variant of Ross Wightman inspired by
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
@@ -253,15 +274,52 @@ def convnext_micro(pretrained: bool = False, progress: bool = True, **kwargs: An
         torch.nn.Module: classification model
     """
 
-    return _convnext(
-        "convnext_micro",
-        pretrained,
-        progress,
-        [3, 4, 6, 3],
-        [64, 128, 256, 512],
-        stem_channels=64,
-        **kwargs,
-    )
+    return _convnext("convnext_atto", pretrained, progress, [2, 2, 6, 2], [40, 80, 160, 320], **kwargs)
+
+
+def convnext_femto(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+    """ConvNeXt-Femto variant of Ross Wightman inspired by
+    `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _convnext("convnext_femto", pretrained, progress, [2, 2, 6, 2], [48, 96, 192, 384], **kwargs)
+
+
+def convnext_pico(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+    """ConvNeXt-Pico variant of Ross Wightman inspired by
+    `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _convnext("convnext_pico", pretrained, progress, [2, 2, 6, 2], [64, 128, 256, 512], **kwargs)
+
+
+def convnext_nano(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+    """ConvNeXt-Nano variant of Ross Wightman inspired by
+    `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _convnext("convnext_nano", pretrained, progress, [2, 2, 8, 2], [80, 160, 320, 640], **kwargs)
 
 
 def convnext_tiny(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
@@ -276,7 +334,7 @@ def convnext_tiny(pretrained: bool = False, progress: bool = True, **kwargs: Any
         torch.nn.Module: classification model
     """
 
-    return _convnext("convnext_tiny", pretrained, progress, [3, 3, 9, 3], [192, 384, 768, 768], **kwargs)
+    return _convnext("convnext_tiny", pretrained, progress, [3, 3, 9, 3], [96, 192, 384, 768], **kwargs)
 
 
 def convnext_small(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
