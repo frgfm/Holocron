@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.nn.functional - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -218,7 +218,7 @@
         </div>
         <article role="main">
           <h1>Source code for holocron.nn.functional</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2019-2023, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License 2.0.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
@@ -248,7 +248,7 @@
 
 
 <div class="viewcode-block" id="hard_mish"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.hard_mish">[docs]</a><span class="k">def</span> <span class="nf">hard_mish</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the HardMish activation function</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the HardMish activation function</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x: input tensor</span>
@@ -263,7 +263,7 @@
 
 
 <div class="viewcode-block" id="nl_relu"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.nl_relu">[docs]</a><span class="k">def</span> <span class="nf">nl_relu</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the natural logarithm ReLU activation function</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the natural logarithm ReLU activation function</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x: input tensor</span>
@@ -286,7 +286,7 @@
     <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
     <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the focal loss from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the focal loss from</span>
 <span class="sd">    `&quot;Focal Loss for Dense Object Detection&quot; &lt;https://arxiv.org/pdf/1708.02002.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -337,7 +337,7 @@
 
 
 <div class="viewcode-block" id="concat_downsample2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.concat_downsample2d">[docs]</a><span class="k">def</span> <span class="nf">concat_downsample2d</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements a loss-less downsampling operation described in</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a loss-less downsampling operation described in</span>
 <span class="sd">    `&quot;YOLO9000: Better, Faster, Stronger&quot; &lt;https://pjreddie.com/media/files/papers/YOLO9000.pdf&gt;`_</span>
 <span class="sd">    by stacking adjacent information on the channel dimension.</span>
 
@@ -363,7 +363,7 @@
 
 
 <div class="viewcode-block" id="z_pool"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.z_pool">[docs]</a><span class="k">def</span> <span class="nf">z_pool</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Z-pool layer from `&quot;Rotate to Attend: Convolutional Triplet Attention Module&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Z-pool layer from `&quot;Rotate to Attend: Convolutional Triplet Attention Module&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2010.03045.pdf&gt;`_.</span>
 
 <span class="sd">    Args:</span>
@@ -377,7 +377,7 @@
 <div class="viewcode-block" id="multilabel_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.multilabel_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">multilabel_cross_entropy</span><span class="p">(</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the cross entropy loss for multi-label targets</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the cross entropy loss for multi-label targets</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor[N, K, ...]): input tensor</span>
@@ -427,7 +427,7 @@
     <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
     <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the complement cross entropy loss from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the complement cross entropy loss from</span>
 <span class="sd">    `&quot;Imbalanced Image Classification with Complement Cross Entropy&quot; &lt;https://arxiv.org/pdf/2009.02189.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -493,7 +493,7 @@
     <span class="n">xi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the mutual channel loss from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the mutual channel loss from</span>
 <span class="sd">    `&quot;The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2002.04264.pdf&gt;`_.</span>
 
@@ -561,7 +561,7 @@
     <span class="n">normalize_slices</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-14</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements cross-correlation operation&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements cross-correlation operation&quot;&quot;&quot;</span>
 
     <span class="c1"># Reshape input Tensor into properly sized slices</span>
     <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
@@ -599,7 +599,7 @@
 
 
 <span class="k">def</span> <span class="nf">_convNd</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements inner cross-correlation operation over slices</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements inner cross-correlation operation over slices</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor[N, num_slices, Cin * K1 * ...]): input Tensor</span>
@@ -619,7 +619,7 @@
     <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-14</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements a normalized convolution operations in 2D. Based on the `implementation</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a normalized convolution operations in 2D. Based on the `implementation</span>
 <span class="sd">    &lt;https://github.com/kimdongsuk1/NormalizedCNN&gt;`_ by the paper&#39;s author.</span>
 <span class="sd">    See :class:`~holocron.nn.NormConv2d` for details and output shape.</span>
 
@@ -649,7 +649,7 @@
 
 
 <span class="k">def</span> <span class="nf">_addNd</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements inner adder operation over slices</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements inner adder operation over slices</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor[N, num_slices, Cin * K1 * ...]): input Tensor</span>
@@ -670,7 +670,7 @@
     <span class="n">normalize_slices</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-14</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements an adder operation in 2D from `&quot;AdderNet: Do We Really Need Multiplications in Deep Learning?&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements an adder operation in 2D from `&quot;AdderNet: Do We Really Need Multiplications in Deep Learning?&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1912.13200.pdf&gt;`_. See :class:`~holocron.nn.Add2d` for details and output shape.</span>
 
 <span class="sd">    Args:</span>
@@ -700,7 +700,7 @@
 
 
 <div class="viewcode-block" id="dropblock2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.dropblock2d">[docs]</a><span class="k">def</span> <span class="nf">dropblock2d</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">drop_prob</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">block_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">training</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the dropblock operation from `&quot;DropBlock: A regularization method for convolutional networks&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the dropblock operation from `&quot;DropBlock: A regularization method for convolutional networks&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1810.12890.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -745,7 +745,7 @@
     <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the dice loss from `&quot;V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the dice loss from `&quot;V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image</span>
 <span class="sd">    Segmentation&quot; &lt;https://arxiv.org/pdf/1606.04797.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -784,7 +784,7 @@
     <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
     <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Poly1 loss from `&quot;PolyLoss: A Polynomial Expansion Perspective of Classification Loss</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Poly1 loss from `&quot;PolyLoss: A Polynomial Expansion Perspective of Classification Loss</span>
 <span class="sd">    Functions&quot; &lt;https://arxiv.org/pdf/2204.12511.pdf&gt;`_.</span>
 
 <span class="sd">    Args:</span>
@@ -841,7 +841,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -869,9 +869,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>

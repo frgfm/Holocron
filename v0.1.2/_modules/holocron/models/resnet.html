@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.models.resnet - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -460,7 +460,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width_mult</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">depth_mult</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">in_planes</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">final_planes</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
                  <span class="n">use_se</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">se_ratio</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">dropout_ratio</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">bn_momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
                  <span class="n">act_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">drop_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Mostly adapted from https://github.com/clovaai/rexnet/blob/master/rexnetv1.py&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mostly adapted from https://github.com/clovaai/rexnet/blob/master/rexnetv1.py&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -522,7 +522,7 @@
 
 
 <div class="viewcode-block" id="resnet18"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet18">[docs]</a><span class="k">def</span> <span class="nf">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ResNet-18 from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-18 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -537,7 +537,7 @@
 
 
 <div class="viewcode-block" id="resnet34"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet34">[docs]</a><span class="k">def</span> <span class="nf">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ResNet-34 from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-34 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -552,7 +552,7 @@
 
 
 <div class="viewcode-block" id="resnet50"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet50">[docs]</a><span class="k">def</span> <span class="nf">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ResNet-50 from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-50 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -567,7 +567,7 @@
 
 
 <div class="viewcode-block" id="resnet101"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet101">[docs]</a><span class="k">def</span> <span class="nf">resnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ResNet-101 from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-101 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -582,7 +582,7 @@
 
 
 <div class="viewcode-block" id="resnet152"><a class="viewcode-back" href="../../../models.html#holocron.models.resnet152">[docs]</a><span class="k">def</span> <span class="nf">resnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ResNet-152 from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-152 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -597,7 +597,7 @@
 
 
 <div class="viewcode-block" id="resnext50_32x4d"><a class="viewcode-back" href="../../../models.html#holocron.models.resnext50_32x4d">[docs]</a><span class="k">def</span> <span class="nf">resnext50_32x4d</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ResNeXt-50 from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNeXt-50 from</span>
 <span class="sd">    `&quot;Aggregated Residual Transformations for Deep Neural Networks&quot; &lt;https://arxiv.org/pdf/1611.05431.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -614,7 +614,7 @@
 
 
 <div class="viewcode-block" id="resnext101_32x8d"><a class="viewcode-back" href="../../../models.html#holocron.models.resnext101_32x8d">[docs]</a><span class="k">def</span> <span class="nf">resnext101_32x8d</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ResNeXt-101 from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNeXt-101 from</span>
 <span class="sd">    `&quot;Aggregated Residual Transformations for Deep Neural Networks&quot; &lt;https://arxiv.org/pdf/1611.05431.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -647,7 +647,7 @@
 
 
 <div class="viewcode-block" id="rexnet1_0x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet1_0x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_0x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ReXNet-1.0x from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-1.0x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
@@ -663,7 +663,7 @@
 
 
 <div class="viewcode-block" id="rexnet1_3x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet1_3x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_3x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ReXNet-1.3x from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-1.3x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
@@ -679,7 +679,7 @@
 
 
 <div class="viewcode-block" id="rexnet1_5x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet1_5x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_5x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ReXNet-1.5x from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-1.5x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
@@ -695,7 +695,7 @@
 
 
 <div class="viewcode-block" id="rexnet2_0x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet2_0x">[docs]</a><span class="k">def</span> <span class="nf">rexnet2_0x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ReXNet-2.0x from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-2.0x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
@@ -711,7 +711,7 @@
 
 
 <div class="viewcode-block" id="rexnet2_2x"><a class="viewcode-back" href="../../../models.html#holocron.models.rexnet2_2x">[docs]</a><span class="k">def</span> <span class="nf">rexnet2_2x</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;ReXNet-2.2x from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-2.2x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
@@ -736,7 +736,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -764,9 +764,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>

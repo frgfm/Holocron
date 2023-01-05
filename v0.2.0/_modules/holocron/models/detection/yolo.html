@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.models.detection.yolo - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -273,7 +273,7 @@
         <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]],</span>
         <span class="n">ignore_high_iou</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the detector losses as described in `&quot;You Only Look Once: Unified, Real-Time Object Detection&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the detector losses as described in `&quot;You Only Look Once: Unified, Real-Time Object Detection&quot;</span>
 <span class="sd">        &lt;https://pjreddie.com/media/files/papers/yolo_1.pdf&gt;`_</span>
 
 <span class="sd">        Args:</span>
@@ -380,7 +380,7 @@
         <span class="n">rpn_nms_thresh</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
         <span class="n">box_score_thresh</span><span class="o">=</span><span class="mf">0.05</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;Perform final filtering to produce detections</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform final filtering to produce detections</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            b_coords (torch.Tensor[N, H * W * num_anchors, 4]): relative coordinates in format (x, y, w, h)</span>
@@ -489,7 +489,7 @@
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">,</span> <span class="s1">&#39;leaky_relu&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_format_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Formats convolutional layer output</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Formats convolutional layer output</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            x (torch.Tensor[N, num_anchors * (5 + num_classes) * H * W]): output tensor</span>
@@ -538,7 +538,7 @@
         <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]:</span>
-        <span class="sd">&quot;&quot;&quot;Perform detection on an image tensor and returns either the loss dictionary in training mode</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform detection on an image tensor and returns either the loss dictionary in training mode</span>
 <span class="sd">        or the list of detections in eval mode.</span>
 
 <span class="sd">        Args:</span>
@@ -599,7 +599,7 @@
 
 
 <div class="viewcode-block" id="yolov1"><a class="viewcode-back" href="../../../../models.html#holocron.models.detection.yolov1">[docs]</a><span class="k">def</span> <span class="nf">yolov1</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pretrained_backbone</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">YOLOv1</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;YOLO model from</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;YOLO model from</span>
 <span class="sd">    `&quot;You Only Look Once: Unified, Real-Time Object Detection&quot; &lt;https://pjreddie.com/media/files/papers/yolo_1.pdf&gt;`_.</span>
 
 <span class="sd">    YOLO&#39;s particularity is to make predictions in a grid (same size as last feature map). For each grid cell,</span>
@@ -684,7 +684,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -712,9 +712,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/scripts/furo.js"></script>

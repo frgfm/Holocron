@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.ops.boxes - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -218,7 +218,7 @@
         </div>
         <article role="main">
           <h1>Source code for holocron.ops.boxes</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2022, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2019-2023, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License 2.0.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
@@ -251,7 +251,7 @@
 
 
 <div class="viewcode-block" id="box_giou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_giou">[docs]</a><span class="k">def</span> <span class="nf">box_giou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Generalized-IoU as described in `&quot;Generalized Intersection over Union: A Metric and A Loss</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Generalized-IoU as described in `&quot;Generalized Intersection over Union: A Metric and A Loss</span>
 <span class="sd">    for Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1902.09630.pdf&gt;`_. This implementation was adapted</span>
 <span class="sd">    from https://github.com/facebookresearch/detr/blob/master/util/box_ops.py</span>
 
@@ -287,7 +287,7 @@
 
 
 <span class="k">def</span> <span class="nf">iou_penalty</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Implements the penalty term for the Distance-IoU loss</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the penalty term for the Distance-IoU loss</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -325,7 +325,7 @@
 
 
 <div class="viewcode-block" id="diou_loss"><a class="viewcode-back" href="../../../ops.html#holocron.ops.diou_loss">[docs]</a><span class="k">def</span> <span class="nf">diou_loss</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Distance-IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Distance-IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
 <span class="sd">    Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1911.08287.pdf&gt;`_.</span>
 
 <span class="sd">    The loss is defined as follows:</span>
@@ -353,7 +353,7 @@
 
 
 <span class="k">def</span> <span class="nf">aspect_ratio</span><span class="p">(</span><span class="n">boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Computes the aspect ratio of boxes</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the aspect ratio of boxes</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes (torch.Tensor[N, 4]): bounding boxes</span>
@@ -366,7 +366,7 @@
 
 
 <span class="k">def</span> <span class="nf">aspect_ratio_consistency</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Computes the aspect ratio consistency from the complete IoU loss</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the aspect ratio consistency from the complete IoU loss</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -384,7 +384,7 @@
 
 
 <div class="viewcode-block" id="ciou_loss"><a class="viewcode-back" href="../../../ops.html#holocron.ops.ciou_loss">[docs]</a><span class="k">def</span> <span class="nf">ciou_loss</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Complete IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Computes the Complete IoU loss as described in `&quot;Distance-IoU Loss: Faster and Better Learning for</span>
 <span class="sd">    Bounding Box Regression&quot; &lt;https://arxiv.org/pdf/1911.08287.pdf&gt;`_.</span>
 
 <span class="sd">    The loss is defined as follows:</span>
@@ -446,7 +446,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -474,9 +474,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>

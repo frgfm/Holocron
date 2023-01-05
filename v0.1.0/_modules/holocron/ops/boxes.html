@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.ops.boxes - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -222,7 +222,7 @@
 
 
 <span class="k">def</span> <span class="nf">iou_penalty</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the penalty term for the Distance-IoU loss</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the penalty term for the Distance-IoU loss</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -260,7 +260,7 @@
 
 
 <div class="viewcode-block" id="box_diou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_diou">[docs]</a><span class="k">def</span> <span class="nf">box_diou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Computes the Distance-IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the Distance-IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -274,7 +274,7 @@
 
 
 <span class="k">def</span> <span class="nf">aspect_ratio</span><span class="p">(</span><span class="n">boxes</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Computes the aspect ratio of boxes</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the aspect ratio of boxes</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes (torch.Tensor[N, 4]): bounding boxes</span>
@@ -287,7 +287,7 @@
 
 
 <span class="k">def</span> <span class="nf">aspect_ratio_consistency</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Computes the aspect ratio consistency from the complete IoU loss</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the aspect ratio consistency from the complete IoU loss</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -305,7 +305,7 @@
 
 
 <div class="viewcode-block" id="box_ciou"><a class="viewcode-back" href="../../../ops.html#holocron.ops.box_ciou">[docs]</a><span class="k">def</span> <span class="nf">box_ciou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Computes the Complete IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the Complete IoU loss as described in https://arxiv.org/pdf/1911.08287.pdf</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        boxes1 (torch.Tensor[M, 4]): bounding boxes</span>
@@ -344,7 +344,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -372,9 +372,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>

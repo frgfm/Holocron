@@ -14,7 +14,7 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.nn" href="nn.html" /><link rel="prev" title="Holocron Notebooks" href="notebooks.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.models - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -951,9 +951,72 @@ with Mish as activation layer and DropBlock as regularization layer.</p>
 * switch to depth-wise convolutions
 * reduce the amount of activations and normalization layers</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="holocron.models.convnext_micro">
-<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">convnext_micro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConvNeXt</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/convnext.html#convnext_micro"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.convnext_micro" title="Permalink to this definition">#</a></dt>
-<dd><p>Smaller variation of ConvNeXt from
+<dt class="sig sig-object py" id="holocron.models.convnext_atto">
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">convnext_atto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConvNeXt</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/convnext.html#convnext_atto"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.convnext_atto" title="Permalink to this definition">#</a></dt>
+<dd><p>ConvNeXt-Atto variant of Ross Wightman inspired by
+<a class="reference external" href="https://arxiv.org/pdf/2201.03545.pdf">“A ConvNet for the 2020s”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="holocron.models.convnext_femto">
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">convnext_femto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConvNeXt</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/convnext.html#convnext_femto"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.convnext_femto" title="Permalink to this definition">#</a></dt>
+<dd><p>ConvNeXt-Femto variant of Ross Wightman inspired by
+<a class="reference external" href="https://arxiv.org/pdf/2201.03545.pdf">“A ConvNet for the 2020s”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="holocron.models.convnext_pico">
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">convnext_pico</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConvNeXt</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/convnext.html#convnext_pico"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.convnext_pico" title="Permalink to this definition">#</a></dt>
+<dd><p>ConvNeXt-Pico variant of Ross Wightman inspired by
+<a class="reference external" href="https://arxiv.org/pdf/2201.03545.pdf">“A ConvNet for the 2020s”</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – If True, displays a progress bar of the download to stderr</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>classification model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="holocron.models.convnext_nano">
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">convnext_nano</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConvNeXt</span></span></span><a class="reference internal" href="_modules/holocron/models/classification/convnext.html#convnext_nano"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.convnext_nano" title="Permalink to this definition">#</a></dt>
+<dd><p>ConvNeXt-Nano variant of Ross Wightman inspired by
 <a class="reference external" href="https://arxiv.org/pdf/2201.03545.pdf">“A ConvNet for the 2020s”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1529,7 +1592,7 @@ with a ReXNet-1.3x backbone used as encoder, and more advanced upscaling blocks 
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1621,7 +1684,10 @@ with a ReXNet-1.3x backbone used as encoder, and more advanced upscaling blocks 
 </ul>
 </li>
 <li><a class="reference internal" href="#convnext">ConvNeXt</a><ul>
-<li><a class="reference internal" href="#holocron.models.convnext_micro"><code class="docutils literal notranslate"><span class="pre">convnext_micro()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.convnext_atto"><code class="docutils literal notranslate"><span class="pre">convnext_atto()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.convnext_femto"><code class="docutils literal notranslate"><span class="pre">convnext_femto()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.convnext_pico"><code class="docutils literal notranslate"><span class="pre">convnext_pico()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.convnext_nano"><code class="docutils literal notranslate"><span class="pre">convnext_nano()</span></code></a></li>
 <li><a class="reference internal" href="#holocron.models.convnext_tiny"><code class="docutils literal notranslate"><span class="pre">convnext_tiny()</span></code></a></li>
 <li><a class="reference internal" href="#holocron.models.convnext_small"><code class="docutils literal notranslate"><span class="pre">convnext_small()</span></code></a></li>
 <li><a class="reference internal" href="#holocron.models.convnext_base"><code class="docutils literal notranslate"><span class="pre">convnext_base()</span></code></a></li>
@@ -1673,9 +1739,6 @@ with a ReXNet-1.3x backbone used as encoder, and more advanced upscaling blocks 
     </aside>
   </div>
 </div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>

@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.trainer.core - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -267,7 +267,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Trainer.set_device"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.set_device">[docs]</a>    <span class="k">def</span> <span class="nf">set_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Move tensor objects to the target GPU</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move tensor objects to the target GPU</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            gpu: index of the target GPU device</span>
@@ -283,7 +283,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Trainer.save"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Save a trainer checkpoint</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save a trainer checkpoint</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            output_file: destination file path</span>
@@ -295,7 +295,7 @@
                    <span class="n">_use_new_zipfile_serialization</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Trainer.load"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Resume from a trainer state</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resume from a trainer state</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state (dict): checkpoint dictionary</span>
@@ -308,7 +308,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span></div>
 
     <span class="k">def</span> <span class="nf">_fit_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mb</span><span class="p">:</span> <span class="n">ConsoleMasterBar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fit a single epoch</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit a single epoch</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            mb (fastprogress.master_bar): primary progress bar</span>
@@ -336,7 +336,7 @@
         <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]]:</span>
-        <span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpu</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu</span> <span class="o">&gt;=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid device index&quot;</span><span class="p">)</span>
@@ -346,7 +346,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span>
@@ -369,7 +369,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="n">ContiguousParams</span><span class="p">([</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">_reset_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Reset the target params of the optimizer&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the target params of the optimizer&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span> <span class="o">=</span> <span class="p">[]</span>
@@ -399,7 +399,7 @@
         <span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sched_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;onecycle&#39;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Train the model for a given number of epochs</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Train the model for a given number of epochs</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            num_epochs (int): number of epochs to train</span>
@@ -423,8 +423,8 @@
             <span class="n">eval_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
 
             <span class="c1"># master bar</span>
-            <span class="n">mb</span><span class="o">.</span><span class="n">main_bar</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="n">num_epochs</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">mb</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">+</span> <span class="n">num_epochs</span><span class="si">}</span><span class="s2"> - &quot;</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">main_bar</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">num_epochs</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">mb</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">num_epochs</span><span class="si">}</span><span class="s2"> - &quot;</span>
                      <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_eval_metrics_str</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">eval_metrics</span><span class="p">[</span><span class="s1">&#39;val_loss&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span><span class="p">:</span>
@@ -440,7 +440,7 @@
         <span class="n">end_lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">num_it</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Gridsearch the optimal learning rate for the training</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gridsearch the optimal learning rate for the training</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">           freeze_until (str, optional): last layer to freeze</span>
@@ -474,7 +474,7 @@
                 <span class="k">break</span></div>
 
 <div class="viewcode-block" id="Trainer.plot_recorder"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.plot_recorder">[docs]</a>    <span class="k">def</span> <span class="nf">plot_recorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">block</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Display the results of the LR grid search</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Display the results of the LR grid search</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            beta (float, optional): smoothing factor</span>
@@ -499,7 +499,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Trainer.check_setup"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.check_setup">[docs]</a>    <span class="k">def</span> <span class="nf">check_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3e-4</span><span class="p">,</span> <span class="n">num_it</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Check whether you can overfit one batch</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check whether you can overfit one batch</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            freeze_until (str, optional): last layer to freeze</span>
@@ -531,7 +531,7 @@
 
 
 <div class="viewcode-block" id="ClassificationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer">[docs]</a><span class="k">class</span> <span class="nc">ClassificationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Image classification trainer class</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Image classification trainer class</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): model to train</span>
@@ -545,7 +545,7 @@
 
 <div class="viewcode-block" id="ClassificationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.ClassificationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: evaluation metrics</span>
@@ -579,7 +579,7 @@
 
 
 <div class="viewcode-block" id="SegmentationTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.SegmentationTrainer">[docs]</a><span class="k">class</span> <span class="nc">SegmentationTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Semantic segmentation trainer class</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Semantic segmentation trainer class</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): model to train</span>
@@ -593,7 +593,7 @@
 
 <div class="viewcode-block" id="SegmentationTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.SegmentationTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">255</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ignore_index (int, optional): index of the class to ignore in evaluation</span>
@@ -633,7 +633,7 @@
 
 
 <span class="k">def</span> <span class="nf">assign_iou</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="sd">&quot;&quot;&quot;Assigns boxes by IoU&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assigns boxes by IoU&quot;&quot;&quot;</span>
     <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">,</span> <span class="n">pred_boxes</span><span class="p">)</span>
     <span class="n">iou</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">gt_kept</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;=</span> <span class="n">iou_threshold</span>
@@ -651,7 +651,7 @@
 
 
 <div class="viewcode-block" id="DetectionTrainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer">[docs]</a><span class="k">class</span> <span class="nc">DetectionTrainer</span><span class="p">(</span><span class="n">Trainer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Object detection trainer class</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Object detection trainer class</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model (torch.nn.Module): model to train</span>
@@ -668,7 +668,7 @@
         <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]:</span>
-        <span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move input and target to GPU&quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">_x</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">_x</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
         <span class="n">target</span> <span class="o">=</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span>
@@ -696,7 +696,7 @@
 
 <div class="viewcode-block" id="DetectionTrainer.evaluate"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.DetectionTrainer.evaluate">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the model on the validation set</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            iou_threshold (float, optional): IoU threshold for pair assignment</span>
@@ -747,7 +747,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -775,9 +775,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>

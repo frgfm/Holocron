@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.optim.wrapper - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -232,7 +232,7 @@
 
 
 <div class="viewcode-block" id="Lookahead"><a class="viewcode-back" href="../../../optim.html#holocron.optim.wrapper.Lookahead">[docs]</a><span class="k">class</span> <span class="nc">Lookahead</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Lookahead optimizer wrapper from `&quot;Lookahead Optimizer: k steps forward, 1 step back&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Lookahead optimizer wrapper from `&quot;Lookahead Optimizer: k steps forward, 1 step back&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1907.08610.pdf&gt;`_.</span>
 
 <span class="sd">    &gt;&gt;&gt; from torch.optim import AdamW</span>
@@ -290,7 +290,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Performs a single optimization step.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs a single optimization step.</span>
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            closure (callable, optional): A closure that reevaluates the model and returns the loss.</span>
@@ -315,7 +315,7 @@
         <span class="k">return</span> <span class="n">format_string</span>
 
     <span class="k">def</span> <span class="nf">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Adds a new slow parameter group</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds a new slow parameter group</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            param_group (dict): parameter group of base_optimizer</span>
@@ -329,7 +329,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Adds a parameter group to base optimizer (fast weights) and its corresponding slow version</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds a parameter group to base optimizer (fast weights) and its corresponding slow version</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            param_group (dict): parameter group</span>
@@ -342,7 +342,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">sync_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sync_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Synchronize parameters as follows:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Synchronize parameters as follows:</span>
 <span class="sd">        slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</span>
 
 <span class="sd">        Args:</span>
@@ -359,7 +359,7 @@
 
 
 <div class="viewcode-block" id="Scout"><a class="viewcode-back" href="../../../optim.html#holocron.optim.wrapper.Scout">[docs]</a><span class="k">class</span> <span class="nc">Scout</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements a new optimizer wrapper based on `&quot;Lookahead Optimizer: k steps forward, 1 step back&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a new optimizer wrapper based on `&quot;Lookahead Optimizer: k steps forward, 1 step back&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1907.08610.pdf&gt;`_.</span>
 
 <span class="sd">    Example::</span>
@@ -423,7 +423,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">closure</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Performs a single optimization step.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs a single optimization step.</span>
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            closure (callable, optional): A closure that reevaluates the model and returns the loss.</span>
@@ -470,7 +470,7 @@
         <span class="k">return</span> <span class="n">format_string</span>
 
     <span class="k">def</span> <span class="nf">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Adds a new slow parameter group</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds a new slow parameter group</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            param_group (dict): parameter group of base_optimizer</span>
@@ -484,7 +484,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">param_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_group</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Adds a parameter group to base optimizer (fast weights) and its corresponding slow version</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds a parameter group to base optimizer (fast weights) and its corresponding slow version</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            param_group (dict): parameter group</span>
@@ -497,7 +497,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">sync_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sync_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Synchronize parameters as follows:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Synchronize parameters as follows:</span>
 <span class="sd">        slow_param &lt;- slow_param + sync_rate * (fast_param - slow_param)</span>
 
 <span class="sd">        Args:</span>
@@ -523,7 +523,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -551,9 +551,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>

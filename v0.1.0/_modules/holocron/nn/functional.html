@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.nn.functional - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -221,7 +221,7 @@
 
 
 <div class="viewcode-block" id="mish"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.mish">[docs]</a><span class="k">def</span> <span class="nf">mish</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Mish activation function</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Mish activation function</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor): input tensor</span>
@@ -233,7 +233,7 @@
 
 
 <div class="viewcode-block" id="nl_relu"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.nl_relu">[docs]</a><span class="k">def</span> <span class="nf">nl_relu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the natural logarithm ReLU activation function</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the natural logarithm ReLU activation function</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor): input tensor</span>
@@ -250,7 +250,7 @@
 
 
 <div class="viewcode-block" id="focal_loss"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.focal_loss">[docs]</a><span class="k">def</span> <span class="nf">focal_loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the focal loss from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the focal loss from</span>
 <span class="sd">    `&quot;Focal Loss for Dense Object Detection&quot; &lt;https://arxiv.org/pdf/1708.02002.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -304,7 +304,7 @@
 
 
 <div class="viewcode-block" id="concat_downsample2d"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.concat_downsample2d">[docs]</a><span class="k">def</span> <span class="nf">concat_downsample2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements a loss-less downsampling operation described in</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a loss-less downsampling operation described in</span>
 <span class="sd">    `&quot;YOLO9000: Better, Faster, Stronger&quot; &lt;https://pjreddie.com/media/files/papers/YOLO9000.pdf&gt;`_</span>
 <span class="sd">    by stacking adjacent information on the channel dimension.</span>
 
@@ -333,7 +333,7 @@
 
 
 <div class="viewcode-block" id="multilabel_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.multilabel_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">multilabel_cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the cross entropy loss for multi-label targets</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the cross entropy loss for multi-label targets</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x (torch.Tensor[N, K, ...]): input tensor</span>
@@ -375,7 +375,7 @@
 
 
 <div class="viewcode-block" id="ls_cross_entropy"><a class="viewcode-back" href="../../../nn.functional.html#holocron.nn.functional.ls_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">ls_cross_entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the label smoothing cross entropy loss from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the label smoothing cross entropy loss from</span>
 <span class="sd">    `&quot;Attention Is All You Need&quot; &lt;https://arxiv.org/pdf/1706.03762.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -430,7 +430,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -458,9 +458,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>

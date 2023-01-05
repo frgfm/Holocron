@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 6.1.0 and Furo 2022.12.07 -->
         <title>holocron.nn.modules.loss - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
@@ -267,7 +267,7 @@
 
 
 <div class="viewcode-block" id="FocalLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.FocalLoss">[docs]</a><span class="k">class</span> <span class="nc">FocalLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of Focal Loss as described in</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of Focal Loss as described in</span>
 <span class="sd">    `&quot;Focal Loss for Dense Object Detection&quot; &lt;https://arxiv.org/pdf/1708.02002.pdf&gt;`_.</span>
 
 <span class="sd">    While the weighted cross-entropy is described by:</span>
@@ -304,7 +304,7 @@
 
 
 <div class="viewcode-block" id="MultiLabelCrossEntropy"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.MultiLabelCrossEntropy">[docs]</a><span class="k">class</span> <span class="nc">MultiLabelCrossEntropy</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implementation of the cross-entropy loss for multi-label targets</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementation of the cross-entropy loss for multi-label targets</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        weight (torch.Tensor[K], optional): class weight for loss computation</span>
@@ -323,7 +323,7 @@
 
 
 <div class="viewcode-block" id="ComplementCrossEntropy"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ComplementCrossEntropy">[docs]</a><span class="k">class</span> <span class="nc">ComplementCrossEntropy</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the complement cross entropy loss from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the complement cross entropy loss from</span>
 <span class="sd">    `&quot;Imbalanced Image Classification with Complement Cross Entropy&quot; &lt;https://arxiv.org/pdf/2009.02189.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -345,7 +345,7 @@
 
 
 <div class="viewcode-block" id="ClassBalancedWrapper"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.ClassBalancedWrapper">[docs]</a><span class="k">class</span> <span class="nc">ClassBalancedWrapper</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of the class-balanced loss as described in `&quot;Class-Balanced Loss Based on Effective Number</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implementation of the class-balanced loss as described in `&quot;Class-Balanced Loss Based on Effective Number</span>
 <span class="sd">    of Samples&quot; &lt;https://arxiv.org/pdf/1901.05555.pdf&gt;`_.</span>
 
 <span class="sd">    Given a loss function :math:`\mathcal{L}`, the class-balanced loss is described by:</span>
@@ -380,7 +380,7 @@
 
 
 <div class="viewcode-block" id="MutualChannelLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.MutualChannelLoss">[docs]</a><span class="k">class</span> <span class="nc">MutualChannelLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the mutual channel loss from</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the mutual channel loss from</span>
 <span class="sd">    `&quot;The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2002.04264.pdf&gt;`_.</span>
 
@@ -412,7 +412,7 @@
 
 
 <div class="viewcode-block" id="DiceLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.DiceLoss">[docs]</a><span class="k">class</span> <span class="nc">DiceLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the dice loss from `&quot;V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the dice loss from `&quot;V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image</span>
 <span class="sd">    Segmentation&quot; &lt;https://arxiv.org/pdf/1606.04797.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
@@ -439,7 +439,7 @@
 
 
 <div class="viewcode-block" id="PolyLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.PolyLoss">[docs]</a><span class="k">class</span> <span class="nc">PolyLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Implements the Poly1 loss from `&quot;PolyLoss: A Polynomial Expansion Perspective of Classification Loss</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Poly1 loss from `&quot;PolyLoss: A Polynomial Expansion Perspective of Classification Loss</span>
 <span class="sd">    Functions&quot; &lt;https://arxiv.org/pdf/2204.12511.pdf&gt;`_.</span>
 
 <span class="sd">    Args:</span>
@@ -475,7 +475,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2022, François-Guillaume Fernandez
+                Copyright &#169; 2019-2023, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -503,9 +503,6 @@
     </aside>
   </div>
 </div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/scripts/furo.js"></script>
