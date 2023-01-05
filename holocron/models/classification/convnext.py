@@ -156,7 +156,6 @@ class ConvNeXt(nn.Sequential):
             act_layer = nn.GELU()
         self.dilation = 1
 
-        planes[0]
         # Patchify-like stem
         _layers = conv_sequence(
             in_channels,
