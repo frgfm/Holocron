@@ -138,7 +138,13 @@ The key takeaways from the paper are the following:
 * switch to depth-wise convolutions
 * reduce the amount of activations and normalization layers
 
-.. autofunction:: convnext_micro
+.. autofunction:: convnext_atto
+
+.. autofunction:: convnext_femto
+
+.. autofunction:: convnext_pico
+
+.. autofunction:: convnext_nano
 
 .. autofunction:: convnext_tiny
 
