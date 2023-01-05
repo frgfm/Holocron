@@ -18,11 +18,36 @@ from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .resnet import _ResBlock
 
-__all__ = ["convnext_micro", "convnext_tiny", "convnext_small", "convnext_base", "convnext_large", "convnext_xl"]
+__all__ = [
+    "convnext_atto",
+    "convnext_femto",
+    "convnext_pico",
+    "convnext_nano",
+    "convnext_tiny",
+    "convnext_small",
+    "convnext_base",
+    "convnext_large",
+    "convnext_xl",
+]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    "convnext_micro": {
+    "convnext_atto": {
+        **IMAGENETTE,
+        "input_shape": (3, 224, 224),
+        "url": None,
+    },
+    "convnext_femto": {
+        **IMAGENETTE,
+        "input_shape": (3, 224, 224),
+        "url": None,
+    },
+    "convnext_pico": {
+        **IMAGENETTE,
+        "input_shape": (3, 224, 224),
+        "url": None,
+    },
+    "convnext_nano": {
         **IMAGENETTE,
         "input_shape": (3, 224, 224),
         "url": None,
@@ -237,8 +262,8 @@ def _convnext(
     return model
 
 
-def convnext_micro(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
-    """Smaller variation of ConvNeXt from
+def convnext_atto(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+    """ConvNeXt-Atto variant of Ross Wightman inspired by
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
@@ -249,7 +274,52 @@ def convnext_micro(pretrained: bool = False, progress: bool = True, **kwargs: An
         torch.nn.Module: classification model
     """
 
-    return _convnext("convnext_micro", pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
+    return _convnext("convnext_atto", pretrained, progress, [2, 2, 6, 2], [40, 80, 160, 320], **kwargs)
+
+
+def convnext_femto(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+    """ConvNeXt-Femto variant of Ross Wightman inspired by
+    `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _convnext("convnext_femto", pretrained, progress, [2, 2, 6, 2], [48, 96, 192, 384], **kwargs)
+
+
+def convnext_pico(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+    """ConvNeXt-Pico variant of Ross Wightman inspired by
+    `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _convnext("convnext_pico", pretrained, progress, [2, 2, 6, 2], [64, 128, 256, 512], **kwargs)
+
+
+def convnext_nano(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+    """ConvNeXt-Nano variant of Ross Wightman inspired by
+    `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
+
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+
+    Returns:
+        torch.nn.Module: classification model
+    """
+
+    return _convnext("convnext_nano", pretrained, progress, [2, 2, 8, 2], [80, 160, 320, 640], **kwargs)
 
 
 def convnext_tiny(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
