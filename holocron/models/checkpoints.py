@@ -6,7 +6,7 @@
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from torchvision.transforms.functional import InterpolationMode
 
@@ -14,7 +14,6 @@ __all__ = [
     "Checkpoint",
     "TrainingRecipe",
     "Metric",
-    "EvalResult",
     "Dataset",
     "Evaluation",
     "LoadingMeta",
@@ -43,12 +42,6 @@ class Metric(str, Enum):
     TOP5_ACC = "top5-accuracy"
 
 
-@dataclass
-class EvalResult:
-    metric: Metric
-    val: float
-
-
 class Dataset(str, Enum):
     """Evaluation dataset"""
 
@@ -60,7 +53,7 @@ class Dataset(str, Enum):
 @dataclass
 class Evaluation:
     dataset: Dataset
-    results: List[EvalResult]
+    results: Dict[Metric, float]
 
 
 @dataclass
