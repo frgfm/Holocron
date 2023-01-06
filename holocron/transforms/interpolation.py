@@ -16,7 +16,7 @@ from torchvision.transforms.functional import pad, resize
 __all__ = ["Resize", "RandomZoomOut"]
 
 
-class ResizeMethod(Enum):
+class ResizeMethod(str, Enum):
     """Resize methods
     Available methods are ``squish``, ``pad``.
     """

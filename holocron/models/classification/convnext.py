@@ -4,8 +4,9 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 from collections import OrderedDict
+from enum import Enum
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 import torch.nn as nn
@@ -14,11 +15,24 @@ from torchvision.ops.stochastic_depth import StochasticDepth
 
 from holocron.nn import GlobalAvgPool2d
 
+from ..checkpoints import (
+    Checkpoint,
+    Dataset,
+    EvalResult,
+    Evaluation,
+    LoadingMeta,
+    Metric,
+    PreProcessing,
+    TrainingRecipe,
+    _handle_legacy_pretrained,
+)
 from ..presets import IMAGENETTE
 from ..utils import conv_sequence, load_pretrained_params
 from .resnet import _ResBlock
 
 __all__ = [
+    "ConvNeXt",
+    "ConvNeXt_Atto_Checkpoint",
     "convnext_atto",
     "convnext_femto",
     "convnext_pico",
@@ -30,54 +44,24 @@ __all__ = [
     "convnext_xl",
 ]
 
+_COMMON_SCRIPT = "references/classification/train.py"
+_COMMON_PREPROCESSING = PreProcessing(input_shape=(3, 224, 224), mean=IMAGENETTE.mean, std=IMAGENETTE.std)
 
-default_cfgs: Dict[str, Dict[str, Any]] = {
-    "convnext_atto": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "convnext_femto": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "convnext_pico": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "convnext_nano": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "convnext_tiny": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "convnext_small": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "convnext_base": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "convnext_large": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "convnext_xl": {
-        **IMAGENETTE,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-}
+
+def _checkpoint(
+    arch: str, url: str, acc1: float, acc5: float, sha256: str, size: int, num_params: int, commit: str, train_args: str
+) -> Checkpoint:
+    return Checkpoint(
+        evaluation=Evaluation(
+            dataset=Dataset.IMAGENETTE,
+            results=[EvalResult(metric=Metric.TOP1_ACC, val=acc1), EvalResult(metric=Metric.TOP5_ACC, val=acc5)],
+        ),
+        meta=LoadingMeta(
+            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
+        ),
+        pre_processing=_COMMON_PREPROCESSING,
+        recipe=TrainingRecipe(commit=commit, script=_COMMON_SCRIPT, args=train_args),
+    )
 
 
 class LayerNorm2d(nn.LayerNorm):
@@ -240,8 +224,7 @@ class ConvNeXt(nn.Sequential):
 
 
 def _convnext(
-    arch: str,
-    pretrained: bool,
+    checkpoint: Union[Checkpoint, None],
     progress: bool,
     num_blocks: List[int],
     out_chans: List[int],
@@ -254,144 +237,200 @@ def _convnext(
         **kwargs,
     )
 
-    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
+    model.default_cfg = checkpoint  # type: ignore[assignment]
     # Load pretrained parameters
-    if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
+    if isinstance(checkpoint, Checkpoint):
+        load_pretrained_params(model, checkpoint.meta.url, progress)
 
     return model
 
 
-def convnext_atto(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+class ConvNeXt_Atto_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="convnext_atto",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext_atto_224-4e92d4b1.pth",
+        acc1=0.8161,
+        acc5=0.9839,
+        sha256="4e92d4b1e8389af36a12c5edc9af70601ddfae8603a9b349363aebbcb926024d",
+        size=13535258,
+        num_params=3377730,
+        commit="695fbbb9e5449bc109c71058f756373ca3407c50",
+        train_args=(
+            "./imagenette2-320/ --arch convnext_atto --batch-size 64 --mixup-alpha 0.2 --amp --device 0"
+            " --epochs 100 --lr 1e-3 --wb --label-smoothing 0.1"
+        ),
+    )
+    DEFAULT = IMAGENETTE
+
+
+def convnext_atto(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ConvNeXt:
     """ConvNeXt-Atto variant of Ross Wightman inspired by
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.ConvNeXt_Atto_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        ConvNeXt_Atto_Checkpoint.DEFAULT,  # type: ignore[arg-type]
+    )
+    return _convnext(checkpoint, progress, [2, 2, 6, 2], [40, 80, 160, 320], **kwargs)
 
-    return _convnext("convnext_atto", pretrained, progress, [2, 2, 6, 2], [40, 80, 160, 320], **kwargs)
 
-
-def convnext_femto(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+def convnext_femto(
+    pretrained: bool = False, checkpoint: Union[Checkpoint, None] = None, progress: bool = True, **kwargs: Any
+) -> ConvNeXt:
     """ConvNeXt-Femto variant of Ross Wightman inspired by
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
+    checkpoint = _handle_legacy_pretrained(pretrained, checkpoint, None)
+    return _convnext(checkpoint, progress, [2, 2, 6, 2], [48, 96, 192, 384], **kwargs)
 
-    return _convnext("convnext_femto", pretrained, progress, [2, 2, 6, 2], [48, 96, 192, 384], **kwargs)
 
-
-def convnext_pico(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+def convnext_pico(
+    pretrained: bool = False, checkpoint: Union[Checkpoint, None] = None, progress: bool = True, **kwargs: Any
+) -> ConvNeXt:
     """ConvNeXt-Pico variant of Ross Wightman inspired by
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
+    checkpoint = _handle_legacy_pretrained(pretrained, checkpoint, None)
+    return _convnext(checkpoint, progress, [2, 2, 6, 2], [64, 128, 256, 512], **kwargs)
 
-    return _convnext("convnext_pico", pretrained, progress, [2, 2, 6, 2], [64, 128, 256, 512], **kwargs)
 
-
-def convnext_nano(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+def convnext_nano(
+    pretrained: bool = False, checkpoint: Union[Checkpoint, None] = None, progress: bool = True, **kwargs: Any
+) -> ConvNeXt:
     """ConvNeXt-Nano variant of Ross Wightman inspired by
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
+    checkpoint = _handle_legacy_pretrained(pretrained, checkpoint, None)
+    return _convnext(checkpoint, progress, [2, 2, 8, 2], [80, 160, 320, 640], **kwargs)
 
-    return _convnext("convnext_nano", pretrained, progress, [2, 2, 8, 2], [80, 160, 320, 640], **kwargs)
 
-
-def convnext_tiny(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+def convnext_tiny(
+    pretrained: bool = False, checkpoint: Union[Checkpoint, None] = None, progress: bool = True, **kwargs: Any
+) -> ConvNeXt:
     """ConvNeXt-T from
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
+    checkpoint = _handle_legacy_pretrained(pretrained, checkpoint, None)
+    return _convnext(checkpoint, progress, [3, 3, 9, 3], [96, 192, 384, 768], **kwargs)
 
-    return _convnext("convnext_tiny", pretrained, progress, [3, 3, 9, 3], [96, 192, 384, 768], **kwargs)
 
-
-def convnext_small(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+def convnext_small(
+    pretrained: bool = False, checkpoint: Union[Checkpoint, None] = None, progress: bool = True, **kwargs: Any
+) -> ConvNeXt:
     """ConvNeXt-S from
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
+    checkpoint = _handle_legacy_pretrained(pretrained, checkpoint, None)
+    return _convnext(checkpoint, progress, [3, 3, 27, 3], [96, 192, 384, 768], **kwargs)
 
-    return _convnext("convnext_tiny", pretrained, progress, [3, 3, 27, 3], [96, 192, 384, 768], **kwargs)
 
-
-def convnext_base(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+def convnext_base(
+    pretrained: bool = False, checkpoint: Union[Checkpoint, None] = None, progress: bool = True, **kwargs: Any
+) -> ConvNeXt:
     """ConvNeXt-B from
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
+    checkpoint = _handle_legacy_pretrained(pretrained, checkpoint, None)
+    return _convnext(checkpoint, progress, [3, 3, 27, 3], [128, 256, 512, 1024], **kwargs)
 
-    return _convnext("convnext_base", pretrained, progress, [3, 3, 27, 3], [128, 256, 512, 1024], **kwargs)
 
-
-def convnext_large(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+def convnext_large(
+    pretrained: bool = False, checkpoint: Union[Checkpoint, None] = None, progress: bool = True, **kwargs: Any
+) -> ConvNeXt:
     """ConvNeXt-L from
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
+    checkpoint = _handle_legacy_pretrained(pretrained, checkpoint, None)
+    return _convnext(checkpoint, progress, [3, 3, 27, 3], [192, 384, 768, 1536], **kwargs)
 
-    return _convnext("convnext_large", pretrained, progress, [3, 3, 27, 3], [192, 384, 768, 1536], **kwargs)
 
-
-def convnext_xl(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ConvNeXt:
+def convnext_xl(
+    pretrained: bool = False, checkpoint: Union[Checkpoint, None] = None, progress: bool = True, **kwargs: Any
+) -> ConvNeXt:
     """ConvNeXt-XL from
     `"A ConvNet for the 2020s" <https://arxiv.org/pdf/2201.03545.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
     """
-
-    return _convnext("convnext_xl", pretrained, progress, [3, 3, 27, 3], [256, 512, 1024, 2048], **kwargs)
+    checkpoint = _handle_legacy_pretrained(pretrained, checkpoint, None)
+    return _convnext(checkpoint, progress, [3, 3, 27, 3], [256, 512, 1024, 2048], **kwargs)

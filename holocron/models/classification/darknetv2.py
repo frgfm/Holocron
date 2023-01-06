@@ -20,7 +20,7 @@ __all__ = ["DarknetV2", "darknet19"]
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     "darknet19": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/darknet19_224-b1ce16a5.pt",
     },

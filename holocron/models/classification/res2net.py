@@ -23,7 +23,7 @@ __all__ = ["Bottle2neck", "res2net50_26w_4s"]
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     "res2net50_26w_4s": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/res2net50_26w_4s_224-97cfc954.pth",
     },

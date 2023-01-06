@@ -30,19 +30,19 @@ __all__ = [
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
-    "resnet18": {**IMAGENET, "input_shape": (3, 224, 224), "url": None},
-    "resnet34": {**IMAGENET, "input_shape": (3, 224, 224), "url": None},
+    "resnet18": {**IMAGENET.__dict__, "input_shape": (3, 224, 224), "url": None},
+    "resnet34": {**IMAGENET.__dict__, "input_shape": (3, 224, 224), "url": None},
     "resnet50": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 256, 256),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/resnet50_256-5e6206e0.pth",
     },
-    "resnet101": {**IMAGENET, "input_shape": (3, 224, 224), "url": None},
-    "resnet152": {**IMAGENET, "input_shape": (3, 224, 224), "url": None},
-    "resnext50_32x4d": {**IMAGENET, "input_shape": (3, 224, 224), "url": None},
-    "resnext101_32x8d": {**IMAGENET, "input_shape": (3, 224, 224), "url": None},
+    "resnet101": {**IMAGENET.__dict__, "input_shape": (3, 224, 224), "url": None},
+    "resnet152": {**IMAGENET.__dict__, "input_shape": (3, 224, 224), "url": None},
+    "resnext50_32x4d": {**IMAGENET.__dict__, "input_shape": (3, 224, 224), "url": None},
+    "resnext101_32x8d": {**IMAGENET.__dict__, "input_shape": (3, 224, 224), "url": None},
     "resnet50d": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/resnet50d_224-e315ba9d.pt",
     },
