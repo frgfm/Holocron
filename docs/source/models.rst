@@ -21,28 +21,27 @@ The output represents the classification scores for each output classes.
     darknet19 = models.darknet19(num_classes=10)
 
 
-The supported architectures for image classification are:
-
 .. toctree::
-   :maxdepth: 1
+  :caption: Supported architectures
+  :maxdepth: 1
 
-   models/resnet
-   models/resnext
-   models/res2net
-   models/tridentnet
-   models/convnext
-   models/pyconv_resnet
-   models/rexnet
-   models/sknet
-   models/darknet
-   models/darknetv2
-   models/darknetv3
-   models/darknetv4
-   models/repvgg
-   models/mobileone
+  models/resnet
+  models/resnext
+  models/res2net
+  models/tridentnet
+  models/convnext
+  models/pyconv_resnet
+  models/rexnet
+  models/sknet
+  models/darknet
+  models/darknetv2
+  models/darknetv3
+  models/darknetv4
+  models/repvgg
+  models/mobileone
 
 
-Below, you can find the list of available checkpoints:
+Here is the list of available checkpoints:
 
 .. include:: generated/classification_table.rst
 
