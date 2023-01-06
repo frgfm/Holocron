@@ -46,3 +46,14 @@ h1 {
 .version-show {
     display: block;
 }
+
+/* These 2 rules below are for the weight tables (generated in conf.py) to look
+ * better. In particular we make their row height shorter */
+.table-checkpoints td, .table-checkpoints th {
+  margin-bottom: 0.2rem;
+  padding: 0 !important;
+  line-height: 1 !important;
+}
+.table-checkpoints p {
+    margin-bottom: 0.2rem !important;
+}
