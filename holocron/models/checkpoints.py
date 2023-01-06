@@ -3,9 +3,10 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
+import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from torchvision.transforms.functional import InterpolationMode
 
@@ -90,3 +91,17 @@ class Checkpoint:
     pre_processing: PreProcessing
     # How to reproduce
     recipe: TrainingRecipe
+
+
+def _handle_legacy_pretrained(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    default_checkpoint: Union[Checkpoint, None] = None,
+) -> Union[Checkpoint, None]:
+
+    checkpoint = checkpoint or (default_checkpoint if pretrained else None)
+
+    if pretrained and checkpoint is None:
+        logging.warning("Invalid model URL, using default initialization.")
+
+    return checkpoint
