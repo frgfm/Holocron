@@ -1,0 +1,9 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: holocron.models
+
+
+rexnet1_0x
+==========
+
+.. autofunction:: rexnet1_0x

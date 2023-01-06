@@ -1,0 +1,9 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: holocron.models
+
+
+tridentnet50
+============
+
+.. autofunction:: tridentnet50

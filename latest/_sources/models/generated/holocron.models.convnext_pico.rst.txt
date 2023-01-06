@@ -1,0 +1,9 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: holocron.models
+
+
+convnext_pico
+=============
+
+.. autofunction:: convnext_pico

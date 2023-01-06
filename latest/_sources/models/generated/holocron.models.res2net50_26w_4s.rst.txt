@@ -1,0 +1,9 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: holocron.models
+
+
+res2net50_26w_4s
+================
+
+.. autofunction:: res2net50_26w_4s

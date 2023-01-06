@@ -1,0 +1,9 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: holocron.models
+
+
+mobileone_s3
+============
+
+.. autofunction:: mobileone_s3
