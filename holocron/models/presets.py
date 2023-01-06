@@ -5,10 +5,21 @@
 
 __all__ = ["IMAGENET", "IMAGENETTE", "CIFAR10"]
 
-IMAGENET = {
-    "mean": (0.485, 0.456, 0.406),
-    "std": (0.229, 0.224, 0.225),
-    "classes": [
+from dataclasses import dataclass
+from typing import List, Tuple
+
+
+@dataclass
+class _Dataset:
+    mean: Tuple[float, ...]
+    std: Tuple[float, ...]
+    classes: List[str]
+
+
+IMAGENET = _Dataset(
+    mean=(0.485, 0.456, 0.406),
+    std=(0.229, 0.224, 0.225),
+    classes=[
         "tench",
         "goldfish",
         "great white shark",
@@ -1010,12 +1021,12 @@ IMAGENET = {
         "ear",
         "toilet paper",
     ],
-}
+)
 
-IMAGENETTE = {
-    "mean": IMAGENET["mean"],
-    "std": IMAGENET["std"],
-    "classes": [
+IMAGENETTE = _Dataset(
+    mean=IMAGENET.mean,
+    std=IMAGENET.std,
+    classes=[
         "tench",
         "English springer",
         "cassette player",
@@ -1027,17 +1038,17 @@ IMAGENETTE = {
         "golf ball",
         "parachute",
     ],
-}
+)
 
 _CIFAR = {
     "mean": (0.5071, 0.4866, 0.4409),
     "std": (0.2673, 0.2564, 0.2761),
 }
 
-CIFAR10 = {
-    "mean": _CIFAR["mean"],
-    "std": _CIFAR["std"],
-    "classes": [
+CIFAR10 = _Dataset(
+    mean=(0.5071, 0.4866, 0.4409),
+    std=(0.2673, 0.2564, 0.2761),
+    classes=[
         "airplane",
         "automobile",
         "bird",
@@ -1049,4 +1060,4 @@ CIFAR10 = {
         "ship",
         "truck",
     ],
-}
+)

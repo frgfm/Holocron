@@ -21,7 +21,7 @@ __all__ = ["DarknetV3", "darknet53"]
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     "darknet53": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 256, 256),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth",
     },

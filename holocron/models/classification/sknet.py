@@ -19,17 +19,17 @@ __all__ = ["SoftAttentionLayer", "SKConv2d", "SKBottleneck", "sknet50", "sknet10
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     "sknet50": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/sknet50_224-5d2160f2.pth",
     },
     "sknet101": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },
     "sknet152": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },

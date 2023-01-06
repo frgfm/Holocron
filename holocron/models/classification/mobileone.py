@@ -20,22 +20,22 @@ __all__ = ["mobileone_s0", "mobileone_s1", "mobileone_s2", "mobileone_s3"]
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     "mobileone_s0": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },
     "mobileone_s1": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },
     "mobileone_s2": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },
     "mobileone_s3": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },

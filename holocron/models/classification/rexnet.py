@@ -19,27 +19,27 @@ __all__ = ["SEBlock", "ReXBlock", "ReXNet", "rexnet1_0x", "rexnet1_3x", "rexnet1
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     "rexnet1_0x": {
-        **IMAGENET,
+        **IMAGENET.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth",
     },
     "rexnet1_3x": {
-        **IMAGENET,
+        **IMAGENET.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth",
     },
     "rexnet1_5x": {
-        **IMAGENET,
+        **IMAGENET.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth",
     },
     "rexnet2_0x": {
-        **IMAGENET,
+        **IMAGENET.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth",
     },
     "rexnet2_2x": {
-        **IMAGENET,
+        **IMAGENET.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },

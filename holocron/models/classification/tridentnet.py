@@ -17,7 +17,7 @@ __all__ = ["Tridentneck", "tridentnet50"]
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     "tridentnet50": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/tridentnet50_224-98b4ce9c.pth",
     },

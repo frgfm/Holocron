@@ -18,12 +18,12 @@ __all__ = ["PyBottleneck", "pyconv_resnet50", "pyconvhg_resnet50"]
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
     "pyconv_resnet50": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },
     "pyconvhg_resnet50": {
-        **IMAGENETTE,
+        **IMAGENETTE.__dict__,
         "input_shape": (3, 224, 224),
         "url": None,
     },
