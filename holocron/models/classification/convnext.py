@@ -18,7 +18,6 @@ from holocron.nn import GlobalAvgPool2d
 from ..checkpoints import (
     Checkpoint,
     Dataset,
-    EvalResult,
     Evaluation,
     LoadingMeta,
     Metric,
@@ -54,7 +53,7 @@ def _checkpoint(
     return Checkpoint(
         evaluation=Evaluation(
             dataset=Dataset.IMAGENETTE,
-            results=[EvalResult(metric=Metric.TOP1_ACC, val=acc1), EvalResult(metric=Metric.TOP5_ACC, val=acc5)],
+            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
         ),
         meta=LoadingMeta(
             url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
