@@ -259,12 +259,12 @@ class Trainer:
     def _eval_metrics_str(eval_metrics):
         raise NotImplementedError
 
-    def _reset_scheduler(self, lr: float, num_epochs: int, sched_type: str = "onecycle") -> None:
+    def _reset_scheduler(self, lr: float, num_epochs: int, sched_type: str = "onecycle", **kwargs: Any) -> None:
         self.scheduler: _LRScheduler
         if sched_type == "onecycle":
-            self.scheduler = OneCycleLR(self.optimizer, lr, num_epochs * len(self.train_loader))
+            self.scheduler = OneCycleLR(self.optimizer, lr, num_epochs * len(self.train_loader), **kwargs)
         elif sched_type == "cosine":
-            self.scheduler = CosineAnnealingLR(self.optimizer, num_epochs * len(self.train_loader), eta_min=lr / 25e4)
+            self.scheduler = CosineAnnealingLR(self.optimizer, num_epochs * len(self.train_loader), **kwargs)
         else:
             raise ValueError(f"The following scheduler type is not supported: {sched_type}")
 
@@ -275,6 +275,7 @@ class Trainer:
         freeze_until: Optional[str] = None,
         sched_type: str = "onecycle",
         norm_weight_decay: Optional[float] = None,
+        **kwargs: Any,
     ) -> None:
         """Train the model for a given number of epochs.
 
@@ -284,13 +285,14 @@ class Trainer:
             freeze_until (str, optional): last layer to freeze
             sched_type (str, optional): type of scheduler to use
             norm_weight_decay (float, optional): weight decay to apply to normalization parameters
+            **kwargs: keyword args passed to the schedulers
         """
 
         freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
         self._reset_opt(lr, norm_weight_decay)
         # Scheduler
-        self._reset_scheduler(lr, num_epochs, sched_type)
+        self._reset_scheduler(lr, num_epochs, sched_type, **kwargs)
 
         if self.amp:
             self.scaler = torch.cuda.amp.GradScaler()  # type: ignore[attr-defined]
