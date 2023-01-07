@@ -8,6 +8,7 @@ Training script for image classification
 """
 
 import datetime
+import logging
 import math
 import os
 import time
@@ -33,6 +34,14 @@ from holocron.trainer import ClassificationTrainer
 from holocron.utils.data import Mixup
 from holocron.utils.misc import find_image_size
 
+# Prevent the annoying console log of codecarbon
+logger = logging.getLogger("codecarbon")
+handler = logging.StreamHandler()
+formatter = logging.Formatter("[%(name)s %(levelname)s %(asctime)s] %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.ERROR)
+
 
 def worker_init_fn(worker_id: int) -> None:
     np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
@@ -46,8 +55,8 @@ def plot_samples(images, targets, num_samples=8):
     _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
-        img *= torch.tensor(IMAGENETTE["std"]).view(-1, 1, 1)
-        img += torch.tensor(IMAGENETTE["mean"]).view(-1, 1, 1)
+        img *= torch.tensor(IMAGENETTE.std).view(-1, 1, 1)
+        img += torch.tensor(IMAGENETTE.mean).view(-1, 1, 1)
         img = to_pil_image(img)
 
         _row = int(idx / num_cols)
@@ -56,10 +65,10 @@ def plot_samples(images, targets, num_samples=8):
         axes[_row][_col].imshow(img)
         axes[_row][_col].axis("off")
         if targets.ndim == 1:
-            axes[_row][_col].set_title(IMAGENETTE["classes"][targets[idx].item()])
+            axes[_row][_col].set_title(IMAGENETTE.classes[targets[idx].item()])
         else:
             class_idcs = torch.where(targets[idx] > 0)[0]
-            _info = [f"{IMAGENETTE['classes'][_idx.item()]} ({targets[idx, _idx]:.2f})" for _idx in class_idcs]
+            _info = [f"{IMAGENETTE.classes[_idx.item()]} ({targets[idx, _idx]:.2f})" for _idx in class_idcs]
             axes[_row][_col].set_title(" ".join(_info))
 
     plt.show()
@@ -76,8 +85,8 @@ def main(args):
     train_loader, val_loader = None, None
 
     normalize = T.Normalize(
-        mean=IMAGENETTE["mean"] if args.dataset.lower() == "imagenette" else CIF10["mean"],
-        std=IMAGENETTE["std"] if args.dataset.lower() == "imagenette" else CIF10["std"],
+        mean=IMAGENETTE.mean if args.dataset.lower() == "imagenette" else CIF10.mean,
+        std=IMAGENETTE.std if args.dataset.lower() == "imagenette" else CIF10.std,
     )
 
     interpolation = InterpolationMode.BILINEAR
@@ -91,13 +100,13 @@ def main(args):
                 os.path.join(args.data_path, "train"),
                 T.Compose(
                     [
-                        T.RandomResizedCrop(args.img_size, scale=(0.3, 1.0), interpolation=interpolation),
+                        T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
                         T.RandomHorizontalFlip(),
                         A.TrivialAugmentWide(interpolation=interpolation),
                         T.PILToTensor(),
                         T.ConvertImageDtype(torch.float32),
                         normalize,
-                        T.RandomErasing(p=0.9, scale=(0.02, 0.2), value="random"),
+                        T.RandomErasing(p=args.random_erase, scale=(0.02, 0.2), value="random"),
                     ]
                 ),
             )
@@ -113,7 +122,7 @@ def main(args):
                         T.PILToTensor(),
                         T.ConvertImageDtype(torch.float32),
                         normalize,
-                        T.RandomErasing(p=0.9, value="random"),
+                        T.RandomErasing(p=args.random_erase, value="random"),
                     ]
                 ),
                 download=True,
@@ -154,15 +163,18 @@ def main(args):
     if not (args.find_lr or args.check_setup):
         st = time.time()
         if args.dataset.lower() == "imagenette":
-            eval_tf = []
-            crop_pct = 0.875
-            scale_size = min(int(math.floor(args.img_size / crop_pct)), 320)
-            if scale_size < 320:
-                eval_tf.append(T.Resize(scale_size))
-            eval_tf.extend(
-                [T.CenterCrop(args.img_size), T.PILToTensor(), T.ConvertImageDtype(torch.float32), normalize]
+            val_set = ImageFolder(
+                os.path.join(args.data_path, "val"),
+                T.Compose(
+                    [
+                        T.Resize(args.val_resize_size, interpolation=interpolation),
+                        T.CenterCrop(args.val_crop_size),
+                        T.PILToTensor(),
+                        T.ConvertImageDtype(torch.float32),
+                        normalize,
+                    ]
+                ),
             )
-            val_set = ImageFolder(os.path.join(args.data_path, "val"), T.Compose(eval_tf))
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
             val_set = cifar_version(
@@ -197,6 +209,8 @@ def main(args):
         optimizer = torch.optim.RAdam(
             model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay
         )
+    elif args.opt == "adamw":
+        optimizer = torch.optim.AdamW(model_params, args.lr, weight_decay=args.weight_decay)
     elif args.opt == "adamp":
         optimizer = AdamP(model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == "adabelief":
@@ -261,7 +275,9 @@ def main(args):
                 "epochs": args.epochs,
                 "batch_size": args.batch_size,
                 "architecture": args.arch,
-                "input_size": args.img_size,
+                "train_crop_size": args.train_crop_size,
+                "val_resize_size": args.val_resize_size,
+                "val_crop_size": args.val_crop_size,
                 "optimizer": args.opt,
                 "dataset": args.dataset,
                 "loss": "crossentropy",
@@ -272,7 +288,15 @@ def main(args):
 
     print("Start training")
     start_time = time.time()
-    trainer.fit_n_epochs(args.epochs, args.lr, args.freeze_until, args.sched, norm_weight_decay=args.norm_wd)
+    trainer.fit_n_epochs(
+        args.epochs,
+        args.lr,
+        args.freeze_until,
+        args.sched,
+        norm_weight_decay=args.norm_wd,
+        div_factor=100,
+        pct_start=0.1,
+    )
     total_time_str = str(datetime.timedelta(seconds=int(time.time() - start_time)))
     print(f"Training time {total_time_str}")
 
@@ -299,7 +323,11 @@ def get_parser():
     parser.add_argument(
         "-j", "--workers", default=min(os.cpu_count(), 16), type=int, help="number of data loading workers"
     )
-    parser.add_argument("--img-size", default=224, type=int, help="image size")
+    # Transformations
+    parser.add_argument("--train-crop-size", default=224, type=int, help="image size")
+    parser.add_argument("--val-resize-size", default=256, type=int, help="image size")
+    parser.add_argument("--val-crop-size", default=224, type=int, help="image size")
+    parser.add_argument("--random-erase", default=0.0, type=float, help="probability to do random erasing")
     parser.add_argument("--label-smoothing", default=0.1, type=float, help="label smoothing to apply")
     parser.add_argument("--opt", default="adamp", type=str, help="optimizer")
     parser.add_argument("--sched", default="onecycle", type=str, help="Scheduler to be used")

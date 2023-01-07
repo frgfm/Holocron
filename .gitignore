@@ -114,3 +114,10 @@ wandb/
 # API uses poetry
 api/requirements.txt
 api/requirements-dev.txt
+
+# Doc
+docs/source/generated/
+docs/source/models/generated/
+
+# Codecarbon
+emissions.csv
