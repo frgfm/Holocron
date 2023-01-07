@@ -1,0 +1,9 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: holocron.models
+
+
+sknet152
+========
+
+.. autofunction:: sknet152

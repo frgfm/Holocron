@@ -1,0 +1,9 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: holocron.models
+
+
+repvgg_b0
+=========
+
+.. autofunction:: repvgg_b0

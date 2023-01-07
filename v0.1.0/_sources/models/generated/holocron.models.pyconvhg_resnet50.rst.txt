@@ -1,0 +1,9 @@
+﻿.. role:: hidden
+    :class: hidden-section
+.. currentmodule:: holocron.models
+
+
+pyconvhg_resnet50
+=================
+
+.. autofunction:: pyconvhg_resnet50
