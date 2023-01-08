@@ -153,7 +153,12 @@ def model_from_hf_hub(repo_id: str, **kwargs: Any) -> nn.Module:
 
     model = models.__dict__[cfg["arch"]](num_classes=len(cfg["classes"]), pretrained=False)
     # Patch the config
-    model.default_cfg.update(cfg)
+    if model.default_cfg is None:
+        model.default_cfg = cfg
+    elif isinstance(model.default_cfg, Checkpoint):
+        model.default_cfg = _checkpoint_from_hub_config(cfg)
+    else:
+        model.default_cfg.update(cfg)
 
     # Load the checkpoint
     state_dict = torch.load(hf_hub_download(repo_id, filename="pytorch_model.bin", **kwargs), map_location="cpu")
@@ -174,3 +179,19 @@ def _configure_model(
         load_pretrained_params(model, checkpoint.meta.url, **kwargs)
 
     return model
+
+
+def _checkpoint_from_hub_config(hub_config: Dict[str, Any]) -> Checkpoint:
+    return Checkpoint(
+        evaluation=Evaluation(
+            dataset="imagenette",
+            results={},
+        ),
+        meta=LoadingMeta(
+            url="N/A", sha256="N/A", size=0, num_params=0, arch=hub_config["arch"], categories=hub_config["classes"]
+        ),
+        pre_processing=PreProcessing(
+            input_shape=hub_config["input_shape"], mean=hub_config["mean"], std=hub_config["std"]
+        ),
+        recipe=TrainingRecipe(commit=None, script="references/classification/train.py", args=None),
+    )
