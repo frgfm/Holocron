@@ -4,66 +4,45 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Union
+from enum import Enum
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 import torch.nn as nn
 
-from holocron.nn import GlobalAvgPool2d
+from holocron.nn import GlobalAvgPool2d, init
 
+from ..checkpoints import (
+    Checkpoint,
+    Dataset,
+    Evaluation,
+    LoadingMeta,
+    Metric,
+    PreProcessing,
+    TrainingRecipe,
+    _handle_legacy_pretrained,
+)
 from ..presets import IMAGENETTE
-from ..utils import fuse_conv_bn, load_pretrained_params
+from ..utils import _configure_model, conv_sequence, fuse_conv_bn
 
 __all__ = [
     "RepVGG",
     "RepBlock",
     "RepVGG",
+    "RepVGG_A0_Checkpoint",
     "repvgg_a0",
+    "RepVGG_A1_Checkpoint",
     "repvgg_a1",
+    "RepVGG_A2_Checkpoint",
     "repvgg_a2",
+    "RepVGG_B0_Checkpoint",
     "repvgg_b0",
+    "RepVGG_B1_Checkpoint",
     "repvgg_b1",
+    "RepVGG_B2_Checkpoint",
     "repvgg_b2",
     "repvgg_b3",
 ]
-
-default_cfgs: Dict[str, Dict[str, Any]] = {
-    "repvgg_a0": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a0_224-150f4b9d.pt",
-    },
-    "repvgg_a1": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a1_224-870b9e4b.pt",
-    },
-    "repvgg_a2": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_a2_224-7051289a.pt",
-    },
-    "repvgg_b0": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.3/repvgg_b0_224-7e9c3fc7.pth",
-    },
-    "repvgg_b1": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "repvgg_b2": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "repvgg_b3": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-}
 
 
 class RepBlock(nn.Module):
@@ -86,12 +65,10 @@ class RepBlock(nn.Module):
         self.branches: Union[nn.Conv2d, nn.ModuleList] = nn.ModuleList(
             [
                 nn.Sequential(
-                    nn.Conv2d(inplanes, planes, 3, padding=1, bias=(norm_layer is None), stride=stride),
-                    norm_layer(planes),
+                    *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=3, padding=1, stride=stride),
                 ),
                 nn.Sequential(
-                    nn.Conv2d(inplanes, planes, 1, padding=0, bias=(norm_layer is None), stride=stride),
-                    norm_layer(planes),
+                    *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=1, padding=0, stride=stride),
                 ),
             ]
         )
@@ -101,7 +78,7 @@ class RepBlock(nn.Module):
         if identity:
             if inplanes != planes:
                 raise ValueError("The number of input and output channels must be identical if identity is used")
-            self.branches.append(nn.BatchNorm2d(planes))
+            self.branches.append(norm_layer(planes))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
@@ -201,6 +178,8 @@ class RepVGG(nn.Sequential):
                 ]
             )
         )
+        # Init all layers
+        init.init_module(self, nonlinearity="relu")
 
     def reparametrize(self) -> None:
         """Reparametrize the block by fusing convolutions and BN in each branch, then fusing all branches"""
@@ -211,8 +190,7 @@ class RepVGG(nn.Sequential):
 
 
 def _repvgg(
-    arch: str,
-    pretrained: bool,
+    checkpoint: Union[Checkpoint, None],
     progress: bool,
     num_blocks: List[int],
     out_chans: List[int],
@@ -220,117 +198,338 @@ def _repvgg(
     b: float,
     **kwargs: Any,
 ) -> RepVGG:
-
     # Build the model
     model = RepVGG(num_blocks, [64, 64, 128, 256, 512], a, b, **kwargs)
-    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
-    # Load pretrained parameters
-    if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
-
-    return model
+    return _configure_model(model, checkpoint, progress=progress)
 
 
-def repvgg_a0(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
+def _checkpoint(
+    arch: str, url: str, acc1: float, acc5: float, sha256: str, size: int, num_params: int, commit: str, train_args: str
+) -> Checkpoint:
+    return Checkpoint(
+        evaluation=Evaluation(
+            dataset=Dataset.IMAGENETTE,
+            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
+        ),
+        meta=LoadingMeta(
+            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
+        ),
+        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=IMAGENETTE.mean, std=IMAGENETTE.std),
+        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
+    )
+
+
+class RepVGG_A0_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="repvgg_a0",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a0_224-d3f54b28.pth",
+        acc1=0.9292,
+        acc5=0.9946,
+        sha256="d3f54b28567fcd7e3e32ffbcffb5bb5c64fd97b7139cba0bfe9ad0bd7765cdaa",
+        size=99183419,
+        num_params=24741642,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch repvgg_a0 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
+
+
+def repvgg_a0(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> RepVGG:
     """RepVGG-A0 from
     `"RepVGG: Making VGG-style ConvNets Great Again" <https://arxiv.org/pdf/2101.03697.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.RepVGG_A0_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        RepVGG_A0_Checkpoint.DEFAULT.value,
+    )
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 0.75, 2.5, **kwargs)
 
-    return _repvgg("repvgg_a0", pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 0.75, 2.5, **kwargs)
+
+class RepVGG_A1_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="repvgg_a1",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a1_224-8d3269fb.pth",
+        acc1=0.9378,
+        acc5=0.9918,
+        sha256="8d3269fb5181c0fe75ef617872238135f3002f41e82e5ef7492d62a402ffae50",
+        size=120724868,
+        num_params=30119946,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch repvgg_a1 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def repvgg_a1(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
+def repvgg_a1(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> RepVGG:
     """RepVGG-A1 from
     `"RepVGG: Making VGG-style ConvNets Great Again" <https://arxiv.org/pdf/2101.03697.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.RepVGG_A1_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        RepVGG_A1_Checkpoint.DEFAULT.value,
+    )
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
 
-    return _repvgg("repvgg_a1", pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
+
+class RepVGG_A2_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="repvgg_a2",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a2_224-cb442207.pth",
+        acc1=0.9363,
+        acc5=0.9939,
+        sha256="cb442207d0c4627e3a16d7a8b4bf5342a182fd924cf4a044ac3a832014e7d4cf",
+        size=194822538,
+        num_params=48629514,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch repvgg_a2 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def repvgg_a2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
+def repvgg_a2(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> RepVGG:
     """RepVGG-A2 from
     `"RepVGG: Making VGG-style ConvNets Great Again" <https://arxiv.org/pdf/2101.03697.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.RepVGG_A2_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        RepVGG_A2_Checkpoint.DEFAULT.value,
+    )
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1.5, 2.75, **kwargs)
 
-    return _repvgg("repvgg_a2", pretrained, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1.5, 2.75, **kwargs)
+
+class RepVGG_B0_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="repvgg_b0",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b0_224-fdcdd2b7.pth",
+        acc1=0.9269,
+        acc5=0.9921,
+        sha256="fdcdd2b739f19b47572be5a98ec407c08935d02adf1ab0bf90d7bc92c710fe2d",
+        size=127668600,
+        num_params=31845642,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch repvgg_b0 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def repvgg_b0(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
+def repvgg_b0(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> RepVGG:
     """RepVGG-B0 from
     `"RepVGG: Making VGG-style ConvNets Great Again" <https://arxiv.org/pdf/2101.03697.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.RepVGG_B0_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        RepVGG_B0_Checkpoint.DEFAULT.value,
+    )
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
 
-    return _repvgg("repvgg_b0", pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
+
+class RepVGG_B1_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="repvgg_b1",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b1_224-3e5b28d7.pth",
+        acc1=0.9396,
+        acc5=0.9939,
+        sha256="3e5b28d7803965546efadeb20abb84d8fef765dd08170677467a9c06294224c4",
+        size=403763795,
+        num_params=100829194,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch repvgg_b1 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def repvgg_b1(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
+def repvgg_b1(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> RepVGG:
     """RepVGG-B1 from
     `"RepVGG: Making VGG-style ConvNets Great Again" <https://arxiv.org/pdf/2101.03697.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.RepVGG_B1_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        RepVGG_B1_Checkpoint.DEFAULT.value,
+    )
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2, 4, **kwargs)
 
-    return _repvgg("repvgg_b1", pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2, 4, **kwargs)
+
+class RepVGG_B2_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="repvgg_b2",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b2_224-dc810d88.pth",
+        acc1=0.9414,
+        acc5=0.9957,
+        sha256="dc810d889e8533f3ab24d75d8bf4cec84380abfb3b10ee01009997eab6a35d4b",
+        size=630382163,
+        num_params=157462410,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch repvgg_b2 --batch-size 32 --grad-acc 2 --mixup-alpha 0.2 --amp --device 0"
+            " --epochs 100 --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176"
+            " --val-resize-size 232 --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def repvgg_b2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
+def repvgg_b2(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> RepVGG:
     """RepVGG-B2 from
     `"RepVGG: Making VGG-style ConvNets Great Again" <https://arxiv.org/pdf/2101.03697.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.RepVGG_B2_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        RepVGG_B2_Checkpoint.DEFAULT.value,
+    )
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2.5, 5, **kwargs)
 
-    return _repvgg("repvgg_b2", pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2.5, 5, **kwargs)
 
-
-def repvgg_b3(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> RepVGG:
+def repvgg_b3(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> RepVGG:
     """RepVGG-B3 from
     `"RepVGG: Making VGG-style ConvNets Great Again" <https://arxiv.org/pdf/2101.03697.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
+        progress: If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
-    """
 
-    return _repvgg("repvgg_b3", pretrained, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 3, 5, **kwargs)
+    .. autoclass:: holocron.models.RepVGG_B3_Checkpoint
+        :members:
+    """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        None,
+    )
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 3, 5, **kwargs)

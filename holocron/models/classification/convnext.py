@@ -26,7 +26,7 @@ from ..checkpoints import (
     _handle_legacy_pretrained,
 )
 from ..presets import IMAGENETTE
-from ..utils import conv_sequence, load_pretrained_params
+from ..utils import _configure_model, conv_sequence
 from .resnet import _ResBlock
 
 __all__ = [
@@ -42,25 +42,6 @@ __all__ = [
     "convnext_large",
     "convnext_xl",
 ]
-
-_COMMON_SCRIPT = "references/classification/train.py"
-_COMMON_PREPROCESSING = PreProcessing(input_shape=(3, 224, 224), mean=IMAGENETTE.mean, std=IMAGENETTE.std)
-
-
-def _checkpoint(
-    arch: str, url: str, acc1: float, acc5: float, sha256: str, size: int, num_params: int, commit: str, train_args: str
-) -> Checkpoint:
-    return Checkpoint(
-        evaluation=Evaluation(
-            dataset=Dataset.IMAGENETTE,
-            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
-        ),
-        meta=LoadingMeta(
-            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
-        ),
-        pre_processing=_COMMON_PREPROCESSING,
-        recipe=TrainingRecipe(commit=commit, script=_COMMON_SCRIPT, args=train_args),
-    )
 
 
 class LayerNorm2d(nn.LayerNorm):
@@ -230,34 +211,41 @@ def _convnext(
     **kwargs: Any,
 ) -> ConvNeXt:
     # Build the model
-    model = ConvNeXt(
-        num_blocks,
-        out_chans,
-        **kwargs,
+    model = ConvNeXt(num_blocks, out_chans, **kwargs)
+    return _configure_model(model, checkpoint, progress=progress)
+
+
+def _checkpoint(
+    arch: str, url: str, acc1: float, acc5: float, sha256: str, size: int, num_params: int, commit: str, train_args: str
+) -> Checkpoint:
+    return Checkpoint(
+        evaluation=Evaluation(
+            dataset=Dataset.IMAGENETTE,
+            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
+        ),
+        meta=LoadingMeta(
+            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
+        ),
+        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=IMAGENETTE.mean, std=IMAGENETTE.std),
+        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
     )
-
-    model.default_cfg = checkpoint  # type: ignore[assignment]
-    # Load pretrained parameters
-    if isinstance(checkpoint, Checkpoint):
-        load_pretrained_params(model, checkpoint.meta.url, progress)
-
-    return model
 
 
 class ConvNeXt_Atto_Checkpoint(Enum):
 
     IMAGENETTE = _checkpoint(
         arch="convnext_atto",
-        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext_atto_224-4e92d4b1.pth",
-        acc1=0.8161,
-        acc5=0.9839,
-        sha256="4e92d4b1e8389af36a12c5edc9af70601ddfae8603a9b349363aebbcb926024d",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext_atto_224-f38217e7.pth",
+        acc1=0.8759,
+        acc5=0.9832,
+        sha256="f38217e7361060e6fe00e8fa95b0e8774150190eed9e55c812bbd3b6ab378ce9",
         size=13535258,
         num_params=3377730,
-        commit="695fbbb9e5449bc109c71058f756373ca3407c50",
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
         train_args=(
-            "./imagenette2-320/ --arch convnext_atto --batch-size 64 --mixup-alpha 0.2 --amp --device 0"
-            " --epochs 100 --lr 1e-3 --wb --label-smoothing 0.1"
+            "./imagenette2-320/ --arch convnext_atto --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
         ),
     )
     DEFAULT = IMAGENETTE
@@ -286,7 +274,7 @@ def convnext_atto(
     checkpoint = _handle_legacy_pretrained(
         pretrained,
         checkpoint,
-        ConvNeXt_Atto_Checkpoint.DEFAULT,  # type: ignore[arg-type]
+        ConvNeXt_Atto_Checkpoint.DEFAULT.value,
     )
     return _convnext(checkpoint, progress, [2, 2, 6, 2], [40, 80, 160, 320], **kwargs)
 
