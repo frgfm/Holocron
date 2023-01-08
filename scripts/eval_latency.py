@@ -28,7 +28,7 @@ def main(args):
     model = models.__dict__[args.arch](pretrained=args.pretrained).eval().to(device=device)
 
     # RepVGG
-    if args.arch.startswith("repvgg"):
+    if args.arch.startswith("repvgg") or args.arch.startswith("mobileone"):
         model.reparametrize()
 
     # Input
