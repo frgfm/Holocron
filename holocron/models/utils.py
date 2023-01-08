@@ -5,7 +5,7 @@
 
 import json
 import logging
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
 import torch
 import torch.nn as nn
@@ -15,7 +15,11 @@ from torch.hub import load_state_dict_from_url
 from holocron import models
 from holocron.nn import BlurPool2d
 
+from .checkpoints import Checkpoint, Dataset, Evaluation, LoadingMeta, PreProcessing, TrainingRecipe
+
 __all__ = ["conv_sequence", "load_pretrained_params", "fuse_conv_bn", "model_from_hf_hub"]
+
+M = TypeVar("M", bound=nn.Module)
 
 
 def conv_sequence(
@@ -149,10 +153,45 @@ def model_from_hf_hub(repo_id: str, **kwargs: Any) -> nn.Module:
 
     model = models.__dict__[cfg["arch"]](num_classes=len(cfg["classes"]), pretrained=False)
     # Patch the config
-    model.default_cfg.update(cfg)
+    if model.default_cfg is None:
+        model.default_cfg = cfg
+    elif isinstance(model.default_cfg, Checkpoint):
+        model.default_cfg = _checkpoint_from_hub_config(cfg)
+    else:
+        model.default_cfg.update(cfg)
 
     # Load the checkpoint
     state_dict = torch.load(hf_hub_download(repo_id, filename="pytorch_model.bin", **kwargs), map_location="cpu")
     model.load_state_dict(state_dict)
 
     return model
+
+
+def _configure_model(
+    model: M,
+    checkpoint: Union[Checkpoint, None],
+    **kwargs: Any,
+) -> M:
+
+    model.default_cfg = checkpoint  # type: ignore[assignment]
+    # Load pretrained parameters
+    if isinstance(checkpoint, Checkpoint):
+        load_pretrained_params(model, checkpoint.meta.url, **kwargs)
+
+    return model
+
+
+def _checkpoint_from_hub_config(hub_config: Dict[str, Any]) -> Checkpoint:
+    return Checkpoint(
+        evaluation=Evaluation(
+            dataset=Dataset.IMAGENETTE,
+            results={},
+        ),
+        meta=LoadingMeta(
+            url="N/A", sha256="N/A", size=0, num_params=0, arch=hub_config["arch"], categories=hub_config["classes"]
+        ),
+        pre_processing=PreProcessing(
+            input_shape=hub_config["input_shape"], mean=hub_config["mean"], std=hub_config["std"]
+        ),
+        recipe=TrainingRecipe(commit=None, script="references/classification/train.py", args=None),
+    )

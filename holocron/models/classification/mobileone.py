@@ -4,7 +4,8 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional
+from enum import Enum
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 import torch.nn as nn
@@ -12,34 +13,29 @@ from torch import Tensor
 
 from holocron.nn import GlobalAvgPool2d, init
 
+from ..checkpoints import (
+    Checkpoint,
+    Dataset,
+    Evaluation,
+    LoadingMeta,
+    Metric,
+    PreProcessing,
+    TrainingRecipe,
+    _handle_legacy_pretrained,
+)
 from ..presets import IMAGENETTE
-from ..utils import conv_sequence, fuse_conv_bn, load_pretrained_params
+from ..utils import _configure_model, conv_sequence, fuse_conv_bn
 
-__all__ = ["mobileone_s0", "mobileone_s1", "mobileone_s2", "mobileone_s3"]
-
-
-default_cfgs: Dict[str, Dict[str, Any]] = {
-    "mobileone_s0": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "mobileone_s1": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "mobileone_s2": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-    "mobileone_s3": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-}
+__all__ = [
+    "MobileOne_S0_Checkpoint",
+    "mobileone_s0",
+    "MobileOne_S1_Checkpoint",
+    "mobileone_s1",
+    "MobileOne_S2_Checkpoint",
+    "mobileone_s2",
+    "MobileOne_S3_Checkpoint",
+    "mobileone_s3",
+]
 
 
 class DepthConvBlock(nn.ModuleList):
@@ -137,9 +133,10 @@ class PointConvBlock(nn.ModuleList):
         return sum(mod(x) for mod in self)
 
     def reparametrize(self) -> nn.Conv2d:
-        in_chans, out_chans = self[1][0].in_channels, self[1][0].out_channels
+        seq_idx = 1 if not isinstance(self[0], nn.Sequential) else 0
+        in_chans, out_chans = self[seq_idx][0].in_channels, self[seq_idx][0].out_channels
         # Fuse the conv & BN
-        _conv = nn.Conv2d(in_chans, out_chans, 1, bias=True).to(self[1][0].weight.data.device)
+        _conv = nn.Conv2d(in_chans, out_chans, 1, bias=True).to(self[seq_idx][0].weight.data.device)
         _conv.weight.data.zero_()
         _conv.bias.data.zero_()  # type: ignore[union-attr]
         bn_idx, branch_idx = (None, 0) if isinstance(self[0], nn.Sequential) else (0, 1)
@@ -255,84 +252,220 @@ class MobileOne(nn.Sequential):
 
 
 def _mobileone(
-    arch: str,
-    pretrained: bool,
+    checkpoint: Union[Checkpoint, None],
     progress: bool,
     width_multipliers: List[float],
     overparam_factor: int,
     **kwargs: Any,
 ) -> MobileOne:
     # Build the model
-    model = MobileOne(
-        [2, 8, 10, 1],
-        width_multipliers,
-        overparam_factor,
-        **kwargs,
+    model = MobileOne([2, 8, 10, 1], width_multipliers, overparam_factor, **kwargs)
+    return _configure_model(model, checkpoint, progress=progress)
+
+
+def _checkpoint(
+    arch: str, url: str, acc1: float, acc5: float, sha256: str, size: int, num_params: int, commit: str, train_args: str
+) -> Checkpoint:
+    return Checkpoint(
+        evaluation=Evaluation(
+            dataset=Dataset.IMAGENETTE,
+            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
+        ),
+        meta=LoadingMeta(
+            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
+        ),
+        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=IMAGENETTE.mean, std=IMAGENETTE.std),
+        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
     )
 
-    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
-    # Load pretrained parameters
-    if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
 
-    return model
+class MobileOne_S0_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="mobileone_s0",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s0_224-9ddd1fe9.pth",
+        acc1=0.8808,
+        acc5=0.9883,
+        sha256="9ddd1fe9d6c0a73d3c4d51d3c967a8a27ff5e545705afc557b4d4ac0f34395cb",
+        size=17708169,
+        num_params=4277991,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch mobileone_s0 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def mobileone_s0(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> MobileOne:
+def mobileone_s0(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> MobileOne:
     """MobileOne-S0 from
     `"An Improved One millisecond Mobile Backbone" <https://arxiv.org/pdf/2206.04040.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.MobileOne_S0_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        MobileOne_S0_Checkpoint.DEFAULT,  # type: ignore[arg-type]
+    )
+    return _mobileone(checkpoint, progress, [0.75, 1.0, 1.0, 2.0], 4, **kwargs)
 
-    return _mobileone("mobileone_s0", pretrained, progress, [0.75, 1.0, 1.0, 2.0], 4, **kwargs)
+
+class MobileOne_S1_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="mobileone_s1",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s1_224-d4ec5433.pth",
+        acc1=0.9126,
+        acc5=0.9918,
+        sha256="d4ec5433cff3d55d562b7a35fc0c95568ff8f4591bf822dd3e699535bdff90eb",
+        size=14594817,
+        num_params=3555188,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch mobileone_s1 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def mobileone_s1(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> MobileOne:
+def mobileone_s1(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> MobileOne:
     """MobileOne-S1 from
     `"An Improved One millisecond Mobile Backbone" <https://arxiv.org/pdf/2206.04040.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.MobileOne_S1_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        MobileOne_S1_Checkpoint.DEFAULT,  # type: ignore[arg-type]
+    )
+    return _mobileone(checkpoint, progress, [1.5, 1.5, 2.0, 2.5], 1, **kwargs)
 
-    return _mobileone("mobileone_s1", pretrained, progress, [1.5, 1.5, 2.0, 2.5], 1, **kwargs)
+
+class MobileOne_S2_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="mobileone_s2",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s2_224-b748859c.pth",
+        acc1=0.9131,
+        acc5=0.9921,
+        sha256="b748859c45a636ea22f0f68a3b7e75e5fb6ffb31178a5a3137931a21b4c41697",
+        size=23866479,
+        num_params=5854324,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch mobileone_s2 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def mobileone_s2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> MobileOne:
+def mobileone_s2(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> MobileOne:
     """MobileOne-S2 from
     `"An Improved One millisecond Mobile Backbone" <https://arxiv.org/pdf/2206.04040.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.MobileOne_S2_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        MobileOne_S2_Checkpoint.DEFAULT,  # type: ignore[arg-type]
+    )
+    return _mobileone(checkpoint, progress, [1.5, 2.0, 2.5, 4.0], 1, **kwargs)
 
-    return _mobileone("mobileone_s2", pretrained, progress, [1.5, 2.0, 2.5, 4.0], 1, **kwargs)
+
+class MobileOne_S3_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="mobileone_s3",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s3_224-7f357baf.pth",
+        acc1=0.9106,
+        acc5=0.9931,
+        sha256="7f357baf0754136b4a02e7aec4129874db93ee462f43588b77def730db0b2bca",
+        size=33080943,
+        num_params=8140276,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch mobileone_s3 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def mobileone_s3(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> MobileOne:
+def mobileone_s3(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> MobileOne:
     """MobileOne-S3 from
     `"An Improved One millisecond Mobile Backbone" <https://arxiv.org/pdf/2206.04040.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
-    """
 
-    return _mobileone("mobileone_s3", pretrained, progress, [2.0, 2.5, 3.0, 4.0], 1, **kwargs)
+    .. autoclass:: holocron.models.MobileOne_S3_Checkpoint
+        :members:
+    """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        MobileOne_S3_Checkpoint.DEFAULT,  # type: ignore[arg-type]
+    )
+    return _mobileone(checkpoint, progress, [2.0, 2.5, 3.0, 4.0], 1, **kwargs)

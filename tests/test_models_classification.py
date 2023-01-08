@@ -7,11 +7,11 @@ from torch import nn
 from holocron.models import classification
 
 
-def _test_classification_model(name, num_classes):
+def _test_classification_model(name, num_classes, pretrained):
 
     batch_size = 2
     x = torch.rand((batch_size, 3, 224, 224))
-    model = classification.__dict__[name](pretrained=True, num_classes=num_classes).eval()
+    model = classification.__dict__[name](pretrained=pretrained, num_classes=num_classes).eval()
     with torch.no_grad():
         out = model(x)
 
@@ -65,53 +65,53 @@ def test_mobileone_reparametrize():
 
 
 @pytest.mark.parametrize(
-    "arch",
+    "arch, pretrained",
     [
-        "darknet24",
-        "darknet19",
-        "darknet53",
-        "cspdarknet53",
-        "cspdarknet53_mish",
-        "resnet18",
-        "resnet34",
-        "resnet50",
-        "resnet101",
-        "resnet152",
-        "resnext50_32x4d",
-        "resnext101_32x8d",
-        "resnet50d",
-        "res2net50_26w_4s",
-        "tridentnet50",
-        "pyconv_resnet50",
-        "pyconvhg_resnet50",
-        "rexnet1_0x",
-        "rexnet1_3x",
-        "rexnet1_5x",
-        "rexnet2_0x",
-        "rexnet2_2x",
-        "sknet50",
-        "sknet101",
-        "sknet152",
-        "repvgg_a0",
-        "repvgg_b0",
-        "convnext_atto",
-        "convnext_femto",
-        "convnext_pico",
-        "convnext_nano",
-        "convnext_tiny",
-        "convnext_small",
-        "convnext_base",
-        "convnext_large",
-        "convnext_xl",
-        "mobileone_s0",
-        "mobileone_s1",
-        "mobileone_s2",
-        "mobileone_s3",
+        ["darknet24", True],
+        ["darknet19", True],
+        ["darknet53", True],
+        ["cspdarknet53", True],
+        ["cspdarknet53_mish", True],
+        ["resnet18", True],
+        ["resnet34", True],
+        ["resnet50", True],
+        ["resnet101", True],
+        ["resnet152", True],
+        ["resnext50_32x4d", True],
+        ["resnext101_32x8d", True],
+        ["resnet50d", True],
+        ["res2net50_26w_4s", True],
+        ["tridentnet50", True],
+        ["pyconv_resnet50", True],
+        ["pyconvhg_resnet50", True],
+        ["rexnet1_0x", True],
+        ["rexnet1_3x", False],
+        ["rexnet1_5x", False],
+        ["rexnet2_0x", False],
+        ["rexnet2_2x", False],
+        ["sknet50", True],
+        ["sknet101", True],
+        ["sknet152", True],
+        ["repvgg_a0", True],
+        ["repvgg_b0", False],
+        ["convnext_atto", True],
+        ["convnext_femto", False],
+        ["convnext_pico", False],
+        ["convnext_nano", False],
+        ["convnext_tiny", False],
+        ["convnext_small", False],
+        ["convnext_base", False],
+        ["convnext_large", False],
+        ["convnext_xl", False],
+        ["mobileone_s0", True],
+        ["mobileone_s1", False],
+        ["mobileone_s2", False],
+        ["mobileone_s3", False],
     ],
 )
-def test_classification_model(arch):
+def test_classification_model(arch, pretrained):
     num_classes = 1000 if arch.startswith("rexnet") else 10
-    _test_classification_model(arch, num_classes)
+    _test_classification_model(arch, num_classes, pretrained)
 
 
 @pytest.mark.parametrize(

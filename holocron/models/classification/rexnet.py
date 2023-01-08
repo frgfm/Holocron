@@ -4,46 +4,42 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 from collections import OrderedDict
+from enum import Enum
 from math import ceil
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional, Union
 
 import torch.nn as nn
 
 from holocron.nn import GlobalAvgPool2d, init
 
-from ..presets import IMAGENET
-from ..utils import conv_sequence, load_pretrained_params
+from ..checkpoints import (
+    Checkpoint,
+    Dataset,
+    Evaluation,
+    LoadingMeta,
+    Metric,
+    PreProcessing,
+    TrainingRecipe,
+    _handle_legacy_pretrained,
+)
+from ..presets import IMAGENET, IMAGENETTE
+from ..utils import _configure_model, conv_sequence
 
-__all__ = ["SEBlock", "ReXBlock", "ReXNet", "rexnet1_0x", "rexnet1_3x", "rexnet1_5x", "rexnet2_0x", "rexnet2_2x"]
-
-
-default_cfgs: Dict[str, Dict[str, Any]] = {
-    "rexnet1_0x": {
-        **IMAGENET.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth",
-    },
-    "rexnet1_3x": {
-        **IMAGENET.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth",
-    },
-    "rexnet1_5x": {
-        **IMAGENET.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth",
-    },
-    "rexnet2_0x": {
-        **IMAGENET.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth",
-    },
-    "rexnet2_2x": {
-        **IMAGENET.__dict__,
-        "input_shape": (3, 224, 224),
-        "url": None,
-    },
-}
+__all__ = [
+    "SEBlock",
+    "ReXBlock",
+    "ReXNet",
+    "ReXNet1_0x_Checkpoint",
+    "rexnet1_0x",
+    "ReXNet1_3x_Checkpoint",
+    "rexnet1_3x",
+    "ReXNet1_5x_Checkpoint",
+    "rexnet1_5x",
+    "ReXNet2_0x_Checkpoint",
+    "rexnet2_0x",
+    "ReXNet2_2x_Checkpoint",
+    "rexnet2_2x",
+]
 
 
 class SEBlock(nn.Module):
@@ -241,93 +237,332 @@ class ReXNet(nn.Sequential):
         init.init_module(self, nonlinearity="relu")
 
 
-def _rexnet(arch: str, pretrained: bool, progress: bool, width_mult: float, depth_mult: float, **kwargs: Any) -> ReXNet:
-
+def _rexnet(
+    checkpoint: Union[Checkpoint, None],
+    progress: bool,
+    width_mult: float,
+    depth_mult: float,
+    **kwargs: Any,
+) -> ReXNet:
     # Build the model
     model = ReXNet(width_mult, depth_mult, **kwargs)
-    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
-    # Load pretrained parameters
-    if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
-
-    return model
+    return _configure_model(model, checkpoint, progress=progress)
 
 
-def rexnet1_0x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
+def _checkpoint(
+    arch: str,
+    url: str,
+    acc1: float,
+    acc5: float,
+    sha256: str,
+    size: int,
+    num_params: int,
+    commit: Union[str, None] = None,
+    train_args: Union[str, None] = None,
+    dataset: Dataset = Dataset.IMAGENETTE,
+) -> Checkpoint:
+    preset = IMAGENETTE if dataset == Dataset.IMAGENETTE else IMAGENET
+    return Checkpoint(
+        evaluation=Evaluation(
+            dataset=dataset,
+            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
+        ),
+        meta=LoadingMeta(
+            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=preset.classes
+        ),
+        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=preset.mean, std=preset.std),
+        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
+    )
+
+
+class ReXNet1_0x_Checkpoint(Enum):
+
+    # Porting of Ross Wightman's weights
+    IMAGENET1K = _checkpoint(
+        arch="rexnet1_0x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth",
+        dataset=Dataset.IMAGENET1K,
+        acc1=0.7786,
+        acc5=0.93870,
+        sha256="ab7b973341a59832099f6ee2a41eb51121b287ad4adaae8b2cd8dd92ef058f01",
+        size=14351299,
+        num_params=4796186,
+    )
+
+    IMAGENETTE = _checkpoint(
+        arch="rexnet1_0x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet1_0x_224-7c19fd53.pth",
+        acc1=0.9439,
+        acc5=0.9962,
+        sha256="7c19fd53a5433927e9b4b22fa9cb0833eb1e4c3254b4079b6818fce650a77943",
+        size=14351299,
+        num_params=3527996,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch rexnet1_0x --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENET1K
+
+
+def rexnet1_0x(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ReXNet:
     """ReXNet-1.0x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNette
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.ReXNet1_0x_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        ReXNet1_0x_Checkpoint.DEFAULT.value,
+    )
+    return _rexnet(checkpoint, progress, 1, 1, **kwargs)
 
-    return _rexnet("rexnet1_0x", pretrained, progress, 1, 1, **kwargs)
+
+class ReXNet1_3x_Checkpoint(Enum):
+
+    # Porting of Ross Wightman's weights
+    IMAGENET1K = _checkpoint(
+        arch="rexnet1_3x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth",
+        dataset=Dataset.IMAGENET1K,
+        acc1=0.7950,
+        acc5=0.9468,
+        sha256="95479104024ce294abbdd528df62bd1a23e67a9db2956e1d6cdb9a9759dc1c69",
+        size=14351299,
+        num_params=7556198,
+    )
+
+    IMAGENETTE = _checkpoint(
+        arch="rexnet1_3x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet1_3x_224-cf85ae91.pth",
+        acc1=0.9488,
+        acc5=0.9939,
+        sha256="cf85ae919cbc9484f9fa150106451f68d2e84c73f1927a1b80aeeaa243ccd65b",
+        size=23920480,
+        num_params=5907848,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch rexnet1_3x --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENET1K
 
 
-def rexnet1_3x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
+def rexnet1_3x(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ReXNet:
     """ReXNet-1.3x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.ReXNet1_3x_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        ReXNet1_3x_Checkpoint.DEFAULT.value,
+    )
+    return _rexnet(checkpoint, progress, 1.3, 1, **kwargs)
 
-    return _rexnet("rexnet1_3x", pretrained, progress, 1.3, 1, **kwargs)
+
+class ReXNet1_5x_Checkpoint(Enum):
+
+    # Porting of Ross Wightman's weights
+    IMAGENET1K = _checkpoint(
+        arch="rexnet1_5x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth",
+        dataset=Dataset.IMAGENET1K,
+        acc1=0.8031,
+        acc5=0.9517,
+        sha256="c42a16ac73470d64852b8317ba9e875c833595a90a086b90490a696db9bb6a96",
+        size=14351299,
+        num_params=9727562,
+    )
+
+    IMAGENETTE = _checkpoint(
+        arch="rexnet1_5x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet1_5x_224-4b9d7a59.pth",
+        acc1=0.9447,
+        acc5=0.9962,
+        sha256="4b9d7a5901da6c2b9386987a6120bc86089d84df7727e43b78a4dfe2fc1c719a",
+        size=31625286,
+        num_params=7825772,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch rexnet1_5x --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENET1K
 
 
-def rexnet1_5x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
+def rexnet1_5x(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ReXNet:
     """ReXNet-1.5x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.ReXNet1_5x_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        ReXNet1_5x_Checkpoint.DEFAULT.value,
+    )
+    return _rexnet(checkpoint, progress, 1.5, 1, **kwargs)
 
-    return _rexnet("rexnet1_5x", pretrained, progress, 1.5, 1, **kwargs)
+
+class ReXNet2_0x_Checkpoint(Enum):
+
+    # Porting of Ross Wightman's weights
+    IMAGENET1K = _checkpoint(
+        arch="rexnet2_0x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth",
+        dataset=Dataset.IMAGENET1K,
+        acc1=0.8031,
+        acc5=0.9517,
+        sha256="c8802402442551c77fe3874f84d4d7eb1bd67cce274375db11a869ed074a1089",
+        size=14351299,
+        num_params=16365244,
+    )
+
+    IMAGENETTE = _checkpoint(
+        arch="rexnet2_0x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet2_0x_224-3f00641e.pth",
+        acc1=0.9524,
+        acc5=0.9957,
+        sha256="3f00641e48a6d1d3c9794534eb372467e0730700498933c9e79e60c838671d13",
+        size=55724412,
+        num_params=13829854,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch rexnet2_0x --batch-size 32 --grad-acc 2 --mixup-alpha 0.2 --amp --device 0"
+            " --epochs 100 --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176"
+            " --val-resize-size 232 --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENET1K
 
 
-def rexnet2_0x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
+def rexnet2_0x(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ReXNet:
     """ReXNet-2.0x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.ReXNet2_0x_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        ReXNet2_0x_Checkpoint.DEFAULT.value,
+    )
+    return _rexnet(checkpoint, progress, 2, 1, **kwargs)
 
-    return _rexnet("rexnet2_0x", pretrained, progress, 2, 1, **kwargs)
+
+class ReXNet2_2x_Checkpoint(Enum):
+
+    IMAGENETTE = _checkpoint(
+        arch="rexnet2_2x",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet2_2x_224-b23b2847.pth",
+        acc1=0.9544,
+        acc5=0.9946,
+        sha256="b23b28475329e413bfb491503460db8f47a838ec8dcdc5d13ade6f40ee5841a6",
+        size=67217933,
+        num_params=16694966,
+        commit="d4a59999179b42fc0d3058ac6b76cc41f49dd56e",
+        train_args=(
+            "./imagenette2-320/ --arch rexnet2_2x --batch-size 32 --grad-acc 2 --mixup-alpha 0.2 --amp --device 0"
+            " --epochs 100 --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176"
+            " --val-resize-size 232 --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def rexnet2_2x(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ReXNet:
+def rexnet2_2x(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ReXNet:
     """ReXNet-2.2x from
     `"ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network"
     <https://arxiv.org/pdf/2007.00992.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
 
     Returns:
         torch.nn.Module: classification model
-    """
 
-    return _rexnet("rexnet2_2x", pretrained, progress, 2.2, 1, **kwargs)
+    .. autoclass:: holocron.models.ReXNet2_2x_Checkpoint
+        :members:
+    """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        ReXNet2_2x_Checkpoint.DEFAULT.value,
+    )
+    return _rexnet(checkpoint, progress, 2.2, 1, **kwargs)

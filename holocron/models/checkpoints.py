@@ -30,9 +30,9 @@ class TrainingRecipe:
         args: the argument values that were passed to the reference script to train this.
     """
 
-    commit: str
-    script: str
-    args: str
+    commit: Union[str, None]
+    script: Union[str, None]
+    args: Union[str, None]
 
 
 class Metric(str, Enum):
