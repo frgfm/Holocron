@@ -5,6 +5,25 @@
     =======================================================================  ===========  ===========  ============  ===============
     **Checkpoint**                                                           **Acc@1**    **Acc@5**    **Params**      **Size (MB)**
     =======================================================================  ===========  ===========  ============  ===============
-    :class:`ConvNeXt_Atto_Checkpoint.IMAGENETTE <ConvNeXt_Atto_Checkpoint>`  81.61%       98.39%       3.4M                     12.9
+    :class:`ConvNeXt_Atto_Checkpoint.IMAGENETTE <ConvNeXt_Atto_Checkpoint>`  87.59%       98.32%       3.4M                     12.9
+    :class:`MobileOne_S0_Checkpoint.IMAGENETTE <MobileOne_S0_Checkpoint>`    88.08%       98.83%       4.3M                     16.9
+    :class:`MobileOne_S1_Checkpoint.IMAGENETTE <MobileOne_S1_Checkpoint>`    91.26%       99.18%       3.6M                     13.9
+    :class:`MobileOne_S2_Checkpoint.IMAGENETTE <MobileOne_S2_Checkpoint>`    91.31%       99.21%       5.9M                     22.8
+    :class:`MobileOne_S3_Checkpoint.IMAGENETTE <MobileOne_S3_Checkpoint>`    91.06%       99.31%       8.1M                     31.5
+    :class:`ReXNet1_0x_Checkpoint.IMAGENET1K <ReXNet1_0x_Checkpoint>`        77.86%       93.87%       4.8M                     13.7
+    :class:`ReXNet1_0x_Checkpoint.IMAGENETTE <ReXNet1_0x_Checkpoint>`        94.39%       99.62%       3.5M                     13.7
+    :class:`ReXNet1_3x_Checkpoint.IMAGENET1K <ReXNet1_3x_Checkpoint>`        79.50%       94.68%       7.6M                     13.7
+    :class:`ReXNet1_3x_Checkpoint.IMAGENETTE <ReXNet1_3x_Checkpoint>`        94.88%       99.39%       5.9M                     22.8
+    :class:`ReXNet1_5x_Checkpoint.IMAGENET1K <ReXNet1_5x_Checkpoint>`        80.31%       95.17%       9.7M                     13.7
+    :class:`ReXNet1_5x_Checkpoint.IMAGENETTE <ReXNet1_5x_Checkpoint>`        94.47%       99.62%       7.8M                     30.2
+    :class:`ReXNet2_0x_Checkpoint.IMAGENET1K <ReXNet2_0x_Checkpoint>`        80.31%       95.17%       16.4M                    13.7
+    :class:`ReXNet2_0x_Checkpoint.IMAGENETTE <ReXNet2_0x_Checkpoint>`        95.24%       99.57%       13.8M                    53.1
+    :class:`ReXNet2_2x_Checkpoint.IMAGENETTE <ReXNet2_2x_Checkpoint>`        95.44%       99.46%       16.7M                    64.1
+    :class:`RepVGG_A0_Checkpoint.IMAGENETTE <RepVGG_A0_Checkpoint>`          92.92%       99.46%       24.7M                    94.6
+    :class:`RepVGG_A1_Checkpoint.IMAGENETTE <RepVGG_A1_Checkpoint>`          93.78%       99.18%       30.1M                   115.1
+    :class:`RepVGG_A2_Checkpoint.IMAGENETTE <RepVGG_A2_Checkpoint>`          93.63%       99.39%       48.6M                   185.8
+    :class:`RepVGG_B0_Checkpoint.IMAGENETTE <RepVGG_B0_Checkpoint>`          92.69%       99.21%       31.8M                   121.8
+    :class:`RepVGG_B1_Checkpoint.IMAGENETTE <RepVGG_B1_Checkpoint>`          93.96%       99.39%       100.8M                  385.1
+    :class:`RepVGG_B2_Checkpoint.IMAGENETTE <RepVGG_B2_Checkpoint>`          94.14%       99.57%       157.5M                  601.2
     =======================================================================  ===========  ===========  ============  ===============
 

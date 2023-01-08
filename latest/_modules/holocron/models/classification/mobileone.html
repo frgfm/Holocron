@@ -313,7 +313,8 @@
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
@@ -321,34 +322,29 @@
 
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">GlobalAvgPool2d</span><span class="p">,</span> <span class="n">init</span>
 
+<span class="kn">from</span> <span class="nn">..checkpoints</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Checkpoint</span><span class="p">,</span>
+    <span class="n">Dataset</span><span class="p">,</span>
+    <span class="n">Evaluation</span><span class="p">,</span>
+    <span class="n">LoadingMeta</span><span class="p">,</span>
+    <span class="n">Metric</span><span class="p">,</span>
+    <span class="n">PreProcessing</span><span class="p">,</span>
+    <span class="n">TrainingRecipe</span><span class="p">,</span>
+    <span class="n">_handle_legacy_pretrained</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">..presets</span> <span class="kn">import</span> <span class="n">IMAGENETTE</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">fuse_conv_bn</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">_configure_model</span><span class="p">,</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">fuse_conv_bn</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mobileone_s0&quot;</span><span class="p">,</span> <span class="s2">&quot;mobileone_s1&quot;</span><span class="p">,</span> <span class="s2">&quot;mobileone_s2&quot;</span><span class="p">,</span> <span class="s2">&quot;mobileone_s3&quot;</span><span class="p">]</span>
-
-
-<span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;mobileone_s0&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;mobileone_s1&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;mobileone_s2&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;mobileone_s3&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">}</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;MobileOne_S0_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mobileone_s0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MobileOne_S1_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mobileone_s1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MobileOne_S2_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mobileone_s2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MobileOne_S3_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mobileone_s3&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">DepthConvBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">):</span>
@@ -446,9 +442,10 @@
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mod</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">reparametrize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">:</span>
-        <span class="n">in_chans</span><span class="p">,</span> <span class="n">out_chans</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">out_channels</span>
+        <span class="n">seq_idx</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">in_chans</span><span class="p">,</span> <span class="n">out_chans</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">seq_idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="n">seq_idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">out_channels</span>
         <span class="c1"># Fuse the conv &amp; BN</span>
-        <span class="n">_conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_chans</span><span class="p">,</span> <span class="n">out_chans</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">_conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_chans</span><span class="p">,</span> <span class="n">out_chans</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">seq_idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">_conv</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
         <span class="n">_conv</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>  <span class="c1"># type: ignore[union-attr]</span>
         <span class="n">bn_idx</span><span class="p">,</span> <span class="n">branch_idx</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -564,87 +561,223 @@
 
 
 <span class="k">def</span> <span class="nf">_mobileone</span><span class="p">(</span>
-    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">width_multipliers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
     <span class="n">overparam_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
     <span class="c1"># Build the model</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">MobileOne</span><span class="p">(</span>
-        <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">width_multipliers</span><span class="p">,</span>
-        <span class="n">overparam_factor</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">MobileOne</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">width_multipliers</span><span class="p">,</span> <span class="n">overparam_factor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_configure_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_checkpoint</span><span class="p">(</span>
+    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">acc1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">acc5</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_params</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">commit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">train_args</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Checkpoint</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Checkpoint</span><span class="p">(</span>
+        <span class="n">evaluation</span><span class="o">=</span><span class="n">Evaluation</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENETTE</span><span class="p">,</span>
+            <span class="n">results</span><span class="o">=</span><span class="p">{</span><span class="n">Metric</span><span class="o">.</span><span class="n">TOP1_ACC</span><span class="p">:</span> <span class="n">acc1</span><span class="p">,</span> <span class="n">Metric</span><span class="o">.</span><span class="n">TOP5_ACC</span><span class="p">:</span> <span class="n">acc5</span><span class="p">},</span>
+        <span class="p">),</span>
+        <span class="n">meta</span><span class="o">=</span><span class="n">LoadingMeta</span><span class="p">(</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">sha256</span><span class="o">=</span><span class="n">sha256</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">num_params</span><span class="o">=</span><span class="n">num_params</span><span class="p">,</span> <span class="n">arch</span><span class="o">=</span><span class="n">arch</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">classes</span>
+        <span class="p">),</span>
+        <span class="n">pre_processing</span><span class="o">=</span><span class="n">PreProcessing</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">mean</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">std</span><span class="p">),</span>
+        <span class="n">recipe</span><span class="o">=</span><span class="n">TrainingRecipe</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="n">commit</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="s2">&quot;references/classification/train.py&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">),</span>
     <span class="p">)</span>
 
-    <span class="n">model</span><span class="o">.</span><span class="n">default_cfg</span> <span class="o">=</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>  <span class="c1"># type: ignore[assignment]</span>
-    <span class="c1"># Load pretrained parameters</span>
-    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">model</span>
+<div class="viewcode-block" id="MobileOne_S0_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s0.html#holocron.models.MobileOne_S0_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">MobileOne_S0_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;mobileone_s0&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s0_224-9ddd1fe9.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.8808</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9883</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;9ddd1fe9d6c0a73d3c4d51d3c967a8a27ff5e545705afc557b4d4ac0f34395cb&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">17708169</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">4277991</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch mobileone_s0 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="mobileone_s0"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s0.html#holocron.models.mobileone_s0">[docs]</a><span class="k">def</span> <span class="nf">mobileone_s0</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
+<div class="viewcode-block" id="mobileone_s0"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s0.html#holocron.models.mobileone_s0">[docs]</a><span class="k">def</span> <span class="nf">mobileone_s0</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MobileOne-S0 from</span>
 <span class="sd">    `&quot;An Improved One millisecond Mobile Backbone&quot; &lt;https://arxiv.org/pdf/2206.04040.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.MobileOne_S0_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">MobileOne_S0_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_mobileone</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_mobileone</span><span class="p">(</span><span class="s2">&quot;mobileone_s0&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MobileOne_S1_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s1.html#holocron.models.MobileOne_S1_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">MobileOne_S1_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;mobileone_s1&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s1_224-d4ec5433.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9126</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9918</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;d4ec5433cff3d55d562b7a35fc0c95568ff8f4591bf822dd3e699535bdff90eb&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">14594817</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">3555188</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch mobileone_s1 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="mobileone_s1"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s1.html#holocron.models.mobileone_s1">[docs]</a><span class="k">def</span> <span class="nf">mobileone_s1</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
+<div class="viewcode-block" id="mobileone_s1"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s1.html#holocron.models.mobileone_s1">[docs]</a><span class="k">def</span> <span class="nf">mobileone_s1</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MobileOne-S1 from</span>
 <span class="sd">    `&quot;An Improved One millisecond Mobile Backbone&quot; &lt;https://arxiv.org/pdf/2206.04040.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.MobileOne_S1_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">MobileOne_S1_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_mobileone</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_mobileone</span><span class="p">(</span><span class="s2">&quot;mobileone_s1&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MobileOne_S2_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s2.html#holocron.models.MobileOne_S2_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">MobileOne_S2_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;mobileone_s2&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s2_224-b748859c.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9131</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9921</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;b748859c45a636ea22f0f68a3b7e75e5fb6ffb31178a5a3137931a21b4c41697&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">23866479</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">5854324</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch mobileone_s2 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="mobileone_s2"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s2.html#holocron.models.mobileone_s2">[docs]</a><span class="k">def</span> <span class="nf">mobileone_s2</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
+<div class="viewcode-block" id="mobileone_s2"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s2.html#holocron.models.mobileone_s2">[docs]</a><span class="k">def</span> <span class="nf">mobileone_s2</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MobileOne-S2 from</span>
 <span class="sd">    `&quot;An Improved One millisecond Mobile Backbone&quot; &lt;https://arxiv.org/pdf/2206.04040.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.MobileOne_S2_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">MobileOne_S2_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_mobileone</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_mobileone</span><span class="p">(</span><span class="s2">&quot;mobileone_s2&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MobileOne_S3_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s3.html#holocron.models.MobileOne_S3_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">MobileOne_S3_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;mobileone_s3&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s3_224-7f357baf.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9106</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9931</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;7f357baf0754136b4a02e7aec4129874db93ee462f43588b77def730db0b2bca&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">33080943</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">8140276</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch mobileone_s3 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="mobileone_s3"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s3.html#holocron.models.mobileone_s3">[docs]</a><span class="k">def</span> <span class="nf">mobileone_s3</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
+<div class="viewcode-block" id="mobileone_s3"><a class="viewcode-back" href="../../../../models/generated/holocron.models.mobileone_s3.html#holocron.models.mobileone_s3">[docs]</a><span class="k">def</span> <span class="nf">mobileone_s3</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MobileOne</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MobileOne-S3 from</span>
 <span class="sd">    `&quot;An Improved One millisecond Mobile Backbone&quot; &lt;https://arxiv.org/pdf/2206.04040.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_mobileone</span><span class="p">(</span><span class="s2">&quot;mobileone_s3&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+<span class="sd">    .. autoclass:: holocron.models.MobileOne_S3_Checkpoint</span>
+<span class="sd">        :members:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">MobileOne_S3_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_mobileone</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
         </article>
       </div>

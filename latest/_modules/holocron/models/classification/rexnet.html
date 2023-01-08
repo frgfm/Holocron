@@ -313,46 +313,42 @@
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">GlobalAvgPool2d</span><span class="p">,</span> <span class="n">init</span>
 
-<span class="kn">from</span> <span class="nn">..presets</span> <span class="kn">import</span> <span class="n">IMAGENET</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
+<span class="kn">from</span> <span class="nn">..checkpoints</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Checkpoint</span><span class="p">,</span>
+    <span class="n">Dataset</span><span class="p">,</span>
+    <span class="n">Evaluation</span><span class="p">,</span>
+    <span class="n">LoadingMeta</span><span class="p">,</span>
+    <span class="n">Metric</span><span class="p">,</span>
+    <span class="n">PreProcessing</span><span class="p">,</span>
+    <span class="n">TrainingRecipe</span><span class="p">,</span>
+    <span class="n">_handle_legacy_pretrained</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..presets</span> <span class="kn">import</span> <span class="n">IMAGENET</span><span class="p">,</span> <span class="n">IMAGENETTE</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">_configure_model</span><span class="p">,</span> <span class="n">conv_sequence</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SEBlock&quot;</span><span class="p">,</span> <span class="s2">&quot;ReXBlock&quot;</span><span class="p">,</span> <span class="s2">&quot;ReXNet&quot;</span><span class="p">,</span> <span class="s2">&quot;rexnet1_0x&quot;</span><span class="p">,</span> <span class="s2">&quot;rexnet1_3x&quot;</span><span class="p">,</span> <span class="s2">&quot;rexnet1_5x&quot;</span><span class="p">,</span> <span class="s2">&quot;rexnet2_0x&quot;</span><span class="p">,</span> <span class="s2">&quot;rexnet2_2x&quot;</span><span class="p">]</span>
-
-
-<span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;rexnet1_0x&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENET</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth&quot;</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;rexnet1_3x&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENET</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth&quot;</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;rexnet1_5x&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENET</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth&quot;</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;rexnet2_0x&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENET</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth&quot;</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;rexnet2_2x&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">**</span><span class="n">IMAGENET</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s2">&quot;input_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
-        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">}</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;SEBlock&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ReXBlock&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ReXNet&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ReXNet1_0x_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rexnet1_0x&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ReXNet1_3x_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rexnet1_3x&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ReXNet1_5x_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rexnet1_5x&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ReXNet2_0x_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rexnet2_0x&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ReXNet2_2x_Checkpoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rexnet2_2x&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
 
 <span class="k">class</span> <span class="nc">SEBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -550,96 +546,335 @@
         <span class="n">init</span><span class="o">.</span><span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_rexnet</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">width_mult</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">depth_mult</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
-
+<span class="k">def</span> <span class="nf">_rexnet</span><span class="p">(</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">width_mult</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">depth_mult</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
     <span class="c1"># Build the model</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">ReXNet</span><span class="p">(</span><span class="n">width_mult</span><span class="p">,</span> <span class="n">depth_mult</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">default_cfg</span> <span class="o">=</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>  <span class="c1"># type: ignore[assignment]</span>
-    <span class="c1"># Load pretrained parameters</span>
-    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">model</span>
+    <span class="k">return</span> <span class="n">_configure_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="rexnet1_0x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_0x.html#holocron.models.rexnet1_0x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_0x</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_checkpoint</span><span class="p">(</span>
+    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">acc1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">acc5</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">num_params</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">commit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">train_args</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENETTE</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Checkpoint</span><span class="p">:</span>
+    <span class="n">preset</span> <span class="o">=</span> <span class="n">IMAGENETTE</span> <span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENETTE</span> <span class="k">else</span> <span class="n">IMAGENET</span>
+    <span class="k">return</span> <span class="n">Checkpoint</span><span class="p">(</span>
+        <span class="n">evaluation</span><span class="o">=</span><span class="n">Evaluation</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="n">results</span><span class="o">=</span><span class="p">{</span><span class="n">Metric</span><span class="o">.</span><span class="n">TOP1_ACC</span><span class="p">:</span> <span class="n">acc1</span><span class="p">,</span> <span class="n">Metric</span><span class="o">.</span><span class="n">TOP5_ACC</span><span class="p">:</span> <span class="n">acc5</span><span class="p">},</span>
+        <span class="p">),</span>
+        <span class="n">meta</span><span class="o">=</span><span class="n">LoadingMeta</span><span class="p">(</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">sha256</span><span class="o">=</span><span class="n">sha256</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">num_params</span><span class="o">=</span><span class="n">num_params</span><span class="p">,</span> <span class="n">arch</span><span class="o">=</span><span class="n">arch</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="n">preset</span><span class="o">.</span><span class="n">classes</span>
+        <span class="p">),</span>
+        <span class="n">pre_processing</span><span class="o">=</span><span class="n">PreProcessing</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">mean</span><span class="o">=</span><span class="n">preset</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">preset</span><span class="o">.</span><span class="n">std</span><span class="p">),</span>
+        <span class="n">recipe</span><span class="o">=</span><span class="n">TrainingRecipe</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="n">commit</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="s2">&quot;references/classification/train.py&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="ReXNet1_0x_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_0x.html#holocron.models.ReXNet1_0x_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">ReXNet1_0x_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="c1"># Porting of Ross Wightman&#39;s weights</span>
+    <span class="n">IMAGENET1K</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet1_0x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth&quot;</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENET1K</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.7786</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.93870</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;ab7b973341a59832099f6ee2a41eb51121b287ad4adaae8b2cd8dd92ef058f01&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">14351299</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">4796186</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet1_0x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet1_0x_224-7c19fd53.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9439</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9962</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;7c19fd53a5433927e9b4b22fa9cb0833eb1e4c3254b4079b6818fce650a77943&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">14351299</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">3527996</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch rexnet1_0x --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENET1K</span></div>
+
+
+<div class="viewcode-block" id="rexnet1_0x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_0x.html#holocron.models.rexnet1_0x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_0x</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-1.0x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.ReXNet1_0x_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">ReXNet1_0x_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s2">&quot;rexnet1_0x&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReXNet1_3x_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_3x.html#holocron.models.ReXNet1_3x_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">ReXNet1_3x_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="c1"># Porting of Ross Wightman&#39;s weights</span>
+    <span class="n">IMAGENET1K</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet1_3x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_3x_224-95479104.pth&quot;</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENET1K</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.7950</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9468</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;95479104024ce294abbdd528df62bd1a23e67a9db2956e1d6cdb9a9759dc1c69&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">14351299</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">7556198</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet1_3x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet1_3x_224-cf85ae91.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9488</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9939</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;cf85ae919cbc9484f9fa150106451f68d2e84c73f1927a1b80aeeaa243ccd65b&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">23920480</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">5907848</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch rexnet1_3x --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENET1K</span></div>
 
 
-<div class="viewcode-block" id="rexnet1_3x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_3x.html#holocron.models.rexnet1_3x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_3x</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
+<div class="viewcode-block" id="rexnet1_3x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_3x.html#holocron.models.rexnet1_3x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_3x</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-1.3x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.ReXNet1_3x_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">ReXNet1_3x_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s2">&quot;rexnet1_3x&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReXNet1_5x_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_5x.html#holocron.models.ReXNet1_5x_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">ReXNet1_5x_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="c1"># Porting of Ross Wightman&#39;s weights</span>
+    <span class="n">IMAGENET1K</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet1_5x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_5x_224-c42a16ac.pth&quot;</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENET1K</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.8031</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9517</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;c42a16ac73470d64852b8317ba9e875c833595a90a086b90490a696db9bb6a96&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">14351299</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">9727562</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet1_5x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet1_5x_224-4b9d7a59.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9447</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9962</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;4b9d7a5901da6c2b9386987a6120bc86089d84df7727e43b78a4dfe2fc1c719a&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">31625286</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">7825772</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch rexnet1_5x --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENET1K</span></div>
 
 
-<div class="viewcode-block" id="rexnet1_5x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_5x.html#holocron.models.rexnet1_5x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_5x</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
+<div class="viewcode-block" id="rexnet1_5x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet1_5x.html#holocron.models.rexnet1_5x">[docs]</a><span class="k">def</span> <span class="nf">rexnet1_5x</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-1.5x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.ReXNet1_5x_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">ReXNet1_5x_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s2">&quot;rexnet1_5x&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReXNet2_0x_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet2_0x.html#holocron.models.ReXNet2_0x_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">ReXNet2_0x_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="c1"># Porting of Ross Wightman&#39;s weights</span>
+    <span class="n">IMAGENET1K</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet2_0x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth&quot;</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENET1K</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.8031</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9517</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;c8802402442551c77fe3874f84d4d7eb1bd67cce274375db11a869ed074a1089&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">14351299</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">16365244</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet2_0x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet2_0x_224-3f00641e.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9524</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9957</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;3f00641e48a6d1d3c9794534eb372467e0730700498933c9e79e60c838671d13&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">55724412</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">13829854</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch rexnet2_0x --batch-size 32 --grad-acc 2 --mixup-alpha 0.2 --amp --device 0&quot;</span>
+            <span class="s2">&quot; --epochs 100 --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176&quot;</span>
+            <span class="s2">&quot; --val-resize-size 232 --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENET1K</span></div>
 
 
-<div class="viewcode-block" id="rexnet2_0x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet2_0x.html#holocron.models.rexnet2_0x">[docs]</a><span class="k">def</span> <span class="nf">rexnet2_0x</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
+<div class="viewcode-block" id="rexnet2_0x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet2_0x.html#holocron.models.rexnet2_0x">[docs]</a><span class="k">def</span> <span class="nf">rexnet2_0x</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-2.0x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.ReXNet2_0x_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">ReXNet2_0x_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s2">&quot;rexnet2_0x&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReXNet2_2x_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet2_2x.html#holocron.models.ReXNet2_2x_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">ReXNet2_2x_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;rexnet2_2x&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet2_2x_224-b23b2847.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9544</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9946</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;b23b28475329e413bfb491503460db8f47a838ec8dcdc5d13ade6f40ee5841a6&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">67217933</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">16694966</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;d4a59999179b42fc0d3058ac6b76cc41f49dd56e&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch rexnet2_2x --batch-size 32 --grad-acc 2 --mixup-alpha 0.2 --amp --device 0&quot;</span>
+            <span class="s2">&quot; --epochs 100 --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176&quot;</span>
+            <span class="s2">&quot; --val-resize-size 232 --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="rexnet2_2x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet2_2x.html#holocron.models.rexnet2_2x">[docs]</a><span class="k">def</span> <span class="nf">rexnet2_2x</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
+<div class="viewcode-block" id="rexnet2_2x"><a class="viewcode-back" href="../../../../models/generated/holocron.models.rexnet2_2x.html#holocron.models.rexnet2_2x">[docs]</a><span class="k">def</span> <span class="nf">rexnet2_2x</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReXNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReXNet-2.2x from</span>
 <span class="sd">    `&quot;ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/2007.00992.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="s2">&quot;rexnet2_2x&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+<span class="sd">    .. autoclass:: holocron.models.ReXNet2_2x_Checkpoint</span>
+<span class="sd">        :members:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">ReXNet2_2x_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_rexnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </pre></div>
         </article>
       </div>

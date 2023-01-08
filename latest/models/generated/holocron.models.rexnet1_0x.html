@@ -320,13 +320,14 @@
 <h1>rexnet1_0x<a class="headerlink" href="#rexnet1-0x" title="Permalink to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="holocron.models.rexnet1_0x">
-<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">rexnet1_0x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.11)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ReXNet</span></span></span><a class="reference internal" href="../../_modules/holocron/models/classification/rexnet.html#rexnet1_0x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.rexnet1_0x" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">rexnet1_0x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Checkpoint</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.11)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ReXNet</span></span></span><a class="reference internal" href="../../_modules/holocron/models/classification/rexnet.html#rexnet1_0x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.rexnet1_0x" title="Permalink to this definition">#</a></dt>
 <dd><p>ReXNet-1.0x from
 <a class="reference external" href="https://arxiv.org/pdf/2007.00992.pdf">“ReXNet: Diminishing Representational Bottleneck on Convolutional Neural Network”</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pretrained</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – If True, returns a model pre-trained on ImageNet</p></li>
+<li><p><strong>pretrained</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – If True, returns a model pre-trained on ImageNette</p></li>
+<li><p><strong>checkpoint</strong> – If specified, the model’s parameters will be set to the checkpoint’s values</p></li>
 <li><p><strong>progress</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – If True, displays a progress bar of the download to stderr</p></li>
 </ul>
 </dd>
@@ -337,6 +338,106 @@
 <dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v1.13)">torch.nn.Module</a></p>
 </dd>
 </dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="holocron.models.ReXNet1_0x_Checkpoint">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.models.</span></span><span class="sig-name descname"><span class="pre">ReXNet1_0x_Checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/holocron/models/classification/rexnet.html#ReXNet1_0x_Checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.models.ReXNet1_0x_Checkpoint" title="Permalink to this definition">#</a></dt>
+<dd><p>The model builder above accepts the following values as the <code class="docutils literal notranslate"><span class="pre">checkpoint</span></code> parameter.
+<code class="docutils literal notranslate"><span class="pre">ReXNet1_0x_Checkpoint.DEFAULT</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">ReXNet1_0x_Checkpoint.IMAGENET1K</span></code></p>
+<p><strong>ReXNet1_0x_Checkpoint.IMAGENET1K</strong>:</p>
+<p>Also available as <code class="docutils literal notranslate"><span class="pre">ReXNet1_0x_Checkpoint.DEFAULT</span></code>.</p>
+<div class="table-wrapper table-checkpoints docutils container">
+<table class="table-checkpoints docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>dataset</p></td>
+<td><p>imagenet-1k</p></td>
+</tr>
+<tr class="row-even"><td><p>top1-accuracy</p></td>
+<td><p>0.7786</p></td>
+</tr>
+<tr class="row-odd"><td><p>top5-accuracy</p></td>
+<td><p>0.9387</p></td>
+</tr>
+<tr class="row-even"><td><p>url</p></td>
+<td><p><a class="reference external" href="https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet1_0x_224-ab7b9733.pth">link</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>sha256</p></td>
+<td><p>ab7b973341a59832</p></td>
+</tr>
+<tr class="row-even"><td><p>size</p></td>
+<td><p>13.7MB</p></td>
+</tr>
+<tr class="row-odd"><td><p>num_params</p></td>
+<td><p>4.8M</p></td>
+</tr>
+<tr class="row-even"><td><p>categories</p></td>
+<td><p>tench, goldfish, great white shark, … (997 omitted)</p></td>
+</tr>
+<tr class="row-odd"><td><p>input_shape</p></td>
+<td><p>(3, 224, 224)</p></td>
+</tr>
+<tr class="row-even"><td><p>mean</p></td>
+<td><p>(0.485, 0.456, 0.406)</p></td>
+</tr>
+<tr class="row-odd"><td><p>std</p></td>
+<td><p>(0.229, 0.224, 0.225)</p></td>
+</tr>
+<tr class="row-even"><td><p>interpolation</p></td>
+<td><p>InterpolationMode.BILINEAR</p></td>
+</tr>
+<tr class="row-odd"><td><p>commit</p></td>
+<td><p>None</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>ReXNet1_0x_Checkpoint.IMAGENETTE</strong>:</p>
+<div class="table-wrapper table-checkpoints docutils container">
+<table class="table-checkpoints docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>dataset</p></td>
+<td><p>imagenette</p></td>
+</tr>
+<tr class="row-even"><td><p>top1-accuracy</p></td>
+<td><p>0.9439</p></td>
+</tr>
+<tr class="row-odd"><td><p>top5-accuracy</p></td>
+<td><p>0.9962</p></td>
+</tr>
+<tr class="row-even"><td><p>url</p></td>
+<td><p><a class="reference external" href="https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet1_0x_224-7c19fd53.pth">link</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>sha256</p></td>
+<td><p>7c19fd53a5433927</p></td>
+</tr>
+<tr class="row-even"><td><p>size</p></td>
+<td><p>13.7MB</p></td>
+</tr>
+<tr class="row-odd"><td><p>num_params</p></td>
+<td><p>3.5M</p></td>
+</tr>
+<tr class="row-even"><td><p>categories</p></td>
+<td><p>tench, English springer, cassette player, … (7 omitted)</p></td>
+</tr>
+<tr class="row-odd"><td><p>input_shape</p></td>
+<td><p>(3, 224, 224)</p></td>
+</tr>
+<tr class="row-even"><td><p>mean</p></td>
+<td><p>(0.485, 0.456, 0.406)</p></td>
+</tr>
+<tr class="row-odd"><td><p>std</p></td>
+<td><p>(0.229, 0.224, 0.225)</p></td>
+</tr>
+<tr class="row-even"><td><p>interpolation</p></td>
+<td><p>InterpolationMode.BILINEAR</p></td>
+</tr>
+<tr class="row-odd"><td><p>commit</p></td>
+<td><p><a class="reference external" href="https://github.com/frgfm/holocron/tree/d4a59999179b42fc0d3058ac6b76cc41f49dd56e">d4a5999</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -405,6 +506,7 @@
             <ul>
 <li><a class="reference internal" href="#">rexnet1_0x</a><ul>
 <li><a class="reference internal" href="#holocron.models.rexnet1_0x"><code class="docutils literal notranslate"><span class="pre">rexnet1_0x()</span></code></a></li>
+<li><a class="reference internal" href="#holocron.models.ReXNet1_0x_Checkpoint"><code class="docutils literal notranslate"><span class="pre">ReXNet1_0x_Checkpoint</span></code></a></li>
 </ul>
 </li>
 </ul>
