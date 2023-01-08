@@ -28,6 +28,8 @@ python train.py imagenette2-320/ --arch darknet53 --lr 5e-3 -b 32 -j 16 --epochs
 
 ## Personal leaderboard
 
+The updated list of available checkpoints can be found in the [documentation](https://frgfm.github.io/Holocron/latest/models.html#classification).
+
 
 ## Imagenette
 
