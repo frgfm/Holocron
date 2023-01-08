@@ -238,7 +238,8 @@ def inject_checkpoint_metadata(app, what, name, obj, options, lines):
 
             # How to reproduce the training
             meta = field.value.recipe
-            table.append(("commit", f"`{meta.commit[:7]} <{REPO_URL}/tree/{meta.commit}>`__"))
+            commit_str = str(None) if meta.commit is None else f"`{meta.commit[:7]} <{REPO_URL}/tree/{meta.commit}>`__"
+            table.append(("commit", commit_str))
             # table.append(("Training args", meta.args))
 
             column_widths = ["60"] + ["60"]
