@@ -5,7 +5,7 @@
 
 import json
 import logging
-from typing import Any, Callable, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
 import torch
 import torch.nn as nn
@@ -15,7 +15,7 @@ from torch.hub import load_state_dict_from_url
 from holocron import models
 from holocron.nn import BlurPool2d
 
-from .checkpoints import Checkpoint
+from .checkpoints import Checkpoint, Dataset, Evaluation, LoadingMeta, PreProcessing, TrainingRecipe
 
 __all__ = ["conv_sequence", "load_pretrained_params", "fuse_conv_bn", "model_from_hf_hub"]
 
@@ -184,7 +184,7 @@ def _configure_model(
 def _checkpoint_from_hub_config(hub_config: Dict[str, Any]) -> Checkpoint:
     return Checkpoint(
         evaluation=Evaluation(
-            dataset="imagenette",
+            dataset=Dataset.IMAGENETTE,
             results={},
         ),
         meta=LoadingMeta(
