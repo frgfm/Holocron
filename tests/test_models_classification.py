@@ -107,6 +107,10 @@ def test_mobileone_reparametrize():
         ["mobileone_s1", False],
         ["mobileone_s2", False],
         ["mobileone_s3", False],
+        ["cct_2", False],
+        ["cct_4", False],
+        ["cct_6", False],
+        ["cct_7", False],
     ],
 )
 def test_classification_model(arch, pretrained):
@@ -130,6 +134,7 @@ def test_classification_model(arch, pretrained):
         "repvgg_a0",
         "convnext_atto",
         "mobileone_s0",
+        "cct_2",
     ],
 )
 def test_classification_onnx_export(arch, tmpdir_factory):
