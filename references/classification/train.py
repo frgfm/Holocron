@@ -31,7 +31,7 @@ from holocron.models.presets import CIFAR10 as CIF10
 from holocron.models.presets import IMAGENETTE
 from holocron.optim import AdaBelief, AdamP
 from holocron.trainer import ClassificationTrainer
-from holocron.utils.data import Mixup
+from holocron.utils.data import CutMix, Mixup
 from holocron.utils.misc import find_image_size
 
 # Prevent the annoying console log of codecarbon
@@ -136,9 +136,23 @@ def main(args):
 
         num_classes = len(train_set.classes)
         collate_fn = default_collate
+        collates = []
         if args.mixup_alpha > 0:
-            mix = Mixup(len(train_set.classes), alpha=args.mixup_alpha)
-            collate_fn = lambda batch: mix(*default_collate(batch))  # noqa: E731
+            collates.append(Mixup(len(train_set.classes), alpha=args.mixup_alpha))
+        if args.cutmix_alpha > 0:
+            collates.append(CutMix(len(train_set.classes), alpha=args.cutmix_alpha))
+
+        if len(collates) == 1:
+            collate_fn = lambda batch: collates[0](*default_collate(batch))  # noqa: E731
+        elif len(collates) == 2:
+
+            def mix_collate(*args, **kwargs):
+                if float(torch.rand(1)) > 0.5:
+                    return collates[0](*args, **kwargs)
+                return collates[1](*args, **kwargs)
+
+            collate_fn = lambda batch: mix_collate(*default_collate(batch))  # noqa: E731
+
         train_loader = torch.utils.data.DataLoader(
             train_set,
             batch_size=args.batch_size,
@@ -336,6 +350,7 @@ def get_parser():
     group.add_argument("--val-crop-size", default=224, type=int, help="validation image size")
     group.add_argument("--random-erase", default=0.0, type=float, help="probability to do random erasing")
     group.add_argument("--mixup-alpha", default=0.2, type=float, help="Mixup alpha factor")
+    group.add_argument("--cutmix-alpha", default=0.0, type=float, help="CutMix alpha factor")
     # Optimization
     group = parser.add_argument_group("Optimization")
     group.add_argument("--epochs", default=20, type=int, help="number of total epochs to run")
