@@ -11,3 +11,5 @@ Batch collate
 -------------
 
 .. autofunction:: Mixup
+
+.. autofunction:: CutMix
