@@ -309,7 +309,7 @@ def get_parser():
     parser.add_argument("--find-lr", action="store_true", help="Should you run LR Finder")
     parser.add_argument("--find-size", dest="find_size", action="store_true", help="Should you run Image size Finder")
     parser.add_argument("--check-setup", action="store_true", help="Check your training setup")
-    parser.add_argument("--output-file", default="./model.pth", help="path where to save")
+    parser.add_argument("--output-file", default="./checkpoints/model.pth", help="path where to save")
     parser.add_argument("--resume", default="", help="resume from checkpoint")
     parser.add_argument("--show-samples", action="store_true", help="Whether training samples should be displayed")
     parser.add_argument("--test-only", help="Only test the model", action="store_true")

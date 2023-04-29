@@ -317,7 +317,7 @@ def get_parser():
     group.add_argument("--dataset", default="imagenette", type=str, help="dataset to train on")
     group.add_argument("--arch", default="darknet19", type=str, help="architecture to use")
     group.add_argument("--pretrained", action="store_true", help="Use pre-trained models from the modelzoo")
-    group.add_argument("--output-file", default="./checkpoint.pth", help="path where to save")
+    group.add_argument("--output-file", default="./checkpoints/checkpoint.pth", help="path where to save")
     group.add_argument("--resume", default="", help="resume from checkpoint")
     # Hardware
     group = parser.add_argument_group("Hardware")
