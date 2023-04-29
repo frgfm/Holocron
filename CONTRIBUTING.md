@@ -8,11 +8,13 @@ Whatever the way you wish to contribute to the project, please respect the [code
 
 ## Codebase structure
 
-- [holocron](https://github.com/frgfm/Holocron/blob/main/holocron) - The actual holocron library
-- [tests](https://github.com/frgfm/Holocron/blob/main/tests) - Python unit tests
-- [docs](https://github.com/frgfm/Holocron/blob/main/docs) - Sphinx documentation building
-- [scripts](https://github.com/frgfm/Holocron/blob/main/scripts) - Example and utilities scripts
-- [references](https://github.com/frgfm/Holocron/blob/main/references) - Reference training scripts
+- [`./holocron`](holocron) - The actual holocron library
+- [`./tests`](tests) - Python unit tests
+- [`./docs`](docs) - Sphinx documentation building
+- [`./scripts`](scripts) - Example and utilities scripts
+- [`./references`](references) - Reference training scripts
+- [`./api`](api) - A minimal FastAPI backend to run Holocron models
+- [`./demo`](demo) - A minimal Gradio demo
 
 
 
@@ -96,33 +98,6 @@ To run all quality checks together
 ```shell
 make quality
 ```
-
-##### Lint verification
-
-To ensure that your incoming PR complies with the lint settings, you need to install [flake8](https://flake8.pycqa.org/en/latest/) and run the following command from the repository's root folder:
-
-```shell
-flake8 ./
-```
-This will read the `.flake8` setting file and let you know whether your commits need some adjustments.
-
-##### Import order
-
-In order to ensure there is a common import order convention, run [isort](https://github.com/PyCQA/isort) as follows:
-
-```shell
-isort **/*.py
-```
-This will reorder the imports of your local files.
-
-##### Annotation typing
-
-Additionally, to catch type-related issues and have a cleaner codebase, annotation typing are expected. After installing [mypy](https://github.com/python/mypy), you can run the verifications as follows:
-
-```shell
-mypy --config-file mypy.ini
-```
-The `mypy.ini` file will be read to check your typing.
 
 ### Submit your modifications
 
