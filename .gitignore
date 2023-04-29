@@ -121,3 +121,9 @@ docs/source/models/generated/
 
 # Codecarbon
 emissions.csv
+
+# Gradio
+flagged/
+
+# Training
+checkpoints/
