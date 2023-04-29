@@ -32,4 +32,4 @@ run-demo:
 
 # Build the docker
 docker:
-	docker build . -t holocron:python3.8-slim
+	docker build . -t frgfm/holocron:python3.8-slim
