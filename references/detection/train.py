@@ -288,34 +288,48 @@ def get_parser():
         description="Holocron Detection Training", formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser.add_argument("data_path", type=str, help="path to dataset folder")
-    parser.add_argument("--name", type=str, default=None, help="Name of your training experiment")
-    parser.add_argument("--arch", type=str, default="yolov2", help="architecture to use")
-    parser.add_argument("--source", type=str, default="holocron", help="where should the architecture be taken from")
-    parser.add_argument("--freeze-until", default="backbone", type=str, help="Last layer to freeze")
-    parser.add_argument("--device", default=None, type=int, help="device")
-    parser.add_argument("-b", "--batch-size", default=32, type=int, help="batch size")
-    parser.add_argument("--grad-acc", default=1, type=int, help="Number of batches to accumulate the gradient of")
-    parser.add_argument("--epochs", default=20, type=int, help="number of total epochs to run")
-    parser.add_argument(
+    # Data & model
+    group = parser.add_argument_group("Data & model")
+    group.add_argument("data_path", type=str, help="path to dataset folder")
+    group.add_argument("--arch", default="yolov2", type=str, help="architecture to use")
+    group.add_argument("--source", type=str, default="holocron", help="where should the architecture be taken from")
+    group.add_argument("--pretrained", action="store_true", help="Use pre-trained models from the modelzoo")
+    group.add_argument("--output-file", default="./checkpoints/model.pth", help="path where to save")
+    group.add_argument("--resume", default="", help="resume from checkpoint")
+    # Hardware
+    group = parser.add_argument_group("Hardware")
+    group.add_argument("--device", default=None, type=int, help="device")
+    group.add_argument("--amp", help="Use Automatic Mixed Precision", action="store_true")
+    # Data loading
+    group = parser.add_argument_group("Data loading")
+    group.add_argument("-b", "--batch-size", default=32, type=int, help="batch size")
+    group.add_argument(
         "-j", "--workers", default=min(os.cpu_count(), 16), type=int, help="number of data loading workers"
     )
-    parser.add_argument("--img-size", default=416, type=int, help="image size")
-    parser.add_argument("--opt", default="adamp", type=str, help="optimizer")
-    parser.add_argument("--sched", default="onecycle", type=str, help="scheduler")
-    parser.add_argument("--lr", default=0.1, type=float, help="initial learning rate")
-    parser.add_argument("--wd", "--weight-decay", default=0, type=float, help="weight decay", dest="weight_decay")
-    parser.add_argument("--norm-wd", default=None, type=float, help="weight decay of norm parameters")
-    parser.add_argument("--find-lr", action="store_true", help="Should you run LR Finder")
-    parser.add_argument("--find-size", dest="find_size", action="store_true", help="Should you run Image size Finder")
-    parser.add_argument("--check-setup", action="store_true", help="Check your training setup")
-    parser.add_argument("--output-file", default="./checkpoints/model.pth", help="path where to save")
-    parser.add_argument("--resume", default="", help="resume from checkpoint")
-    parser.add_argument("--show-samples", action="store_true", help="Whether training samples should be displayed")
-    parser.add_argument("--test-only", help="Only test the model", action="store_true")
-    parser.add_argument("--pretrained", action="store_true", help="Use pre-trained models from the model zoo")
-    parser.add_argument("--amp", action="store_true", help="Use Automatic Mixed Precision")
-    parser.add_argument("--wb", action="store_true", help="Log to Weights & Biases")
+    # Transformations
+    group = parser.add_argument_group("Transformations")
+    group.add_argument("--img-size", default=416, type=int, help="image size")
+    # Optimization
+    group = parser.add_argument_group("Optimization")
+    group.add_argument("--epochs", default=20, type=int, help="number of total epochs to run")
+    group.add_argument("--lr", default=0.1, type=float, help="initial learning rate")
+    group.add_argument("--freeze-until", default=None, type=str, help="Last layer to freeze")
+    group.add_argument("--grad-acc", default=1, type=int, help="Number of batches to accumulate the gradient of")
+    group.add_argument("--opt", default="adamp", type=str, help="optimizer")
+    group.add_argument("--sched", default="onecycle", type=str, help="Scheduler to be used")
+    group.add_argument("--wd", "--weight-decay", default=0, type=float, help="weight decay", dest="weight_decay")
+    group.add_argument("--norm-wd", default=None, type=float, help="weight decay of norm parameters")
+    # Actions
+    group = parser.add_argument_group("Actions")
+    group.add_argument("--find-lr", action="store_true", help="Should you run LR Finder")
+    group.add_argument("--find-size", dest="find_size", action="store_true", help="Should you run Image size Finder")
+    group.add_argument("--check-setup", action="store_true", help="Check your training setup")
+    group.add_argument("--show-samples", action="store_true", help="Whether training samples should be displayed")
+    group.add_argument("--test-only", help="Only test the model", action="store_true")
+    # Experiment tracking
+    group = parser.add_argument_group("Experiment tracking")
+    group.add_argument("--wb", action="store_true", help="Log to Weights & Biases")
+    group.add_argument("--name", type=str, default=None, help="Name of your training experiment")
 
     return parser
 
