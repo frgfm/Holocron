@@ -1,11 +1,10 @@
 # Pin the dependencies
 lock:
 	poetry lock
-	poetry export -f requirements.txt --without-hashes --output requirements.txt
-	poetry export -f requirements.txt --without-hashes --dev --output requirements-dev.txt
 
 # Run the docker
 run:
+	poetry export -f requirements.txt --without-hashes --output requirements.txt
 	docker-compose up -d --build
 
 # Run the docker
@@ -14,7 +13,9 @@ stop:
 
 # Run tests for the library
 test:
+	poetry export -f requirements.txt --without-hashes --output requirements.txt
 	docker-compose up -d --build
+	poetry export -f requirements.txt --without-hashes --dev --output requirements-dev.txt
 	docker cp requirements-dev.txt api_backend_1:/app/requirements-dev.txt
 	docker-compose exec -T backend pip install -r requirements-dev.txt
 	docker cp tests api_backend_1:/app/tests
