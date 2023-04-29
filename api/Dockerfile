@@ -10,10 +10,9 @@ ENV PYTHONPATH "${PYTHONPATH}:/app"
 # copy requirements file
 COPY requirements.txt  /app/requirements.txt
 
-RUN pip install --upgrade pip setuptools wheel \
-    && pip install -r /app/requirements.txt \
-    && pip cache purge \
-    && rm -rf /root/.cache/pip
+RUN set -eux \
+	&& pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir -r /app/requirements.txt
 
 # copy project
 COPY app /app/app
