@@ -1,7 +1,7 @@
 # this target runs checks on all files
 quality:
 	isort . -c
-	flake8
+	ruff check .
 	mypy
 	pydocstyle
 	black --check .
@@ -12,7 +12,7 @@ quality:
 style:
 	isort .
 	black .
-	autoflake --in-place -r .
+	ruff --fix .
 
 # Run tests for the library
 test:
@@ -32,4 +32,4 @@ run-demo:
 
 # Build the docker
 docker:
-	docker build . -t holocron:python3.8.1-slim
+	docker build . -t frgfm/holocron:python3.8-slim

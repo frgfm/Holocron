@@ -8,11 +8,14 @@ version = "0.2.2.dev0"
 description = "Backend template for your Vision API with Holocron"
 authors = ["François-Guillaume Fernandez <fg-feedback@protonmail.com>"]
 license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/frgfm/Holocron"
+keywords = ["backend", "api", "computer vision"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 uvicorn = ">=0.11.1"
-fastapi = ">=0.65.2,<1.0.0"
+fastapi = ">=0.89.0,<1.0.0"
 python-multipart = "==0.0.5"
 Pillow = ">=8.4.0,!=9.2.0"
 onnxruntime = "^1.10.0"

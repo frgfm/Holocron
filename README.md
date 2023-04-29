@@ -82,7 +82,7 @@ print(config['classes'][output.squeeze(0).argmax().item()], output.squeeze(0).so
 
 ### Prerequisites
 
-Python 3.6 (or higher) and [pip](https://pip.pypa.io/en/stable/)/[conda](https://docs.conda.io/en/latest/miniconda.html) are required to install Holocron.
+Python 3.8 (or higher) and [pip](https://pip.pypa.io/en/stable/)/[conda](https://docs.conda.io/en/latest/miniconda.html) are required to install Holocron.
 
 ### Latest stable release
 
