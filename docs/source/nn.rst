@@ -79,3 +79,9 @@ Attention
 .. autoclass:: LambdaLayer
 
 .. autoclass:: TripletAttention
+
+
+Transformers
+------------
+
+.. autoclass:: TransformerEncoderBlock

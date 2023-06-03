@@ -39,6 +39,7 @@ The output represents the classification scores for each output classes.
   models/darknetv4
   models/repvgg
   models/mobileone
+  models/cct
 
 
 Here is the list of available checkpoints:

@@ -11,3 +11,4 @@ from .resnet import *
 from .rexnet import *
 from .sknet import *
 from .tridentnet import *
+from .cct import *
