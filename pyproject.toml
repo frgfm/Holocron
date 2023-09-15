@@ -158,7 +158,7 @@ docstring-quotes = "double"
 
 [tool.ruff.isort]
 known-first-party = ["holocron", "app"]
-known-third-party = ["torch", "torchvision", "fastprogress", "fastapi"]
+known-third-party = ["torch", "torchvision", "fastprogress", "fastapi", "wandb"]
 
 [tool.mypy]
 python_version = "3.9"
