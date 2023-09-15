@@ -46,7 +46,6 @@ class ClassificationTrainer(Trainer):
         Returns:
             dict: evaluation metrics
         """
-
         self.model.eval()
 
         val_loss, top1, top5, num_samples, num_valid_batches = 0.0, 0, 0, 0, 0
@@ -70,7 +69,7 @@ class ClassificationTrainer(Trainer):
 
         val_loss /= num_valid_batches
 
-        return dict(val_loss=val_loss, acc1=top1 / num_samples, acc5=top5 / num_samples)
+        return {"val_loss": val_loss, "acc1": top1 / num_samples, "acc5": top5 / num_samples}
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
@@ -88,7 +87,6 @@ class ClassificationTrainer(Trainer):
         num_samples: int = 12,
         **kwargs: Any,
     ) -> None:
-
         # Record loss, prob, target, image
         losses = np.zeros(num_samples, dtype=np.float32)
         preds = np.zeros(num_samples, dtype=int)
@@ -210,7 +208,6 @@ class BinaryClassificationTrainer(ClassificationTrainer):
         Returns:
             dict: evaluation metrics
         """
-
         self.model.eval()
 
         val_loss, top1, num_samples, num_valid_batches = 0.0, 0.0, 0, 0
@@ -230,8 +227,8 @@ class BinaryClassificationTrainer(ClassificationTrainer):
 
         val_loss /= num_valid_batches
 
-        return dict(val_loss=val_loss, acc=top1 / num_samples)
+        return {"val_loss": val_loss, "acc": top1 / num_samples}
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
-        return f"Validation loss: {eval_metrics['val_loss']:.4} " f"(Acc: {eval_metrics['acc']:.2%})"
+        return f"Validation loss: {eval_metrics['val_loss']:.4} (Acc: {eval_metrics['acc']:.2%})"

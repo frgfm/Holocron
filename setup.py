@@ -14,7 +14,6 @@ VERSION = os.getenv("BUILD_VERSION", "0.2.2.dev0")
 
 
 if __name__ == "__main__":
-
     print(f"Building wheel {PKG_NAME}-{VERSION}")
 
     # Dynamically set the __version__ attribute

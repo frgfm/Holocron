@@ -48,7 +48,6 @@ class YOLOv2(_YOLO):
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None,
     ) -> None:
-
         super().__init__(
             num_classes, rpn_nms_thresh, box_score_thresh, lambda_obj, lambda_noobj, lambda_class, lambda_coords
         )
@@ -165,7 +164,6 @@ class YOLOv2(_YOLO):
             torch.Tensor[N, H, W, num_anchors]: objectness scores
             torch.Tensor[N, H, W, num_anchors, num_classes]: classification scores
         """
-
         b, _, h, w = x.shape
         # (B, C, H, W) --> (B, H, W, num_anchors, 5 + num_classes)
         x = x.reshape(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
@@ -188,7 +186,6 @@ class YOLOv2(_YOLO):
         return b_coords, b_o, b_scores
 
     def _forward(self, x: Tensor) -> Tensor:
-
         out, passthrough = self.backbone(x)
         # Downsample the feature map by stacking adjacent features on the channel dimension
         passthrough = self.passthrough_layer(passthrough)
@@ -213,7 +210,6 @@ class YOLOv2(_YOLO):
             target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[-1, 4]
             and `labels` of type torch.Tensor[-1]
         """
-
         if self.training and target is None:
             raise ValueError("`target` needs to be specified in training mode")
 
@@ -248,7 +244,6 @@ class YOLOv2(_YOLO):
 def _yolo(
     arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, layout: List[Tuple[int, int]], **kwargs: Any
 ) -> YOLOv2:
-
     if pretrained:
         pretrained_backbone = False
 
@@ -301,7 +296,6 @@ def yolov2(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     Returns:
         torch.nn.Module: detection module
     """
-
     if pretrained_backbone:
         kwargs["backbone_norm_layer"] = FrozenBatchNorm2d
 

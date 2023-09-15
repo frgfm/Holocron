@@ -91,7 +91,6 @@ def _handle_legacy_pretrained(
     checkpoint: Union[Checkpoint, None] = None,
     default_checkpoint: Union[Checkpoint, None] = None,
 ) -> Union[Checkpoint, None]:
-
     checkpoint = checkpoint or (default_checkpoint if pretrained else None)
 
     if pretrained and checkpoint is None:

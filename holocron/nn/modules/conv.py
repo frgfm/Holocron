@@ -399,7 +399,6 @@ class PyConv2d(nn.ModuleList):
         groups: Optional[List[int]] = None,
         **kwargs: Any,
     ) -> None:
-
         if num_levels == 1:
             super().__init__(
                 [
@@ -438,7 +437,6 @@ class PyConv2d(nn.ModuleList):
         self.num_levels = num_levels
 
     def forward(self, x):
-
         if self.num_levels == 1:
             return self[0].forward(x)
         return torch.cat([conv(x) for conv in self], dim=1)
@@ -474,7 +472,6 @@ class Involution2d(nn.Module):
         dilation: int = 1,
         reduction_ratio: float = 1,
     ) -> None:
-
         super().__init__()
 
         self.groups = groups
@@ -486,7 +483,6 @@ class Involution2d(nn.Module):
         self.unfold = nn.Unfold(kernel_size, dilation, padding, stride)
 
     def forward(self, x):
-
         # Kernel generation
         # (N, C, H, W) --> (N, C, H // s, W // s)
         kernel = self.pool(x) if isinstance(self.pool, nn.Module) else x

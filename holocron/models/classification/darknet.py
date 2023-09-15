@@ -37,7 +37,6 @@ class DarknetBodyV1(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
 
@@ -67,7 +66,7 @@ class DarknetBodyV1(nn.Sequential):
                         "layers",
                         nn.Sequential(
                             *[
-                                self._make_layer([_in_chans] + planes, act_layer, norm_layer, drop_layer, conv_layer)
+                                self._make_layer([_in_chans, *planes], act_layer, norm_layer, drop_layer, conv_layer)
                                 for _in_chans, planes in zip(in_chans, layout)
                             ]
                         ),
@@ -158,7 +157,6 @@ def darknet24(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
     Returns:
         torch.nn.Module: classification model
     """
-
     return _darknet(
         "darknet24",
         pretrained,

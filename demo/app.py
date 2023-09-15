@@ -14,7 +14,6 @@ from PIL import Image
 
 
 def main(args):
-
     # Download model config & checkpoint
     with open(hf_hub_download(args.repo, filename="config.json"), "rb") as f:
         cfg = json.load(f)
@@ -30,7 +29,6 @@ def main(args):
         Returns:
             the resized and normalized image of shape (1, C, H, W)
         """
-
         # Resizing (PIL takes (W, H) order for resizing)
         img = pil_img.resize(cfg["input_shape"][-2:][::-1], Image.BILINEAR)
         # (H, W, C) --> (C, H, W)

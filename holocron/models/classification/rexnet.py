@@ -276,7 +276,6 @@ def _checkpoint(
 
 
 class ReXNet1_0x_Checkpoint(Enum):
-
     # Porting of Ross Wightman's weights
     IMAGENET1K = _checkpoint(
         arch="rexnet1_0x",
@@ -337,7 +336,6 @@ def rexnet1_0x(
 
 
 class ReXNet1_3x_Checkpoint(Enum):
-
     # Porting of Ross Wightman's weights
     IMAGENET1K = _checkpoint(
         arch="rexnet1_3x",
@@ -398,7 +396,6 @@ def rexnet1_3x(
 
 
 class ReXNet1_5x_Checkpoint(Enum):
-
     # Porting of Ross Wightman's weights
     IMAGENET1K = _checkpoint(
         arch="rexnet1_5x",
@@ -459,7 +456,6 @@ def rexnet1_5x(
 
 
 class ReXNet2_0x_Checkpoint(Enum):
-
     # Porting of Ross Wightman's weights
     IMAGENET1K = _checkpoint(
         arch="rexnet2_0x",
@@ -520,7 +516,6 @@ def rexnet2_0x(
 
 
 class ReXNet2_2x_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="rexnet2_2x",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/rexnet2_2x_224-b23b2847.pth",

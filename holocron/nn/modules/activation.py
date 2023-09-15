@@ -15,7 +15,6 @@ __all__ = ["HardMish", "NLReLU", "FReLU"]
 
 
 class _Activation(nn.Module):
-
     __constants__: List[str] = ["inplace"]
 
     def __init__(self, inplace: bool = False) -> None:

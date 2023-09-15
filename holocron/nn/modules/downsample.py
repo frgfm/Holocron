@@ -36,7 +36,6 @@ class ConcatDownsample2d(nn.Module):
         self.scale_factor = scale_factor
 
     def forward(self, x: Tensor) -> Tensor:
-
         return F.concat_downsample2d(x, self.scale_factor)
 
 
@@ -53,7 +52,6 @@ class ConcatDownsample2dJit(object):
         self.scale_factor = scale_factor
 
     def __call__(self, x: Tensor) -> Tensor:
-
         return F.concat_downsample2d(x, self.scale_factor)
 
 
@@ -167,7 +165,7 @@ class SPP(nn.ModuleList):
     def __init__(self, kernel_sizes: List[int]) -> None:
         super().__init__([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2) for k_size in kernel_sizes])
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         feats = [x] + [pool_layer(x) for pool_layer in self]
         return torch.cat(feats, dim=1)
 

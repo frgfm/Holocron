@@ -43,7 +43,6 @@ def down_path(
     drop_layer: Optional[Callable[..., nn.Module]] = None,
     conv_layer: Optional[Callable[..., nn.Module]] = None,
 ) -> nn.Sequential:
-
     layers: List[nn.Module] = [nn.MaxPool2d(2)] if downsample else []
     layers.extend(
         [
@@ -88,7 +87,6 @@ class UpPath(nn.Module):
         )
 
     def forward(self, downfeats: Union[Tensor, List[Tensor]], upfeat: Tensor) -> Tensor:
-
         if not isinstance(downfeats, list):
             downfeats = [downfeats]
         # Upsample expansive features
@@ -117,13 +115,12 @@ class UNetBackbone(nn.Sequential):
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         same_padding: bool = True,
     ) -> None:
-
         if act_layer is None:
             act_layer = nn.ReLU(inplace=True)
 
         # Contracting path
         _layers: List[nn.Module] = []
-        _layout = [in_channels] + layout
+        _layout = [in_channels, *layout]
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
             _layers.append(
@@ -178,7 +175,7 @@ class UNet(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels] + layout
+        _layout = [in_channels, *layout]
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
             self.encoder.append(
@@ -219,7 +216,6 @@ class UNet(nn.Module):
         init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
-
         xs: List[Tensor] = []
         # Contracting path
         for encoder in self.encoder:
@@ -277,7 +273,6 @@ class UBlock(nn.Module):
         )
 
     def forward(self, downfeat: Tensor, upfeat: Tensor) -> Tensor:
-
         # Upsample expansive features
         _upfeat = self.upsample(upfeat)
 
@@ -367,7 +362,6 @@ class DynamicUNet(nn.Module):
         init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
-
         # Contracting path
         xs: List[Tensor] = list(self.encoder(x).values())
         x = self.bridge(xs[-1])
@@ -408,7 +402,6 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
     Returns:
         semantic segmentation model
     """
-
     return _unet("unet", pretrained, progress, **kwargs)
 
 
@@ -445,7 +438,6 @@ def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 3,
     Returns:
         semantic segmentation model
     """
-
     backbone = UNetBackbone(default_cfgs["unet2"]["encoder_layout"], in_channels=in_channels).features
 
     return _dynamic_unet("unet2", backbone, pretrained, progress, **kwargs)  # type: ignore[arg-type]
@@ -467,7 +459,6 @@ def unet_tvvgg11(
     Returns:
         semantic segmentation model
     """
-
     backbone = vgg11(pretrained=pretrained_backbone and not pretrained).features
 
     return _dynamic_unet("unet_vgg11", backbone, pretrained, progress, **kwargs)
@@ -489,7 +480,6 @@ def unet_tvresnet34(
     Returns:
         semantic segmentation model
     """
-
     backbone = resnet34(pretrained=pretrained_backbone and not pretrained)
     kwargs["final_upsampling"] = kwargs.get("final_upsampling", True)
 
@@ -516,7 +506,6 @@ def unet_rexnet13(
     Returns:
         semantic segmentation model
     """
-
     backbone = rexnet1_3x(pretrained=pretrained_backbone and not pretrained, in_channels=in_channels).features
     kwargs["final_upsampling"] = kwargs.get("final_upsampling", True)
     kwargs["act_layer"] = kwargs.get("act_layer", nn.SiLU(inplace=True))

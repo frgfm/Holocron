@@ -9,7 +9,6 @@ from holocron.transforms.interpolation import ResizeMethod
 
 
 def test_resize():
-
     # Arg check
     with pytest.raises(AssertionError):
         T.Resize(16)
@@ -54,7 +53,6 @@ def test_resize():
 
 
 def test_randomzoomout():
-
     # Arg check
     with pytest.raises(AssertionError):
         T.RandomZoomOut(224)

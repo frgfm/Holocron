@@ -16,7 +16,6 @@ from holocron import models
 
 @torch.inference_mode()
 def main(args):
-
     is_pretrained = args.pretrained and not isinstance(args.checkpoint, str)
     # Pretrained imagenet model
     model = models.__dict__[args.arch](pretrained=is_pretrained).eval()

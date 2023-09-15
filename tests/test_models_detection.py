@@ -7,7 +7,6 @@ from holocron.models import detection
 
 
 def _test_detection_model(name, input_size):
-
     num_classes = 10
     batch_size = 2
     x = torch.rand((batch_size, 3, *input_size))
@@ -51,7 +50,7 @@ def _test_detection_model(name, input_size):
     gt_labels = [(num_classes * torch.rand(num)).to(dtype=torch.long) for num in num_boxes]
 
     # Loss computation
-    loss = model(x, [dict(boxes=boxes, labels=labels) for boxes, labels in zip(gt_boxes, gt_labels)])
+    loss = model(x, [{"boxes": boxes, "labels": labels} for boxes, labels in zip(gt_boxes, gt_labels)])
     assert isinstance(loss, dict)
     for subloss in loss.values():
         assert isinstance(subloss, torch.Tensor)
@@ -61,7 +60,7 @@ def _test_detection_model(name, input_size):
     # Loss computation with no GT
     gt_boxes = [torch.zeros((0, 4)) for _ in num_boxes]
     gt_labels = [torch.zeros(0, dtype=torch.long) for _ in num_boxes]
-    loss = model(x, [dict(boxes=boxes, labels=labels) for boxes, labels in zip(gt_boxes, gt_labels)])
+    loss = model(x, [{"boxes": boxes, "labels": labels} for boxes, labels in zip(gt_boxes, gt_labels)])
     sum(v for v in loss.values()).backward()
 
 
@@ -118,9 +117,10 @@ def test_yolov1():
 
     # Compute loss
     target = [
-        dict(
-            boxes=torch.tensor([[0, 0, 1 / 7, 1 / 7]], dtype=torch.float32), labels=torch.zeros((1,), dtype=torch.long)
-        )
+        {
+            "boxes": torch.tensor([[0, 0, 1 / 7, 1 / 7]], dtype=torch.float32),
+            "labels": torch.zeros((1,), dtype=torch.long),
+        }
     ]
     pred_boxes = torch.zeros((1, h, w, num_anchors, 4), dtype=torch.float32)
     pred_boxes[..., :2] = 0.5
@@ -185,7 +185,9 @@ def test_yolov2():
     assert torch.allclose(b_scores.sum(-1), torch.ones(1))
 
     # Compute loss
-    target = [dict(boxes=torch.tensor([[0, 0, 1, 1]], dtype=torch.float32), labels=torch.zeros((1,), dtype=torch.long))]
+    target = [
+        {"boxes": torch.tensor([[0, 0, 1, 1]], dtype=torch.float32), "labels": torch.zeros((1,), dtype=torch.long)}
+    ]
     pred_boxes = torch.zeros((1, h, w, num_anchors, 4), dtype=torch.float32)
     pred_boxes[..., :2] = 0.5
     pred_boxes[..., 2:] = 1

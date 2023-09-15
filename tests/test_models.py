@@ -8,7 +8,6 @@ from holocron.nn import SAM, BlurPool2d, DropBlock2d
 
 
 def _test_conv_seq(conv_seq, expected_classes, expected_channels):
-
     assert len(conv_seq) == len(expected_classes)
     for _layer, mod_class in zip(conv_seq, expected_classes):
         assert isinstance(_layer, mod_class)
@@ -20,7 +19,6 @@ def _test_conv_seq(conv_seq, expected_classes, expected_channels):
 
 
 def test_conv_sequence():
-
     mod = utils.conv_sequence(
         3,
         32,
@@ -55,7 +53,6 @@ def test_conv_sequence():
 
 
 def test_fuse_conv_bn():
-
     # Check the channel verification
     with pytest.raises(AssertionError):
         utils.fuse_conv_bn(nn.Conv2d(3, 5, 3), nn.BatchNorm2d(3))
@@ -87,7 +84,6 @@ def test_fuse_conv_bn():
 
 
 def test_model_from_hf_hub():
-
     model = utils.model_from_hf_hub("frgfm/repvgg_a0")
     # Check model type
     assert isinstance(model, RepVGG)

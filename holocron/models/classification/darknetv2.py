@@ -39,7 +39,6 @@ class DarknetBodyV2(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
 
@@ -140,7 +139,6 @@ class DarknetBodyV2(nn.Sequential):
         return nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
-
         if self.passthrough:
             self.stem: nn.Sequential
             self.layers: nn.Sequential
@@ -166,7 +164,6 @@ class DarknetV2(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         super().__init__(
             OrderedDict(
                 [

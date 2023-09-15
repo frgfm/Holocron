@@ -31,15 +31,15 @@ class Lookahead(Optimizer):
     def __init__(
         self,
         base_optimizer: torch.optim.Optimizer,
-        sync_rate=0.5,
-        sync_period=6,
+        sync_rate: float = 0.5,
+        sync_period: int = 6,
     ) -> None:
         if sync_rate < 0 or sync_rate > 1:
             raise ValueError(f"expected positive float lower than 1 as sync_rate, received: {sync_rate}")
         if not isinstance(sync_period, int) or sync_period < 1:
             raise ValueError(f"expected positive integer as sync_period, received: {sync_period}")
         # Optimizer attributes
-        self.defaults = dict(sync_rate=sync_rate, sync_period=sync_period)
+        self.defaults = {"sync_rate": sync_rate, "sync_period": sync_period}
         self.state = defaultdict(dict)
         # Base optimizer attributes
         self.base_optimizer = base_optimizer
@@ -76,7 +76,6 @@ class Lookahead(Optimizer):
         Arguments:
             closure (callable, optional): A closure that reevaluates the model and returns the loss.
         """
-
         # Update fast params
         loss = self.base_optimizer.step(closure)
         self.fast_steps += 1
@@ -101,9 +100,8 @@ class Lookahead(Optimizer):
         Args:
             param_group (dict): parameter group of base_optimizer
         """
-
         # Clone & detach params from base optimizer
-        group = dict(params=[p.clone().detach() for p in param_group["params"]], lr=param_group["lr"])
+        group = {"params": [p.clone().detach() for p in param_group["params"]], "lr": param_group["lr"]}
         # Uneeded grads
         for p in group["params"]:
             p.reguires_grad = False
@@ -115,7 +113,6 @@ class Lookahead(Optimizer):
         Args:
             param_group (dict): parameter group
         """
-
         # Add param group to base optimizer
         self.base_optimizer.add_param_group(param_group)
 
@@ -129,7 +126,6 @@ class Lookahead(Optimizer):
         Args:
             sync_rate (float): synchronization rate of parameters
         """
-
         for fast_group, slow_group in zip(self.base_optimizer.param_groups, self.param_groups):
             for fast_p, slow_p in zip(fast_group["params"], slow_group["params"]):
                 # Outer update
@@ -152,22 +148,22 @@ class Scout(Optimizer):
 
     Args:
         base_optimizer (torch.optim.optimizer.Optimizer): base parameter optimizer
-        sync_rate (int, optional): rate of weight synchronization
+        sync_rate (float, optional): rate of weight synchronization
         sync_period (int, optional): number of step performed on fast weights before weight synchronization
     """
 
     def __init__(
         self,
         base_optimizer: torch.optim.Optimizer,
-        sync_rate=0.5,
-        sync_period=6,
+        sync_rate: float = 0.5,
+        sync_period: int = 6,
     ) -> None:
         if sync_rate < 0 or sync_rate > 1:
             raise ValueError(f"expected positive float lower than 1 as sync_rate, received: {sync_rate}")
         if not isinstance(sync_period, int) or sync_period < 1:
             raise ValueError(f"expected positive integer as sync_period, received: {sync_period}")
         # Optimizer attributes
-        self.defaults = dict(sync_rate=sync_rate, sync_period=sync_period)
+        self.defaults = {"sync_rate": sync_rate, "sync_period": sync_period}
         self.state = defaultdict(dict)
         # Base optimizer attributes
         self.base_optimizer = base_optimizer
@@ -177,10 +173,7 @@ class Scout(Optimizer):
         for group in self.base_optimizer.param_groups:
             self._add_param_group(group)
         # Buffer for scouting
-        self.buffer = []
-        for group in self.param_groups:
-            for p in group["params"]:
-                self.buffer.append(p.data.unsqueeze(0))
+        self.buffer = [p.data.unsqueeze(0) for group in self.param_groups for p in group["params"]]
 
     def __getstate__(self) -> Dict[str, Any]:
         return {
@@ -209,7 +202,6 @@ class Scout(Optimizer):
         Arguments:
             closure (callable, optional): A closure that reevaluates the model and returns the loss.
         """
-
         # Update fast params
         loss = self.base_optimizer.step(closure)
         self.fast_steps += 1
@@ -256,9 +248,8 @@ class Scout(Optimizer):
         Args:
             param_group (dict): parameter group of base_optimizer
         """
-
         # Clone & detach params from base optimizer
-        group = dict(params=[p.clone().detach() for p in param_group["params"]], lr=param_group["lr"])
+        group = {"params": [p.clone().detach() for p in param_group["params"]], "lr": param_group["lr"]}
         # Uneeded grads
         for p in group["params"]:
             p.reguires_grad = False
@@ -270,7 +261,6 @@ class Scout(Optimizer):
         Args:
             param_group (dict): parameter group
         """
-
         # Add param group to base optimizer
         self.base_optimizer.add_param_group(param_group)
 
@@ -284,7 +274,6 @@ class Scout(Optimizer):
         Args:
             sync_rate (float): synchronization rate of parameters
         """
-
         for fast_group, slow_group in zip(self.base_optimizer.param_groups, self.param_groups):
             for fast_p, slow_p in zip(fast_group["params"], slow_group["params"]):
                 # Outer update

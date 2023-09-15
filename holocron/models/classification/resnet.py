@@ -50,7 +50,6 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
 
 
 class _ResBlock(nn.Module):
-
     expansion: int = 1
 
     def __init__(
@@ -82,7 +81,6 @@ class _ResBlock(nn.Module):
 
 
 class BasicBlock(_ResBlock):
-
     expansion: int = 1
 
     def __init__(
@@ -139,7 +137,6 @@ class BasicBlock(_ResBlock):
 
 
 class Bottleneck(_ResBlock):
-
     expansion: int = 4
 
     def __init__(
@@ -157,7 +154,6 @@ class Bottleneck(_ResBlock):
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         **kwargs: Any,
     ) -> None:
-
         width = int(planes * (base_width / 64.0)) * groups
         super().__init__(
             [
@@ -238,7 +234,6 @@ class ResNet(nn.Sequential):
         num_repeats: int = 1,
         block_args: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]] = None,
     ) -> None:
-
         if conv_layer is None:
             conv_layer = nn.Conv2d
         if norm_layer is None:
@@ -312,7 +307,7 @@ class ResNet(nn.Sequential):
         stride = 1
         # Block args
         if block_args is None:
-            block_args = dict(groups=1)
+            block_args = {"groups": 1}
         if not isinstance(block_args, list):
             block_args = [block_args] * len(num_blocks)
         for _num_blocks, _planes, _block_args in zip(num_blocks, planes, block_args):
@@ -372,7 +367,6 @@ class ResNet(nn.Sequential):
         num_repeats: int = 1,
         block_args: Optional[Dict[str, Any]] = None,
     ) -> nn.Sequential:
-
         downsample = None
         if stride != 1 or in_planes != planes * block.expansion:
             # Downsampling from ResNet-D

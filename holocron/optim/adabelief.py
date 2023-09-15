@@ -135,9 +135,7 @@ def adabelief(
     r"""Functional API that performs AdaBelief algorithm computation.
     See :class:`~holocron.optim.AdaBelief` for details.
     """
-
     for i, param in enumerate(params):
-
         grad = grads[i]
         exp_avg = exp_avgs[i]
         exp_avg_sq = exp_avg_sqs[i]

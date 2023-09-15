@@ -7,7 +7,6 @@ from holocron.optim import wrapper
 
 
 def _test_wrapper(name: str) -> None:
-
     lr = 1e-4
     input_shape = (3, 224, 224)
     num_batches = 4

@@ -55,7 +55,6 @@ def conv_sequence(
     Returns:
         a list of layers
     """
-
     if conv_layer is None:
         conv_layer = nn.Conv2d
     if bn_channels is None:
@@ -91,7 +90,6 @@ def load_pretrained_params(
     key_replacement: Optional[Tuple[str, str]] = None,
     key_filter: Optional[str] = None,
 ) -> None:
-
     if url is None:
         logging.warning("Invalid model URL, using default initialization.")
     else:
@@ -116,7 +114,6 @@ def fuse_conv_bn(conv: nn.Conv2d, bn: nn.BatchNorm2d) -> Tuple[torch.Tensor, tor
     Returns:
         the fused kernel and bias of the new convolution
     """
-
     # Check compatibility of both layers
     if bn.bias.data.shape[0] != conv.weight.data.shape[0]:
         raise AssertionError("expected same number of output channels for both `conv` and `bn`")
@@ -146,7 +143,6 @@ def model_from_hf_hub(repo_id: str, **kwargs: Any) -> nn.Module:
     Returns:
         Model loaded with the checkpoint
     """
-
     # Get the config
     with open(hf_hub_download(repo_id, filename="config.json", **kwargs), "rb") as f:
         cfg = json.load(f)
@@ -172,7 +168,6 @@ def _configure_model(
     checkpoint: Union[Checkpoint, None],
     **kwargs: Any,
 ) -> M:
-
     model.default_cfg = checkpoint  # type: ignore[assignment]
     # Load pretrained parameters
     if isinstance(checkpoint, Checkpoint):

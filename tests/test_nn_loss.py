@@ -7,7 +7,6 @@ from holocron.nn import functional as F
 
 
 def _test_loss_function(loss_fn, same_loss=0.0, multi_label=False):
-
     num_batches = 2
     num_classes = 4
     # 4 classes
@@ -55,7 +54,6 @@ def _test_loss_function(loss_fn, same_loss=0.0, multi_label=False):
 
 
 def test_focal_loss():
-
     # Common verification
     _test_loss_function(F.focal_loss)
 
@@ -76,7 +74,6 @@ def test_focal_loss():
 
 
 def test_multilabel_cross_entropy():
-
     num_batches = 2
     num_classes = 4
 
@@ -94,7 +91,6 @@ def test_multilabel_cross_entropy():
 
 
 def test_complement_cross_entropy():
-
     num_batches = 2
     num_classes = 4
 
@@ -109,7 +105,6 @@ def test_complement_cross_entropy():
 
 
 def test_mc_loss():
-
     num_batches = 2
     num_classes = 4
     xi = 2
@@ -145,7 +140,6 @@ def test_mc_loss():
 
 
 def test_cb_loss():
-
     num_batches = 2
     num_classes = 4
     x = torch.rand(num_batches, num_classes, 20, 20)
@@ -176,7 +170,6 @@ def test_cb_loss():
 
 
 def test_dice_loss():
-
     num_batches = 2
     num_classes = 4
 
@@ -197,7 +190,6 @@ def test_dice_loss():
 
 
 def test_poly_loss():
-
     _test_loss_function(F.poly_loss)
 
     num_batches = 2

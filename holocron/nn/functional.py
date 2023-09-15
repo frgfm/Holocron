@@ -36,7 +36,6 @@ def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
     Returns:
         output tensor
     """
-
     if inplace:
         return x.mul_(0.5 * (x + 2).clamp(min=0, max=2))
     return 0.5 * x * (x + 2).clamp(min=0, max=2)
@@ -52,7 +51,6 @@ def nl_relu(x: Tensor, beta: float = 1.0, inplace: bool = False) -> Tensor:
     Returns:
         output tensor
     """
-
     if inplace:
         return torch.log(F.relu_(x).mul_(beta).add_(1), out=x)
     return torch.log(1 + beta * F.relu(x))
@@ -80,7 +78,6 @@ def focal_loss(
     Returns:
         torch.Tensor: loss reduced with `reduction` method
     """
-
     # log(P[class]) = log_softmax(score)[class]
     logpt = F.log_softmax(x, dim=1)
 
@@ -128,7 +125,6 @@ def concat_downsample2d(x: Tensor, scale_factor: int) -> Tensor:
     Returns:
         torch.Tensor[N, scale_factor ** 2 * C, H / scale_factor, W / scale_factor]: downsampled tensor
     """
-
     b, c, h, w = x.shape
 
     if (h % scale_factor != 0) or (w % scale_factor != 0):
@@ -150,7 +146,6 @@ def z_pool(x: Tensor, dim: int) -> Tensor:
         x: input tensor
         dim: dimension to pool
     """
-
     return torch.cat([x.max(dim, keepdim=True).values, x.mean(dim, keepdim=True)], dim=dim)
 
 
@@ -169,7 +164,6 @@ def multilabel_cross_entropy(
     Returns:
         torch.Tensor: loss reduced with `reduction` method
     """
-
     # log(P[class]) = log_softmax(score)[class]
     logpt = F.log_softmax(x, dim=1)
 
@@ -221,7 +215,6 @@ def complement_cross_entropy(
     Returns:
         torch.Tensor: loss reduced with `reduction` method
     """
-
     ce_loss = F.cross_entropy(x, target, weight, ignore_index=ignore_index, reduction=reduction)
 
     if gamma == 0:
@@ -289,7 +282,6 @@ def mutual_channel_loss(
     Returns:
         torch.Tensor: loss reduced with `reduction` method
     """
-
     # Flatten spatial dimension
     b, c = x.shape[:2]
     spatial_dims = x.shape[2:]
@@ -342,7 +334,6 @@ def _xcorr2d(
     eps: float = 1e-14,
 ) -> Tensor:
     """Implements cross-correlation operation"""
-
     # Reshape input Tensor into properly sized slices
     h, w = x.shape[-2:]
     if isinstance(dilation, int):
@@ -385,7 +376,6 @@ def _convNd(x: Tensor, weight: Tensor) -> Tensor:
         x (torch.Tensor[N, num_slices, Cin * K1 * ...]): input Tensor
         weight (torch.Tensor[Cout, Cin, K1, ...]): filters
     """
-
     return x @ weight.view(weight.size(0), -1).t()
 
 
@@ -424,7 +414,6 @@ def norm_conv2d(
         >>> inputs = torch.randn(1,4,5,5)
         >>> F.norm_conv2d(inputs, filters, padding=1)
     """
-
     return _xcorr2d(_convNd, x, weight, bias, stride, padding, dilation, groups, True, eps)
 
 
@@ -435,7 +424,6 @@ def _addNd(x: Tensor, weight: Tensor) -> Tensor:
         x (torch.Tensor[N, num_slices, Cin * K1 * ...]): input Tensor
         weight (torch.Tensor[Cout, Cin, K1, ...]): filters
     """
-
     return -(x.unsqueeze(2) - weight.view(weight.size(0), -1)).abs().sum(-1)
 
 
@@ -475,7 +463,6 @@ def add2d(
         >>> inputs = torch.randn(1,4,5,5)
         >>> F.norm_conv2d(inputs, filters, padding=1)
     """
-
     return _xcorr2d(_addNd, x, weight, bias, stride, padding, dilation, groups, normalize_slices, eps)
 
 
@@ -490,7 +477,6 @@ def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = Fa
         inplace (bool, optional): whether the operation should be done inplace
         training (bool, optional): whether the input should be processed in training mode
     """
-
     if not training or drop_prob == 0:
         return x
 
@@ -538,7 +524,6 @@ def dice_loss(
     Returns:
         torch.Tensor: loss reduced with `reduction` method
     """
-
     inter = gamma * (x * target).flatten(2).sum((0, 2))
     cardinality = (x + gamma * target).flatten(2).sum((0, 2))
 
@@ -578,7 +563,6 @@ def poly_loss(
     Returns:
         torch.Tensor: loss reduced with `reduction` method
     """
-
     # log(P[class]) = log_softmax(score)[class]
     logpt = F.log_softmax(x, dim=1)
 

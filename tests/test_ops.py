@@ -8,14 +8,12 @@ from holocron import ops
 
 @pytest.fixture(scope="function")
 def boxes():
-
     return torch.tensor(
         [[0, 0, 100, 100], [50, 50, 100, 100], [50, 50, 150, 150], [100, 100, 200, 200]], dtype=torch.float32
     )
 
 
 def test_iou_penalty(boxes):
-
     penalty = ops.boxes.iou_penalty(boxes, boxes)
 
     # Check shape
@@ -30,7 +28,6 @@ def test_iou_penalty(boxes):
 
 
 def test_diou_loss(boxes):
-
     diou = ops.boxes.diou_loss(boxes, boxes)
 
     # Check shape
@@ -45,7 +42,6 @@ def test_diou_loss(boxes):
 
 
 def test_box_giou(boxes):
-
     giou = ops.boxes.box_giou(boxes, boxes)
 
     # Check shape
@@ -60,19 +56,16 @@ def test_box_giou(boxes):
 
 
 def test_aspect_ratio(boxes):
-
     # All boxes are squares so arctan should yield Pi / 4
     assert torch.equal(ops.boxes.aspect_ratio(boxes), math.pi / 4 * torch.ones(boxes.shape[0]))
 
 
 def test_aspect_ratio_consistency(boxes):
-
     # All boxes have the same aspect ratio
     assert torch.equal(ops.boxes.aspect_ratio_consistency(boxes, boxes), torch.zeros(boxes.shape[0], boxes.shape[0]))
 
 
 def test_ciou_loss(boxes):
-
     ciou = ops.boxes.ciou_loss(boxes, boxes)
 
     # Check shape

@@ -125,7 +125,6 @@ class DarknetBodyV4(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         super().__init__()
 
         if act_layer is None:
@@ -172,7 +171,6 @@ class DarknetBodyV4(nn.Sequential):
         self.num_features = num_features
 
     def forward(self, x: torch.Tensor) -> Union[torch.Tensor, List[torch.Tensor]]:
-
         if self.num_features == 1:
             return super().forward(x)
 
@@ -201,7 +199,6 @@ class DarknetV4(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         super().__init__(
             OrderedDict(
                 [

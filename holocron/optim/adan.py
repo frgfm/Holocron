@@ -162,9 +162,7 @@ def adan(
     r"""Functional API that performs Adan algorithm computation.
     See :class:`~holocron.optim.Adan` for details.
     """
-
     for i, param in enumerate(params):
-
         grad = grads[i]
         exp_avg = exp_avgs[i]
         exp_avg_sq = exp_avg_sqs[i]

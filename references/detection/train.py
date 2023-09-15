@@ -96,7 +96,6 @@ def plot_samples(images, targets, num_samples=8):
 
 @track_emissions()
 def main(args):
-
     print(args)
 
     torch.backends.cudnn.benchmark = True
@@ -253,7 +252,6 @@ def main(args):
 
     # W&B
     if args.wb:
-
         run = wandb.init(
             name=exp_name,
             project="holocron-object-detection",

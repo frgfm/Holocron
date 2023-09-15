@@ -18,7 +18,6 @@ from holocron import models
 
 @torch.inference_mode()
 def main(args):
-
     if args.device is None:
         args.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 

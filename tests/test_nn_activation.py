@@ -7,7 +7,6 @@ from holocron.nn.modules import activation
 
 
 def _test_activation_function(fn, input_shape):
-
     # Optional testing
     fn_args = inspect.signature(fn).parameters.keys()
     cfg = {}

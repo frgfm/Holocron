@@ -5,7 +5,6 @@ from holocron.nn import init
 
 
 def test_init():
-
     module = nn.Sequential(nn.Conv2d(3, 32, 3), nn.BatchNorm2d(32), nn.LeakyReLU(inplace=True))
 
     # Check that each layer was initialized correctly

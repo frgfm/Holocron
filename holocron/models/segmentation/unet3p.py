@@ -32,7 +32,6 @@ class FSAggreg(nn.Module):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         super().__init__()
 
         # Check stem conv channels
@@ -71,8 +70,7 @@ class FSAggreg(nn.Module):
             )
         )
 
-    def forward(self, downfeats: List[Tensor], feat: Tensor, upfeats: List[Tensor]):
-
+    def forward(self, downfeats: List[Tensor], feat: Tensor, upfeats: List[Tensor]) -> Tensor:
         if len(downfeats) != len(self.downsamples) or len(upfeats) != len(self.upsamples):
             raise ValueError(
                 f"Expected {len(self.downsamples)} encoding & {len(self.upsamples)} decoding features, "
@@ -124,7 +122,7 @@ class UNet3p(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels] + layout
+        _layout = [in_channels, *layout]
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
             self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
@@ -151,7 +149,6 @@ class UNet3p(nn.Module):
         init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
-
         xs: List[Tensor] = []
         # Contracting path
         for encoder in self.encoder:
@@ -190,5 +187,4 @@ def unet3p(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
     Returns:
         semantic segmentation model
     """
-
     return _unet("unet3p", pretrained, progress, **kwargs)  # type: ignore[return-value]

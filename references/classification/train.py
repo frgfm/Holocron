@@ -76,7 +76,6 @@ def plot_samples(images, targets, num_samples=8):
 
 @track_emissions()
 def main(args):
-
     print(args)
 
     torch.backends.cudnn.benchmark = True
@@ -95,7 +94,6 @@ def main(args):
     if not args.test_only:
         st = time.time()
         if args.dataset.lower() == "imagenette":
-
             train_set = ImageFolder(
                 os.path.join(args.data_path, "train"),
                 T.Compose(
@@ -138,7 +136,7 @@ def main(args):
         collate_fn = default_collate
         if args.mixup_alpha > 0:
             mix = Mixup(len(train_set.classes), alpha=args.mixup_alpha)
-            collate_fn = lambda batch: mix(*default_collate(batch))  # noqa: E731
+            collate_fn = lambda batch: mix(*default_collate(batch))
         train_loader = torch.utils.data.DataLoader(
             train_set,
             batch_size=args.batch_size,
@@ -264,7 +262,6 @@ def main(args):
 
     # W&B
     if args.wb:
-
         run = wandb.init(
             name=exp_name,
             project="holocron-image-classification",

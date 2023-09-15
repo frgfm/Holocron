@@ -65,7 +65,6 @@ class _YOLO(nn.Module):
         Returns:
             dict: dictionary of losses
         """
-
         gt_boxes = [t["boxes"] for t in target]
         gt_labels = [t["labels"] for t in target]
 
@@ -87,7 +86,6 @@ class _YOLO(nn.Module):
         is_noobj = torch.ones_like(pred_o, dtype=torch.bool)
 
         for idx in range(b):
-
             gt_xy = (gt_boxes[idx][:, :2] + gt_boxes[idx][:, 2:]) / 2
             gt_wh = gt_boxes[idx][:, 2:] - gt_boxes[idx][:, :2]
             gt_centers = torch.stack(
@@ -125,12 +123,12 @@ class _YOLO(nn.Module):
         # Non-objectness loss
         noobj_loss += pred_o[is_noobj].pow(2).sum()
 
-        return dict(
-            obj_loss=self.lambda_obj * obj_loss / pred_boxes.shape[0],
-            noobj_loss=self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
-            bbox_loss=self.lambda_coords * bbox_loss / pred_boxes.shape[0],
-            clf_loss=self.lambda_class * clf_loss / pred_boxes.shape[0],
-        )
+        return {
+            "obj_loss": self.lambda_obj * obj_loss / pred_boxes.shape[0],
+            "noobj_loss": self.lambda_noobj * noobj_loss / pred_boxes.shape[0],
+            "bbox_loss": self.lambda_coords * bbox_loss / pred_boxes.shape[0],
+            "clf_loss": self.lambda_class * clf_loss / pred_boxes.shape[0],
+        }
 
     @staticmethod
     def to_isoboxes(b_coords: Tensor, grid_shape: Tuple[int, int], clamp: bool = False) -> Tensor:
@@ -154,8 +152,8 @@ class _YOLO(nn.Module):
         b_o: Tensor,
         b_scores: Tensor,
         grid_shape: Tuple[int, int],
-        rpn_nms_thresh=0.7,
-        box_score_thresh=0.05,
+        rpn_nms_thresh: float = 0.7,
+        box_score_thresh: float = 0.05,
     ) -> List[Dict[str, Tensor]]:
         """Perform final filtering to produce detections
 
@@ -169,7 +167,6 @@ class _YOLO(nn.Module):
         Returns:
             list<dict>: detections dictionary
         """
-
         # Convert box coords
         pred_xyxy = self.to_isoboxes(
             b_coords.reshape(-1, *grid_shape, self.num_anchors, 4),  # type: ignore[call-overload]
@@ -179,7 +176,6 @@ class _YOLO(nn.Module):
 
         detections = []
         for idx in range(b_coords.shape[0]):
-
             coords = torch.zeros((0, 4), dtype=b_o.dtype, device=b_o.device)
             scores = torch.zeros(0, dtype=b_o.dtype, device=b_o.device)
             labels = torch.zeros(0, dtype=torch.long, device=b_o.device)
@@ -203,7 +199,7 @@ class _YOLO(nn.Module):
                 scores = scores[kept_idxs]
                 labels = labels[kept_idxs]
 
-            detections.append(dict(boxes=coords, scores=scores, labels=labels))
+            detections.append({"boxes": coords, "scores": scores, "labels": labels})
 
         return detections
 
@@ -229,7 +225,6 @@ class YOLOv1(_YOLO):
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         backbone_norm_layer: Optional[Callable[[int], nn.Module]] = None,
     ) -> None:
-
         super().__init__(
             num_classes, rpn_nms_thresh, box_score_thresh, lambda_obj, lambda_noobj, lambda_class, lambda_coords
         )
@@ -313,7 +308,6 @@ class YOLOv1(_YOLO):
             torch.Tensor[N, H * W, num_anchors]: objectness scores
             torch.Tensor[N, H * W, num_anchors, num_classes]: classification scores
         """
-
         b, _ = x.shape
         h, w = 7, 7
         # (B, H * W * (num_anchors * 5 + num_classes)) --> (B, H, W, num_anchors * 5 + num_classes)
@@ -332,7 +326,6 @@ class YOLOv1(_YOLO):
         return b_coords, b_o, b_scores
 
     def _forward(self, x: Tensor) -> Tensor:
-
         out = self.backbone(x)
         out = self.block4(out)
         out = self.classifier(out)
@@ -350,7 +343,6 @@ class YOLOv1(_YOLO):
             target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[-1, 4]
             and `labels` of type torch.Tensor[-1]
         """
-
         if self.training and target is None:
             raise ValueError("`target` needs to be specified in training mode")
 
@@ -380,7 +372,6 @@ class YOLOv1(_YOLO):
 def _yolo(
     arch: str, pretrained: bool, progress: bool, pretrained_backbone: bool, layout: List[List[int]], **kwargs: Any
 ) -> YOLOv1:
-
     if pretrained:
         pretrained_backbone = False
 
@@ -467,7 +458,6 @@ def yolov1(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     Returns:
         torch.nn.Module: detection module
     """
-
     return _yolo(
         "yolov1",
         pretrained,

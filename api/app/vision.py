@@ -35,7 +35,6 @@ def preprocess_image(pil_img: Image.Image) -> np.ndarray:
     Returns:
         the resized and normalized image of shape (1, C, H, W)
     """
-
     # Resizing (PIL takes (W, H) order for resizing)
     img = pil_img.resize(MODEL_CFG["input_shape"][-2:][::-1], Image.BILINEAR)
     # (H, W, C) --> (C, H, W)

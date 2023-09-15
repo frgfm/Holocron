@@ -73,7 +73,6 @@ class ScaleConv2d(nn.Module):
             self.downsample = None  # type: ignore[assignment]
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         # Split the channel dimension into groups of self.width channels
         split_x = torch.split(x, self.width, 1)
         out = []

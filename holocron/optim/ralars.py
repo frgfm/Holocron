@@ -43,7 +43,7 @@ class RaLars(Optimizer):
             raise ValueError(f"Invalid beta parameter at index 0: {betas[0]}")
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError(f"Invalid beta parameter at index 1: {betas[1]}")
-        defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
+        defaults = {"lr": lr, "betas": betas, "eps": eps, "weight_decay": weight_decay}
         super(RaLars, self).__init__(params, defaults)
         # RAdam tweaks
         self.force_adaptive_momentum = force_adaptive_momentum
@@ -65,7 +65,6 @@ class RaLars(Optimizer):
                 loss = closure()
 
         for group in self.param_groups:
-
             # Get group-shared variables
             beta1, beta2 = group["betas"]
             # Compute max length of SMA on first step

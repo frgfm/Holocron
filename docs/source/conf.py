@@ -133,7 +133,7 @@ def patched_make_field(self, types, domain, items, **kw):
     # `kw` catches `env=None` needed for newer sphinx while maintaining
     #  backwards compatibility when passed along further down!
 
-    # type: (list, unicode, tuple) -> nodes.field  # noqa: F821
+    # type: (list, unicode, tuple) -> nodes.field
     def handle_item(fieldarg, content):
         par = nodes.paragraph()
         par += addnodes.literal_strong("", fieldarg)  # Patch: this line added
@@ -187,9 +187,7 @@ def inject_checkpoint_metadata(app, what, name, obj, options, lines):
     - then this hook is called automatically when building the docs, and it generates the text that gets
       used within the autoclass directive.
     """
-
     if obj.__name__.endswith(("_Checkpoint")):
-
         if len(obj) == 0:
             lines[:] = ["There are no available pre-trained checkpoints."]
             return
@@ -242,7 +240,7 @@ def inject_checkpoint_metadata(app, what, name, obj, options, lines):
             table.append(("commit", commit_str))
             # table.append(("Training args", meta.args))
 
-            column_widths = ["60"] + ["60"]
+            column_widths = ["60", "60"]
             " ".join(column_widths)
 
             table = tabulate(table, tablefmt="rst")
@@ -300,10 +298,10 @@ generate_checkpoint_table(
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+
 # Add googleanalytics id
 # ref: https://github.com/orenhecht/googleanalytics/blob/master/sphinxcontrib/googleanalytics.py
 def add_ga_javascript(app, pagename, templatename, context, doctree):
-
     metatags = context.get("metatags", "")
     metatags += """
     <!-- Global site tag (gtag.js) - Google Analytics -->

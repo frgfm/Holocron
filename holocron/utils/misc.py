@@ -41,7 +41,6 @@ def parallel(
     Returns:
         list: list of function's results
     """
-
     num_threads = num_threads if isinstance(num_threads, int) else min(16, mp.cpu_count())
     if num_threads < 2:
         if progress:
@@ -67,7 +66,6 @@ def find_image_size(dataset: Sequence[Tuple[Image.Image, Any]], **kwargs: Any) -
     Returns:
         the suggested height and width to be used
     """
-
     # Record height & width
     _shapes = parallel(lambda x: x[0].size, dataset, progress=True)
 

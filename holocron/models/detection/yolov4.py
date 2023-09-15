@@ -221,7 +221,6 @@ class Neck(nn.Module):
         init_module(self, "leaky_relu")
 
     def forward(self, feats: List[Tensor]) -> Tuple[Tensor, Tensor, Tensor]:
-
         out = self.fpn(feats[2])
 
         aux1 = self.pan1(out, feats[1])
@@ -304,14 +303,12 @@ class YoloLayer(nn.Module):
     def post_process(
         boxes: Tensor, b_o: Tensor, b_scores: Tensor, rpn_nms_thresh: float = 0.7, box_score_thresh: float = 0.05
     ) -> List[Dict[str, Tensor]]:
-
         b_o = torch.sigmoid(b_o)
         b_scores = torch.sigmoid(b_scores)
 
         boxes = boxes.clamp_(0, 1)
         detections = []
         for idx in range(b_o.shape[0]):
-
             coords = torch.zeros((0, 4), dtype=torch.float32, device=b_o.device)
             scores = torch.zeros(0, dtype=torch.float32, device=b_o.device)
             labels = torch.zeros(0, dtype=torch.long, device=b_o.device)
@@ -334,14 +331,13 @@ class YoloLayer(nn.Module):
                 scores = scores[kept_idxs]
                 labels = labels[kept_idxs]
 
-            detections.append(dict(boxes=coords, scores=scores, labels=labels))
+            detections.append({"boxes": coords, "scores": scores, "labels": labels})
 
         return detections
 
     def _build_targets(
         self, pred_boxes: Tensor, b_o: Tensor, b_scores: Tensor, target: List[Dict[str, Tensor]]
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-
         b, h, w, num_anchors = b_o.shape
 
         # Target formatting
@@ -366,7 +362,6 @@ class YoloLayer(nn.Module):
             device=b_o.device,
         )
         if target_selection.shape[0] > 0:
-
             # Anchors IoU
             gt_wh = _boxes[:, 2:] - _boxes[:, :2]
             anchor_idxs = box_iou(
@@ -399,7 +394,6 @@ class YoloLayer(nn.Module):
         b_scores: Tensor,
         target: List[Dict[str, Tensor]],
     ) -> Dict[str, Tensor]:
-
         target_o, target_scores, obj_mask, noobj_mask = self._build_targets(pred_boxes, b_o, b_scores, target)
 
         # Bbox regression
@@ -410,11 +404,11 @@ class YoloLayer(nn.Module):
 
         b_o = torch.sigmoid(b_o)
 
-        return dict(
-            obj_loss=self.lambda_obj * F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction="sum") / b_o.shape[0],
-            noobj_loss=self.lambda_noobj * b_o[noobj_mask].pow(2).sum() / b_o.shape[0],
-            bbox_loss=self.lambda_coords * bbox_loss / b_o.shape[0],
-            clf_loss=self.lambda_class
+        return {
+            "obj_loss": self.lambda_obj * F.mse_loss(b_o[obj_mask], target_o[obj_mask], reduction="sum") / b_o.shape[0],
+            "noobj_loss": self.lambda_noobj * b_o[noobj_mask].pow(2).sum() / b_o.shape[0],
+            "bbox_loss": self.lambda_coords * bbox_loss / b_o.shape[0],
+            "clf_loss": self.lambda_class
             * F.binary_cross_entropy_with_logits(
                 b_scores[obj_mask],
                 target_scores[obj_mask],
@@ -423,7 +417,7 @@ class YoloLayer(nn.Module):
             .mean(1)
             .sum(0)
             / b_o.shape[0],
-        )
+        }
 
     def forward(
         self, x: Tensor, target: Optional[List[Dict[str, Tensor]]] = None
@@ -436,7 +430,6 @@ class YoloLayer(nn.Module):
             target (list<dict>, optional): each dict must have two keys `boxes` of type torch.Tensor[*, 4]
                 and `labels` of type torch.Tensor[*]
         """
-
         if self.training and target is None:
             raise ValueError("`target` needs to be specified in training mode")
 
@@ -459,7 +452,6 @@ class Yolov4Head(nn.Module):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1143
         if anchors is None:
             anchors = (
@@ -636,13 +628,12 @@ class Yolov4Head(nn.Module):
         y3 = self.yolo3(o3, target)
 
         if not self.training:
-
             detections = [
-                dict(
-                    boxes=torch.cat((det1["boxes"], det2["boxes"], det3["boxes"]), dim=0),
-                    scores=torch.cat((det1["scores"], det2["scores"], det3["scores"]), dim=0),
-                    labels=torch.cat((det1["labels"], det2["labels"], det3["labels"]), dim=0),
-                )
+                {
+                    "boxes": torch.cat((det1["boxes"], det2["boxes"], det3["boxes"]), dim=0),
+                    "scores": torch.cat((det1["scores"], det2["scores"], det3["scores"]), dim=0),
+                    "labels": torch.cat((det1["labels"], det2["labels"], det3["labels"]), dim=0),
+                }
                 for det1, det2, det3 in zip(y1, y2, y3)
             ]
             return detections
@@ -690,7 +681,6 @@ class YOLOv4(nn.Module):
     def forward(
         self, x: Tensor, target: Optional[List[Dict[str, Tensor]]] = None
     ) -> Union[List[Dict[str, Tensor]], Dict[str, Tensor]]:
-
         if not isinstance(x, torch.Tensor):
             x = torch.stack(x, dim=0)
 
@@ -709,7 +699,6 @@ def _yolo(
     layout: List[Tuple[int, int]],
     **kwargs: Any,
 ) -> YOLOv4:
-
     if pretrained:
         pretrained_backbone = False
 
@@ -762,7 +751,6 @@ def yolov4(pretrained: bool = False, progress: bool = True, pretrained_backbone:
     Returns:
         torch.nn.Module: detection module
     """
-
     if pretrained_backbone:
         kwargs["backbone_norm_layer"] = FrozenBatchNorm2d
 

@@ -76,7 +76,6 @@ def iou_penalty(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     Returns:
         torch.Tensor[M, N]: penalty term
     """
-
     # Diagonal length of the smallest enclosing box
     c2 = torch.zeros((boxes1.shape[0], boxes2.shape[0], 2), device=boxes1.device)
     # Assign bottom right coords
@@ -128,7 +127,6 @@ def diou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     Returns:
         torch.Tensor[M, N]: Distance-IoU loss
     """
-
     return 1 - box_iou(boxes1, boxes2) + iou_penalty(boxes1, boxes2)
 
 
@@ -141,7 +139,6 @@ def aspect_ratio(boxes: Tensor) -> Tensor:
     Returns:
         torch.Tensor[N]: aspect ratio
     """
-
     return torch.atan((boxes[:, 2] - boxes[:, 0]) / (boxes[:, 3] - boxes[:, 1]))
 
 
@@ -155,7 +152,6 @@ def aspect_ratio_consistency(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     Returns:
         torch.Tensor[M, N]: aspect ratio consistency
     """
-
     v = aspect_ratio(boxes1).unsqueeze(-1) - aspect_ratio(boxes2).unsqueeze(-2)
     v.pow_(2)
     v.mul_(4 / math.pi**2)
@@ -203,7 +199,6 @@ def ciou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
         >>> boxes2 = torch.tensor([[50, 50, 150, 150]], dtype=torch.float32)
         >>> box_ciou(boxes1, boxes2)
     """
-
     iou = box_iou(boxes1, boxes2)
     v = aspect_ratio_consistency(boxes1, boxes2)
 

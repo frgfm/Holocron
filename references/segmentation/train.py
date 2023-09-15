@@ -111,7 +111,6 @@ def plot_predictions(images, preds, targets, ignore_index=None):
 
 @track_emissions()
 def main(args):
-
     print(args)
 
     torch.backends.cudnn.benchmark = True
@@ -280,7 +279,6 @@ def main(args):
 
     # W&B
     if args.wb:
-
         run = wandb.init(
             name=exp_name,
             project="holocron-semantic-segmentation",

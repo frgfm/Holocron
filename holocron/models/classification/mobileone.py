@@ -200,7 +200,6 @@ class MobileOne(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
     ) -> None:
-
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if act_layer is None:
@@ -280,7 +279,6 @@ def _checkpoint(
 
 
 class MobileOne_S0_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="mobileone_s0",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s0_224-9ddd1fe9.pth",
@@ -328,7 +326,6 @@ def mobileone_s0(
 
 
 class MobileOne_S1_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="mobileone_s1",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s1_224-d4ec5433.pth",
@@ -376,7 +373,6 @@ def mobileone_s1(
 
 
 class MobileOne_S2_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="mobileone_s2",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s2_224-b748859c.pth",
@@ -424,7 +420,6 @@ def mobileone_s2(
 
 
 class MobileOne_S3_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="mobileone_s3",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/mobileone_s3_224-7f357baf.pth",

@@ -36,7 +36,6 @@ class Mixup(torch.nn.Module):
         self.alpha = alpha
 
     def forward(self, inputs: Tensor, targets: Tensor) -> Tuple[Tensor, Tensor]:
-
         # Convert target to one-hot
         if targets.ndim == 1:
             # (N,) --> (N, C)

@@ -105,7 +105,6 @@ class SKConv2d(nn.Module):
         self.sa = SoftAttentionLayer(out_channels, sa_ratio, m, act_layer, norm_layer, drop_layer)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         paths = torch.stack([path_conv(x) for path_conv in self.path_convs], dim=1)
 
         b, m, c = paths.shape[:3]
@@ -117,7 +116,6 @@ class SKConv2d(nn.Module):
 
 
 class SKBottleneck(_ResBlock):
-
     expansion: int = 4
 
     def __init__(
@@ -135,7 +133,6 @@ class SKBottleneck(_ResBlock):
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         **kwargs: Any,
     ) -> None:
-
         width = int(planes * (base_width / 64.0)) * groups
         super().__init__(
             [
@@ -215,7 +212,6 @@ def sknet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
     Returns:
         torch.nn.Module: classification model
     """
-
     return _sknet("sknet101", pretrained, progress, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
 
 
@@ -230,5 +226,4 @@ def sknet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
     Returns:
         torch.nn.Module: classification model
     """
-
     return _sknet("sknet152", pretrained, progress, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)

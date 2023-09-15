@@ -81,7 +81,6 @@ class RepBlock(nn.Module):
             self.branches.append(norm_layer(planes))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         if isinstance(self.branches, nn.Conv2d):
             out = self.branches(x)
         else:
@@ -148,7 +147,6 @@ class RepVGG(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
     ) -> None:
-
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if act_layer is None:
@@ -220,7 +218,6 @@ def _checkpoint(
 
 
 class RepVGG_A0_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_a0",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a0_224-d3f54b28.pth",
@@ -268,7 +265,6 @@ def repvgg_a0(
 
 
 class RepVGG_A1_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_a1",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a1_224-8d3269fb.pth",
@@ -316,7 +312,6 @@ def repvgg_a1(
 
 
 class RepVGG_A2_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_a2",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a2_224-cb442207.pth",
@@ -364,7 +359,6 @@ def repvgg_a2(
 
 
 class RepVGG_B0_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_b0",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b0_224-fdcdd2b7.pth",
@@ -412,7 +406,6 @@ def repvgg_b0(
 
 
 class RepVGG_B1_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_b1",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b1_224-3e5b28d7.pth",
@@ -460,7 +453,6 @@ def repvgg_b1(
 
 
 class RepVGG_B2_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_b2",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b2_224-dc810d88.pth",

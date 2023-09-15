@@ -7,7 +7,6 @@ from holocron import utils
 
 
 def test_mixup():
-
     batch_size = 8
     num_classes = 10
     shape = (3, 32, 32)

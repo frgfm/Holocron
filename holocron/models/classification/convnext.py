@@ -136,7 +136,6 @@ class ConvNeXt(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         stochastic_depth_prob: float = 0.0,
     ) -> None:
-
         if conv_layer is None:
             conv_layer = nn.Conv2d
         if norm_layer is None:
@@ -162,7 +161,6 @@ class ConvNeXt(nn.Sequential):
         block_idx = 0
         tot_blocks = sum(num_blocks)
         for _num_blocks, _planes, _oplanes in zip(num_blocks, planes, planes[1:] + [planes[-1]]):
-
             # adjust stochastic depth probability based on the depth of the stage block
             sd_probs = [stochastic_depth_prob * (block_idx + _idx) / (tot_blocks - 1.0) for _idx in range(_num_blocks)]
             _stage: List[nn.Module] = [
@@ -232,7 +230,6 @@ def _checkpoint(
 
 
 class ConvNeXt_Atto_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="convnext_atto",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext_atto_224-f38217e7.pth",

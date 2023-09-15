@@ -14,7 +14,6 @@ def init_module(module: nn.Module, nonlinearity: str = "relu") -> None:
         module: module to initialize
         nonlinearity: linearity to initialize convolutions for
     """
-
     for m in module.modules():
         if isinstance(m, _ConvNd):
             nn.init.kaiming_normal_(m.weight.data, mode="fan_out", nonlinearity=nonlinearity)

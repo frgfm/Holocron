@@ -7,7 +7,6 @@ from holocron.models import segmentation
 
 
 def _test_segmentation_model(name, input_shape):
-
     num_classes = 10
     batch_size = 2
     num_channels = 3

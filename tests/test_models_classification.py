@@ -8,7 +8,6 @@ from holocron.models import classification
 
 
 def _test_classification_model(name, num_classes, pretrained):
-
     batch_size = 2
     x = torch.rand((batch_size, 3, 224, 224))
     model = classification.__dict__[name](pretrained=pretrained, num_classes=num_classes).eval()

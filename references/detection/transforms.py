@@ -33,7 +33,7 @@ class VOCTargetTransform:
         # Encode class labels
         labels = torch.tensor([self.class_map[obj["name"]] for obj in target["annotation"]["object"]], dtype=torch.long)
 
-        return image, dict(boxes=boxes, labels=labels)
+        return image, {"boxes": boxes, "labels": labels}
 
 
 class Compose(transforms.Compose):
@@ -106,7 +106,6 @@ class RandomResizedCrop(transforms.RandomResizedCrop):
 
 
 def convert_to_relative(image, target):
-
     target["boxes"][:, [0, 2]] /= image.size[0]
     target["boxes"][:, [1, 3]] /= image.size[1]
 
