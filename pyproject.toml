@@ -48,6 +48,7 @@ test = [
     # cf. https://github.com/frgfm/Holocron/security/dependabot/4
     "pytest>=7.2.0",
     "coverage[toml]>=4.5.4",
+    "onnx>=1.13.0,<2.0.0",
 ]
 training = [
     "wandb>=0.10.31,<1.0.0",
