@@ -51,7 +51,11 @@ GH_REPO = "Holocron"
 
 
 def query_repo(cmd: str, *, accept) -> Any:
-    response = requests.get(f"https://api.github.com/repos/{GH_ORG}/{GH_REPO}/{cmd}", headers=dict(Accept=accept))
+    response = requests.get(
+        f"https://api.github.com/repos/{GH_ORG}/{GH_REPO}/{cmd}",
+        headers={"Accept": accept},
+        timeout=5,
+    )
     return response.json()
 
 
