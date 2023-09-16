@@ -24,13 +24,13 @@ requirements:
 
   run:
     - python>=3.8, <4.0
-    - pytorch >=1.9.1, <2.0.0
-    - torchvision >=0.10.1, <1.0.0
+    - pytorch >=2.0.0, <3.0.0
+    - torchvision >=0.15.0, <1.0.0
     - tqdm >=4.1.0
     - numpy >=1.17.2, <2.0.0
     - fastprogress >=1.0.0, <2.0.0
     - matplotlib >=3.0.0, <4.0.0
-    - pillow >=8.4.0
+    - pillow >=8.4.0, !=9.2.0
     - huggingface_hub >=0.4.0
 
 test:
