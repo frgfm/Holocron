@@ -315,7 +315,7 @@ class YOLOv1(_YOLO):
         # (B, H * W * (num_anchors * 5 + num_classes)) --> (B, H, W, num_anchors * 5 + num_classes)
         x = x.reshape(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
-        b_scores = x[..., -self.num_classes:]
+        b_scores = x[..., -self.num_classes :]
         # Repeat for anchors to keep compatibility across YOLO versions
         b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
         #  (B, H, W, num_anchors * 5 + num_classes) -->  (B, H, W, num_anchors, 5)

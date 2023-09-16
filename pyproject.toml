@@ -139,6 +139,7 @@ select = [
 ]
 ignore = [
     "E501",  # line too long, handled by black
+    "E203",  # space before slice
     "B008",  # do not perform function calls in argument defaults
     "B904",  # raise from
     "C901",  # too complex

@@ -156,7 +156,7 @@ class UNet3p(nn.Module):
 
         # Full-scale expansive path
         for idx in range(len(self.decoder) - 1, -1, -1):
-            xs[idx] = self.decoder[idx](xs[:idx], xs[idx], xs[idx + 1:])
+            xs[idx] = self.decoder[idx](xs[:idx], xs[idx], xs[idx + 1 :])
 
         # Classifier
         x = self.classifier(xs[0])

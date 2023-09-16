@@ -168,7 +168,7 @@ class YOLOv2(_YOLO):
         # (B, C, H, W) --> (B, H, W, num_anchors, 5 + num_classes)
         x = x.reshape(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
         # Classification scores
-        b_scores = F.softmax(x[..., -self.num_classes:], dim=-1)
+        b_scores = F.softmax(x[..., -self.num_classes :], dim=-1)
 
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)

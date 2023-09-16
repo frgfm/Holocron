@@ -358,9 +358,9 @@ class SlimConv2d(nn.Module):
 
         # Compression
         X_w = x * w
-        X_top = X_w[:, : x.shape[1] // 2] + X_w[:, x.shape[1] // 2:]
+        X_top = X_w[:, : x.shape[1] // 2] + X_w[:, x.shape[1] // 2 :]
         X_w = x * w.flip(dims=(1,))
-        X_bot = X_w[:, : x.shape[1] // 2] + X_w[:, x.shape[1] // 2:]
+        X_bot = X_w[:, : x.shape[1] // 2] + X_w[:, x.shape[1] // 2 :]
 
         # Transform
         X_top = self.conv_top(X_top)
