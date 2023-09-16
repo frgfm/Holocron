@@ -564,14 +564,21 @@ def poly_loss(
         torch.Tensor: loss reduced with `reduction` method
     """
     # log(P[class]) = log_softmax(score)[class]
+    # Shape (N, K, ...)
     logpt = F.log_softmax(x, dim=1)
 
-    # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
-    logpt = logpt.transpose(1, 0).flatten(1).gather(0, target.view(1, -1)).squeeze()
-    # Ignore index (set loss contribution to 0)
-    valid_idxs = torch.ones(target.view(-1).shape[0], dtype=torch.bool, device=x.device)
-    if ignore_index >= 0 and ignore_index < x.shape[1]:
-        valid_idxs[target.view(-1) == ignore_index] = False
+    # Hard label
+    if target.ndim == x.ndim - 1:
+        if target.dtype != torch.long:
+            raise TypeError("target dtype is expected to be torch.int64")
+        # Compute pt and logpt only for target classes (the remaining will have a 0 coefficient)
+        # Shape (N, ...)
+        logpt = logpt.transpose(1, 0).flatten(1).gather(0, target.view(1, -1)).squeeze(0)
+    else:
+        if target.ndim != x.ndim or target.shape[0] != x.shape[0] or target.shape[1] != x.shape[1]:
+            raise ValueError("invalid target shape")
+        # Shape (N, K, ...)
+        logpt = logpt * target
 
     # Get P(class)
     loss = -1 * logpt + eps * (1 - logpt.exp())
@@ -581,15 +588,30 @@ def poly_loss(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt = weight.gather(0, target.data.view(-1)) * logpt
+        if target.ndim == x.ndim - 1:
+            loss = weight.gather(0, target.data.view(-1)) * loss
+        else:
+            loss = weight.reshape(1, -1) * loss
+
+    # Ignore index (set loss contribution to 0)
+    if target.ndim == x.ndim - 1:
+        valid_idxs = torch.ones(target.view(-1).shape[0], dtype=torch.bool, device=x.device)
+        if ignore_index >= 0 and ignore_index < x.shape[1]:
+            valid_idxs[target.view(-1) == ignore_index] = False
+    else:
+        valid_idxs = torch.ones(target.shape[1], dtype=torch.bool, device=x.device)
+        if ignore_index >= 0 and ignore_index < x.shape[1]:
+            valid_idxs[ignore_index] = False
 
     # Loss reduction
     if reduction == "sum":
-        loss = loss[valid_idxs].sum()
+        loss = loss[valid_idxs].sum() if target.ndim == x.ndim - 1 else loss[:, valid_idxs].sum()
     elif reduction == "mean":
-        loss = loss[valid_idxs].mean()
+        loss = loss[valid_idxs].mean() if target.ndim == x.ndim - 1 else loss[:, valid_idxs].sum(1).mean()
     else:
         # if no reduction, reshape tensor like target
-        loss = loss.view(*target.shape)
+        # (N, ...)
+        if target.ndim == x.ndim:
+            loss = loss[:, valid_idxs].sum(1)
 
     return loss
