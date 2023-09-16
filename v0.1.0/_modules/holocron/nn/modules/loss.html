@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark">
@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>holocron.nn.modules.loss - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
@@ -238,7 +238,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
 
 
-<div class="viewcode-block" id="FocalLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.FocalLoss">[docs]</a><span class="k">class</span> <span class="nc">FocalLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
+<div class="viewcode-block" id="FocalLoss">
+<a class="viewcode-back" href="../../../../nn.html#holocron.nn.FocalLoss">[docs]</a>
+<span class="k">class</span> <span class="nc">FocalLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementation of Focal Loss as described in</span>
 <span class="sd">    `&quot;Focal Loss for Dense Object Detection&quot; &lt;https://arxiv.org/pdf/1708.02002.pdf&gt;`_</span>
 
@@ -260,7 +262,10 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(gamma=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="si">}</span><span class="s2">, reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
 
 
-<div class="viewcode-block" id="MultiLabelCrossEntropy"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.MultiLabelCrossEntropy">[docs]</a><span class="k">class</span> <span class="nc">MultiLabelCrossEntropy</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
+
+<div class="viewcode-block" id="MultiLabelCrossEntropy">
+<a class="viewcode-back" href="../../../../nn.html#holocron.nn.MultiLabelCrossEntropy">[docs]</a>
+<span class="k">class</span> <span class="nc">MultiLabelCrossEntropy</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementation of the cross-entropy loss for multi-label targets</span>
 
 <span class="sd">    Args:</span>
@@ -279,7 +284,10 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
 
 
-<div class="viewcode-block" id="LabelSmoothingCrossEntropy"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.LabelSmoothingCrossEntropy">[docs]</a><span class="k">class</span> <span class="nc">LabelSmoothingCrossEntropy</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LabelSmoothingCrossEntropy">
+<a class="viewcode-back" href="../../../../nn.html#holocron.nn.LabelSmoothingCrossEntropy">[docs]</a>
+<span class="k">class</span> <span class="nc">LabelSmoothingCrossEntropy</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementation of the cross-entropy loss with label smoothing on hard target as described in</span>
 <span class="sd">    `&quot;Attention Is All You Need&quot; &lt;https://arxiv.org/pdf/1706.03762.pdf&gt;`_</span>
 
@@ -301,7 +309,10 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(eps=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="si">}</span><span class="s2">, reduction=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
 
 
-<div class="viewcode-block" id="MixupLoss"><a class="viewcode-back" href="../../../../nn.html#holocron.nn.MixupLoss">[docs]</a><span class="k">class</span> <span class="nc">MixupLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
+
+<div class="viewcode-block" id="MixupLoss">
+<a class="viewcode-back" href="../../../../nn.html#holocron.nn.MixupLoss">[docs]</a>
+<span class="k">class</span> <span class="nc">MixupLoss</span><span class="p">(</span><span class="n">_Loss</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a Mixup wrapper as described in</span>
 <span class="sd">    `&quot;mixup: Beyond Empirical Risk Minimization&quot; &lt;https://arxiv.org/pdf/1710.09412.pdf&gt;`_</span>
 
@@ -327,6 +338,7 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Mixup_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -366,9 +378,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=7c1eed0c"></script>
+</div><script src="../../../../_static/documentation_options.js?v=177696f3"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>

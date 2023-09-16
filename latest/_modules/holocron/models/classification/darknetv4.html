@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark">
@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>holocron.models.classification.darknetv4 - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
@@ -313,6 +313,7 @@
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -321,11 +322,12 @@
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">DropBlock2d</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span>
 <span class="kn">from</span> <span class="nn">holocron.nn.init</span> <span class="kn">import</span> <span class="n">init_module</span>
 
+<span class="kn">from</span> <span class="nn">..checkpoints</span> <span class="kn">import</span> <span class="n">Checkpoint</span><span class="p">,</span> <span class="n">_handle_legacy_pretrained</span>
 <span class="kn">from</span> <span class="nn">..presets</span> <span class="kn">import</span> <span class="n">IMAGENETTE</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">_checkpoint</span><span class="p">,</span> <span class="n">_configure_model</span><span class="p">,</span> <span class="n">conv_sequence</span>
 <span class="kn">from</span> <span class="nn">.darknetv3</span> <span class="kn">import</span> <span class="n">ResBlock</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DarknetV4&quot;</span><span class="p">,</span> <span class="s2">&quot;cspdarknet53&quot;</span><span class="p">,</span> <span class="s2">&quot;cspdarknet53_mish&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DarknetV4&quot;</span><span class="p">,</span> <span class="s2">&quot;CSPDarknet53_Checkpoint&quot;</span><span class="p">,</span> <span class="s2">&quot;cspdarknet53&quot;</span><span class="p">,</span> <span class="s2">&quot;CSPDarknet53_Mish_Checkpoint&quot;</span><span class="p">,</span> <span class="s2">&quot;cspdarknet53_mish&quot;</span><span class="p">]</span>
 
 
 <span class="n">default_cfgs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
@@ -434,7 +436,6 @@
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -481,7 +482,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span> <span class="o">=</span> <span class="n">num_features</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
@@ -510,7 +510,6 @@
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">OrderedDict</span><span class="p">(</span>
                 <span class="p">[</span>
@@ -536,51 +535,127 @@
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_darknet</span><span class="p">(</span><span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DarknetV4</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_darknet</span><span class="p">(</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">layout</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DarknetV4</span><span class="p">:</span>
     <span class="c1"># Build the model</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">DarknetV4</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">default_cfg</span> <span class="o">=</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>  <span class="c1"># type: ignore[assignment]</span>
-    <span class="c1"># Load pretrained parameters</span>
-    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">model</span>
+    <span class="k">return</span> <span class="n">_configure_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="cspdarknet53"><a class="viewcode-back" href="../../../../models/generated/holocron.models.cspdarknet53.html#holocron.models.cspdarknet53">[docs]</a><span class="k">def</span> <span class="nf">cspdarknet53</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DarknetV4</span><span class="p">:</span>
+<div class="viewcode-block" id="CSPDarknet53_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.cspdarknet53.html#holocron.models.CSPDarknet53_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">CSPDarknet53_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;cspdarknet53&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/cspdarknet53_224-7a69463a.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9450</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9964</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;7a69463a4bd445beb6691dfd6ef7378efcf941f75d07d60034106ebedfcb82f8&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">106732575</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">26627434</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;6e32c5b578711a2ef3731a8f8c61760ed9f03e58&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch cspdarknet53 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
+
+
+
+<div class="viewcode-block" id="cspdarknet53">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.cspdarknet53.html#holocron.models.cspdarknet53">[docs]</a>
+<span class="k">def</span> <span class="nf">cspdarknet53</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DarknetV4</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CSP-Darknet-53 from</span>
 <span class="sd">    `&quot;CSPNet: A New Backbone that can Enhance Learning Capability of CNN&quot; &lt;https://arxiv.org/pdf/1911.11929.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _darknet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.CSPDarknet53_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">CSPDarknet53_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_darknet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_darknet</span><span class="p">(</span><span class="s2">&quot;cspdarknet53&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cspdarknet53_mish"><a class="viewcode-back" href="../../../../models/generated/holocron.models.cspdarknet53_mish.html#holocron.models.cspdarknet53_mish">[docs]</a><span class="k">def</span> <span class="nf">cspdarknet53_mish</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DarknetV4</span><span class="p">:</span>
+<div class="viewcode-block" id="CSPDarknet53_Mish_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.cspdarknet53_mish.html#holocron.models.CSPDarknet53_Mish_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">CSPDarknet53_Mish_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;cspdarknet53_mish&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/cspdarknet53_mish_224-1b660b3c.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9465</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9969</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;1b660b3cb144195100c99ee3b9b863c37a5b5a59619c8de8c588b3d2af954b15&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">106737530</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">26627434</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;6e32c5b578711a2ef3731a8f8c61760ed9f03e58&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch cspdarknet53_mish --batch-size 32 --grad-acc 2 --mixup-alpha 0.2 --amp&quot;</span>
+            <span class="s2">&quot;  --device 0 --epochs 100 --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176&quot;</span>
+            <span class="s2">&quot; --val-resize-size 232 --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
+
+
+
+<div class="viewcode-block" id="cspdarknet53_mish">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.cspdarknet53_mish.html#holocron.models.cspdarknet53_mish">[docs]</a>
+<span class="k">def</span> <span class="nf">cspdarknet53_mish</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DarknetV4</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modified version of CSP-Darknet-53 from</span>
 <span class="sd">    `&quot;CSPNet: A New Backbone that can Enhance Learning Capability of CNN&quot; &lt;https://arxiv.org/pdf/1911.11929.pdf&gt;`_</span>
 <span class="sd">    with Mish as activation layer and DropBlock as regularization layer.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _darknet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    .. autoclass:: holocron.models.CSPDarknet53_Mish_Checkpoint</span>
+<span class="sd">        :members:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;act_layer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Mish</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;drop_layer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DropBlock2d</span>
 
-    <span class="k">return</span> <span class="n">_darknet</span><span class="p">(</span>
-        <span class="s2">&quot;cspdarknet53_mish&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span></div>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">CSPDarknet53_Mish_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_darknet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">4</span><span class="p">)],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -620,9 +695,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=bc158d38"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1b5178e4"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>

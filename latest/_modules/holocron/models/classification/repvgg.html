@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark">
@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>holocron.models.classification.repvgg - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
@@ -321,18 +321,8 @@
 
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">GlobalAvgPool2d</span><span class="p">,</span> <span class="n">init</span>
 
-<span class="kn">from</span> <span class="nn">..checkpoints</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Checkpoint</span><span class="p">,</span>
-    <span class="n">Dataset</span><span class="p">,</span>
-    <span class="n">Evaluation</span><span class="p">,</span>
-    <span class="n">LoadingMeta</span><span class="p">,</span>
-    <span class="n">Metric</span><span class="p">,</span>
-    <span class="n">PreProcessing</span><span class="p">,</span>
-    <span class="n">TrainingRecipe</span><span class="p">,</span>
-    <span class="n">_handle_legacy_pretrained</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">..presets</span> <span class="kn">import</span> <span class="n">IMAGENETTE</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">_configure_model</span><span class="p">,</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">fuse_conv_bn</span>
+<span class="kn">from</span> <span class="nn">..checkpoints</span> <span class="kn">import</span> <span class="n">Checkpoint</span><span class="p">,</span> <span class="n">_handle_legacy_pretrained</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">_checkpoint</span><span class="p">,</span> <span class="n">_configure_model</span><span class="p">,</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">fuse_conv_bn</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;RepVGG&quot;</span><span class="p">,</span>
@@ -390,7 +380,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">branches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_layer</span><span class="p">(</span><span class="n">planes</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">branches</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">):</span>
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">branches</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -457,7 +446,6 @@
         <span class="n">act_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">norm_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span>
         <span class="k">if</span> <span class="n">act_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -512,24 +500,9 @@
     <span class="k">return</span> <span class="n">_configure_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_checkpoint</span><span class="p">(</span>
-    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">acc1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">acc5</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_params</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">commit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">train_args</span><span class="p">:</span> <span class="nb">str</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Checkpoint</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">Checkpoint</span><span class="p">(</span>
-        <span class="n">evaluation</span><span class="o">=</span><span class="n">Evaluation</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENETTE</span><span class="p">,</span>
-            <span class="n">results</span><span class="o">=</span><span class="p">{</span><span class="n">Metric</span><span class="o">.</span><span class="n">TOP1_ACC</span><span class="p">:</span> <span class="n">acc1</span><span class="p">,</span> <span class="n">Metric</span><span class="o">.</span><span class="n">TOP5_ACC</span><span class="p">:</span> <span class="n">acc5</span><span class="p">},</span>
-        <span class="p">),</span>
-        <span class="n">meta</span><span class="o">=</span><span class="n">LoadingMeta</span><span class="p">(</span>
-            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">sha256</span><span class="o">=</span><span class="n">sha256</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">num_params</span><span class="o">=</span><span class="n">num_params</span><span class="p">,</span> <span class="n">arch</span><span class="o">=</span><span class="n">arch</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">classes</span>
-        <span class="p">),</span>
-        <span class="n">pre_processing</span><span class="o">=</span><span class="n">PreProcessing</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">mean</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">std</span><span class="p">),</span>
-        <span class="n">recipe</span><span class="o">=</span><span class="n">TrainingRecipe</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="n">commit</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="s2">&quot;references/classification/train.py&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">),</span>
-    <span class="p">)</span>
-
-
-<div class="viewcode-block" id="RepVGG_A0_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a0.html#holocron.models.RepVGG_A0_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">RepVGG_A0_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-
+<div class="viewcode-block" id="RepVGG_A0_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a0.html#holocron.models.RepVGG_A0_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">RepVGG_A0_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
         <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;repvgg_a0&quot;</span><span class="p">,</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a0_224-d3f54b28.pth&quot;</span><span class="p">,</span>
@@ -548,7 +521,10 @@
     <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="repvgg_a0"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a0.html#holocron.models.repvgg_a0">[docs]</a><span class="k">def</span> <span class="nf">repvgg_a0</span><span class="p">(</span>
+
+<div class="viewcode-block" id="repvgg_a0">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a0.html#holocron.models.repvgg_a0">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_a0</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -561,6 +537,7 @@
 <span class="sd">        pretrained: If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _repvgg</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -576,8 +553,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RepVGG_A1_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a1.html#holocron.models.RepVGG_A1_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">RepVGG_A1_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 
+<div class="viewcode-block" id="RepVGG_A1_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a1.html#holocron.models.RepVGG_A1_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">RepVGG_A1_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
         <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;repvgg_a1&quot;</span><span class="p">,</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a1_224-8d3269fb.pth&quot;</span><span class="p">,</span>
@@ -596,7 +575,10 @@
     <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="repvgg_a1"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a1.html#holocron.models.repvgg_a1">[docs]</a><span class="k">def</span> <span class="nf">repvgg_a1</span><span class="p">(</span>
+
+<div class="viewcode-block" id="repvgg_a1">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a1.html#holocron.models.repvgg_a1">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_a1</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -609,6 +591,7 @@
 <span class="sd">        pretrained: If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _repvgg</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -624,8 +607,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RepVGG_A2_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a2.html#holocron.models.RepVGG_A2_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">RepVGG_A2_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 
+<div class="viewcode-block" id="RepVGG_A2_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a2.html#holocron.models.RepVGG_A2_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">RepVGG_A2_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
         <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;repvgg_a2&quot;</span><span class="p">,</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a2_224-cb442207.pth&quot;</span><span class="p">,</span>
@@ -644,7 +629,10 @@
     <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="repvgg_a2"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a2.html#holocron.models.repvgg_a2">[docs]</a><span class="k">def</span> <span class="nf">repvgg_a2</span><span class="p">(</span>
+
+<div class="viewcode-block" id="repvgg_a2">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_a2.html#holocron.models.repvgg_a2">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_a2</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -657,6 +645,7 @@
 <span class="sd">        pretrained: If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _repvgg</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -672,8 +661,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.75</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RepVGG_B0_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b0.html#holocron.models.RepVGG_B0_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">RepVGG_B0_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 
+<div class="viewcode-block" id="RepVGG_B0_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b0.html#holocron.models.RepVGG_B0_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">RepVGG_B0_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
         <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;repvgg_b0&quot;</span><span class="p">,</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b0_224-fdcdd2b7.pth&quot;</span><span class="p">,</span>
@@ -692,7 +683,10 @@
     <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="repvgg_b0"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b0.html#holocron.models.repvgg_b0">[docs]</a><span class="k">def</span> <span class="nf">repvgg_b0</span><span class="p">(</span>
+
+<div class="viewcode-block" id="repvgg_b0">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b0.html#holocron.models.repvgg_b0">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_b0</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -705,6 +699,7 @@
 <span class="sd">        pretrained: If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _repvgg</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -720,8 +715,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RepVGG_B1_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b1.html#holocron.models.RepVGG_B1_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">RepVGG_B1_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 
+<div class="viewcode-block" id="RepVGG_B1_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b1.html#holocron.models.RepVGG_B1_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">RepVGG_B1_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
         <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;repvgg_b1&quot;</span><span class="p">,</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b1_224-3e5b28d7.pth&quot;</span><span class="p">,</span>
@@ -740,7 +737,10 @@
     <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="repvgg_b1"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b1.html#holocron.models.repvgg_b1">[docs]</a><span class="k">def</span> <span class="nf">repvgg_b1</span><span class="p">(</span>
+
+<div class="viewcode-block" id="repvgg_b1">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b1.html#holocron.models.repvgg_b1">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_b1</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -753,6 +753,7 @@
 <span class="sd">        pretrained: If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _repvgg</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -768,8 +769,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RepVGG_B2_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b2.html#holocron.models.RepVGG_B2_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">RepVGG_B2_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 
+<div class="viewcode-block" id="RepVGG_B2_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b2.html#holocron.models.RepVGG_B2_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">RepVGG_B2_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
         <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;repvgg_b2&quot;</span><span class="p">,</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b2_224-dc810d88.pth&quot;</span><span class="p">,</span>
@@ -788,7 +791,10 @@
     <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="repvgg_b2"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b2.html#holocron.models.repvgg_b2">[docs]</a><span class="k">def</span> <span class="nf">repvgg_b2</span><span class="p">(</span>
+
+<div class="viewcode-block" id="repvgg_b2">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b2.html#holocron.models.repvgg_b2">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_b2</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -801,6 +807,7 @@
 <span class="sd">        pretrained: If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _repvgg</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -816,7 +823,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="repvgg_b3"><a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b3.html#holocron.models.repvgg_b3">[docs]</a><span class="k">def</span> <span class="nf">repvgg_b3</span><span class="p">(</span>
+
+<div class="viewcode-block" id="repvgg_b3">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.repvgg_b3.html#holocron.models.repvgg_b3">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_b3</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -829,12 +839,10 @@
 <span class="sd">        pretrained: If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _repvgg</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-
-<span class="sd">    .. autoclass:: holocron.models.RepVGG_B3_Checkpoint</span>
-<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
         <span class="n">pretrained</span><span class="p">,</span>
@@ -842,6 +850,7 @@
         <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -881,9 +890,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=bc158d38"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1b5178e4"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>

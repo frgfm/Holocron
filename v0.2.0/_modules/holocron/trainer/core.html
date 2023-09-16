@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="">
+<html class="no-js" lang="en" data-content_root="../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark">
@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>holocron.trainer.core - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
@@ -240,7 +240,9 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Trainer&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="Trainer"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer">[docs]</a><span class="k">class</span> <span class="nc">Trainer</span><span class="p">:</span>
+<div class="viewcode-block" id="Trainer">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer">[docs]</a>
+<span class="k">class</span> <span class="nc">Trainer</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -282,7 +284,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">gpu</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_opt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">defaults</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Trainer.set_device"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.set_device">[docs]</a>    <span class="k">def</span> <span class="nf">set_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Trainer.set_device">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.set_device">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Move tensor objects to the target GPU</span>
 
 <span class="sd">        Args:</span>
@@ -298,7 +302,10 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Trainer.save"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Trainer.save">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.save">[docs]</a>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save a trainer checkpoint</span>
 
 <span class="sd">        Args:</span>
@@ -310,7 +317,10 @@
                    <span class="n">output_file</span><span class="p">,</span>
                    <span class="n">_use_new_zipfile_serialization</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trainer.load"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Trainer.load">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.load">[docs]</a>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resume from a trainer state</span>
 
 <span class="sd">        Args:</span>
@@ -322,6 +332,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">min_loss</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;min_loss&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span></div>
+
 
     <span class="k">def</span> <span class="nf">_fit_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mb</span><span class="p">:</span> <span class="n">ConsoleMasterBar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit a single epoch</span>
@@ -355,7 +366,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
 
-<div class="viewcode-block" id="Trainer.to_cuda"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.to_cuda">[docs]</a>    <span class="k">def</span> <span class="nf">to_cuda</span><span class="p">(</span>
+<div class="viewcode-block" id="Trainer.to_cuda">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.to_cuda">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_cuda</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]]</span>
@@ -366,6 +379,7 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid device index&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">target</span></div>
+
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
@@ -445,7 +459,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The following scheduler type is not supported: </span><span class="si">{</span><span class="n">sched_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Trainer.fit_n_epochs"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.fit_n_epochs">[docs]</a>    <span class="k">def</span> <span class="nf">fit_n_epochs</span><span class="p">(</span>
+<div class="viewcode-block" id="Trainer.fit_n_epochs">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.fit_n_epochs">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit_n_epochs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -492,7 +508,10 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_epoch_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">on_epoch_end</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trainer.find_lr"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.find_lr">[docs]</a>    <span class="k">def</span> <span class="nf">find_lr</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Trainer.find_lr">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.find_lr">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_lr</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">start_lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">,</span>
@@ -547,7 +566,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_recorder</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_recorder</span><span class="p">)]</span></div>
 
-<div class="viewcode-block" id="Trainer.plot_recorder"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.plot_recorder">[docs]</a>    <span class="k">def</span> <span class="nf">plot_recorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Trainer.plot_recorder">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.plot_recorder">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_recorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Display the results of the LR grid search</span>
 
 <span class="sd">        Args:</span>
@@ -582,7 +604,10 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Trainer.check_setup"><a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.check_setup">[docs]</a>    <span class="k">def</span> <span class="nf">check_setup</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Trainer.check_setup">
+<a class="viewcode-back" href="../../../trainer.html#holocron.trainer.Trainer.check_setup">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_setup</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">freeze_until</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3e-4</span><span class="p">,</span>
@@ -621,7 +646,9 @@
 
             <span class="n">_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 
-        <span class="k">return</span> <span class="n">_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">_losses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div></div>
+        <span class="k">return</span> <span class="n">_losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">_losses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+</div>
+
 </pre></div>
         </article>
       </div>
@@ -661,9 +688,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=35576b86"></script>
+</div><script src="../../../_static/documentation_options.js?v=046d1657"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark">
@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>holocron.models.classification.resnet - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
@@ -313,6 +313,7 @@
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
@@ -320,20 +321,26 @@
 
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">GlobalAvgPool2d</span><span class="p">,</span> <span class="n">init</span>
 
+<span class="kn">from</span> <span class="nn">..checkpoints</span> <span class="kn">import</span> <span class="n">Checkpoint</span><span class="p">,</span> <span class="n">_handle_legacy_pretrained</span>
 <span class="kn">from</span> <span class="nn">..presets</span> <span class="kn">import</span> <span class="n">IMAGENET</span><span class="p">,</span> <span class="n">IMAGENETTE</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">conv_sequence</span><span class="p">,</span> <span class="n">load_pretrained_params</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">_checkpoint</span><span class="p">,</span> <span class="n">_configure_model</span><span class="p">,</span> <span class="n">conv_sequence</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;BasicBlock&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Bottleneck&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ResNet&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResNet18_Checkpoint&quot;</span><span class="p">,</span>
     <span class="s2">&quot;resnet18&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResNet34_Checkpoint&quot;</span><span class="p">,</span>
     <span class="s2">&quot;resnet34&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResNet50_Checkpoint&quot;</span><span class="p">,</span>
     <span class="s2">&quot;resnet50&quot;</span><span class="p">,</span>
     <span class="s2">&quot;resnet101&quot;</span><span class="p">,</span>
     <span class="s2">&quot;resnet152&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResNeXt50_32x4d_Checkpoint&quot;</span><span class="p">,</span>
     <span class="s2">&quot;resnext50_32x4d&quot;</span><span class="p">,</span>
     <span class="s2">&quot;resnext101_32x8d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ResNet50D_Checkpoint&quot;</span><span class="p">,</span>
     <span class="s2">&quot;resnet50d&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
@@ -359,7 +366,6 @@
 
 
 <span class="k">class</span> <span class="nc">_ResBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-
     <span class="n">expansion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -391,7 +397,6 @@
 
 
 <span class="k">class</span> <span class="nc">BasicBlock</span><span class="p">(</span><span class="n">_ResBlock</span><span class="p">):</span>
-
     <span class="n">expansion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -448,7 +453,6 @@
 
 
 <span class="k">class</span> <span class="nc">Bottleneck</span><span class="p">(</span><span class="n">_ResBlock</span><span class="p">):</span>
-
     <span class="n">expansion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -466,7 +470,6 @@
         <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">planes</span> <span class="o">*</span> <span class="p">(</span><span class="n">base_width</span> <span class="o">/</span> <span class="mf">64.0</span><span class="p">))</span> <span class="o">*</span> <span class="n">groups</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="p">[</span>
@@ -547,7 +550,6 @@
         <span class="n">num_repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">block_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="k">if</span> <span class="n">conv_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">conv_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span>
         <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -621,7 +623,7 @@
         <span class="n">stride</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="c1"># Block args</span>
         <span class="k">if</span> <span class="n">block_args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">block_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">block_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">block_args</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">block_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">block_args</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">_num_blocks</span><span class="p">,</span> <span class="n">_planes</span><span class="p">,</span> <span class="n">_block_args</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">block_args</span><span class="p">):</span>
@@ -681,7 +683,6 @@
         <span class="n">num_repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">block_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">:</span>
-
         <span class="n">downsample</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">stride</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">in_planes</span> <span class="o">!=</span> <span class="n">planes</span> <span class="o">*</span> <span class="n">block</span><span class="o">.</span><span class="n">expansion</span><span class="p">:</span>
             <span class="c1"># Downsampling from ResNet-D</span>
@@ -729,9 +730,8 @@
                 <span class="o">**</span><span class="n">block_args</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_blocks</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span>
                 <span class="n">block</span><span class="p">(</span>
                     <span class="n">block</span><span class="o">.</span><span class="n">expansion</span> <span class="o">*</span> <span class="n">planes</span><span class="p">,</span>
                     <span class="n">planes</span><span class="p">,</span>
@@ -743,94 +743,231 @@
                     <span class="n">drop_layer</span><span class="o">=</span><span class="n">drop_layer</span><span class="p">,</span>
                     <span class="o">**</span><span class="n">block_args</span><span class="p">,</span>
                 <span class="p">)</span>
-            <span class="p">)</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_blocks</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_resnet</span><span class="p">(</span>
-    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">block</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">BasicBlock</span><span class="p">,</span> <span class="n">Bottleneck</span><span class="p">]],</span>
     <span class="n">num_blocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
     <span class="n">out_chans</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
-
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;num_classes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;num_classes&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;classes&quot;</span><span class="p">]))</span>
-
     <span class="c1"># Build the model</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">ResNet</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">num_blocks</span><span class="p">,</span> <span class="n">out_chans</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">default_cfg</span> <span class="o">=</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">]</span>  <span class="c1"># type: ignore[assignment]</span>
-    <span class="c1"># Load pretrained parameters</span>
-    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
-        <span class="n">load_pretrained_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">default_cfgs</span><span class="p">[</span><span class="n">arch</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">model</span>
+    <span class="k">return</span> <span class="n">_configure_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="resnet18"><a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet18.html#holocron.models.resnet18">[docs]</a><span class="k">def</span> <span class="nf">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+<div class="viewcode-block" id="ResNet18_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet18.html#holocron.models.ResNet18_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">ResNet18_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;resnet18&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnet18_224-fc07006c.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9361</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9946</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;fc07006c894cac8cf380fed699bc5a68463698753c954632f52bb8595040f781&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">44787043</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">11181642</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;6e32c5b578711a2ef3731a8f8c61760ed9f03e58&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch resnet18 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
+
+
+
+<div class="viewcode-block" id="resnet18">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet18.html#holocron.models.resnet18">[docs]</a>
+<span class="k">def</span> <span class="nf">resnet18</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-18 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, loads that checkpoint</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _resnet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.ResNet18_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">ResNet18_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">BasicBlock</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s2">&quot;resnet18&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">BasicBlock</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="resnet34"><a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet34.html#holocron.models.resnet34">[docs]</a><span class="k">def</span> <span class="nf">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+<div class="viewcode-block" id="ResNet34_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet34.html#holocron.models.ResNet34_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">ResNet34_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;resnet34&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnet34_224-412b0792.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9381</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9949</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;412b07927cc1938ee3add8d0f6bb18b42786646182f674d75f1433d086914485&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">85267035</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">21289802</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;6e32c5b578711a2ef3731a8f8c61760ed9f03e58&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch resnet34 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
+
+
+
+<div class="viewcode-block" id="resnet34">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet34.html#holocron.models.resnet34">[docs]</a>
+<span class="k">def</span> <span class="nf">resnet34</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-34 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, load that checkpoint on the model</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _resnet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.ResNet34_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">BasicBlock</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s2">&quot;resnet34&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">BasicBlock</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="resnet50"><a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet50.html#holocron.models.resnet50">[docs]</a><span class="k">def</span> <span class="nf">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+<div class="viewcode-block" id="ResNet50_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet50.html#holocron.models.ResNet50_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">ResNet50_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;resnet50&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnet50_224-5b913f0b.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9378</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9954</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;5b913f0b8148b483ba15541ab600cf354ca42b326e4896c4c3dbc51eb1e80e70&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">94384682</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">23528522</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;6e32c5b578711a2ef3731a8f8c61760ed9f03e58&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch resnet50 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
+
+
+
+<div class="viewcode-block" id="resnet50">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet50.html#holocron.models.resnet50">[docs]</a>
+<span class="k">def</span> <span class="nf">resnet50</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-50 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, load that checkpoint on the model</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _resnet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
+
+<span class="sd">    .. autoclass:: holocron.models.ResNet50_Checkpoint</span>
+<span class="sd">        :members:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span>
+        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
+        <span class="n">ResNet50_Checkpoint</span><span class="o">.</span><span class="n">DEFAULT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">Bottleneck</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s2">&quot;resnet50&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">Bottleneck</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="resnet50d"><a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet50d.html#holocron.models.resnet50d">[docs]</a><span class="k">def</span> <span class="nf">resnet50d</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+<div class="viewcode-block" id="ResNet50D_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet50d.html#holocron.models.ResNet50D_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">ResNet50D_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;resnet50d&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnet50d_224-6218d936.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9465</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9952</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;6218d936fa67c0047f1ec65564213db538aa826d84f2df1d4fa3224531376e6c&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">94464810</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">23547754</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;6e32c5b578711a2ef3731a8f8c61760ed9f03e58&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch resnet50d --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
+
+
+
+<div class="viewcode-block" id="resnet50d">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet50d.html#holocron.models.resnet50d">[docs]</a>
+<span class="k">def</span> <span class="nf">resnet50d</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-50-D from</span>
 <span class="sd">    `&quot;Bag of Tricks for Image Classification with Convolutional Neural Networks&quot;</span>
 <span class="sd">    &lt;https://arxiv.org/pdf/1812.01187.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, load that checkpoint on the model</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _resnet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    .. autoclass:: holocron.models.ResNet50D_Checkpoint</span>
+<span class="sd">        :members:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span>
-        <span class="s2">&quot;resnet50d&quot;</span><span class="p">,</span>
-        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
         <span class="n">progress</span><span class="p">,</span>
         <span class="n">Bottleneck</span><span class="p">,</span>
         <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
@@ -841,53 +978,104 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="resnet101"><a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet101.html#holocron.models.resnet101">[docs]</a><span class="k">def</span> <span class="nf">resnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+
+<div class="viewcode-block" id="resnet101">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet101.html#holocron.models.resnet101">[docs]</a>
+<span class="k">def</span> <span class="nf">resnet101</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-101 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, load that checkpoint on the model</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _resnet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">Bottleneck</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s2">&quot;resnet101&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">Bottleneck</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="resnet152"><a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet152.html#holocron.models.resnet152">[docs]</a><span class="k">def</span> <span class="nf">resnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+<div class="viewcode-block" id="resnet152">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnet152.html#holocron.models.resnet152">[docs]</a>
+<span class="k">def</span> <span class="nf">resnet152</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNet-152 from</span>
 <span class="sd">    `&quot;Deep Residual Learning for Image Recognition&quot; &lt;https://arxiv.org/pdf/1512.03385.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, load that checkpoint on the model</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _resnet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">Bottleneck</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">86</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span><span class="s2">&quot;resnet152&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">Bottleneck</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">86</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="resnext50_32x4d"><a class="viewcode-back" href="../../../../models/generated/holocron.models.resnext50_32x4d.html#holocron.models.resnext50_32x4d">[docs]</a><span class="k">def</span> <span class="nf">resnext50_32x4d</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+<div class="viewcode-block" id="ResNeXt50_32x4d_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnext50_32x4d.html#holocron.models.ResNeXt50_32x4d_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">ResNeXt50_32x4d_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
+        <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;resnext50_32x4d&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnext50_32x4d_224-5832c4ce.pth&quot;</span><span class="p">,</span>
+        <span class="n">acc1</span><span class="o">=</span><span class="mf">0.9455</span><span class="p">,</span>
+        <span class="n">acc5</span><span class="o">=</span><span class="mf">0.9949</span><span class="p">,</span>
+        <span class="n">sha256</span><span class="o">=</span><span class="s2">&quot;5832c4ce33522a9eb7a8b5abe31cf30621721a92d4f99b4b332a007d81d071fe&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">92332638</span><span class="p">,</span>
+        <span class="n">num_params</span><span class="o">=</span><span class="mi">23000394</span><span class="p">,</span>
+        <span class="n">commit</span><span class="o">=</span><span class="s2">&quot;6e32c5b578711a2ef3731a8f8c61760ed9f03e58&quot;</span><span class="p">,</span>
+        <span class="n">train_args</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;./imagenette2-320/ --arch resnext50_32x4d --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100&quot;</span>
+            <span class="s2">&quot; --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232&quot;</span>
+            <span class="s2">&quot; --opt adamw --weight-decay 5e-2&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
+
+
+
+<div class="viewcode-block" id="resnext50_32x4d">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnext50_32x4d.html#holocron.models.resnext50_32x4d">[docs]</a>
+<span class="k">def</span> <span class="nf">resnext50_32x4d</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNeXt-50 from</span>
 <span class="sd">    `&quot;Aggregated Residual Transformations for Deep Neural Networks&quot; &lt;https://arxiv.org/pdf/1611.05431.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, load that checkpoint on the model</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _resnet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    .. autoclass:: holocron.models.ResNeXt50_32x4d_Checkpoint</span>
+<span class="sd">        :members:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;width_per_group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="n">block_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+    <span class="n">block_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span>
-        <span class="s2">&quot;resnext50_32x4d&quot;</span><span class="p">,</span>
-        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
         <span class="n">progress</span><span class="p">,</span>
         <span class="n">Bottleneck</span><span class="p">,</span>
         <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
@@ -897,23 +1085,31 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="resnext101_32x8d"><a class="viewcode-back" href="../../../../models/generated/holocron.models.resnext101_32x8d.html#holocron.models.resnext101_32x8d">[docs]</a><span class="k">def</span> <span class="nf">resnext101_32x8d</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
+
+<div class="viewcode-block" id="resnext101_32x8d">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.resnext101_32x8d.html#holocron.models.resnext101_32x8d">[docs]</a>
+<span class="k">def</span> <span class="nf">resnext101_32x8d</span><span class="p">(</span>
+    <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResNet</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ResNeXt-101 from</span>
 <span class="sd">    `&quot;Aggregated Residual Transformations for Deep Neural Networks&quot; &lt;https://arxiv.org/pdf/1611.05431.pdf&gt;`_</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNet</span>
-<span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        pretrained: If True, returns a model pre-trained on ImageNet</span>
+<span class="sd">        checkpoint: If specified, load that checkpoint on the model</span>
+<span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _resnet</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;width_per_group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
-    <span class="n">block_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">groups</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+    <span class="n">block_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">_resnet</span><span class="p">(</span>
-        <span class="s2">&quot;resnext101_32x8d&quot;</span><span class="p">,</span>
-        <span class="n">pretrained</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">,</span>
         <span class="n">progress</span><span class="p">,</span>
         <span class="n">Bottleneck</span><span class="p">,</span>
         <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
@@ -921,6 +1117,7 @@
         <span class="n">block_args</span><span class="o">=</span><span class="n">block_args</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -960,9 +1157,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=bc158d38"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1b5178e4"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>

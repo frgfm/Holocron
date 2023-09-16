@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="">
+<html class="no-js" lang="en" data-content_root="../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,7 +14,7 @@
 </script>
     <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="sknet50" href="generated/holocron.models.sknet50.html" /><link rel="prev" title="rexnet2_2x" href="generated/holocron.models.rexnet2_2x.html" />
 
-    <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>SKNet - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
@@ -317,10 +317,10 @@
         </div>
         <article role="main">
           <section id="sknet">
-<h1>SKNet<a class="headerlink" href="#sknet" title="Permalink to this heading">#</a></h1>
+<h1>SKNet<a class="headerlink" href="#sknet" title="Link to this heading">#</a></h1>
 <p>The ResNet model is based on the <a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">“Selective Kernel Networks”</a> paper.</p>
 <section id="architecture-overview">
-<h2>Architecture overview<a class="headerlink" href="#architecture-overview" title="Permalink to this heading">#</a></h2>
+<h2>Architecture overview<a class="headerlink" href="#architecture-overview" title="Link to this heading">#</a></h2>
 <p>This paper revisits the concept of having a dynamic receptive field selection in convolutional blocks.</p>
 <img alt="https://github.com/frgfm/Holocron/releases/download/v0.2.1/skconv.png" class="align-center" src="https://github.com/frgfm/Holocron/releases/download/v0.2.1/skconv.png" />
 <p>The key takeaways from the paper are the following:</p>
@@ -330,7 +330,7 @@
 </ul>
 </section>
 <section id="model-builders">
-<h2>Model builders<a class="headerlink" href="#model-builders" title="Permalink to this heading">#</a></h2>
+<h2>Model builders<a class="headerlink" href="#model-builders" title="Link to this heading">#</a></h2>
 <p>The following model builders can be used to instantiate a SKNet model, with or
 without pre-trained weights. All the model builders internally rely on the
 <code class="docutils literal notranslate"><span class="pre">holocron.models.classification.resnet.ResNet</span></code> base class. Please refer to the <a class="reference external" href="https://github.com/frgfm/Holocron/blob/main/holocron/models/classification/sknet.py">source
@@ -339,15 +339,15 @@ more details about this class.</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/holocron.models.sknet50.html#holocron.models.sknet50" title="holocron.models.sknet50"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sknet50</span></code></a>([pretrained, progress])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/holocron.models.sknet50.html#holocron.models.sknet50" title="holocron.models.sknet50"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sknet50</span></code></a>([pretrained, checkpoint, progress])</p></td>
 <td><p><p>SKNet-50 from <a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">&quot;Selective Kernel Networks&quot;</a></p>
 </p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/holocron.models.sknet101.html#holocron.models.sknet101" title="holocron.models.sknet101"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sknet101</span></code></a>([pretrained, progress])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/holocron.models.sknet101.html#holocron.models.sknet101" title="holocron.models.sknet101"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sknet101</span></code></a>([pretrained, checkpoint, progress])</p></td>
 <td><p><p>SKNet-101 from <a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">&quot;Selective Kernel Networks&quot;</a></p>
 </p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/holocron.models.sknet152.html#holocron.models.sknet152" title="holocron.models.sknet152"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sknet152</span></code></a>([pretrained, progress])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/holocron.models.sknet152.html#holocron.models.sknet152" title="holocron.models.sknet152"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sknet152</span></code></a>([pretrained, checkpoint, progress])</p></td>
 <td><p><p>SKNet-152 from <a class="reference external" href="https://arxiv.org/pdf/1903.06586.pdf">&quot;Selective Kernel Networks&quot;</a></p>
 </p></td>
 </tr>
@@ -433,9 +433,9 @@ more details about this class.</p>
       
     </aside>
   </div>
-</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=bc158d38"></script>
+</div><script src="../_static/documentation_options.js?v=1b5178e4"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>

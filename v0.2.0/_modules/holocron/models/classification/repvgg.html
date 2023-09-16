@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark">
@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>holocron.models.classification.repvgg - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
@@ -438,7 +438,9 @@
     <span class="k">return</span> <span class="n">model</span>
 
 
-<div class="viewcode-block" id="repvgg_a0"><a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_a0">[docs]</a><span class="k">def</span> <span class="nf">repvgg_a0</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
+<div class="viewcode-block" id="repvgg_a0">
+<a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_a0">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_a0</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RepVGG-A0 from</span>
 <span class="sd">    `&quot;RepVGG: Making VGG-style ConvNets Great Again&quot; &lt;https://arxiv.org/pdf/2101.03697.pdf&gt;`_</span>
 
@@ -453,7 +455,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="s1">&#39;repvgg_a0&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mf">.75</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="repvgg_a1"><a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_a1">[docs]</a><span class="k">def</span> <span class="nf">repvgg_a1</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
+
+<div class="viewcode-block" id="repvgg_a1">
+<a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_a1">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_a1</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RepVGG-A1 from</span>
 <span class="sd">    `&quot;RepVGG: Making VGG-style ConvNets Great Again&quot; &lt;https://arxiv.org/pdf/2101.03697.pdf&gt;`_</span>
 
@@ -468,7 +473,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="s1">&#39;repvgg_a1&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="repvgg_a2"><a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_a2">[docs]</a><span class="k">def</span> <span class="nf">repvgg_a2</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
+
+<div class="viewcode-block" id="repvgg_a2">
+<a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_a2">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_a2</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RepVGG-A2 from</span>
 <span class="sd">    `&quot;RepVGG: Making VGG-style ConvNets Great Again&quot; &lt;https://arxiv.org/pdf/2101.03697.pdf&gt;`_</span>
 
@@ -483,7 +491,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="s1">&#39;repvgg_a2&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.75</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="repvgg_b0"><a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_b0">[docs]</a><span class="k">def</span> <span class="nf">repvgg_b0</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
+
+<div class="viewcode-block" id="repvgg_b0">
+<a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_b0">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_b0</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RepVGG-B0 from</span>
 <span class="sd">    `&quot;RepVGG: Making VGG-style ConvNets Great Again&quot; &lt;https://arxiv.org/pdf/2101.03697.pdf&gt;`_</span>
 
@@ -498,7 +509,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="s1">&#39;repvgg_b0&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="repvgg_b1"><a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_b1">[docs]</a><span class="k">def</span> <span class="nf">repvgg_b1</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
+
+<div class="viewcode-block" id="repvgg_b1">
+<a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_b1">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_b1</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RepVGG-B1 from</span>
 <span class="sd">    `&quot;RepVGG: Making VGG-style ConvNets Great Again&quot; &lt;https://arxiv.org/pdf/2101.03697.pdf&gt;`_</span>
 
@@ -513,7 +527,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="s1">&#39;repvgg_b1&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="repvgg_b2"><a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_b2">[docs]</a><span class="k">def</span> <span class="nf">repvgg_b2</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
+
+<div class="viewcode-block" id="repvgg_b2">
+<a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_b2">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_b2</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RepVGG-B2 from</span>
 <span class="sd">    `&quot;RepVGG: Making VGG-style ConvNets Great Again&quot; &lt;https://arxiv.org/pdf/2101.03697.pdf&gt;`_</span>
 
@@ -528,7 +545,10 @@
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="s1">&#39;repvgg_b2&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="repvgg_b3"><a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_b3">[docs]</a><span class="k">def</span> <span class="nf">repvgg_b3</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
+
+<div class="viewcode-block" id="repvgg_b3">
+<a class="viewcode-back" href="../../../../models.html#holocron.models.repvgg_b3">[docs]</a>
+<span class="k">def</span> <span class="nf">repvgg_b3</span><span class="p">(</span><span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RepVGG</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RepVGG-B3 from</span>
 <span class="sd">    `&quot;RepVGG: Making VGG-style ConvNets Great Again&quot; &lt;https://arxiv.org/pdf/2101.03697.pdf&gt;`_</span>
 
@@ -541,6 +561,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">_repvgg</span><span class="p">(</span><span class="s1">&#39;repvgg_b3&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -580,9 +601,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=35576b86"></script>
+</div><script src="../../../../_static/documentation_options.js?v=046d1657"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>

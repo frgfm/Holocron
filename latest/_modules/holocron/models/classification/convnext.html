@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en" data-content_root="">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark">
@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>holocron.models.classification.convnext - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
@@ -324,18 +324,8 @@
 
 <span class="kn">from</span> <span class="nn">holocron.nn</span> <span class="kn">import</span> <span class="n">GlobalAvgPool2d</span>
 
-<span class="kn">from</span> <span class="nn">..checkpoints</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Checkpoint</span><span class="p">,</span>
-    <span class="n">Dataset</span><span class="p">,</span>
-    <span class="n">Evaluation</span><span class="p">,</span>
-    <span class="n">LoadingMeta</span><span class="p">,</span>
-    <span class="n">Metric</span><span class="p">,</span>
-    <span class="n">PreProcessing</span><span class="p">,</span>
-    <span class="n">TrainingRecipe</span><span class="p">,</span>
-    <span class="n">_handle_legacy_pretrained</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">..presets</span> <span class="kn">import</span> <span class="n">IMAGENETTE</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">_configure_model</span><span class="p">,</span> <span class="n">conv_sequence</span>
+<span class="kn">from</span> <span class="nn">..checkpoints</span> <span class="kn">import</span> <span class="n">Checkpoint</span><span class="p">,</span> <span class="n">_handle_legacy_pretrained</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">_checkpoint</span><span class="p">,</span> <span class="n">_configure_model</span><span class="p">,</span> <span class="n">conv_sequence</span>
 <span class="kn">from</span> <span class="nn">.resnet</span> <span class="kn">import</span> <span class="n">_ResBlock</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -445,7 +435,6 @@
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">stochastic_depth_prob</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-
         <span class="k">if</span> <span class="n">conv_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">conv_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span>
         <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -471,7 +460,6 @@
         <span class="n">block_idx</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">tot_blocks</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">_num_blocks</span><span class="p">,</span> <span class="n">_planes</span><span class="p">,</span> <span class="n">_oplanes</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">planes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="p">[</span><span class="n">planes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]):</span>
-
             <span class="c1"># adjust stochastic depth probability based on the depth of the stage block</span>
             <span class="n">sd_probs</span> <span class="o">=</span> <span class="p">[</span><span class="n">stochastic_depth_prob</span> <span class="o">*</span> <span class="p">(</span><span class="n">block_idx</span> <span class="o">+</span> <span class="n">_idx</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">tot_blocks</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">_num_blocks</span><span class="p">)]</span>
             <span class="n">_stage</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
@@ -524,24 +512,9 @@
     <span class="k">return</span> <span class="n">_configure_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_checkpoint</span><span class="p">(</span>
-    <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">acc1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">acc5</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_params</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">commit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">train_args</span><span class="p">:</span> <span class="nb">str</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Checkpoint</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">Checkpoint</span><span class="p">(</span>
-        <span class="n">evaluation</span><span class="o">=</span><span class="n">Evaluation</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">IMAGENETTE</span><span class="p">,</span>
-            <span class="n">results</span><span class="o">=</span><span class="p">{</span><span class="n">Metric</span><span class="o">.</span><span class="n">TOP1_ACC</span><span class="p">:</span> <span class="n">acc1</span><span class="p">,</span> <span class="n">Metric</span><span class="o">.</span><span class="n">TOP5_ACC</span><span class="p">:</span> <span class="n">acc5</span><span class="p">},</span>
-        <span class="p">),</span>
-        <span class="n">meta</span><span class="o">=</span><span class="n">LoadingMeta</span><span class="p">(</span>
-            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">sha256</span><span class="o">=</span><span class="n">sha256</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">num_params</span><span class="o">=</span><span class="n">num_params</span><span class="p">,</span> <span class="n">arch</span><span class="o">=</span><span class="n">arch</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">classes</span>
-        <span class="p">),</span>
-        <span class="n">pre_processing</span><span class="o">=</span><span class="n">PreProcessing</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">mean</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">IMAGENETTE</span><span class="o">.</span><span class="n">std</span><span class="p">),</span>
-        <span class="n">recipe</span><span class="o">=</span><span class="n">TrainingRecipe</span><span class="p">(</span><span class="n">commit</span><span class="o">=</span><span class="n">commit</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="s2">&quot;references/classification/train.py&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">train_args</span><span class="p">),</span>
-    <span class="p">)</span>
-
-
-<div class="viewcode-block" id="ConvNeXt_Atto_Checkpoint"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_atto.html#holocron.models.ConvNeXt_Atto_Checkpoint">[docs]</a><span class="k">class</span> <span class="nc">ConvNeXt_Atto_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-
+<div class="viewcode-block" id="ConvNeXt_Atto_Checkpoint">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_atto.html#holocron.models.ConvNeXt_Atto_Checkpoint">[docs]</a>
+<span class="k">class</span> <span class="nc">ConvNeXt_Atto_Checkpoint</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">IMAGENETTE</span> <span class="o">=</span> <span class="n">_checkpoint</span><span class="p">(</span>
         <span class="n">arch</span><span class="o">=</span><span class="s2">&quot;convnext_atto&quot;</span><span class="p">,</span>
         <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext_atto_224-f38217e7.pth&quot;</span><span class="p">,</span>
@@ -560,7 +533,10 @@
     <span class="n">DEFAULT</span> <span class="o">=</span> <span class="n">IMAGENETTE</span></div>
 
 
-<div class="viewcode-block" id="convnext_atto"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_atto.html#holocron.models.convnext_atto">[docs]</a><span class="k">def</span> <span class="nf">convnext_atto</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_atto">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_atto.html#holocron.models.convnext_atto">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_atto</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -573,6 +549,7 @@
 <span class="sd">        pretrained: If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress: If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -588,7 +565,10 @@
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">320</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="convnext_femto"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_femto.html#holocron.models.convnext_femto">[docs]</a><span class="k">def</span> <span class="nf">convnext_femto</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_femto">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_femto.html#holocron.models.convnext_femto">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_femto</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvNeXt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvNeXt-Femto variant of Ross Wightman inspired by</span>
@@ -598,6 +578,7 @@
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -606,7 +587,10 @@
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">48</span><span class="p">,</span> <span class="mi">96</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">384</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="convnext_pico"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_pico.html#holocron.models.convnext_pico">[docs]</a><span class="k">def</span> <span class="nf">convnext_pico</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_pico">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_pico.html#holocron.models.convnext_pico">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_pico</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvNeXt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvNeXt-Pico variant of Ross Wightman inspired by</span>
@@ -616,6 +600,7 @@
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -624,7 +609,10 @@
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="convnext_nano"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_nano.html#holocron.models.convnext_nano">[docs]</a><span class="k">def</span> <span class="nf">convnext_nano</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_nano">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_nano.html#holocron.models.convnext_nano">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_nano</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvNeXt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvNeXt-Nano variant of Ross Wightman inspired by</span>
@@ -634,6 +622,7 @@
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -642,7 +631,10 @@
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">80</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">320</span><span class="p">,</span> <span class="mi">640</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="convnext_tiny"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_tiny.html#holocron.models.convnext_tiny">[docs]</a><span class="k">def</span> <span class="nf">convnext_tiny</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_tiny">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_tiny.html#holocron.models.convnext_tiny">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_tiny</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvNeXt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvNeXt-T from</span>
@@ -652,6 +644,7 @@
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -660,7 +653,10 @@
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">96</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">384</span><span class="p">,</span> <span class="mi">768</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="convnext_small"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_small.html#holocron.models.convnext_small">[docs]</a><span class="k">def</span> <span class="nf">convnext_small</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_small">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_small.html#holocron.models.convnext_small">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_small</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvNeXt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvNeXt-S from</span>
@@ -670,6 +666,7 @@
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -678,7 +675,10 @@
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">96</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">384</span><span class="p">,</span> <span class="mi">768</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="convnext_base"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_base.html#holocron.models.convnext_base">[docs]</a><span class="k">def</span> <span class="nf">convnext_base</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_base">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_base.html#holocron.models.convnext_base">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_base</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvNeXt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvNeXt-B from</span>
@@ -688,6 +688,7 @@
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -696,7 +697,10 @@
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="convnext_large"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_large.html#holocron.models.convnext_large">[docs]</a><span class="k">def</span> <span class="nf">convnext_large</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_large">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_large.html#holocron.models.convnext_large">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_large</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvNeXt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvNeXt-L from</span>
@@ -706,6 +710,7 @@
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
@@ -714,7 +719,10 @@
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">192</span><span class="p">,</span> <span class="mi">384</span><span class="p">,</span> <span class="mi">768</span><span class="p">,</span> <span class="mi">1536</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="convnext_xl"><a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_xl.html#holocron.models.convnext_xl">[docs]</a><span class="k">def</span> <span class="nf">convnext_xl</span><span class="p">(</span>
+
+<div class="viewcode-block" id="convnext_xl">
+<a class="viewcode-back" href="../../../../models/generated/holocron.models.convnext_xl.html#holocron.models.convnext_xl">[docs]</a>
+<span class="k">def</span> <span class="nf">convnext_xl</span><span class="p">(</span>
     <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConvNeXt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvNeXt-XL from</span>
@@ -724,12 +732,14 @@
 <span class="sd">        pretrained (bool): If True, returns a model pre-trained on ImageNette</span>
 <span class="sd">        checkpoint: If specified, the model&#39;s parameters will be set to the checkpoint&#39;s values</span>
 <span class="sd">        progress (bool): If True, displays a progress bar of the download to stderr</span>
+<span class="sd">        kwargs: keyword args of _convnext</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        torch.nn.Module: classification model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">_handle_legacy_pretrained</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_convnext</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -769,9 +779,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=bc158d38"></script>
+</div><script src="../../../../_static/documentation_options.js?v=1b5178e4"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
