@@ -12,16 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build docker image
-        run: docker build . -t holocron:python3.8-slim
+        run: docker build . -t holocron:python3.9-slim
       - name: Run docker container
-        run: docker run holocron:python3.8-slim python -c 'import holocron'
+        run: docker run holocron:python3.9-slim python -c 'import holocron'
 
   api:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: [3.8]
+        python: [3.9]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
