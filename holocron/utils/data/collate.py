@@ -7,8 +7,8 @@ from typing import Tuple
 
 import torch
 from torch import Tensor
-from torch.nn.functional import one_hot
 from torch.distributions.beta import Beta
+from torch.nn.functional import one_hot
 
 __all__ = ["Mixup"]
 
