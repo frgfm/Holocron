@@ -229,31 +229,43 @@ def sknet50(
     return _sknet(checkpoint, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
 
 
-def sknet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def sknet101(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """SKNet-101 from
     `"Selective Kernel Networks" <https://arxiv.org/pdf/1903.06586.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
         kwargs: keyword args of _sknet
 
     Returns:
         torch.nn.Module: classification model
     """
-    return _sknet("sknet101", pretrained, progress, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
+    return _sknet(checkpoint if pretrained else None, progress, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
 
 
-def sknet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def sknet152(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """SKNet-152 from
     `"Selective Kernel Networks" <https://arxiv.org/pdf/1903.06586.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
         kwargs: keyword args of _sknet
 
     Returns:
         torch.nn.Module: classification model
     """
-    return _sknet("sknet152", pretrained, progress, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)
+    return _sknet(checkpoint if pretrained else None, progress, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)

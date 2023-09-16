@@ -32,8 +32,8 @@ class _NormConvNd(_ConvNd):
         groups: int,
         bias: bool,
         padding_mode: str,
-        normalize_slices=False,
-        eps=1e-14,
+        normalize_slices: bool = False,
+        eps: float = 1e-14,
     ) -> None:
         super().__init__(
             in_channels,
@@ -436,7 +436,7 @@ class PyConv2d(nn.ModuleList):
             )
         self.num_levels = num_levels
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         if self.num_levels == 1:
             return self[0].forward(x)
         return torch.cat([conv(x) for conv in self], dim=1)
