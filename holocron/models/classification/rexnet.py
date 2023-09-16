@@ -3,27 +3,20 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
+import functools
+import operator
 from collections import OrderedDict
 from enum import Enum
 from math import ceil
 from typing import Any, Callable, Optional, Union
 
 import torch.nn as nn
+from torch import Tensor
 
 from holocron.nn import GlobalAvgPool2d, init
 
-from ..checkpoints import (
-    Checkpoint,
-    Dataset,
-    Evaluation,
-    LoadingMeta,
-    Metric,
-    PreProcessing,
-    TrainingRecipe,
-    _handle_legacy_pretrained,
-)
-from ..presets import IMAGENET, IMAGENETTE
-from ..utils import _configure_model, conv_sequence
+from ..checkpoints import Checkpoint, Dataset, _handle_legacy_pretrained
+from ..utils import _checkpoint, _configure_model, conv_sequence
 
 __all__ = [
     "SEBlock",
@@ -67,8 +60,7 @@ class SEBlock(nn.Module):
             *conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer, kernel_size=1, stride=1),
         )
 
-    def forward(self, x):
-
+    def forward(self, x: Tensor) -> Tensor:
         y = self.pool(x)
         y = self.conv(y)
         return x * y
@@ -143,7 +135,7 @@ class ReXBlock(nn.Module):
         )
         self.conv = nn.Sequential(*_layers)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         out = self.conv(x)
         if self.use_shortcut:
             out[:, : self.in_channels] += x
@@ -179,7 +171,9 @@ class ReXNet(nn.Sequential):
         num_blocks = [1, 2, 2, 3, 3, 5]
         strides = [1, 2, 2, 2, 1, 2]
         num_blocks = [ceil(element * depth_mult) for element in num_blocks]
-        strides = sum([[element] + [1] * (num_blocks[idx] - 1) for idx, element in enumerate(strides)], [])
+        strides = functools.reduce(
+            operator.iadd, [[element] + [1] * (num_blocks[idx] - 1) for idx, element in enumerate(strides)], []
+        )
         depth = sum(num_blocks)
 
         stem_channel = 32 / width_mult if width_mult < 1.0 else 32
@@ -249,32 +243,6 @@ def _rexnet(
     return _configure_model(model, checkpoint, progress=progress)
 
 
-def _checkpoint(
-    arch: str,
-    url: str,
-    acc1: float,
-    acc5: float,
-    sha256: str,
-    size: int,
-    num_params: int,
-    commit: Union[str, None] = None,
-    train_args: Union[str, None] = None,
-    dataset: Dataset = Dataset.IMAGENETTE,
-) -> Checkpoint:
-    preset = IMAGENETTE if dataset == Dataset.IMAGENETTE else IMAGENET
-    return Checkpoint(
-        evaluation=Evaluation(
-            dataset=dataset,
-            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
-        ),
-        meta=LoadingMeta(
-            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=preset.classes
-        ),
-        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=preset.mean, std=preset.std),
-        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
-    )
-
-
 class ReXNet1_0x_Checkpoint(Enum):
     # Porting of Ross Wightman's weights
     IMAGENET1K = _checkpoint(
@@ -320,6 +288,7 @@ def rexnet1_0x(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _rexnet
 
     Returns:
         torch.nn.Module: classification model
@@ -380,6 +349,7 @@ def rexnet1_3x(
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _rexnet
 
     Returns:
         torch.nn.Module: classification model
@@ -440,6 +410,7 @@ def rexnet1_5x(
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _rexnet
 
     Returns:
         torch.nn.Module: classification model
@@ -500,6 +471,7 @@ def rexnet2_0x(
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _rexnet
 
     Returns:
         torch.nn.Module: classification model
@@ -548,6 +520,7 @@ def rexnet2_2x(
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _rexnet
 
     Returns:
         torch.nn.Module: classification model

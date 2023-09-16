@@ -24,12 +24,12 @@ from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
 from torchvision.models import detection as tv_detection
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
+from transforms import Compose, ImageTransform, RandomHorizontalFlip, Resize, VOCTargetTransform, convert_to_relative
 
 import holocron
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 from holocron.utils.misc import find_image_size
-from transforms import Compose, ImageTransform, RandomHorizontalFlip, Resize, VOCTargetTransform, convert_to_relative
 
 VOC_CLASSES = [
     "aeroplane",

@@ -5,6 +5,7 @@
 
 import argparse
 import json
+from pathlib import Path
 
 import gradio as gr
 import numpy as np
@@ -15,7 +16,7 @@ from PIL import Image
 
 def main(args):
     # Download model config & checkpoint
-    with open(hf_hub_download(args.repo, filename="config.json"), "rb") as f:
+    with Path(hf_hub_download(args.repo, filename="config.json")).open("rb") as f:
         cfg = json.load(f)
 
     ort_session = onnxruntime.InferenceSession(hf_hub_download(args.repo, filename="model.onnx"))

@@ -13,18 +13,8 @@ from torch import Tensor
 
 from holocron.nn import GlobalAvgPool2d, init
 
-from ..checkpoints import (
-    Checkpoint,
-    Dataset,
-    Evaluation,
-    LoadingMeta,
-    Metric,
-    PreProcessing,
-    TrainingRecipe,
-    _handle_legacy_pretrained,
-)
-from ..presets import IMAGENETTE
-from ..utils import _configure_model, conv_sequence, fuse_conv_bn
+from ..checkpoints import Checkpoint, _handle_legacy_pretrained
+from ..utils import _checkpoint, _configure_model, conv_sequence, fuse_conv_bn
 
 __all__ = [
     "MobileOne_S0_Checkpoint",
@@ -262,22 +252,6 @@ def _mobileone(
     return _configure_model(model, checkpoint, progress=progress)
 
 
-def _checkpoint(
-    arch: str, url: str, acc1: float, acc5: float, sha256: str, size: int, num_params: int, commit: str, train_args: str
-) -> Checkpoint:
-    return Checkpoint(
-        evaluation=Evaluation(
-            dataset=Dataset.IMAGENETTE,
-            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
-        ),
-        meta=LoadingMeta(
-            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
-        ),
-        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=IMAGENETTE.mean, std=IMAGENETTE.std),
-        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
-    )
-
-
 class MobileOne_S0_Checkpoint(Enum):
     IMAGENETTE = _checkpoint(
         arch="mobileone_s0",
@@ -310,6 +284,7 @@ def mobileone_s0(
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _mobileone
 
     Returns:
         torch.nn.Module: classification model
@@ -357,6 +332,7 @@ def mobileone_s1(
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _mobileone
 
     Returns:
         torch.nn.Module: classification model
@@ -404,6 +380,7 @@ def mobileone_s2(
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _mobileone
 
     Returns:
         torch.nn.Module: classification model
@@ -451,6 +428,7 @@ def mobileone_s3(
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _mobileone
 
     Returns:
         torch.nn.Module: classification model

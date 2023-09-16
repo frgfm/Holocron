@@ -29,12 +29,16 @@ def test_resize():
     assert isinstance(out, Image.Image)
     assert out.size == (32, 32)
     np_out = np.asarray(out)
-    assert np.all(np_out[8:-8] == 255) and np.all(np_out[:8] == 0) and np.all(np_out[-8:]) == 0
+    assert np.all(np_out[8:-8] == 255)
+    assert np.all(np_out[:8] == 0)
+    assert np.all(np_out[-8:]) == 0
     out = tf(Image.fromarray(img2))
     assert isinstance(out, Image.Image)
     assert out.size == (32, 32)
     np_out = np.asarray(out)
-    assert np.all(np_out[:, 8:-8] == 255) and np.all(np_out[:, :8] == 0) and np.all(np_out[:, -8:]) == 0
+    assert np.all(np_out[:, 8:-8] == 255)
+    assert np.all(np_out[:, :8] == 0)
+    assert np.all(np_out[:, -8:]) == 0
     # Squish
     out = T.Resize((32, 32), mode=ResizeMethod.SQUISH)(Image.fromarray(img1))
     assert np.all(np.asarray(out) == 255)
@@ -44,12 +48,16 @@ def test_resize():
     assert isinstance(out, torch.Tensor)
     assert out.shape == (3, 32, 32)
     np_out = out.numpy()
-    assert np.all(np_out[:, 8:-8] == 1) and np.all(np_out[:, :8] == 0) and np.all(np_out[:, -8:]) == 0
+    assert np.all(np_out[:, 8:-8] == 1)
+    assert np.all(np_out[:, :8] == 0)
+    assert np.all(np_out[:, -8:]) == 0
     out = tf(torch.from_numpy(img2).to(dtype=torch.float32).permute(2, 0, 1) / 255)
     assert isinstance(out, torch.Tensor)
     assert out.shape == (3, 32, 32)
     np_out = out.numpy()
-    assert np.all(np_out[:, :, 8:-8] == 1) and np.all(np_out[:, :, :8] == 0) and np.all(np_out[:, :, -8:]) == 0
+    assert np.all(np_out[:, :, 8:-8] == 1)
+    assert np.all(np_out[:, :, :8] == 0)
+    assert np.all(np_out[:, :, -8:]) == 0
 
 
 def test_randomzoomout():
@@ -70,11 +78,13 @@ def test_randomzoomout():
     assert isinstance(out, Image.Image)
     assert out.size == (32, 32)
     np_out = np.asarray(out)
-    assert np.all(np_out[16, 16] == 255) and np_out.mean() < 255
+    assert np.all(np_out[16, 16] == 255)
+    assert np_out.mean() < 255
 
     # Tensor
     out = tf(torch_img)
     assert isinstance(out, torch.Tensor)
     assert out.shape == (3, 32, 32)
     np_out = np.asarray(out)
-    assert np.all(np_out[:, 16, 16] == 1) and np_out.mean() < 1
+    assert np.all(np_out[:, 16, 16] == 1)
+    assert np_out.mean() < 1

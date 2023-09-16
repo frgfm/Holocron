@@ -216,6 +216,7 @@ def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNe
     Args:
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _unet
 
     Returns:
         semantic segmentation model
@@ -233,6 +234,7 @@ def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
     Args:
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _unet
 
     Returns:
         semantic segmentation model

@@ -6,7 +6,7 @@ import torch
 from holocron import ops
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def boxes():
     return torch.tensor(
         [[0, 0, 100, 100], [50, 50, 100, 100], [50, 50, 150, 150], [100, 100, 200, 200]], dtype=torch.float32

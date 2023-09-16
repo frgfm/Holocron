@@ -39,7 +39,7 @@ class PyBottleneck(_ResBlock):
         planes: int,
         stride: int = 1,
         downsample: Optional[Module] = None,
-        groups: List[int] = [1],
+        groups: Optional[List[int]] = None,
         base_width: int = 64,
         dilation: int = 1,
         act_layer: Optional[Module] = None,
@@ -48,6 +48,8 @@ class PyBottleneck(_ResBlock):
         num_levels: int = 2,
         **kwargs: Any,
     ) -> None:
+        if groups is None:
+            groups = [1]
         width = int(planes * (base_width / 64.0)) * min(groups)
 
         super().__init__(
@@ -136,6 +138,7 @@ def pyconv_resnet50(pretrained: bool = False, progress: bool = True, **kwargs: A
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _pyconvresnet
 
     Returns:
         torch.nn.Module: classification model
@@ -160,6 +163,7 @@ def pyconvhg_resnet50(pretrained: bool = False, progress: bool = True, **kwargs:
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _pyconvresnet
 
     Returns:
         torch.nn.Module: classification model

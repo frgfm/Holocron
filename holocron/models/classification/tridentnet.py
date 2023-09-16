@@ -162,6 +162,7 @@ def tridentnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any)
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _tridentnet
 
     Returns:
         torch.nn.Module: classification model

@@ -168,7 +168,7 @@ class YOLOv2(_YOLO):
         # (B, C, H, W) --> (B, H, W, num_anchors, 5 + num_classes)
         x = x.reshape(b, self.num_anchors, 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
         # Classification scores
-        b_scores = F.softmax(x[..., -self.num_classes :], dim=-1)
+        b_scores = F.softmax(x[..., -self.num_classes:], dim=-1)
 
         # Cell offset
         c_x = torch.arange(w, dtype=torch.float, device=x.device)
@@ -292,6 +292,7 @@ def yolov2(pretrained: bool = False, progress: bool = True, pretrained_backbone:
         pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
         progress (bool, optional): If True, displays a progress bar of the download to stderr
         pretrained_backbone (bool, optional): If True, backbone parameters will have been pretrained on Imagenette
+        kwargs: keyword args of _yolo
 
     Returns:
         torch.nn.Module: detection module

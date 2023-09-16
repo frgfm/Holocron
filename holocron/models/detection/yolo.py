@@ -61,6 +61,7 @@ class _YOLO(nn.Module):
             pred_o (torch.Tensor[N, H, W, num_anchors]): objectness scores
             pred_scores (torch.Tensor[N, H, W, num_anchors, num_classes]): classification probabilities
             target (list<dict>, optional): list of targets
+            ignore_high_iou (bool): ignore the intersections with high IoUs in the noobj penalty term
 
         Returns:
             dict: dictionary of losses
@@ -161,6 +162,7 @@ class _YOLO(nn.Module):
             b_coords (torch.Tensor[N, H * W * num_anchors, 4]): relative coordinates in format (x, y, w, h)
             b_o (torch.Tensor[N, H * W * num_anchors]): objectness scores
             b_scores (torch.Tensor[N, H * W * num_anchors, num_classes]): classification scores
+            grid_shape (Tuple[int, int]): the size of the grid
             rpn_nms_thresh (float, optional): IoU threshold for NMS
             box_score_thresh (float, optional): minimum classification confidence threshold
 
@@ -313,7 +315,7 @@ class YOLOv1(_YOLO):
         # (B, H * W * (num_anchors * 5 + num_classes)) --> (B, H, W, num_anchors * 5 + num_classes)
         x = x.reshape(b, h, w, self.num_anchors * 5 + self.num_classes)
         # Classification scores
-        b_scores = x[..., -self.num_classes :]
+        b_scores = x[..., -self.num_classes:]
         # Repeat for anchors to keep compatibility across YOLO versions
         b_scores = F.softmax(b_scores.unsqueeze(3), dim=-1)
         #  (B, H, W, num_anchors * 5 + num_classes) -->  (B, H, W, num_anchors, 5)
@@ -454,6 +456,7 @@ def yolov1(pretrained: bool = False, progress: bool = True, pretrained_backbone:
         pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
         progress (bool, optional): If True, displays a progress bar of the download to stderr
         pretrained_backbone (bool, optional): If True, backbone parameters will have been pretrained on Imagenette
+        kwargs: keyword args of _yolo
 
     Returns:
         torch.nn.Module: detection module

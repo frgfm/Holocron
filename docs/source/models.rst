@@ -21,6 +21,9 @@ The output represents the classification scores for each output classes.
     darknet19 = models.darknet19(num_classes=10)
 
 
+Supported architectures
+-----------------------
+
 .. toctree::
   :caption: Supported architectures
   :maxdepth: 1
@@ -40,6 +43,8 @@ The output represents the classification scores for each output classes.
   models/repvgg
   models/mobileone
 
+Available checkpoints
+---------------------
 
 Here is the list of available checkpoints:
 

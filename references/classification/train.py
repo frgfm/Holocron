@@ -12,6 +12,7 @@ import logging
 import math
 import os
 import time
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -95,7 +96,7 @@ def main(args):
         st = time.time()
         if args.dataset.lower() == "imagenette":
             train_set = ImageFolder(
-                os.path.join(args.data_path, "train"),
+                Path(args.data_path).joinpath("train"),
                 T.Compose(
                     [
                         T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
@@ -162,7 +163,7 @@ def main(args):
         st = time.time()
         if args.dataset.lower() == "imagenette":
             val_set = ImageFolder(
-                os.path.join(args.data_path, "val"),
+                Path(args.data_path).joinpath("val"),
                 T.Compose(
                     [
                         T.Resize(args.val_resize_size, interpolation=interpolation),

@@ -747,6 +747,7 @@ def yolov4(pretrained: bool = False, progress: bool = True, pretrained_backbone:
         pretrained (bool, optional): If True, returns a model pre-trained on ImageNet
         progress (bool, optional): If True, displays a progress bar of the download to stderr
         pretrained_backbone (bool, optional): If True, backbone parameters will have been pretrained on Imagenette
+        kwargs: keyword args of _yolo
 
     Returns:
         torch.nn.Module: detection module

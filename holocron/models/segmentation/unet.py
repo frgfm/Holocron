@@ -398,6 +398,7 @@ def unet(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNet
     Args:
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _unet
 
     Returns:
         semantic segmentation model
@@ -434,6 +435,7 @@ def unet2(pretrained: bool = False, progress: bool = True, in_channels: int = 3,
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         progress: If True, displays a progress bar of the download to stderr
         in_channels: number of input channels
+        kwargs: keyword args of _dynamic_unet
 
     Returns:
         semantic segmentation model
@@ -455,6 +457,7 @@ def unet_tvvgg11(
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _dynamic_unet
 
     Returns:
         semantic segmentation model
@@ -476,6 +479,7 @@ def unet_tvresnet34(
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _dynamic_unet
 
     Returns:
         semantic segmentation model
@@ -502,6 +506,8 @@ def unet_rexnet13(
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         pretrained_backbone: If True, the encoder will load pretrained parameters from ImageNet
         progress: If True, displays a progress bar of the download to stderr
+        in_channels: the number of input channels
+        kwargs: keyword args of _dynamic_unet
 
     Returns:
         semantic segmentation model

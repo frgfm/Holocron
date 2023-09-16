@@ -15,7 +15,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
 import sys
 import textwrap
 from datetime import datetime
@@ -23,11 +22,11 @@ from pathlib import Path
 
 from tabulate import tabulate
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, Path().resolve().parent.parent)
 
 
 import holocron
-import holocron.models as M
+from holocron import models
 
 # -- Project information -----------------------------------------------------
 
@@ -257,7 +256,7 @@ def generate_checkpoint_table(module, table_name, metrics):
     [c for checkpoint_enum in checkpoint_enums for c in checkpoint_enum]
 
     metrics_keys, metrics_names = zip(*metrics)
-    column_names = ["Checkpoint"] + list(metrics_names) + ["Params"] + ["Size (MB)"]  # Final column order
+    column_names = ["Checkpoint", *metrics_names, "Params", "Size (MB)"]  # Final column order
     column_names = [f"**{name}**" for name in column_names]  # Add bold
 
     content = []
@@ -280,7 +279,7 @@ def generate_checkpoint_table(module, table_name, metrics):
 
     generated_dir = Path("generated")
     generated_dir.mkdir(exist_ok=True)
-    with open(generated_dir / f"{table_name}_table.rst", "w+") as table_file:
+    with Path(generated_dir / f"{table_name}_table.rst").open("w+") as table_file:
         table_file.write(".. rst-class:: table-checkpoints\n")  # Custom CSS class, see custom_theme.css
         table_file.write(".. table::\n")
         table_file.write(f"    :widths: {widths_table} \n\n")
@@ -288,7 +287,7 @@ def generate_checkpoint_table(module, table_name, metrics):
 
 
 generate_checkpoint_table(
-    module=M,
+    module=models,
     table_name="classification",
     metrics=[("top1-accuracy", "Acc@1"), ("top5-accuracy", "Acc@5")],
 )

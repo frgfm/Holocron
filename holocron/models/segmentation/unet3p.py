@@ -156,7 +156,7 @@ class UNet3p(nn.Module):
 
         # Full-scale expansive path
         for idx in range(len(self.decoder) - 1, -1, -1):
-            xs[idx] = self.decoder[idx](xs[:idx], xs[idx], xs[idx + 1 :])
+            xs[idx] = self.decoder[idx](xs[:idx], xs[idx], xs[idx + 1:])
 
         # Classifier
         x = self.classifier(xs[0])
@@ -183,6 +183,7 @@ def unet3p(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
     Args:
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _unet
 
     Returns:
         semantic segmentation model
