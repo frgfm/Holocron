@@ -24,12 +24,12 @@ from torchvision import transforms as T
 from torchvision.datasets import VOCDetection
 from torchvision.models import detection as tv_detection
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
+from transforms import Compose, ImageTransform, RandomHorizontalFlip, Resize, VOCTargetTransform, convert_to_relative
 
 import holocron
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 from holocron.utils.misc import find_image_size
-from transforms import Compose, ImageTransform, RandomHorizontalFlip, Resize, VOCTargetTransform, convert_to_relative
 
 VOC_CLASSES = [
     "aeroplane",
@@ -56,7 +56,7 @@ VOC_CLASSES = [
 
 
 def worker_init_fn(worker_id: int) -> None:
-    np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
+    np.random.default_rng((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
 
 
 def collate_fn(batch):
@@ -96,7 +96,6 @@ def plot_samples(images, targets, num_samples=8):
 
 @track_emissions()
 def main(args):
-
     print(args)
 
     torch.backends.cudnn.benchmark = True
@@ -253,7 +252,6 @@ def main(args):
 
     # W&B
     if args.wb:
-
         run = wandb.init(
             name=exp_name,
             project="holocron-object-detection",

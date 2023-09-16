@@ -43,7 +43,7 @@ class Metric(str, Enum):
 
 
 class Dataset(str, Enum):
-    """Evaluation dataset"""
+    """Training/evaluation dataset"""
 
     IMAGENET1K = "imagenet-1k"
     IMAGENETTE = "imagenette"
@@ -52,12 +52,16 @@ class Dataset(str, Enum):
 
 @dataclass
 class Evaluation:
+    """Results of model evaluation"""
+
     dataset: Dataset
     results: Dict[Metric, float]
 
 
 @dataclass
 class LoadingMeta:
+    """Metadata to load the model"""
+
     url: str
     sha256: str
     size: int
@@ -68,6 +72,8 @@ class LoadingMeta:
 
 @dataclass
 class PreProcessing:
+    """Preprocessing metadata for the model"""
+
     input_shape: Tuple[int, ...]
     mean: Tuple[float, ...]
     std: Tuple[float, ...]
@@ -76,6 +82,8 @@ class PreProcessing:
 
 @dataclass
 class Checkpoint:
+    """Data required to run a model in the exact same condition than the checkpoint"""
+
     # What to expect
     evaluation: Evaluation
     # How to load it
@@ -91,7 +99,6 @@ def _handle_legacy_pretrained(
     checkpoint: Union[Checkpoint, None] = None,
     default_checkpoint: Union[Checkpoint, None] = None,
 ) -> Union[Checkpoint, None]:
-
     checkpoint = checkpoint or (default_checkpoint if pretrained else None)
 
     if pretrained and checkpoint is None:

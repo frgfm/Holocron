@@ -4,7 +4,6 @@ from holocron.nn.modules import dropblock
 
 
 def test_dropblock2d():
-
     x = torch.rand(2, 4, 16, 16)
 
     # Drop probability of 1

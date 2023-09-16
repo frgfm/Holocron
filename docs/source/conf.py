@@ -15,7 +15,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
 import sys
 import textwrap
 from datetime import datetime
@@ -23,11 +22,11 @@ from pathlib import Path
 
 from tabulate import tabulate
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, Path().resolve().parent.parent)
 
 
 import holocron
-import holocron.models as M
+from holocron import models
 
 # -- Project information -----------------------------------------------------
 
@@ -133,7 +132,7 @@ def patched_make_field(self, types, domain, items, **kw):
     # `kw` catches `env=None` needed for newer sphinx while maintaining
     #  backwards compatibility when passed along further down!
 
-    # type: (list, unicode, tuple) -> nodes.field  # noqa: F821
+    # type: (list, unicode, tuple) -> nodes.field
     def handle_item(fieldarg, content):
         par = nodes.paragraph()
         par += addnodes.literal_strong("", fieldarg)  # Patch: this line added
@@ -187,9 +186,7 @@ def inject_checkpoint_metadata(app, what, name, obj, options, lines):
     - then this hook is called automatically when building the docs, and it generates the text that gets
       used within the autoclass directive.
     """
-
     if obj.__name__.endswith(("_Checkpoint")):
-
         if len(obj) == 0:
             lines[:] = ["There are no available pre-trained checkpoints."]
             return
@@ -242,7 +239,7 @@ def inject_checkpoint_metadata(app, what, name, obj, options, lines):
             table.append(("commit", commit_str))
             # table.append(("Training args", meta.args))
 
-            column_widths = ["60"] + ["60"]
+            column_widths = ["60", "60"]
             " ".join(column_widths)
 
             table = tabulate(table, tablefmt="rst")
@@ -259,7 +256,7 @@ def generate_checkpoint_table(module, table_name, metrics):
     [c for checkpoint_enum in checkpoint_enums for c in checkpoint_enum]
 
     metrics_keys, metrics_names = zip(*metrics)
-    column_names = ["Checkpoint"] + list(metrics_names) + ["Params"] + ["Size (MB)"]  # Final column order
+    column_names = ["Checkpoint", *metrics_names, "Params", "Size (MB)"]  # Final column order
     column_names = [f"**{name}**" for name in column_names]  # Add bold
 
     content = []
@@ -282,7 +279,7 @@ def generate_checkpoint_table(module, table_name, metrics):
 
     generated_dir = Path("generated")
     generated_dir.mkdir(exist_ok=True)
-    with open(generated_dir / f"{table_name}_table.rst", "w+") as table_file:
+    with Path(generated_dir / f"{table_name}_table.rst").open("w+") as table_file:
         table_file.write(".. rst-class:: table-checkpoints\n")  # Custom CSS class, see custom_theme.css
         table_file.write(".. table::\n")
         table_file.write(f"    :widths: {widths_table} \n\n")
@@ -290,7 +287,7 @@ def generate_checkpoint_table(module, table_name, metrics):
 
 
 generate_checkpoint_table(
-    module=M,
+    module=models,
     table_name="classification",
     metrics=[("top1-accuracy", "Acc@1"), ("top5-accuracy", "Acc@5")],
 )
@@ -300,10 +297,10 @@ generate_checkpoint_table(
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+
 # Add googleanalytics id
 # ref: https://github.com/orenhecht/googleanalytics/blob/master/sphinxcontrib/googleanalytics.py
 def add_ga_javascript(app, pagename, templatename, context, doctree):
-
     metatags = context.get("metatags", "")
     metatags += """
     <!-- Global site tag (gtag.js) - Google Analytics -->

@@ -32,8 +32,8 @@ class _NormConvNd(_ConvNd):
         groups: int,
         bias: bool,
         padding_mode: str,
-        normalize_slices=False,
-        eps=1e-14,
+        normalize_slices: bool = False,
+        eps: float = 1e-14,
     ) -> None:
         super().__init__(
             in_channels,
@@ -335,7 +335,7 @@ class SlimConv2d(nn.Module):
         bias: bool = True,
         padding_mode: str = "zeros",
         r: int = 32,
-        L: int = 2,
+        L: int = 2,  # noqa: N803
     ) -> None:
         super().__init__()
         self.fc1 = nn.Conv2d(in_channels, max(in_channels // r, L), 1)
@@ -399,7 +399,6 @@ class PyConv2d(nn.ModuleList):
         groups: Optional[List[int]] = None,
         **kwargs: Any,
     ) -> None:
-
         if num_levels == 1:
             super().__init__(
                 [
@@ -437,8 +436,7 @@ class PyConv2d(nn.ModuleList):
             )
         self.num_levels = num_levels
 
-    def forward(self, x):
-
+    def forward(self, x: Tensor) -> Tensor:
         if self.num_levels == 1:
             return self[0].forward(x)
         return torch.cat([conv(x) for conv in self], dim=1)
@@ -474,7 +472,6 @@ class Involution2d(nn.Module):
         dilation: int = 1,
         reduction_ratio: float = 1,
     ) -> None:
-
         super().__init__()
 
         self.groups = groups
@@ -486,7 +483,6 @@ class Involution2d(nn.Module):
         self.unfold = nn.Unfold(kernel_size, dilation, padding, stride)
 
     def forward(self, x):
-
         # Kernel generation
         # (N, C, H, W) --> (N, C, H // s, W // s)
         kernel = self.pool(x) if isinstance(self.pool, nn.Module) else x

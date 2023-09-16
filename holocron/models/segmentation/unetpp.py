@@ -52,7 +52,7 @@ class UNetp(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels] + layout
+        _layout = [in_channels, *layout]
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
             self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
@@ -87,7 +87,6 @@ class UNetp(nn.Module):
         init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
-
         xs: List[Tensor] = []
         # Contracting path
         for encoder in self.encoder:
@@ -134,7 +133,7 @@ class UNetpp(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels] + layout
+        _layout = [in_channels, *layout]
         _pool = False
         for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
             self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
@@ -178,7 +177,6 @@ class UNetpp(nn.Module):
         init_module(self, "relu")
 
     def forward(self, x: Tensor) -> Tensor:
-
         xs: List[List[Tensor]] = []
         # Contracting path
         for encoder in self.encoder:
@@ -218,11 +216,11 @@ def unetp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UNe
     Args:
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _unet
 
     Returns:
         semantic segmentation model
     """
-
     return _unet("unetp", pretrained, progress, **kwargs)  # type: ignore[return-value]
 
 
@@ -236,9 +234,9 @@ def unetpp(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> UN
     Args:
         pretrained: If True, returns a model pre-trained on PASCAL VOC2012
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _unet
 
     Returns:
         semantic segmentation model
     """
-
     return _unet("unetpp", pretrained, progress, **kwargs)  # type: ignore[return-value]

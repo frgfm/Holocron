@@ -3,7 +3,7 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
-from typing import List
+from typing import ClassVar, List
 
 import torch
 import torch.nn as nn
@@ -15,8 +15,7 @@ __all__ = ["HardMish", "NLReLU", "FReLU"]
 
 
 class _Activation(nn.Module):
-
-    __constants__: List[str] = ["inplace"]
+    __constants__: ClassVar[List[str]] = ["inplace"]
 
     def __init__(self, inplace: bool = False) -> None:
         super().__init__()

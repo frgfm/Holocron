@@ -159,9 +159,7 @@ def adamp(
     r"""Functional API that performs AdamP algorithm computation.
     See :class:`~holocron.optim.AdamP` for details.
     """
-
     for i, param in enumerate(params):
-
         grad = grads[i]
         exp_avg = exp_avgs[i]
         exp_avg_sq = exp_avg_sqs[i]

@@ -7,7 +7,6 @@ from holocron.optim import wrapper
 
 
 def _test_wrapper(name: str) -> None:
-
     lr = 1e-4
     input_shape = (3, 224, 224)
     num_batches = 4
@@ -45,7 +44,8 @@ def _test_wrapper(name: str) -> None:
         loss.backward()
         opt_wrapper.step()
     # Check update rule
-    assert not torch.equal(_p.data, p_val) and not torch.equal(_p.data, p_val - lr * _p.grad)
+    assert not torch.equal(_p.data, p_val)
+    assert not torch.equal(_p.data, p_val - lr * _p.grad)
 
     # Repr
     assert len(repr(opt_wrapper).split("\n")) == len(repr(optimizer).split("\n")) + 4

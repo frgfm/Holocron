@@ -39,7 +39,7 @@ class PyBottleneck(_ResBlock):
         planes: int,
         stride: int = 1,
         downsample: Optional[Module] = None,
-        groups: List[int] = [1],
+        groups: Optional[List[int]] = None,
         base_width: int = 64,
         dilation: int = 1,
         act_layer: Optional[Module] = None,
@@ -48,7 +48,8 @@ class PyBottleneck(_ResBlock):
         num_levels: int = 2,
         **kwargs: Any,
     ) -> None:
-
+        if groups is None:
+            groups = [1]
         width = int(planes * (base_width / 64.0)) * min(groups)
 
         super().__init__(
@@ -112,7 +113,6 @@ def _pyconvresnet(
     groups: List[List[int]],
     **kwargs: Any,
 ) -> ResNet:
-
     # Build the model
     model = ResNet(
         block,  # type: ignore[arg-type]
@@ -120,7 +120,7 @@ def _pyconvresnet(
         out_chans,
         stem_pool=False,
         width_per_group=width_per_group,
-        block_args=[dict(num_levels=len(group), groups=group) for group in groups],
+        block_args=[{"num_levels": len(group), "groups": group} for group in groups],
         **kwargs,
     )
     model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
@@ -138,11 +138,11 @@ def pyconv_resnet50(pretrained: bool = False, progress: bool = True, **kwargs: A
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _pyconvresnet
 
     Returns:
         torch.nn.Module: classification model
     """
-
     return _pyconvresnet(
         "pyconv_resnet50",
         pretrained,
@@ -163,11 +163,11 @@ def pyconvhg_resnet50(pretrained: bool = False, progress: bool = True, **kwargs:
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _pyconvresnet
 
     Returns:
         torch.nn.Module: classification model
     """
-
     return _pyconvresnet(
         "pyconvhg_resnet50",
         pretrained,

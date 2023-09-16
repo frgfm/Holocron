@@ -5,7 +5,6 @@ from holocron import nn
 
 
 def _test_conv2d(mod, input_shape, output_shape):
-
     x = torch.rand(*input_shape)
 
     out = mod(x)
@@ -34,7 +33,6 @@ def test_pyconv2d():
 
 
 def test_lambdalayer():
-
     with pytest.raises(AssertionError):
         nn.LambdaLayer(3, 31, 16)
     with pytest.raises(AssertionError):

@@ -4,7 +4,6 @@ from holocron import nn
 
 
 def _test_attention_mod(mod):
-
     x = torch.rand(2, 4, 8, 8)
     # Check that attention preserves shape
     mod = mod.eval()

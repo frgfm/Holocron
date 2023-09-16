@@ -18,7 +18,6 @@ from holocron import models
 
 @torch.inference_mode()
 def main(args):
-
     if args.device is None:
         args.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -30,6 +29,10 @@ def main(args):
     # RepVGG
     if args.arch.startswith("repvgg") or args.arch.startswith("mobileone"):
         model.reparametrize()
+
+    # Compile (using tensor cores)
+    torch.set_float32_matmul_precision("high")
+    model = torch.compile(model)
 
     # Input
     img_tensor = torch.rand((1, 3, args.size, args.size)).to(device=device)

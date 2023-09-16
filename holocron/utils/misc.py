@@ -33,15 +33,15 @@ def parallel(
     >>> parallel(lambda x: x ** 2, list(range(10)))
 
     Args:
-        func (callable): function to be executed on multiple workers
-        arr (iterable): function argument's values
-        num_threads (int, optional): number of workers to be used for multiprocessing
+        func: function to be executed on multiple workers
+        arr: function argument's values
+        num_threads: number of workers to be used for multiprocessing
+        progress: whether the progress bar should be displayed
         kwargs: keyword arguments of tqdm
 
     Returns:
         list: list of function's results
     """
-
     num_threads = num_threads if isinstance(num_threads, int) else min(16, mp.cpu_count())
     if num_threads < 2:
         if progress:
@@ -63,11 +63,11 @@ def find_image_size(dataset: Sequence[Tuple[Image.Image, Any]], **kwargs: Any) -
 
     Args:
         dataset: an iterator yielding a PIL Image and a target object
+        kwargs: keyword args of matplotlib.pyplot.show
 
     Returns:
         the suggested height and width to be used
     """
-
     # Record height & width
     _shapes = parallel(lambda x: x[0].size, dataset, progress=True)
 

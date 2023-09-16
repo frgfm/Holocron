@@ -6,7 +6,6 @@ from holocron import trainer
 
 
 def test_freeze_bn():
-
     # Simple module with BN
     mod = nn.Sequential(nn.Conv2d(3, 32, 3), nn.BatchNorm2d(32), nn.ReLU(inplace=True))
     nb = mod[1].num_batches_tracked.clone()
@@ -25,7 +24,6 @@ def test_freeze_bn():
 
 
 def test_freeze_model():
-
     # Simple model
     mod = nn.Sequential(nn.Conv2d(3, 32, 3), nn.ReLU(inplace=True), nn.Conv2d(32, 64, 3), nn.ReLU(inplace=True))
     trainer.freeze_model(mod, "0")

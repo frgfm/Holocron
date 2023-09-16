@@ -110,12 +110,12 @@ class Trainer:
             output_file: destination file path
         """
         torch.save(
-            dict(
-                epoch=self.epoch,
-                step=self.step,
-                min_loss=self.min_loss,
-                model=self.model.state_dict(),
-            ),
+            {
+                "epoch": self.epoch,
+                "step": self.step,
+                "min_loss": self.min_loss,
+                "model": self.model.state_dict(),
+            },
             output_file,
             _use_new_zipfile_serialization=False,
         )
@@ -243,12 +243,12 @@ class Trainer:
         self._set_params(norm_weight_decay)
         # Split it if norm layers needs custom WD
         if norm_weight_decay is None:
-            self.optimizer.add_param_group(dict(params=self._params[0]))
+            self.optimizer.add_param_group({"params": self._params[0]})
         else:
             wd_groups = [norm_weight_decay, self.optimizer.defaults.get("weight_decay", 0)]
             for _params, _wd in zip(self._params, wd_groups):
                 if len(_params) > 0:
-                    self.optimizer.add_param_group(dict(params=_params, weight_decay=_wd))
+                    self.optimizer.add_param_group({"params": _params, "weight_decay": _wd})
         self.optimizer.zero_grad()
 
     @torch.inference_mode()
@@ -287,7 +287,6 @@ class Trainer:
             norm_weight_decay (float, optional): weight decay to apply to normalization parameters
             **kwargs: keyword args passed to the schedulers
         """
-
         freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
         self._reset_opt(lr, norm_weight_decay)
@@ -299,16 +298,15 @@ class Trainer:
 
         mb = master_bar(range(num_epochs))
         for _ in mb:
-
             self._fit_epoch(mb)
             eval_metrics = self.evaluate()
 
             # master bar
             mb.main_bar.comment = f"Epoch {self.epoch}/{self.start_epoch + num_epochs}"
-            mb.write(f"Epoch {self.epoch}/{self.start_epoch + num_epochs} - " f"{self._eval_metrics_str(eval_metrics)}")
+            mb.write(f"Epoch {self.epoch}/{self.start_epoch + num_epochs} - {self._eval_metrics_str(eval_metrics)}")
 
             if eval_metrics["val_loss"] < self.min_loss:
-                print(
+                print(  # noqa: T201
                     f"Validation loss decreased {self.min_loss:.4} --> "
                     f"{eval_metrics['val_loss']:.4}: saving state..."
                 )
@@ -336,7 +334,6 @@ class Trainer:
            norm_weight_decay (float, optional): weight decay to apply to normalization parameters
            num_it (int, optional): number of iterations to perform
         """
-
         if num_it > len(self.train_loader):
             raise ValueError("the value of `num_it` needs to be lower than the number of available batches")
 
@@ -379,8 +376,8 @@ class Trainer:
 
         Args:
             beta (float, optional): smoothing factor
+            kwargs: keyword args of matplotlib.pyplot.show
         """
-
         if len(self.lr_recorder) != len(self.loss_recorder) or len(self.lr_recorder) == 0:
             raise AssertionError("Please run the `lr_find` method first")
 
@@ -398,7 +395,7 @@ class Trainer:
         )
         vals: np.ndarray = np.array(smoothed_losses[data_slice])
         min_idx = vals.argmin()
-        max_val = vals.max() if min_idx is None else vals[: min_idx + 1].max()  # type: ignore[misc]
+        max_val = vals.max() if min_idx is None else vals[: min_idx + 1].max()
         delta = max_val - vals[min_idx]
 
         plt.plot(self.lr_recorder[data_slice], smoothed_losses[data_slice])
@@ -424,8 +421,8 @@ class Trainer:
             lr (float, optional): learning rate to be used for training
             norm_weight_decay (float, optional): weight decay to apply to normalization parameters
             num_it (int, optional): number of iterations to perform
+            kwargs: keyword args of matplotlib.pyplot.show
         """
-
         freeze_model(self.model.train(), freeze_until)
         # Update param groups & LR
         self._reset_opt(lr, norm_weight_decay)

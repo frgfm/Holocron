@@ -23,12 +23,12 @@ from torchvision import transforms as T
 from torchvision.datasets import VOCSegmentation
 from torchvision.models import segmentation as tv_segmentation
 from torchvision.transforms.functional import InterpolationMode, to_pil_image
+from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 import holocron
 from holocron.models import segmentation
 from holocron.trainer import SegmentationTrainer
 from holocron.utils.misc import find_image_size
-from transforms import Compose, ImageTransform, RandomCrop, RandomHorizontalFlip, RandomResize, Resize, ToTensor
 
 VOC_CLASSES = [
     "background",
@@ -56,7 +56,7 @@ VOC_CLASSES = [
 
 
 def worker_init_fn(worker_id: int) -> None:
-    np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
+    np.random.default_rng((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
 
 
 def plot_samples(images, targets, ignore_index=None):
@@ -111,7 +111,6 @@ def plot_predictions(images, preds, targets, ignore_index=None):
 
 @track_emissions()
 def main(args):
-
     print(args)
 
     torch.backends.cudnn.benchmark = True
@@ -280,7 +279,6 @@ def main(args):
 
     # W&B
     if args.wb:
-
         run = wandb.init(
             name=exp_name,
             project="holocron-semantic-segmentation",

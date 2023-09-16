@@ -12,18 +12,8 @@ import torch.nn as nn
 
 from holocron.nn import GlobalAvgPool2d, init
 
-from ..checkpoints import (
-    Checkpoint,
-    Dataset,
-    Evaluation,
-    LoadingMeta,
-    Metric,
-    PreProcessing,
-    TrainingRecipe,
-    _handle_legacy_pretrained,
-)
-from ..presets import IMAGENETTE
-from ..utils import _configure_model, conv_sequence, fuse_conv_bn
+from ..checkpoints import Checkpoint, _handle_legacy_pretrained
+from ..utils import _checkpoint, _configure_model, conv_sequence, fuse_conv_bn
 
 __all__ = [
     "RepVGG",
@@ -81,7 +71,6 @@ class RepBlock(nn.Module):
             self.branches.append(norm_layer(planes))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         if isinstance(self.branches, nn.Conv2d):
             out = self.branches(x)
         else:
@@ -148,7 +137,6 @@ class RepVGG(nn.Sequential):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
     ) -> None:
-
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if act_layer is None:
@@ -203,24 +191,7 @@ def _repvgg(
     return _configure_model(model, checkpoint, progress=progress)
 
 
-def _checkpoint(
-    arch: str, url: str, acc1: float, acc5: float, sha256: str, size: int, num_params: int, commit: str, train_args: str
-) -> Checkpoint:
-    return Checkpoint(
-        evaluation=Evaluation(
-            dataset=Dataset.IMAGENETTE,
-            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
-        ),
-        meta=LoadingMeta(
-            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
-        ),
-        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=IMAGENETTE.mean, std=IMAGENETTE.std),
-        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
-    )
-
-
 class RepVGG_A0_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_a0",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a0_224-d3f54b28.pth",
@@ -252,6 +223,7 @@ def repvgg_a0(
         pretrained: If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _repvgg
 
     Returns:
         torch.nn.Module: classification model
@@ -268,7 +240,6 @@ def repvgg_a0(
 
 
 class RepVGG_A1_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_a1",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a1_224-8d3269fb.pth",
@@ -300,6 +271,7 @@ def repvgg_a1(
         pretrained: If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _repvgg
 
     Returns:
         torch.nn.Module: classification model
@@ -316,7 +288,6 @@ def repvgg_a1(
 
 
 class RepVGG_A2_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_a2",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_a2_224-cb442207.pth",
@@ -348,6 +319,7 @@ def repvgg_a2(
         pretrained: If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _repvgg
 
     Returns:
         torch.nn.Module: classification model
@@ -364,7 +336,6 @@ def repvgg_a2(
 
 
 class RepVGG_B0_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_b0",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b0_224-fdcdd2b7.pth",
@@ -396,6 +367,7 @@ def repvgg_b0(
         pretrained: If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _repvgg
 
     Returns:
         torch.nn.Module: classification model
@@ -412,7 +384,6 @@ def repvgg_b0(
 
 
 class RepVGG_B1_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_b1",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b1_224-3e5b28d7.pth",
@@ -444,6 +415,7 @@ def repvgg_b1(
         pretrained: If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _repvgg
 
     Returns:
         torch.nn.Module: classification model
@@ -460,7 +432,6 @@ def repvgg_b1(
 
 
 class RepVGG_B2_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="repvgg_b2",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/repvgg_b2_224-dc810d88.pth",
@@ -492,6 +463,7 @@ def repvgg_b2(
         pretrained: If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _repvgg
 
     Returns:
         torch.nn.Module: classification model
@@ -520,12 +492,10 @@ def repvgg_b3(
         pretrained: If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _repvgg
 
     Returns:
         torch.nn.Module: classification model
-
-    .. autoclass:: holocron.models.RepVGG_B3_Checkpoint
-        :members:
     """
     checkpoint = _handle_legacy_pretrained(
         pretrained,

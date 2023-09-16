@@ -27,7 +27,8 @@ class ResizeMethod(str, Enum):
 
 def _get_image_shape(image: Union[Image.Image, torch.Tensor]) -> Tuple[int, int]:
     if isinstance(image, torch.Tensor):
-        assert image.ndim == 3
+        if image.ndim != 3:
+            raise ValueError("the input tensor is expected to be 3-dimensional")
         h, w = image.shape[1:]
     elif isinstance(image, Image.Image):
         w, h = image.size
@@ -65,8 +66,10 @@ class Resize(T.Resize):
         pad_mode: str = "constant",
         **kwargs: Any,
     ) -> None:
-        assert isinstance(mode, ResizeMethod)
-        assert isinstance(size, (tuple, list)) and len(size) == 2 and all(s > 0 for s in size)
+        if not isinstance(mode, ResizeMethod):
+            raise ValueError("mode is expected to be a ResizeMethod")
+        if not isinstance(size, (tuple, list)) or len(size) != 2 or any(s <= 0 for s in size):
+            raise ValueError("size is expected to be a sequence of 2 positive integers")
         super().__init__(size, **kwargs)
         self.mode = mode
         self.pad_mode = pad_mode
@@ -115,8 +118,10 @@ class RandomZoomOut(nn.Module):
     """
 
     def __init__(self, size: Tuple[int, int], scale: Tuple[float, float] = (0.5, 1.0), **kwargs: Any):
-        assert isinstance(size, (tuple, list)) and len(size) == 2 and all(s > 0 for s in size)
-        assert len(scale) == 2 and scale[0] <= scale[1]
+        if not isinstance(size, (tuple, list)) or len(size) != 2 or any(s <= 0 for s in size):
+            raise ValueError("size is expected to be a sequence of 2 positive integers")
+        if len(scale) != 2 or scale[0] > scale[1]:
+            raise ValueError("scale is expected to be a couple of floats, the first one being small than the second")
         super().__init__()
         self.size = size
         self.scale = scale

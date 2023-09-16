@@ -4,7 +4,8 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from enum import Enum
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -12,20 +13,11 @@ import torch.nn as nn
 from holocron.nn import DropBlock2d, GlobalAvgPool2d
 from holocron.nn.init import init_module
 
-from ..presets import IMAGENETTE
-from ..utils import conv_sequence, load_pretrained_params
+from ..checkpoints import Checkpoint, _handle_legacy_pretrained
+from ..utils import _checkpoint, _configure_model, conv_sequence
 from .resnet import _ResBlock
 
-__all__ = ["DarknetV3", "darknet53"]
-
-
-default_cfgs: Dict[str, Dict[str, Any]] = {
-    "darknet53": {
-        **IMAGENETTE.__dict__,
-        "input_shape": (3, 256, 256),
-        "url": "https://github.com/frgfm/Holocron/releases/download/v0.1.2/darknet53_256-f57b8429.pth",
-    },
-}
+__all__ = ["DarknetV3", "Darknet53_Checkpoint", "darknet53"]
 
 
 class ResBlock(_ResBlock):
@@ -90,7 +82,6 @@ class DarknetBodyV3(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         if act_layer is None:
             act_layer = nn.LeakyReLU(0.1, inplace=True)
         if norm_layer is None:
@@ -143,7 +134,6 @@ class DarknetBodyV3(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> nn.Sequential:
-
         layers = conv_sequence(
             in_planes,
             out_planes,
@@ -166,7 +156,6 @@ class DarknetBodyV3(nn.Sequential):
         return nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> Union[torch.Tensor, List[torch.Tensor]]:
-
         if self.num_features == 1:
             return super().forward(x)
 
@@ -194,7 +183,6 @@ class DarknetV3(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         super().__init__(
             OrderedDict(
                 [
@@ -213,27 +201,60 @@ class DarknetV3(nn.Sequential):
         init_module(self, "leaky_relu")
 
 
-def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int, int]], **kwargs: Any) -> DarknetV3:
+def _darknet(
+    checkpoint: Union[Checkpoint, None],
+    progress: bool,
+    layout: List[Tuple[int, int]],
+    **kwargs: Any,
+) -> DarknetV3:
     # Build the model
     model = DarknetV3(layout, **kwargs)
-    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
-    # Load pretrained parameters
-    if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
-
-    return model
+    return _configure_model(model, checkpoint, progress=progress)
 
 
-def darknet53(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> DarknetV3:
+class Darknet53_Checkpoint(Enum):
+    IMAGENETTE = _checkpoint(
+        arch="darknet53",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/darknet53_224-5015f3fd.pth",
+        acc1=0.9417,
+        acc5=0.9957,
+        sha256="5015f3fdf0963342e0c54790127350375ba269d871feed48f8328b2e43cf7819",
+        size=162584273,
+        num_params=40595178,
+        commit="6e32c5b578711a2ef3731a8f8c61760ed9f03e58",
+        train_args=(
+            "./imagenette2-320/ --arch darknet53 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
+
+
+def darknet53(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> DarknetV3:
     """Darknet-53 from
     `"YOLOv3: An Incremental Improvement" <https://pjreddie.com/media/files/papers/YOLOv3.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _darknet
 
     Returns:
         torch.nn.Module: classification model
-    """
 
-    return _darknet("darknet53", pretrained, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)
+    .. autoclass:: holocron.models.Darknet53_Checkpoint
+        :members:
+    """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        Darknet53_Checkpoint.DEFAULT.value,
+    )
+    return _darknet(checkpoint, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)

@@ -4,6 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 from collections import OrderedDict
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 import torch.nn as nn
@@ -11,20 +12,26 @@ from torch import Tensor
 
 from holocron.nn import GlobalAvgPool2d, init
 
+from ..checkpoints import Checkpoint, _handle_legacy_pretrained
 from ..presets import IMAGENET, IMAGENETTE
-from ..utils import conv_sequence, load_pretrained_params
+from ..utils import _checkpoint, _configure_model, conv_sequence
 
 __all__ = [
     "BasicBlock",
     "Bottleneck",
     "ResNet",
+    "ResNet18_Checkpoint",
     "resnet18",
+    "ResNet34_Checkpoint",
     "resnet34",
+    "ResNet50_Checkpoint",
     "resnet50",
     "resnet101",
     "resnet152",
+    "ResNeXt50_32x4d_Checkpoint",
     "resnext50_32x4d",
     "resnext101_32x8d",
+    "ResNet50D_Checkpoint",
     "resnet50d",
 ]
 
@@ -50,7 +57,6 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
 
 
 class _ResBlock(nn.Module):
-
     expansion: int = 1
 
     def __init__(
@@ -82,7 +88,6 @@ class _ResBlock(nn.Module):
 
 
 class BasicBlock(_ResBlock):
-
     expansion: int = 1
 
     def __init__(
@@ -139,7 +144,6 @@ class BasicBlock(_ResBlock):
 
 
 class Bottleneck(_ResBlock):
-
     expansion: int = 4
 
     def __init__(
@@ -157,7 +161,6 @@ class Bottleneck(_ResBlock):
         conv_layer: Optional[Callable[..., nn.Module]] = None,
         **kwargs: Any,
     ) -> None:
-
         width = int(planes * (base_width / 64.0)) * groups
         super().__init__(
             [
@@ -238,7 +241,6 @@ class ResNet(nn.Sequential):
         num_repeats: int = 1,
         block_args: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]] = None,
     ) -> None:
-
         if conv_layer is None:
             conv_layer = nn.Conv2d
         if norm_layer is None:
@@ -312,7 +314,7 @@ class ResNet(nn.Sequential):
         stride = 1
         # Block args
         if block_args is None:
-            block_args = dict(groups=1)
+            block_args = {"groups": 1}
         if not isinstance(block_args, list):
             block_args = [block_args] * len(num_blocks)
         for _num_blocks, _planes, _block_args in zip(num_blocks, planes, block_args):
@@ -372,7 +374,6 @@ class ResNet(nn.Sequential):
         num_repeats: int = 1,
         block_args: Optional[Dict[str, Any]] = None,
     ) -> nn.Sequential:
-
         downsample = None
         if stride != 1 or in_planes != planes * block.expansion:
             # Downsampling from ResNet-D
@@ -420,9 +421,8 @@ class ResNet(nn.Sequential):
                 **block_args,
             )
         ]
-
-        for _ in range(num_blocks - 1):
-            layers.append(
+        layers.extend(
+            [
                 block(
                     block.expansion * planes,
                     planes,
@@ -434,94 +434,208 @@ class ResNet(nn.Sequential):
                     drop_layer=drop_layer,
                     **block_args,
                 )
-            )
+                for _ in range(num_blocks - 1)
+            ]
+        )
 
         return nn.Sequential(*layers)
 
 
 def _resnet(
-    arch: str,
-    pretrained: bool,
+    checkpoint: Union[Checkpoint, None],
     progress: bool,
     block: Type[Union[BasicBlock, Bottleneck]],
     num_blocks: List[int],
     out_chans: List[int],
     **kwargs: Any,
 ) -> ResNet:
-
-    kwargs["num_classes"] = kwargs.get("num_classes", len(default_cfgs[arch]["classes"]))
-
     # Build the model
     model = ResNet(block, num_blocks, out_chans, **kwargs)
-    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
-    # Load pretrained parameters
-    if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
-
-    return model
+    return _configure_model(model, checkpoint, progress=progress)
 
 
-def resnet18(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+class ResNet18_Checkpoint(Enum):
+    IMAGENETTE = _checkpoint(
+        arch="resnet18",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnet18_224-fc07006c.pth",
+        acc1=0.9361,
+        acc5=0.9946,
+        sha256="fc07006c894cac8cf380fed699bc5a68463698753c954632f52bb8595040f781",
+        size=44787043,
+        num_params=11181642,
+        commit="6e32c5b578711a2ef3731a8f8c61760ed9f03e58",
+        train_args=(
+            "./imagenette2-320/ --arch resnet18 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
+
+
+def resnet18(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """ResNet-18 from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, loads that checkpoint
+        progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _resnet
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.ResNet18_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        ResNet18_Checkpoint.DEFAULT.value,
+    )
+    return _resnet(checkpoint, progress, BasicBlock, [2, 2, 2, 2], [64, 128, 256, 512], **kwargs)
 
-    return _resnet("resnet18", pretrained, progress, BasicBlock, [2, 2, 2, 2], [64, 128, 256, 512], **kwargs)
+
+class ResNet34_Checkpoint(Enum):
+    IMAGENETTE = _checkpoint(
+        arch="resnet34",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnet34_224-412b0792.pth",
+        acc1=0.9381,
+        acc5=0.9949,
+        sha256="412b07927cc1938ee3add8d0f6bb18b42786646182f674d75f1433d086914485",
+        size=85267035,
+        num_params=21289802,
+        commit="6e32c5b578711a2ef3731a8f8c61760ed9f03e58",
+        train_args=(
+            "./imagenette2-320/ --arch resnet34 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def resnet34(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet34(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """ResNet-34 from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, load that checkpoint on the model
+        progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _resnet
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.ResNet34_Checkpoint
+        :members:
     """
+    return _resnet(checkpoint, progress, BasicBlock, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
 
-    return _resnet("resnet34", pretrained, progress, BasicBlock, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
+
+class ResNet50_Checkpoint(Enum):
+    IMAGENETTE = _checkpoint(
+        arch="resnet50",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnet50_224-5b913f0b.pth",
+        acc1=0.9378,
+        acc5=0.9954,
+        sha256="5b913f0b8148b483ba15541ab600cf354ca42b326e4896c4c3dbc51eb1e80e70",
+        size=94384682,
+        num_params=23528522,
+        commit="6e32c5b578711a2ef3731a8f8c61760ed9f03e58",
+        train_args=(
+            "./imagenette2-320/ --arch resnet50 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def resnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet50(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """ResNet-50 from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, load that checkpoint on the model
+        progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _resnet
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.ResNet50_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        ResNet50_Checkpoint.DEFAULT.value,
+    )
+    return _resnet(checkpoint, progress, Bottleneck, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
 
-    return _resnet("resnet50", pretrained, progress, Bottleneck, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)
+
+class ResNet50D_Checkpoint(Enum):
+    IMAGENETTE = _checkpoint(
+        arch="resnet50d",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnet50d_224-6218d936.pth",
+        acc1=0.9465,
+        acc5=0.9952,
+        sha256="6218d936fa67c0047f1ec65564213db538aa826d84f2df1d4fa3224531376e6c",
+        size=94464810,
+        num_params=23547754,
+        commit="6e32c5b578711a2ef3731a8f8c61760ed9f03e58",
+        train_args=(
+            "./imagenette2-320/ --arch resnet50d --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def resnet50d(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet50d(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """ResNet-50-D from
     `"Bag of Tricks for Image Classification with Convolutional Neural Networks"
     <https://arxiv.org/pdf/1812.01187.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, load that checkpoint on the model
+        progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _resnet
 
     Returns:
         torch.nn.Module: classification model
-    """
 
+    .. autoclass:: holocron.models.ResNet50D_Checkpoint
+        :members:
+    """
     return _resnet(
-        "resnet50d",
-        pretrained,
+        checkpoint,
         progress,
         Bottleneck,
         [3, 4, 6, 3],
@@ -532,53 +646,92 @@ def resnet50d(pretrained: bool = False, progress: bool = True, **kwargs: Any) ->
     )
 
 
-def resnet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet101(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """ResNet-101 from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, load that checkpoint on the model
+        progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _resnet
 
     Returns:
         torch.nn.Module: classification model
     """
+    return _resnet(checkpoint, progress, Bottleneck, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
 
-    return _resnet("resnet101", pretrained, progress, Bottleneck, [3, 4, 23, 3], [64, 128, 256, 512], **kwargs)
 
-
-def resnet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnet152(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """ResNet-152 from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, load that checkpoint on the model
+        progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _resnet
 
     Returns:
         torch.nn.Module: classification model
     """
+    return _resnet(checkpoint, progress, Bottleneck, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)
 
-    return _resnet("resnet152", pretrained, progress, Bottleneck, [3, 8, 86, 3], [64, 128, 256, 512], **kwargs)
+
+class ResNeXt50_32x4d_Checkpoint(Enum):
+    IMAGENETTE = _checkpoint(
+        arch="resnext50_32x4d",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/resnext50_32x4d_224-5832c4ce.pth",
+        acc1=0.9455,
+        acc5=0.9949,
+        sha256="5832c4ce33522a9eb7a8b5abe31cf30621721a92d4f99b4b332a007d81d071fe",
+        size=92332638,
+        num_params=23000394,
+        commit="6e32c5b578711a2ef3731a8f8c61760ed9f03e58",
+        train_args=(
+            "./imagenette2-320/ --arch resnext50_32x4d --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def resnext50_32x4d(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnext50_32x4d(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """ResNeXt-50 from
     `"Aggregated Residual Transformations for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, load that checkpoint on the model
+        progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _resnet
 
     Returns:
         torch.nn.Module: classification model
-    """
 
+    .. autoclass:: holocron.models.ResNeXt50_32x4d_Checkpoint
+        :members:
+    """
     kwargs["width_per_group"] = 4
-    block_args = dict(groups=32)
+    block_args = {"groups": 32}
     return _resnet(
-        "resnext50_32x4d",
-        pretrained,
+        checkpoint,
         progress,
         Bottleneck,
         [3, 4, 6, 3],
@@ -588,23 +741,28 @@ def resnext50_32x4d(pretrained: bool = False, progress: bool = True, **kwargs: A
     )
 
 
-def resnext101_32x8d(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
+def resnext101_32x8d(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> ResNet:
     """ResNeXt-101 from
     `"Aggregated Residual Transformations for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_
 
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
+        pretrained: If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, load that checkpoint on the model
+        progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _resnet
 
     Returns:
         torch.nn.Module: classification model
     """
-
     kwargs["width_per_group"] = 8
-    block_args = dict(groups=32)
+    block_args = {"groups": 32}
     return _resnet(
-        "resnext101_32x8d",
-        pretrained,
+        checkpoint,
         progress,
         Bottleneck,
         [3, 4, 23, 3],

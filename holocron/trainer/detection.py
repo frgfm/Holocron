@@ -123,4 +123,4 @@ class DetectionTrainer(Trainer):
         clf_err = 1 - correct / loc_assigns if loc_assigns > 0 else None
         # End-to-end
         det_err = 1 - 2 * correct / (nb_preds + num_samples) if nb_preds + num_samples > 0 else None
-        return dict(loc_err=loc_err, clf_err=clf_err, det_err=det_err, val_loss=loc_err)
+        return {"loc_err": loc_err, "clf_err": clf_err, "det_err": det_err, "val_loss": loc_err}

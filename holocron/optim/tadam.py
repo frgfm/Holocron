@@ -73,7 +73,7 @@ class TAdam(Optimizer):
             raise ValueError(f"Invalid beta parameter at index 1: {betas[1]}")
         if not 0.0 <= weight_decay:
             raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
-        defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, amsgrad=amsgrad, dof=dof)
+        defaults = {"lr": lr, "betas": betas, "eps": eps, "weight_decay": weight_decay, "amsgrad": amsgrad, "dof": dof}
         super().__init__(params, defaults)
 
     def __setstate__(self, state: Dict[str, torch.Tensor]) -> None:
@@ -98,7 +98,7 @@ class TAdam(Optimizer):
             grads = []
             exp_avgs = []
             exp_avg_sqs = []
-            W_ts = []
+            W_ts = []  # noqa: N806
             max_exp_avg_sqs = []
             state_steps = []
 
@@ -163,7 +163,7 @@ def tadam(
     exp_avgs: List[Tensor],
     exp_avg_sqs: List[Tensor],
     max_exp_avg_sqs: List[Tensor],
-    W_ts: List[Tensor],
+    W_ts: List[Tensor],  # noqa: N803
     state_steps: List[int],
     amsgrad: bool,
     beta1: float,
@@ -176,13 +176,11 @@ def tadam(
     r"""Functional API that performs TAdam algorithm computation.
     See :class:`~holocron.optim.TAdam` for details.
     """
-
     for i, param in enumerate(params):
-
         grad = grads[i]
         exp_avg = exp_avgs[i]
         exp_avg_sq = exp_avg_sqs[i]
-        W_t = W_ts[i]
+        W_t = W_ts[i]  # noqa: N806
         _dof = param.data.numel() if dof is None else dof
         step = state_steps[i]
         if amsgrad:

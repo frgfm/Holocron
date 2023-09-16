@@ -68,7 +68,7 @@ class MockDetDataset(Dataset):
 
     def __getitem__(self, idx):
         boxes = torch.tensor([[0, 0, 1, 1], [0.25, 0.25, 0.75, 0.75]], dtype=torch.float32)
-        return torch.rand((3, 320, 320)), dict(boxes=boxes, labels=torch.ones(2, dtype=torch.long))
+        return torch.rand((3, 320, 320)), {"boxes": boxes, "labels": torch.ones(2, dtype=torch.long)}
 
     def __len__(self):
         return self.n
@@ -82,7 +82,6 @@ def collate_fn(batch):
 def _test_trainer(
     learner: trainer.Trainer, num_it: int, ref_param: str, freeze_until: Optional[str] = None, lr: float = 1e-3
 ) -> None:
-
     trainer.utils.freeze_model(learner.model.train(), freeze_until)
     learner._reset_opt(lr)
     # Update param groups & LR
@@ -149,7 +148,6 @@ def _test_trainer(
 
 
 def test_classification_trainer(tmpdir_factory):
-
     folder = tmpdir_factory.mktemp("checkpoints")
     file_path = str(folder.join("tmp.pt"))
 
@@ -192,7 +190,6 @@ def test_classification_trainer(tmpdir_factory):
 
 
 def test_classification_trainer_few_classes():
-
     num_it = 10
     batch_size = 8
     # Generate all dependencies
@@ -206,7 +203,6 @@ def test_classification_trainer_few_classes():
 
 
 def test_binary_classification_trainer():
-
     num_it = 10
     batch_size = 8
     # Generate all dependencies
@@ -235,7 +231,6 @@ def test_binary_classification_trainer():
 
 
 def test_segmentation_trainer(tmpdir_factory):
-
     folder = tmpdir_factory.mktemp("checkpoints")
     file_path = str(folder.join("tmp.pt"))
 
@@ -275,7 +270,6 @@ def test_segmentation_trainer(tmpdir_factory):
 
 
 def test_detection_trainer(tmpdir_factory):
-
     folder = tmpdir_factory.mktemp("checkpoints")
     file_path = str(folder.join("tmp.pt"))
 

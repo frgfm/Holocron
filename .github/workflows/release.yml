@@ -13,7 +13,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: 3.9
           architecture: x64
       - name: Cache python modules
         uses: actions/cache@v2
@@ -47,7 +47,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: 3.9
           architecture: x64
       - name: Install package
         run: |
@@ -64,7 +64,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          python-version: 3.8
+          python-version: 3.9
       - name: Install dependencies
         run: conda install -y conda-build conda-verify anaconda-client
       - name: Get release tag
@@ -91,7 +91,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          python-version: 3.8
+          python-version: 3.9
       - name: Install package
         run: |
           conda install -c frgfm pylocron

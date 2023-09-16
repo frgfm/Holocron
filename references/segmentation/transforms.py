@@ -9,9 +9,8 @@ Transformation for semantic segmentation
 
 import numpy as np
 import torch
-from torchvision.transforms import InterpolationMode
+from torchvision.transforms import InterpolationMode, transforms
 from torchvision.transforms import functional as F
-from torchvision.transforms import transforms
 
 
 def pad_if_smaller(img, size, fill=0):
@@ -103,7 +102,6 @@ class RandomCrop(object):
 
 class ToTensor(transforms.ToTensor):
     def __call__(self, img, target):
-
         img = super(ToTensor, self).__call__(img)
         target = torch.as_tensor(np.array(target), dtype=torch.int64)
 

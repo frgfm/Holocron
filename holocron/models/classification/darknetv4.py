@@ -4,6 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 from collections import OrderedDict
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
@@ -12,11 +13,12 @@ import torch.nn as nn
 from holocron.nn import DropBlock2d, GlobalAvgPool2d
 from holocron.nn.init import init_module
 
+from ..checkpoints import Checkpoint, _handle_legacy_pretrained
 from ..presets import IMAGENETTE
-from ..utils import conv_sequence, load_pretrained_params
+from ..utils import _checkpoint, _configure_model, conv_sequence
 from .darknetv3 import ResBlock
 
-__all__ = ["DarknetV4", "cspdarknet53", "cspdarknet53_mish"]
+__all__ = ["DarknetV4", "CSPDarknet53_Checkpoint", "cspdarknet53", "CSPDarknet53_Mish_Checkpoint", "cspdarknet53_mish"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
@@ -125,7 +127,6 @@ class DarknetBodyV4(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         super().__init__()
 
         if act_layer is None:
@@ -172,7 +173,6 @@ class DarknetBodyV4(nn.Sequential):
         self.num_features = num_features
 
     def forward(self, x: torch.Tensor) -> Union[torch.Tensor, List[torch.Tensor]]:
-
         if self.num_features == 1:
             return super().forward(x)
 
@@ -201,7 +201,6 @@ class DarknetV4(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
-
         super().__init__(
             OrderedDict(
                 [
@@ -227,48 +226,112 @@ class DarknetV4(nn.Sequential):
         init_module(self, "leaky_relu")
 
 
-def _darknet(arch: str, pretrained: bool, progress: bool, layout: List[Tuple[int, int]], **kwargs: Any) -> DarknetV4:
+def _darknet(
+    checkpoint: Union[Checkpoint, None],
+    progress: bool,
+    layout: List[Tuple[int, int]],
+    **kwargs: Any,
+) -> DarknetV4:
     # Build the model
     model = DarknetV4(layout, **kwargs)
-    model.default_cfg = default_cfgs[arch]  # type: ignore[assignment]
-    # Load pretrained parameters
-    if pretrained:
-        load_pretrained_params(model, default_cfgs[arch]["url"], progress)
-
-    return model
+    return _configure_model(model, checkpoint, progress=progress)
 
 
-def cspdarknet53(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> DarknetV4:
+class CSPDarknet53_Checkpoint(Enum):
+    IMAGENETTE = _checkpoint(
+        arch="cspdarknet53",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/cspdarknet53_224-7a69463a.pth",
+        acc1=0.9450,
+        acc5=0.9964,
+        sha256="7a69463a4bd445beb6691dfd6ef7378efcf941f75d07d60034106ebedfcb82f8",
+        size=106732575,
+        num_params=26627434,
+        commit="6e32c5b578711a2ef3731a8f8c61760ed9f03e58",
+        train_args=(
+            "./imagenette2-320/ --arch cspdarknet53 --batch-size 64 --mixup-alpha 0.2 --amp --device 0 --epochs 100"
+            " --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176 --val-resize-size 232"
+            " --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
+
+
+def cspdarknet53(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> DarknetV4:
     """CSP-Darknet-53 from
     `"CSPNet: A New Backbone that can Enhance Learning Capability of CNN" <https://arxiv.org/pdf/1911.11929.pdf>`_
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _darknet
 
     Returns:
         torch.nn.Module: classification model
+
+    .. autoclass:: holocron.models.CSPDarknet53_Checkpoint
+        :members:
     """
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        CSPDarknet53_Checkpoint.DEFAULT.value,
+    )
+    return _darknet(checkpoint, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)
 
-    return _darknet("cspdarknet53", pretrained, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)
+
+class CSPDarknet53_Mish_Checkpoint(Enum):
+    IMAGENETTE = _checkpoint(
+        arch="cspdarknet53_mish",
+        url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/cspdarknet53_mish_224-1b660b3c.pth",
+        acc1=0.9465,
+        acc5=0.9969,
+        sha256="1b660b3cb144195100c99ee3b9b863c37a5b5a59619c8de8c588b3d2af954b15",
+        size=106737530,
+        num_params=26627434,
+        commit="6e32c5b578711a2ef3731a8f8c61760ed9f03e58",
+        train_args=(
+            "./imagenette2-320/ --arch cspdarknet53_mish --batch-size 32 --grad-acc 2 --mixup-alpha 0.2 --amp"
+            "  --device 0 --epochs 100 --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176"
+            " --val-resize-size 232 --opt adamw --weight-decay 5e-2"
+        ),
+    )
+    DEFAULT = IMAGENETTE
 
 
-def cspdarknet53_mish(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> DarknetV4:
+def cspdarknet53_mish(
+    pretrained: bool = False,
+    checkpoint: Union[Checkpoint, None] = None,
+    progress: bool = True,
+    **kwargs: Any,
+) -> DarknetV4:
     """Modified version of CSP-Darknet-53 from
     `"CSPNet: A New Backbone that can Enhance Learning Capability of CNN" <https://arxiv.org/pdf/1911.11929.pdf>`_
     with Mish as activation layer and DropBlock as regularization layer.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _darknet
 
     Returns:
         torch.nn.Module: classification model
-    """
 
+    .. autoclass:: holocron.models.CSPDarknet53_Mish_Checkpoint
+        :members:
+    """
     kwargs["act_layer"] = nn.Mish(inplace=True)
     kwargs["drop_layer"] = DropBlock2d
 
-    return _darknet(
-        "cspdarknet53_mish", pretrained, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs
+    checkpoint = _handle_legacy_pretrained(
+        pretrained,
+        checkpoint,
+        CSPDarknet53_Mish_Checkpoint.DEFAULT.value,
     )
+    return _darknet(checkpoint, progress, [(64, 1), (128, 2), (256, 8), (512, 8), (1024, 4)], **kwargs)

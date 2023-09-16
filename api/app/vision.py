@@ -5,6 +5,7 @@
 
 import io
 import json
+from pathlib import Path
 
 import numpy as np
 import onnxruntime
@@ -16,7 +17,7 @@ from app import config as cfg
 __all__ = ["decode_image", "classify_image"]
 
 # Download model config & checkpoint
-with open(hf_hub_download(cfg.HUB_REPO, filename="config.json"), "rb") as f:
+with Path(hf_hub_download(cfg.HUB_REPO, filename="config.json")).open("rb") as f:
     MODEL_CFG = json.load(f)
 
 ORT_SESSION = onnxruntime.InferenceSession(hf_hub_download(cfg.HUB_REPO, filename="model.onnx"))
@@ -35,7 +36,6 @@ def preprocess_image(pil_img: Image.Image) -> np.ndarray:
     Returns:
         the resized and normalized image of shape (1, C, H, W)
     """
-
     # Resizing (PIL takes (W, H) order for resizing)
     img = pil_img.resize(MODEL_CFG["input_shape"][-2:][::-1], Image.BILINEAR)
     # (H, W, C) --> (C, H, W)

@@ -5,6 +5,7 @@
 
 import argparse
 import json
+from pathlib import Path
 
 import gradio as gr
 import numpy as np
@@ -14,9 +15,8 @@ from PIL import Image
 
 
 def main(args):
-
     # Download model config & checkpoint
-    with open(hf_hub_download(args.repo, filename="config.json"), "rb") as f:
+    with Path(hf_hub_download(args.repo, filename="config.json")).open("rb") as f:
         cfg = json.load(f)
 
     ort_session = onnxruntime.InferenceSession(hf_hub_download(args.repo, filename="model.onnx"))
@@ -30,7 +30,6 @@ def main(args):
         Returns:
             the resized and normalized image of shape (1, C, H, W)
         """
-
         # Resizing (PIL takes (W, H) order for resizing)
         img = pil_img.resize(cfg["input_shape"][-2:][::-1], Image.BILINEAR)
         # (H, W, C) --> (C, H, W)

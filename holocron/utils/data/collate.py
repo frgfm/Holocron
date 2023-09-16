@@ -5,9 +5,9 @@
 
 from typing import Tuple
 
-import numpy as np
 import torch
 from torch import Tensor
+from torch.distributions.beta import Beta
 from torch.nn.functional import one_hot
 
 __all__ = ["Mixup"]
@@ -36,7 +36,6 @@ class Mixup(torch.nn.Module):
         self.alpha = alpha
 
     def forward(self, inputs: Tensor, targets: Tensor) -> Tuple[Tensor, Tensor]:
-
         # Convert target to one-hot
         if targets.ndim == 1:
             # (N,) --> (N, C)
@@ -49,7 +48,7 @@ class Mixup(torch.nn.Module):
         # Sample lambda
         if self.alpha == 0:
             return inputs, targets
-        lam = np.random.beta(self.alpha, self.alpha)
+        lam = Beta(self.alpha, self.alpha).sample()
 
         # Mix batch indices
         batch_size = inputs.size()[0]

@@ -22,7 +22,6 @@ def freeze_bn(mod: nn.Module) -> None:
     Args:
         mod (torch.nn.Module): model to train
     """
-
     # Loop on modules
     for m in mod.modules():
         if isinstance(m, _BatchNorm) and m.affine and all(not p.requires_grad for p in m.parameters()):
@@ -48,7 +47,6 @@ def freeze_model(
         last_frozen_layer (str, optional): last layer to freeze. Assumes layers have been registered in forward order
         frozen_bn_stat_update (bool, optional): force stats update in BN layers that are frozen
     """
-
     # Unfreeze everything
     for p in model.parameters():
         p.requires_grad_(True)
@@ -76,6 +74,7 @@ def split_normalization_params(
     model: nn.Module,
     norm_classes: Optional[List[type]] = None,
 ) -> Tuple[List[nn.Parameter], List[nn.Parameter]]:
+    """Split the param groups by normalization schemes"""
     # Borrowed from https://github.com/pytorch/vision/blob/main/torchvision/ops/_utils.py
     # Adapted from https://github.com/facebookresearch/ClassyVision/blob/659d7f78/classy_vision/generic/util.py#L501
     if not norm_classes:

@@ -15,18 +15,8 @@ from torchvision.ops.stochastic_depth import StochasticDepth
 
 from holocron.nn import GlobalAvgPool2d
 
-from ..checkpoints import (
-    Checkpoint,
-    Dataset,
-    Evaluation,
-    LoadingMeta,
-    Metric,
-    PreProcessing,
-    TrainingRecipe,
-    _handle_legacy_pretrained,
-)
-from ..presets import IMAGENETTE
-from ..utils import _configure_model, conv_sequence
+from ..checkpoints import Checkpoint, _handle_legacy_pretrained
+from ..utils import _checkpoint, _configure_model, conv_sequence
 from .resnet import _ResBlock
 
 __all__ = [
@@ -136,7 +126,6 @@ class ConvNeXt(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         stochastic_depth_prob: float = 0.0,
     ) -> None:
-
         if conv_layer is None:
             conv_layer = nn.Conv2d
         if norm_layer is None:
@@ -162,7 +151,6 @@ class ConvNeXt(nn.Sequential):
         block_idx = 0
         tot_blocks = sum(num_blocks)
         for _num_blocks, _planes, _oplanes in zip(num_blocks, planes, planes[1:] + [planes[-1]]):
-
             # adjust stochastic depth probability based on the depth of the stage block
             sd_probs = [stochastic_depth_prob * (block_idx + _idx) / (tot_blocks - 1.0) for _idx in range(_num_blocks)]
             _stage: List[nn.Module] = [
@@ -215,24 +203,7 @@ def _convnext(
     return _configure_model(model, checkpoint, progress=progress)
 
 
-def _checkpoint(
-    arch: str, url: str, acc1: float, acc5: float, sha256: str, size: int, num_params: int, commit: str, train_args: str
-) -> Checkpoint:
-    return Checkpoint(
-        evaluation=Evaluation(
-            dataset=Dataset.IMAGENETTE,
-            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
-        ),
-        meta=LoadingMeta(
-            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=IMAGENETTE.classes
-        ),
-        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=IMAGENETTE.mean, std=IMAGENETTE.std),
-        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
-    )
-
-
 class ConvNeXt_Atto_Checkpoint(Enum):
-
     IMAGENETTE = _checkpoint(
         arch="convnext_atto",
         url="https://github.com/frgfm/Holocron/releases/download/v0.2.1/convnext_atto_224-f38217e7.pth",
@@ -264,6 +235,7 @@ def convnext_atto(
         pretrained: If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress: If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model
@@ -289,6 +261,7 @@ def convnext_femto(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model
@@ -307,6 +280,7 @@ def convnext_pico(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model
@@ -325,6 +299,7 @@ def convnext_nano(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model
@@ -343,6 +318,7 @@ def convnext_tiny(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model
@@ -361,6 +337,7 @@ def convnext_small(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model
@@ -379,6 +356,7 @@ def convnext_base(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model
@@ -397,6 +375,7 @@ def convnext_large(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model
@@ -415,6 +394,7 @@ def convnext_xl(
         pretrained (bool): If True, returns a model pre-trained on ImageNette
         checkpoint: If specified, the model's parameters will be set to the checkpoint's values
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _convnext
 
     Returns:
         torch.nn.Module: classification model

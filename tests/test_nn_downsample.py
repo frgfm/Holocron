@@ -7,7 +7,6 @@ from holocron.nn.modules import downsample
 
 
 def test_concatdownsample2d():
-
     num_batches = 2
     num_chan = 4
     scale_factor = 2
@@ -36,7 +35,6 @@ def test_concatdownsample2d():
 
 
 def test_globalavgpool2d():
-
     x = torch.rand(2, 4, 16, 16)
 
     # Check that ops are doing the same thing
@@ -53,7 +51,6 @@ def test_globalavgpool2d():
 
 
 def test_globalmaxpool2d():
-
     x = torch.rand(2, 4, 16, 16)
 
     # Check that ops are doing the same thing
@@ -70,7 +67,6 @@ def test_globalmaxpool2d():
 
 
 def test_blurpool2d():
-
     with pytest.raises(AssertionError):
         downsample.BlurPool2d(1, 0)
 
@@ -90,7 +86,6 @@ def test_blurpool2d():
 
 
 def test_zpool():
-
     num_batches = 2
     num_chan = 4
     x = torch.rand((num_batches, num_chan, 32, 32))

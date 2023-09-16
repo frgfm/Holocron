@@ -5,6 +5,7 @@
 
 import json
 import logging
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
 import torch
@@ -15,7 +16,8 @@ from torch.hub import load_state_dict_from_url
 from holocron import models
 from holocron.nn import BlurPool2d
 
-from .checkpoints import Checkpoint, Dataset, Evaluation, LoadingMeta, PreProcessing, TrainingRecipe
+from .checkpoints import Checkpoint, Dataset, Evaluation, LoadingMeta, Metric, PreProcessing, TrainingRecipe
+from .presets import IMAGENET, IMAGENETTE
 
 __all__ = ["conv_sequence", "load_pretrained_params", "fuse_conv_bn", "model_from_hf_hub"]
 
@@ -55,7 +57,6 @@ def conv_sequence(
     Returns:
         a list of layers
     """
-
     if conv_layer is None:
         conv_layer = nn.Conv2d
     if bn_channels is None:
@@ -91,7 +92,15 @@ def load_pretrained_params(
     key_replacement: Optional[Tuple[str, str]] = None,
     key_filter: Optional[str] = None,
 ) -> None:
+    """Loads a checkpoint on a model given its URL.
 
+    Args:
+        model: PyTorch model
+        url: the URL of the checkpoint to download
+        progress: whether a progress br should be displayed when downloading the checkpoint
+        key_replacement: a mapping to replace keys in the checkpoint before loading them
+        key_filter: prefix of the checkpoint keys to be loaded
+    """
     if url is None:
         logging.warning("Invalid model URL, using default initialization.")
     else:
@@ -116,7 +125,6 @@ def fuse_conv_bn(conv: nn.Conv2d, bn: nn.BatchNorm2d) -> Tuple[torch.Tensor, tor
     Returns:
         the fused kernel and bias of the new convolution
     """
-
     # Check compatibility of both layers
     if bn.bias.data.shape[0] != conv.weight.data.shape[0]:
         raise AssertionError("expected same number of output channels for both `conv` and `bn`")
@@ -146,9 +154,8 @@ def model_from_hf_hub(repo_id: str, **kwargs: Any) -> nn.Module:
     Returns:
         Model loaded with the checkpoint
     """
-
     # Get the config
-    with open(hf_hub_download(repo_id, filename="config.json", **kwargs), "rb") as f:
+    with Path(hf_hub_download(repo_id, filename="config.json", **kwargs)).open("rb") as f:
         cfg = json.load(f)
 
     model = models.__dict__[cfg["arch"]](num_classes=len(cfg["classes"]), pretrained=False)
@@ -172,7 +179,6 @@ def _configure_model(
     checkpoint: Union[Checkpoint, None],
     **kwargs: Any,
 ) -> M:
-
     model.default_cfg = checkpoint  # type: ignore[assignment]
     # Load pretrained parameters
     if isinstance(checkpoint, Checkpoint):
@@ -194,4 +200,30 @@ def _checkpoint_from_hub_config(hub_config: Dict[str, Any]) -> Checkpoint:
             input_shape=hub_config["input_shape"], mean=hub_config["mean"], std=hub_config["std"]
         ),
         recipe=TrainingRecipe(commit=None, script="references/classification/train.py", args=None),
+    )
+
+
+def _checkpoint(
+    arch: str,
+    url: str,
+    acc1: float,
+    acc5: float,
+    sha256: str,
+    size: int,
+    num_params: int,
+    commit: Union[str, None] = None,
+    train_args: Union[str, None] = None,
+    dataset: Dataset = Dataset.IMAGENETTE,
+) -> Checkpoint:
+    preset = IMAGENETTE if dataset == Dataset.IMAGENETTE else IMAGENET
+    return Checkpoint(
+        evaluation=Evaluation(
+            dataset=dataset,
+            results={Metric.TOP1_ACC: acc1, Metric.TOP5_ACC: acc5},
+        ),
+        meta=LoadingMeta(
+            url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=preset.classes
+        ),
+        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=preset.mean, std=preset.std),
+        recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
     )

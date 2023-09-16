@@ -8,7 +8,6 @@ from holocron import optim
 
 
 def _test_optimizer(name: str, **kwargs: Any) -> None:
-
     lr = 1e-4
     input_shape = (3, 224, 224)
     num_batches = 4

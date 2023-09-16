@@ -4,16 +4,16 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 import hashlib
+from pathlib import Path
 
 import torch
 
 
 def main(args):
-
     checkpoint = torch.load(args.checkpoint, map_location="cpu")["model"]
     torch.save(checkpoint, args.outfile, _use_new_zipfile_serialization=False)
 
-    with open(args.outfile, "rb") as f:
+    with Path(args.outfile).open("rb") as f:
         sha_hash = hashlib.sha256(f.read()).hexdigest()
     print(f"Checkpoint saved to {args.outfile} with hash: {sha_hash[:8]}")
 

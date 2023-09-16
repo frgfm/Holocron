@@ -25,7 +25,6 @@ default_cfgs: Dict[str, Dict[str, Any]] = {
 
 
 class TridentConv2d(nn.Conv2d):
-
     num_branches: int = 3
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -65,7 +64,6 @@ class TridentConv2d(nn.Conv2d):
 
 
 class Tridentneck(_ResBlock):
-
     expansion: int = 4
 
     def __init__(
@@ -164,9 +162,9 @@ def tridentnet50(pretrained: bool = False, progress: bool = True, **kwargs: Any)
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
+        kwargs: keyword args of _tridentnet
 
     Returns:
         torch.nn.Module: classification model
     """
-
     return _tridentnet("tridentnet50", pretrained, progress, [3, 4, 6, 3], [64, 128, 256, 512], **kwargs)

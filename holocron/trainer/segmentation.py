@@ -45,7 +45,6 @@ class SegmentationTrainer(Trainer):
         Returns:
             dict: evaluation metrics
         """
-
         self.model.eval()
 
         val_loss, mean_iou, num_valid_batches = 0.0, 0.0, 0
@@ -74,7 +73,7 @@ class SegmentationTrainer(Trainer):
         acc_global = (torch.diag(conf_mat).sum() / conf_mat.sum()).item()
         mean_iou = (torch.diag(conf_mat) / (conf_mat.sum(1) + conf_mat.sum(0) - torch.diag(conf_mat))).mean().item()
 
-        return dict(val_loss=val_loss, acc_global=acc_global, mean_iou=mean_iou)
+        return {"val_loss": val_loss, "acc_global": acc_global, "mean_iou": mean_iou}
 
     @staticmethod
     def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
