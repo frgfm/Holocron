@@ -48,7 +48,7 @@ class Mixup(torch.nn.Module):
         # Sample lambda
         if self.alpha == 0:
             return inputs, targets
-        lam = np.random.beta(self.alpha, self.alpha)
+        lam = np.random.Generator.beta(self.alpha, self.alpha)
 
         # Mix batch indices
         batch_size = inputs.size()[0]

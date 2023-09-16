@@ -335,7 +335,7 @@ class SlimConv2d(nn.Module):
         bias: bool = True,
         padding_mode: str = "zeros",
         r: int = 32,
-        L: int = 2,
+        L: int = 2,  # noqa: N803
     ) -> None:
         super().__init__()
         self.fc1 = nn.Conv2d(in_channels, max(in_channels // r, L), 1)

@@ -45,7 +45,7 @@ logger.setLevel(logging.ERROR)
 
 
 def worker_init_fn(worker_id: int) -> None:
-    np.random.seed((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
+    np.random.default_rng((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
 
 
 def plot_samples(images, targets, num_samples=8):

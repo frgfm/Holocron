@@ -309,7 +309,7 @@ class Trainer:
             mb.write(f"Epoch {self.epoch}/{self.start_epoch + num_epochs} - {self._eval_metrics_str(eval_metrics)}")
 
             if eval_metrics["val_loss"] < self.min_loss:
-                print(
+                print(  # noqa: T201
                     f"Validation loss decreased {self.min_loss:.4} --> "
                     f"{eval_metrics['val_loss']:.4}: saving state..."
                 )

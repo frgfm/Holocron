@@ -98,7 +98,7 @@ class TAdam(Optimizer):
             grads = []
             exp_avgs = []
             exp_avg_sqs = []
-            W_ts = []
+            W_ts = []  # noqa: N806
             max_exp_avg_sqs = []
             state_steps = []
 
@@ -163,7 +163,7 @@ def tadam(
     exp_avgs: List[Tensor],
     exp_avg_sqs: List[Tensor],
     max_exp_avg_sqs: List[Tensor],
-    W_ts: List[Tensor],
+    W_ts: List[Tensor],  # noqa: N803
     state_steps: List[int],
     amsgrad: bool,
     beta1: float,
@@ -180,7 +180,7 @@ def tadam(
         grad = grads[i]
         exp_avg = exp_avgs[i]
         exp_avg_sq = exp_avg_sqs[i]
-        W_t = W_ts[i]
+        W_t = W_ts[i]  # noqa: N806
         _dof = param.data.numel() if dof is None else dof
         step = state_steps[i]
         if amsgrad:

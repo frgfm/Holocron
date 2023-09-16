@@ -74,6 +74,7 @@ def split_normalization_params(
     model: nn.Module,
     norm_classes: Optional[List[type]] = None,
 ) -> Tuple[List[nn.Parameter], List[nn.Parameter]]:
+    """Split the param groups by normalization schemes"""
     # Borrowed from https://github.com/pytorch/vision/blob/main/torchvision/ops/_utils.py
     # Adapted from https://github.com/facebookresearch/ClassyVision/blob/659d7f78/classy_vision/generic/util.py#L501
     if not norm_classes:

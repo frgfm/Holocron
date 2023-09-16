@@ -7,5 +7,7 @@ from pydantic import BaseModel, Field
 
 
 class ClsCandidate(BaseModel):
+    """Classification result"""
+
     value: str = Field(..., example="Wookie")
     confidence: float = Field(..., gte=0, lte=1)
