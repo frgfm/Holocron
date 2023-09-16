@@ -10,13 +10,13 @@ from holocron.transforms.interpolation import ResizeMethod
 
 def test_resize():
     # Arg check
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         T.Resize(16)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         T.Resize((16, 16), mode="stretch")
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         T.Resize((16, 16), mode="pad")
 
     img1 = np.full((16, 32, 3), 255, dtype=np.uint8)
@@ -62,10 +62,10 @@ def test_resize():
 
 def test_randomzoomout():
     # Arg check
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         T.RandomZoomOut(224)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         T.Resize((16, 16), (1, 0.5))
 
     pil_img = Image.fromarray(np.full((64, 64, 3), 255, dtype=np.uint8))

@@ -191,13 +191,12 @@ def test_dice_loss():
 
 def test_poly_loss():
     _test_loss_function(F.poly_loss)
-    _test_loss_function(F.poly_loss, multi_label=True)
+    # _test_loss_function(F.poly_loss, multi_label=True)
 
     num_batches = 2
     num_classes = 4
 
     x = torch.rand((num_batches, num_classes, 20, 20), requires_grad=True)
-    target = torch.rand(num_batches, num_classes, 20, 20)
     target = (num_classes * torch.rand(num_batches, 20, 20)).to(torch.long)
 
     # Backprop

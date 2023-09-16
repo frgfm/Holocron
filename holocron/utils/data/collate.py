@@ -5,10 +5,10 @@
 
 from typing import Tuple
 
-import numpy as np
 import torch
 from torch import Tensor
 from torch.nn.functional import one_hot
+from torch.distributions.beta import Beta
 
 __all__ = ["Mixup"]
 
@@ -48,7 +48,7 @@ class Mixup(torch.nn.Module):
         # Sample lambda
         if self.alpha == 0:
             return inputs, targets
-        lam = np.random.Generator.beta(self.alpha, self.alpha)
+        lam = Beta(self.alpha, self.alpha).sample()
 
         # Mix batch indices
         batch_size = inputs.size()[0]
