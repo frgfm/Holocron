@@ -191,7 +191,7 @@ def test_dice_loss():
 
 def test_poly_loss():
     _test_loss_function(F.poly_loss)
-    # _test_loss_function(F.poly_loss, multi_label=True)
+    _test_loss_function(F.poly_loss, multi_label=True)
 
     num_batches = 2
     num_classes = 4
