@@ -4,7 +4,6 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 import math
-from abc import abstractmethod
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -252,12 +251,10 @@ class Trainer:
                     self.optimizer.add_param_group({"params": _params, "weight_decay": _wd})
         self.optimizer.zero_grad()
 
-    @abstractmethod
     @torch.inference_mode()
     def evaluate(self):
         raise NotImplementedError
 
-    @abstractmethod
     @staticmethod
     def _eval_metrics_str(eval_metrics):
         raise NotImplementedError
