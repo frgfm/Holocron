@@ -82,7 +82,7 @@ dev = [
     "pytest>=7.2.0",
     "coverage[toml]>=4.5.4",
     # style
-    "ruff>=0.0.273,<1.0.0",
+    "ruff>=0.0.289,<1.0.0",
     "mypy==1.4.1",
     "types-tqdm",
     "black==23.3.0",
@@ -121,7 +121,7 @@ select = [
     "D201","D202","D207","D208","D214","D215","D300","D301","D417", "D419",  # pydocstyle
     "F",  # pyflakes
     "I",  # isort
-    "C",  # flake8-comprehensions
+    "C4",  # flake8-comprehensions
     "B",  # flake8-bugbear
     "CPY001",  # flake8-copyright
     "ISC",  # flake8-implicit-str-concat
@@ -129,6 +129,9 @@ select = [
     "NPY",  # numpy
     "PERF",  # perflint
     "RUF",  # ruff specific
+    "PTH",  # flake8-use-pathlib
+    "S",  # flake8-bandit
+    "N",  # pep8-naming
 ]
 ignore = [
     "E501",  # line too long, handled by black
@@ -148,9 +151,10 @@ target-version = "py39"
 "scripts/**.py" = ["D"]
 ".github/**.py" = ["D"]
 "docs/**.py" = ["E402", "D103"]
-"tests/**.py" = ["D103", "CPY001"]
+"tests/**.py" = ["D103", "CPY001", "S101"]
 "demo/**.py" = ["D103"]
 "api/**.py" = ["D103"]
+"api/tests/**.py" = ["CPY001", "S101"]
 "references/**.py" = ["D101", "D103"]
 
 [tool.ruff.flake8-quotes]
