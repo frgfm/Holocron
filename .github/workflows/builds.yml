@@ -99,6 +99,6 @@ jobs:
       - name: Build & run docker
         run: cd api && docker-compose up -d --build
       - name: Docker sanity check
-        run: sleep 15 && nc -vz localhost 8080
+        run: sleep 15 && nc -vz localhost 8050
       - name: Ping server
-        run: curl http://localhost:8080/docs
+        run: curl http://api.localhost:8050/docs

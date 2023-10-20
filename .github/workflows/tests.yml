@@ -76,9 +76,9 @@ jobs:
       - name: Build & run docker
         run: cd api && docker-compose up -d --build
       - name: Docker sanity check
-        run: sleep 15 && nc -vz localhost 8080
+        run: sleep 15 && nc -vz localhost 8050
       - name: Ping server
-        run: curl http://localhost:8080/docs
+        run: curl http://api.localhost:8050/docs
       - name: Run docker test
         run: |
           docker compose -f api/docker-compose.yml cp api/tests backend:/app/tests
