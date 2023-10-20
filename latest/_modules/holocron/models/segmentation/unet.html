@@ -756,7 +756,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">backbone</span> <span class="o">=</span> <span class="n">UNetBackbone</span><span class="p">(</span><span class="n">default_cfgs</span><span class="p">[</span><span class="s2">&quot;unet2&quot;</span><span class="p">][</span><span class="s2">&quot;encoder_layout&quot;</span><span class="p">],</span> <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
 
-    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s2">&quot;unet2&quot;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span></div>
+    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s2">&quot;unet2&quot;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -839,9 +839,9 @@
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_upsampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;final_upsampling&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;act_layer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;act_layer&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">SiLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
     <span class="c1"># hotfix of https://github.com/pytorch/vision/issues/3802</span>
-    <span class="n">backbone</span><span class="p">[</span><span class="mi">21</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">SiLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># type: ignore[operator,assignment]</span>
+    <span class="n">backbone</span><span class="p">[</span><span class="mi">21</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">SiLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s2">&quot;unet_rexnet13&quot;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span></div>
+    <span class="k">return</span> <span class="n">_dynamic_unet</span><span class="p">(</span><span class="s2">&quot;unet_rexnet13&quot;</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 </pre></div>
         </article>
