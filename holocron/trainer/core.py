@@ -5,7 +5,7 @@
 
 import math
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +13,7 @@ import torch
 from fastprogress import master_bar, progress_bar
 from fastprogress.fastprogress import ConsoleMasterBar
 from torch import Tensor, nn
-from torch.optim.lr_scheduler import CosineAnnealingLR, MultiplicativeLR, OneCycleLR, _LRScheduler
+from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler, MultiplicativeLR, OneCycleLR
 from torch.utils.data import DataLoader
 
 from .utils import freeze_bn, freeze_model, split_normalization_params
@@ -214,14 +214,14 @@ class Trainer:
                 # Forward
                 out = self.model(x)
                 # Loss computation
-                loss = self.criterion(out, target)
+                loss = cast(Tensor, self.criterion(out, target))
                 if return_logits:
                     return loss, out
                 return loss
 
         # Forward
         out = self.model(x)
-        loss = self.criterion(out, target)
+        loss = cast(Tensor, self.criterion(out, target))
         if return_logits:
             return loss, out
         return loss
@@ -252,15 +252,15 @@ class Trainer:
         self.optimizer.zero_grad()
 
     @torch.inference_mode()
-    def evaluate(self):
+    def evaluate(self):  # type: ignore[no-untyped-def]
         raise NotImplementedError
 
     @staticmethod
-    def _eval_metrics_str(eval_metrics):
+    def _eval_metrics_str(eval_metrics):  # type: ignore[no-untyped-def]
         raise NotImplementedError
 
     def _reset_scheduler(self, lr: float, num_epochs: int, sched_type: str = "onecycle", **kwargs: Any) -> None:
-        self.scheduler: _LRScheduler
+        self.scheduler: LRScheduler
         if sched_type == "onecycle":
             self.scheduler = OneCycleLR(self.optimizer, lr, num_epochs * len(self.train_loader), **kwargs)
         elif sched_type == "cosine":

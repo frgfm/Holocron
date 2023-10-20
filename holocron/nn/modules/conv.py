@@ -4,7 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 import math
-from typing import Any, List, Optional
+from typing import Any, List, Optional, cast
 
 import torch
 import torch.nn as nn
@@ -438,7 +438,7 @@ class PyConv2d(nn.ModuleList):
 
     def forward(self, x: Tensor) -> Tensor:
         if self.num_levels == 1:
-            return self[0].forward(x)
+            return cast(Tensor, self[0].forward(x))
         return torch.cat([conv(x) for conv in self], dim=1)
 
 
@@ -482,10 +482,10 @@ class Involution2d(nn.Module):
         self.span = nn.Conv2d(int(in_channels // reduction_ratio), kernel_size**2 * groups, 1)
         self.unfold = nn.Unfold(kernel_size, dilation, padding, stride)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         # Kernel generation
         # (N, C, H, W) --> (N, C, H // s, W // s)
-        kernel = self.pool(x) if isinstance(self.pool, nn.Module) else x
+        kernel = cast(Tensor, self.pool(x)) if isinstance(self.pool, nn.Module) else x
         # --> (N, C // r, H // s, W // s)
         kernel = self.reduce(kernel)
         # --> (N, K * K * G, H // s, W // s)
@@ -494,7 +494,7 @@ class Involution2d(nn.Module):
         kernel = kernel.view(x.shape[0], self.groups, 1, self.k_size**2, *kernel.shape[-2:])
 
         # --> (N, C * K ** 2, H * W // s ** 2)
-        x_unfolded = self.unfold(x)
+        x_unfolded = cast(Tensor, self.unfold(x))
         # --> (N, G, C // G, K ** 2, H // s, W // s)
         x_unfolded = x_unfolded.reshape(x.shape[0], self.groups, x.shape[1] // self.groups, -1, *kernel.shape[-2:])
 

@@ -73,7 +73,7 @@ class AdamP(Adam):
         self.delta = delta
 
     @torch.no_grad()
-    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:  # type: ignore[override]
         """Performs a single optimization step.
 
         Arguments:

@@ -39,7 +39,7 @@ class ConcatDownsample2d(nn.Module):
         return F.concat_downsample2d(x, self.scale_factor)
 
 
-@torch.jit.script  # type: ignore[attr-defined]
+@torch.jit.script
 class ConcatDownsample2dJit(object):
     """Implements a loss-less downsampling operation described in `"YOLO9000: Better, Faster, Stronger"
     <https://pjreddie.com/media/files/papers/YOLO9000.pdf>`_ by stacking adjacent information on the channel dimension.
@@ -139,7 +139,7 @@ class BlurPool2d(nn.Module):
         blur_filter = (self._coeffs[:, None] * self._coeffs[None, :]).to(dtype=like.dtype, device=like.device)
         return blur_filter[None, None, :, :].repeat(self.channels, 1, 1, 1)
 
-    def _apply(self, fn: Callable[[nn.Module], None]) -> None:
+    def _apply(self, fn: Callable[[nn.Module], None]) -> None:  # type: ignore[override]
         # override nn.Module _apply, reset filter cache if used
         self.kernel = {}
         super()._apply(fn)

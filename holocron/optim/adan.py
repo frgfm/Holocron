@@ -65,7 +65,7 @@ class Adan(Adam):
         super().__init__(params, lr, betas, eps, weight_decay, amsgrad)  # type: ignore[arg-type]
 
     @torch.no_grad()
-    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:  # type: ignore[override]
         """Performs a single optimization step.
 
         Arguments:

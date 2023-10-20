@@ -171,7 +171,7 @@ class _YOLO(nn.Module):
         """
         # Convert box coords
         pred_xyxy = self.to_isoboxes(
-            b_coords.reshape(-1, *grid_shape, self.num_anchors, 4),  # type: ignore[call-overload]
+            b_coords.reshape(-1, *grid_shape, self.num_anchors, 4),
             grid_shape,
             clamp=True,
         ).reshape(b_o.shape[0], -1, 4)

@@ -141,7 +141,7 @@ class YOLOv2(_YOLO):
 
     @property
     def num_anchors(self) -> int:
-        return self.anchors.shape[0]  # type: ignore[index, return-value]
+        return self.anchors.shape[0]
 
     @staticmethod
     def to_isoboxes(b_coords: Tensor, grid_shape: Tuple[int, int], clamp: bool = False) -> Tensor:
@@ -176,8 +176,8 @@ class YOLOv2(_YOLO):
         # Box coordinates
         b_x = (torch.sigmoid(x[..., 0]) + c_x.reshape(1, 1, -1, 1)) / w
         b_y = (torch.sigmoid(x[..., 1]) + c_y.reshape(1, -1, 1, 1)) / h
-        b_w = self.anchors[:, 0].reshape(1, 1, 1, -1) * torch.exp(x[..., 2])  # type: ignore[index]
-        b_h = self.anchors[:, 1].reshape(1, 1, 1, -1) * torch.exp(x[..., 3])  # type: ignore[index]
+        b_w = self.anchors[:, 0].reshape(1, 1, 1, -1) * torch.exp(x[..., 2])
+        b_h = self.anchors[:, 1].reshape(1, 1, 1, -1) * torch.exp(x[..., 3])
         # (B, H, W, num_anchors, 4)
         b_coords = torch.stack((b_x, b_y, b_w, b_h), dim=4)
         # Objectness

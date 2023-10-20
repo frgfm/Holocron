@@ -219,13 +219,13 @@ def inject_checkpoint_metadata(app, what, name, obj, options, lines):
             meta = field.value.meta
             table.append(("url", f"`link <{meta.url}>`__"))
             table.append(("sha256", meta.sha256[:16]))
-            table.append(("size", f"{meta.size/1024**2:.1f}MB"))
-            table.append(("num_params", f"{meta.num_params/1e6:.1f}M"))
+            table.append(("size", f"{meta.size / 1024**2:.1f}MB"))
+            table.append(("num_params", f"{meta.num_params / 1e6:.1f}M"))
             # Wrap the text
             max_visible = 3
             v = meta.categories
             v_sample = ", ".join(v[:max_visible])
-            v = f"{v_sample}, ... ({len(v)-max_visible} omitted)" if len(v) > max_visible else v_sample
+            v = f"{v_sample}, ... ({len(v) - max_visible} omitted)" if len(v) > max_visible else v_sample
             table.append(("categories", str(v)))
 
             # How to use it
@@ -266,8 +266,8 @@ def generate_checkpoint_table(module, table_name, metrics):
             row = [
                 f":class:`{ckpt_enum.__name__}.{ckpt.name} <{ckpt_enum.__name__}>`",
                 *(f"{c.evaluation.results[metric]:.2%}" for metric in metrics_keys),
-                f"{c.meta.num_params/1e6:.1f}M",
-                f"{round(c.meta.size/1024**2, 1):.1f}",
+                f"{c.meta.num_params / 1e6:.1f}M",
+                f"{round(c.meta.size / 1024**2, 1):.1f}",
             ]
 
             content.append(row)

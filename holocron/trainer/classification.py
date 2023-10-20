@@ -4,7 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 import math
-from typing import Any, Dict, Sequence, Tuple, Union
+from typing import Any, Dict, Sequence, Tuple, Union, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -61,9 +61,9 @@ class ClassificationTrainer(Trainer):
 
             pred = out.topk(5, dim=1)[1] if out.shape[1] >= 5 else out.argmax(dim=1, keepdim=True)
             correct = pred.eq(target.view(-1, 1).expand_as(pred))
-            top1 += correct[:, 0].sum().item()
+            top1 += cast(int, correct[:, 0].sum().item())
             if out.shape[1] >= 5:
-                top5 += correct.any(dim=1).sum().item()
+                top5 += cast(int, correct.any(dim=1).sum().item())
 
             num_samples += x.shape[0]
 

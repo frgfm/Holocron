@@ -3,6 +3,8 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
+from typing import cast
+
 import torch
 import torch.nn as nn
 from torch import Tensor
@@ -48,7 +50,7 @@ class DimAttention(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         if self.dim != 1:
             x = x.transpose(self.dim, 1).contiguous()
-        out = x * self.compress(x)
+        out = cast(Tensor, x * self.compress(x))
         if self.dim != 1:
             out = out.transpose(self.dim, 1).contiguous()
         return out
@@ -68,9 +70,9 @@ class TripletAttention(nn.Module):
         self.w_branch = DimAttention(dim=3)
 
     def forward(self, x: Tensor) -> Tensor:
-        x_c = self.c_branch(x)
-        x_h = self.h_branch(x)
-        x_w = self.w_branch(x)
+        x_c = cast(Tensor, self.c_branch(x))
+        x_h = cast(Tensor, self.h_branch(x))
+        x_w = cast(Tensor, self.w_branch(x))
 
         out = (x_c + x_h + x_w) / 3
         return out

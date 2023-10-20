@@ -49,7 +49,7 @@ class LayerScale(nn.Module):
         self.register_parameter("weight", nn.Parameter(scale * torch.ones(chans)))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x * self.weight.reshape(1, -1, *((1,) * (x.ndim - 2)))  # type: ignore[operator]
+        return x * self.weight.reshape(1, -1, *((1,) * (x.ndim - 2)))
 
 
 class Bottlenext(_ResBlock):

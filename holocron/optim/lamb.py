@@ -76,7 +76,7 @@ class LAMB(Optimizer):
             self.scale_clip = (0.0, 10.0)
 
     @torch.no_grad()
-    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:  # type: ignore[override]
         """Performs a single optimization step.
 
         Arguments:
