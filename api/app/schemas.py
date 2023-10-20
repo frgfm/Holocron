@@ -9,5 +9,5 @@ from pydantic import BaseModel, Field
 class ClsCandidate(BaseModel):
     """Classification result"""
 
-    value: str = Field(..., example="Wookie")
-    confidence: float = Field(..., gte=0, lte=1)
+    value: str = Field(..., json_schema_extra=[{"example": "Wookie"}])
+    confidence: float = Field(..., json_schema_extra=[{"gte": 0, "lte": 1}])

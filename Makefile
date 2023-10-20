@@ -25,7 +25,3 @@ full-docs:
 # Run the Gradio demo
 run-demo:
 	python demo/app.py --port 8080
-
-# Build the docker
-docker:
-	docker build . -t frgfm/holocron:python3.8-slim
