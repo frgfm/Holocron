@@ -2,10 +2,14 @@
 lock:
 	poetry lock
 
+build:
+	poetry export -f requirements.txt --without-hashes --output requirements.txt
+	docker build 
+
 # Run the docker
 run:
 	poetry export -f requirements.txt --without-hashes --output requirements.txt
-	docker-compose up -d --build
+	docker build . -t frgfm/holocron:python3.9-slim
 
 # Run the docker
 stop:
