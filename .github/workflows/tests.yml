@@ -80,9 +80,7 @@ jobs:
       - name: Ping server
         run: curl http://api.localhost:8050/docs
       - name: Run docker test
-        run: |
-          docker compose -f api/docker-compose.yml cp api/tests backend:/app/tests
-          docker compose -f api/docker-compose.yml exec -T backend pytest tests/
+        run: docker compose -f api/docker-compose.yml exec -T backend pytest tests/
 
   headers:
     runs-on: ${{ matrix.os }}

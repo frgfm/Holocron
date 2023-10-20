@@ -19,6 +19,5 @@ stop:
 test:
 	poetry export -f requirements.txt --without-hashes --with dev --output requirements.txt
 	docker compose up -d --build
-	docker compose cp tests backend:/app/tests
 	docker compose exec -T backend pytest tests/ --cov=app
 	docker compose down
