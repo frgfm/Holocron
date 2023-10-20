@@ -4,7 +4,7 @@ on:
     branches: main
 
 jobs:
-  docs-deploy:
+  github-pages:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
