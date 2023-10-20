@@ -176,6 +176,7 @@ docstring-quotes = "double"
 
 [tool.ruff.isort]
 known-first-party = ["holocron", "app"]
+known-third-party = ["wandb"]
 
 [tool.mypy]
 python_version = "3.9"
