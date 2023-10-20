@@ -5,6 +5,7 @@
 
 import os
 
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 __all__ = ["settings"]
@@ -16,7 +17,10 @@ class Settings(BaseSettings):
     PROJECT_DESCRIPTION: str = "Template API for Computer Vision"
     VERSION: str = "0.2.2.dev0"
     DEBUG: bool = os.environ.get("DEBUG", "") != "False"
-    CLF_HUB_REPO: str = os.environ.get("CLF_HUB_REPO", "frgfm/rexnet1_5x")
+    CLF_HUB_REPO: str = Field(
+        os.environ.get("CLF_HUB_REPO", "frgfm/rexnet1_5x"),
+        json_schema_extra=[{"min_length": 2, "example": "frgfm/rexnet1_5x"}],
+    )
 
 
 settings = Settings()

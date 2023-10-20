@@ -12,15 +12,15 @@ import onnxruntime
 from huggingface_hub import hf_hub_download
 from PIL import Image
 
-from app import config as cfg
+from app.config import settings
 
 __all__ = ["decode_image", "classify_image"]
 
 # Download model config & checkpoint
-with Path(hf_hub_download(cfg.CLF_HUB_REPO, filename="config.json")).open("rb") as f:
+with Path(hf_hub_download(settings.CLF_HUB_REPO, filename="config.json")).open("rb") as f:
     MODEL_CFG = json.load(f)
 
-ORT_SESSION = onnxruntime.InferenceSession(hf_hub_download(cfg.CLF_HUB_REPO, filename="model.onnx"))
+ORT_SESSION = onnxruntime.InferenceSession(hf_hub_download(settings.CLF_HUB_REPO, filename="model.onnx"))
 
 
 def decode_image(img_data: bytes) -> Image.Image:

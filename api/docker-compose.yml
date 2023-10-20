@@ -9,8 +9,6 @@ services:
       - ./:/usr/src/app/
     ports:
       - 8050:8050
-    environment:
-      - CLF_HUB_REPO=${CLF_HUB_REPO}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api.localhost`) && PathPrefix(`/`)"
