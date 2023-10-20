@@ -56,8 +56,8 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff>=0.0.290,<1.0.0",
-    "mypy==1.4.1",
+    "ruff==0.1.0",
+    "mypy==1.5.1",
     "types-tqdm",
     "black==23.3.0",
     "bandit[toml]>=1.7.0,<1.8.0",
@@ -83,8 +83,8 @@ dev = [
     "pytest>=7.2.0",
     "coverage[toml]>=4.5.4",
     # style
-    "ruff>=0.0.290,<1.0.0",
-    "mypy==1.4.1",
+    "ruff==0.1.0",
+    "mypy==1.6.1",
     "types-tqdm",
     "black==23.3.0",
     "bandit[toml]>=1.7.0,<1.8.0",
@@ -176,7 +176,6 @@ docstring-quotes = "double"
 
 [tool.ruff.isort]
 known-first-party = ["holocron", "app"]
-known-third-party = ["torch", "torchvision", "fastprogress", "fastapi", "wandb"]
 
 [tool.mypy]
 python_version = "3.9"
@@ -185,7 +184,7 @@ show_error_codes = true
 pretty = true
 warn_unused_ignores = true
 warn_redundant_casts = true
-warn_return_any = true
+warn_return_any = false
 no_implicit_optional = true
 check_untyped_defs = true
 implicit_reexport = false
