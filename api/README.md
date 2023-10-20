@@ -22,7 +22,7 @@ Once completed, your [FastAPI](https://fastapi.tiangolo.com/) server should be r
 
 ### Documentation and swagger
 
-FastAPI comes with many advantages including speed and OpenAPI features. For instance, once your server is running, you can access the automatically built documentation and swagger in your browser at: http://localhost:8080/docs
+FastAPI comes with many advantages including speed and OpenAPI features. For instance, once your server is running, you can access the automatically built documentation and swagger in your browser at: http://api.localhost:8050/docs
 
 
 ### Using the routes
@@ -40,10 +40,10 @@ with this snippet:
 import requests
 with open('/path/to/your/img.jpg', 'rb') as f:
     data = f.read()
-print(requests.post("http://localhost:8080/classification", files={'file': data}).json())
+print(requests.post("http://api.localhost:8050/classification", files={'file': data}).json())
 ```
 
 should yield
 ```
-{'value': 'French horn', 'confidence': 0.9186984300613403}
+{'value': 'French horn', 'confidence': 0.9685316681861877}
 ```

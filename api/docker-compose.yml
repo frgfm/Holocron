@@ -4,8 +4,47 @@ services:
   backend:
     build:
       context: .
-    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8080
+    restart: always
+    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8050
     volumes:
-      - ./:/usr/src/app/
+      - ./:/app/
     ports:
-      - 8080:8080
+      - 8050:8050
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`) && PathPrefix(`/`)"
+      - "traefik.http.routers.api.service=backend@docker"
+      - "traefik.http.routers.api.tls={}"
+      - "traefik.http.services.backend.loadbalancer.server.port=8050"
+  
+  traefik:
+    image: traefik:v2.9.6
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    ports:
+      # http(s) traffic
+      - "80:80"
+      - "443:443"
+      # traefik dashboard
+      - "8080:8080"
+    command:
+      # Enable Docker in Traefik, so that it reads labels from Docker services
+      - --providers.docker
+      - --providers.docker.endpoint="unix:///var/run/docker.sock"
+      # Do not expose all Docker services, only the ones explicitly exposed
+      - --providers.docker.exposedbydefault=false
+      # Enable Docker Swarm mode
+      - --providers.docker.swarmmode
+      # Enable the access log, with HTTP requests
+      - --accesslog
+      # Enable the Traefik log, for configurations and errors
+      - --log.level=DEBUG
+      # Enable the Dashboard and API
+      - --api
+      # HTTPS
+      - --entryPoints.web
+      - --entryPoints.web.address=":80"
+      - --entryPoints.web.http.redirections.entrypoint.to=websecure
+      - --entryPoints.web.http.redirections.entrypoint.scheme=https
+      - --entryPoints.web.http.redirections.entrypoint.permanent=true
+      - --entryPoints.websecure.address=":443"

@@ -7,7 +7,7 @@
 from fastapi import APIRouter, File, UploadFile, status
 
 from app.schemas import ClsCandidate
-from app.vision import MODEL_CFG, classify_image, decode_image
+from app.vision import CLF_CFG, classify_image, decode_image
 
 router = APIRouter()
 
@@ -18,6 +18,6 @@ async def classify(file: UploadFile = File(...)):
     probs = classify_image(decode_image(file.file.read()))
 
     return ClsCandidate(
-        value=MODEL_CFG["classes"][probs.argmax()],
+        value=CLF_CFG["classes"][probs.argmax()],
         confidence=float(probs.max()),
     )

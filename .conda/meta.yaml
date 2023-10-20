@@ -6,11 +6,11 @@
 # {% set urls = pyproject.get('project', {}).get('urls') %}
 package:
   name: pylocron
-  version: "{{ environ.get('BUILD_VERSION') }}"
+  version: "{{ environ.get('BUILD_VERSION', '0.2.2.dev0') }}"
 
 source:
-  fn: pylocron-{{ environ.get('BUILD_VERSION') }}.tar.gz
-  url: ../dist/pylocron-{{ environ.get('BUILD_VERSION') }}.tar.gz
+  fn: pylocron-{{ environ.get('BUILD_VERSION', '0.2.2.dev0') }}.tar.gz
+  url: ../dist/pylocron-{{ environ.get('BUILD_VERSION', '0.2.2.dev0') }}.tar.gz
 
 build:
   number: 0

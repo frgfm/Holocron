@@ -51,6 +51,36 @@ jobs:
         with:
           flags: unittests
           fail_ci_if_error: true
+  
+  api:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: 1.6.1
+      - name: Lock the requirements
+        run: |
+          cd api
+          poetry lock
+          poetry export -f requirements.txt --without-hashes --with dev --output requirements.txt
+      - name: Build & run docker
+        run: cd api && docker-compose up -d --build
+      - name: Docker sanity check
+        run: sleep 15 && nc -vz localhost 8050
+      - name: Ping server
+        run: curl http://api.localhost:8050/docs
+      - name: Run docker test
+        run: docker compose -f api/docker-compose.yml exec -T backend pytest tests/
 
   headers:
     runs-on: ${{ matrix.os }}
