@@ -5,6 +5,7 @@
 
 import io
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -16,11 +17,15 @@ from app.config import settings
 
 __all__ = ["decode_image", "classify_image"]
 
+logger = logging.getLogger("uvicorn.warning")
+
 # Download model config & checkpoint
 with Path(hf_hub_download(settings.CLF_HUB_REPO, filename="config.json")).open("rb") as f:
     CLF_CFG = json.load(f)
 
 CLF_ORT = onnxruntime.InferenceSession(hf_hub_download(settings.CLF_HUB_REPO, filename="model.onnx"))
+
+logger.info(f"Model loading completed: {settings.CLF_HUB_REPO}")
 
 
 def decode_image(img_data: bytes) -> Image.Image:

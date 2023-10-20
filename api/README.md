@@ -45,5 +45,5 @@ print(requests.post("http://api.localhost:8050/classification", files={'file': d
 
 should yield
 ```
-{'value': 'French horn', 'confidence': 0.9186984300613403}
+{'value': 'French horn', 'confidence': 0.9685316681861877}
 ```
