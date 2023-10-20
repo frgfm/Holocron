@@ -3,7 +3,7 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, cast
 
 import torch
 import torch.nn as nn
@@ -154,7 +154,7 @@ class ClassBalancedWrapper(nn.Module):
             self.criterion.weight *= cb_weights.to(device=self.criterion.weight.device)
 
     def forward(self, x: Tensor, target: Tensor) -> Tensor:
-        return self.criterion.forward(x, target)
+        return cast(Tensor, self.criterion.forward(x, target))
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.criterion.__repr__()}, beta={self.beta})"

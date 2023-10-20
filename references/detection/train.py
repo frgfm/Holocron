@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.utils.data
-import wandb
 from codecarbon import track_emissions
 from matplotlib.patches import Rectangle
 from torch.utils.data import RandomSampler, SequentialSampler
@@ -27,6 +26,7 @@ from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from transforms import Compose, ImageTransform, RandomHorizontalFlip, Resize, VOCTargetTransform, convert_to_relative
 
 import holocron
+import wandb
 from holocron.models import detection
 from holocron.trainer import DetectionTrainer
 from holocron.utils.misc import find_image_size

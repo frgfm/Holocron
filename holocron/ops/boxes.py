@@ -4,7 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 import math
-from typing import Tuple
+from typing import Tuple, cast
 
 import torch
 from torch import Tensor
@@ -127,7 +127,7 @@ def diou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     Returns:
         torch.Tensor[M, N]: Distance-IoU loss
     """
-    return 1 - box_iou(boxes1, boxes2) + iou_penalty(boxes1, boxes2)
+    return cast(Tensor, 1 - box_iou(boxes1, boxes2) + iou_penalty(boxes1, boxes2))
 
 
 def aspect_ratio(boxes: Tensor) -> Tensor:
@@ -202,7 +202,7 @@ def ciou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     iou = box_iou(boxes1, boxes2)
     v = aspect_ratio_consistency(boxes1, boxes2)
 
-    ciou_loss = 1 - iou + iou_penalty(boxes1, boxes2)
+    ciou_loss = cast(Tensor, 1 - iou + iou_penalty(boxes1, boxes2))
 
     # Check
     _filter = (v != 0) & (iou != 0)

@@ -4,7 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 from math import ceil, floor
-from typing import Callable, Optional, Tuple, Union
+from typing import Callable, Optional, Tuple, Union, cast
 
 import torch
 import torch.nn.functional as F
@@ -99,7 +99,7 @@ def focal_loss(
         logpt = weight.gather(0, target.data.view(-1)) * logpt
 
     # Loss
-    loss = -1 * (1 - pt) ** gamma * logpt
+    loss = cast(Tensor, -1 * (1 - pt) ** gamma * logpt)
 
     # Loss reduction
     if reduction == "sum":
@@ -531,7 +531,7 @@ def dice_loss(
 
     # Weight
     if weight is None:
-        loss = 1 - (1 + 1 / gamma) * dice_coeff.mean()
+        loss = cast(Tensor, 1 - (1 + 1 / gamma) * dice_coeff.mean())
     else:
         # Tensor type
         if weight.type() != x.data.type():
@@ -581,7 +581,7 @@ def poly_loss(
         logpt = logpt * target
 
     # Get P(class)
-    loss = -1 * logpt + eps * (1 - logpt.exp())
+    loss = cast(Tensor, -1 * logpt + eps * (1 - logpt.exp()))
 
     # Weight
     if weight is not None:

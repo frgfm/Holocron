@@ -51,7 +51,7 @@ class AdaBelief(Adam):
     """
 
     @torch.no_grad()
-    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:  # type: ignore[override]
         """Performs a single optimization step.
         Arguments:
             closure (callable, optional): A closure that reevaluates the model

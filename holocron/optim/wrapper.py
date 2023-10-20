@@ -53,7 +53,7 @@ class Lookahead(Optimizer):
         return {
             "defaults": self.defaults,
             "state": self.state,
-            "base_state": self.base_optimizer.__getstate__(),  # type: ignore[attr-defined]
+            "base_state": self.base_optimizer.__getstate__(),
             "fast_steps": self.fast_steps,
             "param_groups": self.param_groups,
         }
@@ -70,7 +70,7 @@ class Lookahead(Optimizer):
     def zero_grad(self, set_to_none: bool = True) -> None:
         self.base_optimizer.zero_grad(set_to_none)
 
-    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:  # type: ignore[override]
         """Performs a single optimization step.
 
         Arguments:
@@ -179,7 +179,7 @@ class Scout(Optimizer):
         return {
             "defaults": self.defaults,
             "state": self.state,
-            "base_state": self.base_optimizer.__getstate__(),  # type: ignore[attr-defined]
+            "base_state": self.base_optimizer.__getstate__(),
             "fast_steps": self.fast_steps,
             "param_groups": self.param_groups,
         }
@@ -196,7 +196,7 @@ class Scout(Optimizer):
     def zero_grad(self, set_to_none: bool = True) -> None:
         self.base_optimizer.zero_grad(set_to_none)
 
-    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:
+    def step(self, closure: Optional[Callable[[], float]] = None) -> Optional[float]:  # type: ignore[override]
         """Performs a single optimization step.
 
         Arguments:

@@ -354,9 +354,9 @@ class ResNet(nn.Sequential):
         if zero_init_residual:
             for m in self.modules():
                 if isinstance(m, Bottleneck):
-                    m.convs[2][1].weight.data.zero_()  # type: ignore[index, union-attr]
+                    m.convs[2][1].weight.data.zero_()
                 elif isinstance(m, BasicBlock):
-                    m.convs[1][1].weight.data.zero_()  # type: ignore[index, union-attr]
+                    m.convs[1][1].weight.data.zero_()
 
     @staticmethod
     def _make_layer(
