@@ -7,7 +7,7 @@ This section is specific to train computer vision models.
 
 ### Prerequisites
 
-Python 3.6 (or higher) and [pip](https://pip.pypa.io/en/stable/) & [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) are required to install Holocron.
+Python 3.8 (or higher) and [pip](https://pip.pypa.io/en/stable/) & [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) are required to install Holocron.
 
 
 ### Developer mode
