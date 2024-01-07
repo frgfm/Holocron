@@ -307,7 +307,7 @@
         </div>
         <article role="main">
           <h1>Source code for holocron.models.segmentation.unetpp</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2020-2023, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2020-2024, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License 2.0.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
@@ -382,12 +382,10 @@
         <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">left_chan</span><span class="p">,</span> <span class="n">up_chan</span><span class="p">,</span> <span class="n">num_cells</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layout</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span>
-                    <span class="p">[</span>
-                        <span class="n">UpPath</span><span class="p">(</span><span class="n">left_chan</span> <span class="o">+</span> <span class="n">up_chan</span><span class="p">,</span> <span class="n">left_chan</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
-                        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_cells</span><span class="p">)</span>
-                    <span class="p">]</span>
-                <span class="p">)</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+                    <span class="n">UpPath</span><span class="p">(</span><span class="n">left_chan</span> <span class="o">+</span> <span class="n">up_chan</span><span class="p">,</span> <span class="n">left_chan</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_cells</span><span class="p">)</span>
+                <span class="p">])</span>
             <span class="p">)</span>
 
         <span class="c1"># Classifier</span>
@@ -463,21 +461,19 @@
         <span class="n">_layout</span> <span class="o">=</span> <span class="p">[</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">layout</span><span class="p">[</span><span class="mi">1</span><span class="p">:][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">left_chan</span><span class="p">,</span> <span class="n">up_chan</span><span class="p">,</span> <span class="n">num_cells</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layout</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_layout</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span>
-                    <span class="p">[</span>
-                        <span class="n">UpPath</span><span class="p">(</span>
-                            <span class="n">up_chan</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">left_chan</span><span class="p">,</span>
-                            <span class="n">left_chan</span><span class="p">,</span>
-                            <span class="kc">True</span><span class="p">,</span>
-                            <span class="mi">1</span><span class="p">,</span>
-                            <span class="n">act_layer</span><span class="p">,</span>
-                            <span class="n">norm_layer</span><span class="p">,</span>
-                            <span class="n">drop_layer</span><span class="p">,</span>
-                            <span class="n">conv_layer</span><span class="p">,</span>
-                        <span class="p">)</span>
-                        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_cells</span><span class="p">)</span>
-                    <span class="p">]</span>
-                <span class="p">)</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+                    <span class="n">UpPath</span><span class="p">(</span>
+                        <span class="n">up_chan</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">left_chan</span><span class="p">,</span>
+                        <span class="n">left_chan</span><span class="p">,</span>
+                        <span class="kc">True</span><span class="p">,</span>
+                        <span class="mi">1</span><span class="p">,</span>
+                        <span class="n">act_layer</span><span class="p">,</span>
+                        <span class="n">norm_layer</span><span class="p">,</span>
+                        <span class="n">drop_layer</span><span class="p">,</span>
+                        <span class="n">conv_layer</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_cells</span><span class="p">)</span>
+                <span class="p">])</span>
             <span class="p">)</span>
 
         <span class="c1"># Classifier</span>
@@ -567,7 +563,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2023, François-Guillaume Fernandez
+                Copyright &#169; 2019-2024, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             

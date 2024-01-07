@@ -307,7 +307,7 @@
         </div>
         <article role="main">
           <h1>Source code for holocron.models.classification.darknetv3</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2020-2023, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2020-2024, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License 2.0.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
@@ -399,37 +399,33 @@
         <span class="n">in_chans</span> <span class="o">=</span> <span class="p">[</span><span class="n">stem_channels</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">_layout</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">_layout</span> <span class="ow">in</span> <span class="n">layout</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">OrderedDict</span><span class="p">(</span>
-                <span class="p">[</span>
-                    <span class="p">(</span>
-                        <span class="s2">&quot;stem&quot;</span><span class="p">,</span>
-                        <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-                            <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
-                                <span class="n">in_channels</span><span class="p">,</span>
-                                <span class="n">stem_channels</span><span class="p">,</span>
-                                <span class="n">act_layer</span><span class="p">,</span>
-                                <span class="n">norm_layer</span><span class="p">,</span>
-                                <span class="n">drop_layer</span><span class="p">,</span>
-                                <span class="n">conv_layer</span><span class="p">,</span>
-                                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
-                            <span class="p">)</span>
-                        <span class="p">),</span>
+            <span class="n">OrderedDict</span><span class="p">([</span>
+                <span class="p">(</span>
+                    <span class="s2">&quot;stem&quot;</span><span class="p">,</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                        <span class="o">*</span><span class="n">conv_sequence</span><span class="p">(</span>
+                            <span class="n">in_channels</span><span class="p">,</span>
+                            <span class="n">stem_channels</span><span class="p">,</span>
+                            <span class="n">act_layer</span><span class="p">,</span>
+                            <span class="n">norm_layer</span><span class="p">,</span>
+                            <span class="n">drop_layer</span><span class="p">,</span>
+                            <span class="n">conv_layer</span><span class="p">,</span>
+                            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                            <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+                        <span class="p">)</span>
                     <span class="p">),</span>
-                    <span class="p">(</span>
-                        <span class="s2">&quot;layers&quot;</span><span class="p">,</span>
-                        <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-                            <span class="o">*</span><span class="p">[</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">_make_layer</span><span class="p">(</span>
-                                    <span class="n">num_blocks</span><span class="p">,</span> <span class="n">_in_chans</span><span class="p">,</span> <span class="n">out_chans</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span>
-                                <span class="p">)</span>
-                                <span class="k">for</span> <span class="n">_in_chans</span><span class="p">,</span> <span class="p">(</span><span class="n">out_chans</span><span class="p">,</span> <span class="n">num_blocks</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">in_chans</span><span class="p">,</span> <span class="n">layout</span><span class="p">)</span>
-                            <span class="p">]</span>
-                        <span class="p">),</span>
-                    <span class="p">),</span>
-                <span class="p">]</span>
-            <span class="p">)</span>
+                <span class="p">),</span>
+                <span class="p">(</span>
+                    <span class="s2">&quot;layers&quot;</span><span class="p">,</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_make_layer</span><span class="p">(</span>
+                            <span class="n">num_blocks</span><span class="p">,</span> <span class="n">_in_chans</span><span class="p">,</span> <span class="n">out_chans</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span>
+                        <span class="p">)</span>
+                        <span class="k">for</span> <span class="n">_in_chans</span><span class="p">,</span> <span class="p">(</span><span class="n">out_chans</span><span class="p">,</span> <span class="n">num_blocks</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">in_chans</span><span class="p">,</span> <span class="n">layout</span><span class="p">)</span>
+                    <span class="p">]),</span>
+                <span class="p">),</span>
+            <span class="p">])</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span> <span class="o">=</span> <span class="n">num_features</span>
 
@@ -455,12 +451,10 @@
             <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="n">layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">ResBlock</span><span class="p">(</span><span class="n">out_planes</span><span class="p">,</span> <span class="n">out_planes</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">)</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+            <span class="n">ResBlock</span><span class="p">(</span><span class="n">out_planes</span><span class="p">,</span> <span class="n">out_planes</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">)</span>
+        <span class="p">])</span>
 
         <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
 
@@ -493,18 +487,14 @@
         <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">OrderedDict</span><span class="p">(</span>
-                <span class="p">[</span>
-                    <span class="p">(</span>
-                        <span class="s2">&quot;features&quot;</span><span class="p">,</span>
-                        <span class="n">DarknetBodyV3</span><span class="p">(</span>
-                            <span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span>
-                        <span class="p">),</span>
-                    <span class="p">),</span>
-                    <span class="p">(</span><span class="s2">&quot;pool&quot;</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
-                    <span class="p">(</span><span class="s2">&quot;classifier&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">)),</span>
-                <span class="p">]</span>
-            <span class="p">)</span>
+            <span class="n">OrderedDict</span><span class="p">([</span>
+                <span class="p">(</span>
+                    <span class="s2">&quot;features&quot;</span><span class="p">,</span>
+                    <span class="n">DarknetBodyV3</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">stem_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">act_layer</span><span class="p">,</span> <span class="n">norm_layer</span><span class="p">,</span> <span class="n">drop_layer</span><span class="p">,</span> <span class="n">conv_layer</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;pool&quot;</span><span class="p">,</span> <span class="n">GlobalAvgPool2d</span><span class="p">(</span><span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;classifier&quot;</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">)),</span>
+            <span class="p">])</span>
         <span class="p">)</span>
 
         <span class="n">init_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">)</span>
@@ -585,7 +575,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2023, François-Guillaume Fernandez
+                Copyright &#169; 2019-2024, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             

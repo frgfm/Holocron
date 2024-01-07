@@ -307,7 +307,7 @@
         </div>
         <article role="main">
           <h1>Source code for holocron.trainer.detection</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2019-2023, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2019-2024, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License 2.0.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
@@ -331,14 +331,14 @@
     <span class="n">assign_unique</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">])</span>
     <span class="c1"># Filter</span>
     <span class="k">if</span> <span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">assign_unique</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">gt_kept</span><span class="p">],</span> <span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span>  <span class="c1"># type: ignore[return-value]</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">gt_kept</span><span class="p">],</span> <span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span>
 
     <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">pred_idx</span> <span class="ow">in</span> <span class="n">assign_unique</span><span class="p">:</span>
         <span class="n">selection</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span> <span class="o">==</span> <span class="n">pred_idx</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
         <span class="n">gt_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">selection</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">pred_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">selection</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="k">return</span> <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span>  <span class="c1"># type: ignore[return-value]</span>
+    <span class="k">return</span> <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span>
 
 
 <div class="viewcode-block" id="DetectionTrainer">
@@ -451,7 +451,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2023, François-Guillaume Fernandez
+                Copyright &#169; 2019-2024, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             

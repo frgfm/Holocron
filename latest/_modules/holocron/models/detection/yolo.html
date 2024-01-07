@@ -307,7 +307,7 @@
         </div>
         <article role="main">
           <h1>Source code for holocron.models.detection.yolo</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2020-2023, François-Guillaume Fernandez.</span>
+<span></span><span class="c1"># Copyright (C) 2020-2024, François-Guillaume Fernandez.</span>
 
 <span class="c1"># This program is licensed under the Apache License 2.0.</span>
 <span class="c1"># See LICENSE or go to &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; for full license details.</span>
@@ -379,10 +379,10 @@
         <span class="n">gt_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">target</span><span class="p">]</span>
 
         <span class="c1"># GT xmin, ymin, xmax, ymax</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">boxes</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">boxes</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">boxes</span> <span class="ow">in</span> <span class="n">gt_boxes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">boxes</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">boxes</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">boxes</span> <span class="ow">in</span> <span class="n">gt_boxes</span><span class="p">):</span>  <span class="c1"># type: ignore[call-overload]</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Ground truth boxes are expected to have values between 0 and 1.&quot;</span><span class="p">)</span>
 
-        <span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">num_classes</span> <span class="o">=</span> <span class="n">pred_scores</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pred_scores</span><span class="o">.</span><span class="n">shape</span>
         <span class="c1"># Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)</span>
         <span class="n">pred_xyxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_isoboxes</span><span class="p">(</span><span class="n">pred_boxes</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">clamp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">pred_xy</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred_xyxy</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="n">pred_xyxy</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span> <span class="o">/</span> <span class="mi">2</span>
@@ -442,6 +442,15 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">to_isoboxes</span><span class="p">(</span><span class="n">b_coords</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">grid_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">clamp</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts xywh boxes to xyxy format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            b_coords: tensor of shape (..., 4) where the last dimension is xcenter,ycenter,w,h</span>
+<span class="sd">            grid_shape: the size of the grid</span>
+<span class="sd">            clamp: whether the coords should be clamped to the extreme values</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tensor with the boxes using relative coords</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Cell offset</span>
         <span class="n">c_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">b_coords</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">c_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">b_coords</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
@@ -793,7 +802,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2019-2023, François-Guillaume Fernandez
+                Copyright &#169; 2019-2024, François-Guillaume Fernandez
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
