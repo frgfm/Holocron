@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023, François-Guillaume Fernandez.
+# Copyright (C) 2020-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -70,10 +70,10 @@ class _YOLO(nn.Module):
         gt_labels = [t["labels"] for t in target]
 
         # GT xmin, ymin, xmax, ymax
-        if not all(torch.all(boxes >= 0) and torch.all(boxes <= 1) for boxes in gt_boxes):
+        if not all(torch.all(boxes >= 0) and torch.all(boxes <= 1) for boxes in gt_boxes):  # type: ignore[call-overload]
             raise ValueError("Ground truth boxes are expected to have values between 0 and 1.")
 
-        b, h, w, _, num_classes = pred_scores.shape
+        b, h, w, _, _ = pred_scores.shape
         # Convert from (xcenter, ycenter, w, h) to (xmin, ymin, xmax, ymax)
         pred_xyxy = self.to_isoboxes(pred_boxes, (h, w), clamp=False)
         pred_xy = (pred_xyxy[..., [0, 1]] + pred_xyxy[..., [2, 3]]) / 2
@@ -133,6 +133,15 @@ class _YOLO(nn.Module):
 
     @staticmethod
     def to_isoboxes(b_coords: Tensor, grid_shape: Tuple[int, int], clamp: bool = False) -> Tensor:
+        """Converts xywh boxes to xyxy format.
+
+        Args:
+            b_coords: tensor of shape (..., 4) where the last dimension is xcenter,ycenter,w,h
+            grid_shape: the size of the grid
+            clamp: whether the coords should be clamped to the extreme values
+        Returns:
+            tensor with the boxes using relative coords
+        """
         # Cell offset
         c_x = torch.arange(grid_shape[1], dtype=torch.float, device=b_coords.device)
         c_y = torch.arange(grid_shape[0], dtype=torch.float, device=b_coords.device)

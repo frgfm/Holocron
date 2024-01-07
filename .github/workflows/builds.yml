@@ -32,7 +32,7 @@ jobs:
           pip install -e . --upgrade
       - name: Import package
         run: python -c "import holocron; print(holocron.__version__)"
-  
+
   pypi:
     runs-on: ubuntu-latest
     steps:

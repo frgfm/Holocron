@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -39,25 +39,23 @@ class ScaleConv2d(nn.Module):
 
         self.scale = scale
         self.width = planes // scale
-        self.conv = nn.ModuleList(
-            [
-                nn.Sequential(
-                    *conv_sequence(
-                        self.width,
-                        self.width,
-                        act_layer,
-                        norm_layer,
-                        drop_layer,
-                        kernel_size=3,
-                        stride=stride,
-                        padding=1,
-                        groups=groups,
-                        bias=(norm_layer is None),
-                    )
+        self.conv = nn.ModuleList([
+            nn.Sequential(
+                *conv_sequence(
+                    self.width,
+                    self.width,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=3,
+                    stride=stride,
+                    padding=1,
+                    groups=groups,
+                    bias=(norm_layer is None),
                 )
-                for _ in range(max(1, scale - 1))
-            ]
-        )
+            )
+            for _ in range(max(1, scale - 1))
+        ])
 
         if downsample:
             self.downsample = nn.AvgPool2d(kernel_size=3, stride=stride, padding=1)
@@ -67,13 +65,10 @@ class ScaleConv2d(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # Split the channel dimension into groups of self.width channels
         split_x = torch.split(x, self.width, 1)
-        out = []
+        out: List[torch.Tensor] = []
         for idx, layer in enumerate(self.conv):
             # If downsampled, don't add previous branch
-            if idx == 0 or self.downsample is not None:
-                _res = split_x[idx]
-            else:
-                _res = out[-1] + split_x[idx]
+            _res = split_x[idx] if idx == 0 or self.downsample is not None else out[-1] + split_x[idx]
             out.append(layer(_res))
         # Use the last chunk as shortcut connection
         if self.scale > 1:

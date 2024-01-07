@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023, François-Guillaume Fernandez.
+# Copyright (C) 2022-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -117,7 +117,7 @@ class RandomZoomOut(nn.Module):
         the resized image
     """
 
-    def __init__(self, size: Tuple[int, int], scale: Tuple[float, float] = (0.5, 1.0), **kwargs: Any):
+    def __init__(self, size: Tuple[int, int], scale: Tuple[float, float] = (0.5, 1.0), **kwargs: Any) -> None:
         if not isinstance(size, (tuple, list)) or len(size) != 2 or any(s <= 0 for s in size):
             raise ValueError("size is expected to be a sequence of 2 positive integers")
         if len(scale) != 2 or scale[0] > scale[1]:
@@ -134,10 +134,7 @@ class RandomZoomOut(nn.Module):
         _aratio = h / w
         # Preserve the aspect ratio
         _tratio = self.size[0] / self.size[1]
-        if _tratio > _aratio:
-            _max_area = self.size[1] ** 2 * _aratio
-        else:
-            _max_area = self.size[0] ** 2 / _aratio
+        _max_area = self.size[1] ** 2 * _aratio if _tratio > _aratio else self.size[0] ** 2 / _aratio
         _area = _max_area * _scale
 
         _w = int(round(sqrt(_area / _aratio)))

@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -252,11 +252,11 @@ class Trainer:
         self.optimizer.zero_grad()
 
     @torch.inference_mode()
-    def evaluate(self):  # type: ignore[no-untyped-def]
+    def evaluate(self):  # type: ignore[no-untyped-def]  # noqa: ANN201
         raise NotImplementedError
 
     @staticmethod
-    def _eval_metrics_str(eval_metrics):  # type: ignore[no-untyped-def]
+    def _eval_metrics_str(eval_metrics) -> str:  # type: ignore[no-untyped-def]  # noqa: ANN001
         raise NotImplementedError
 
     def _reset_scheduler(self, lr: float, num_epochs: int, sched_type: str = "onecycle", **kwargs: Any) -> None:

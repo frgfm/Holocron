@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023, François-Guillaume Fernandez.
+# Copyright (C) 2020-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -50,37 +50,33 @@ class DarknetBodyV2(nn.Sequential):
         in_chans = [stem_channels] + [_layout[0] for _layout in layout[:-1]]
 
         super().__init__(
-            OrderedDict(
-                [
-                    (
-                        "stem",
-                        nn.Sequential(
-                            *conv_sequence(
-                                in_channels,
-                                stem_channels,
-                                act_layer,
-                                norm_layer,
-                                drop_layer,
-                                conv_layer,
-                                kernel_size=3,
-                                padding=1,
-                                bias=(norm_layer is None),
-                            )
-                        ),
+            OrderedDict([
+                (
+                    "stem",
+                    nn.Sequential(
+                        *conv_sequence(
+                            in_channels,
+                            stem_channels,
+                            act_layer,
+                            norm_layer,
+                            drop_layer,
+                            conv_layer,
+                            kernel_size=3,
+                            padding=1,
+                            bias=(norm_layer is None),
+                        )
                     ),
-                    (
-                        "layers",
-                        nn.Sequential(
-                            *[
-                                self._make_layer(
-                                    num_blocks, _in_chans, out_chans, act_layer, norm_layer, drop_layer, conv_layer
-                                )
-                                for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)
-                            ]
-                        ),
-                    ),
-                ]
-            )
+                ),
+                (
+                    "layers",
+                    nn.Sequential(*[
+                        self._make_layer(
+                            num_blocks, _in_chans, out_chans, act_layer, norm_layer, drop_layer, conv_layer
+                        )
+                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)
+                    ]),
+                ),
+            ])
         )
 
         self.passthrough = passthrough
@@ -167,18 +163,16 @@ class DarknetV2(nn.Sequential):
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__(
-            OrderedDict(
-                [
-                    (
-                        "features",
-                        DarknetBodyV2(
-                            layout, in_channels, stem_channels, False, act_layer, norm_layer, drop_layer, conv_layer
-                        ),
+            OrderedDict([
+                (
+                    "features",
+                    DarknetBodyV2(
+                        layout, in_channels, stem_channels, False, act_layer, norm_layer, drop_layer, conv_layer
                     ),
-                    ("classifier", nn.Conv2d(layout[-1][0], num_classes, 1)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                ]
-            )
+                ),
+                ("classifier", nn.Conv2d(layout[-1][0], num_classes, 1)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+            ])
         )
 
         init_module(self, "leaky_relu")

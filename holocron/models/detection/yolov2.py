@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023, François-Guillaume Fernandez.
+# Copyright (C) 2020-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -63,9 +63,13 @@ class YOLOv2(_YOLO):
         if anchors is None:
             # cf. https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-voc.cfg#L242
             anchors = (
-                torch.tensor(
-                    [[1.3221, 1.73145], [3.19275, 4.00944], [5.05587, 8.09892], [9.47112, 4.84053], [11.2364, 10.0071]]
-                )
+                torch.tensor([  # type: ignore[assignment]
+                    [1.3221, 1.73145],
+                    [3.19275, 4.00944],
+                    [5.05587, 8.09892],
+                    [9.47112, 4.84053],
+                    [11.2364, 10.0071],
+                ])
                 / 13
             )
 
@@ -127,7 +131,7 @@ class YOLOv2(_YOLO):
         )
 
         # Each box has P_objectness, 4 coords, and score for each class
-        self.head = nn.Conv2d(layout[-1][0], anchors.shape[0] * (5 + num_classes), 1)
+        self.head = nn.Conv2d(layout[-1][0], anchors.shape[0] * (5 + num_classes), 1)  # type: ignore[union-attr]
 
         # Register losses
         self.register_buffer("anchors", anchors)
@@ -145,6 +149,15 @@ class YOLOv2(_YOLO):
 
     @staticmethod
     def to_isoboxes(b_coords: Tensor, grid_shape: Tuple[int, int], clamp: bool = False) -> Tensor:
+        """Converts xywh boxes to xyxy format.
+
+        Args:
+            b_coords: tensor of shape (..., 4) where the last dimension is xcenter,ycenter,w,h
+            grid_shape: the size of the grid
+            clamp: whether the coords should be clamped to the extreme values
+        Returns:
+            tensor with the boxes using relative coords
+        """
         xy = b_coords[..., :2]
         wh = b_coords[..., 2:]
         pred_xyxy = torch.cat((xy - wh / 2, xy + wh / 2), dim=-1).reshape(*b_coords.shape)
@@ -235,7 +248,7 @@ class YOLOv2(_YOLO):
             b_coords,
             b_o,
             b_scores,
-            out.shape[-2:],  # type: ignore[arg-type]
+            out.shape[-2:],
             self.rpn_nms_thresh,
             self.box_score_thresh,
         )

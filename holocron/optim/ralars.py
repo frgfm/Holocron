@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -131,10 +131,7 @@ class RaLars(Optimizer):
                 update_norm = update.pow(2).sum().sqrt()
                 phi_p = p_norm.clamp(*self.scale_clip)
                 # Compute the local LR
-                if phi_p == 0 or update_norm == 0:
-                    local_lr = 1
-                else:
-                    local_lr = phi_p / update_norm
+                local_lr = 1 if phi_p == 0 or update_norm == 0 else phi_p / update_norm
 
                 state["local_lr"] = local_lr
 

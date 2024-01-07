@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2023, François-Guillaume Fernandez.
+# Copyright (C) 2021-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -52,16 +52,14 @@ class RepBlock(nn.Module):
         if act_layer is None:
             act_layer = nn.ReLU(inplace=True)
 
-        self.branches: Union[nn.Conv2d, nn.ModuleList] = nn.ModuleList(
-            [
-                nn.Sequential(
-                    *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=3, padding=1, stride=stride),
-                ),
-                nn.Sequential(
-                    *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=1, padding=0, stride=stride),
-                ),
-            ]
-        )
+        self.branches: Union[nn.Conv2d, nn.ModuleList] = nn.ModuleList([
+            nn.Sequential(
+                *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=3, padding=1, stride=stride),
+            ),
+            nn.Sequential(
+                *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=1, padding=0, stride=stride),
+            ),
+        ])
 
         self.activation = act_layer
 
@@ -71,11 +69,7 @@ class RepBlock(nn.Module):
             self.branches.append(norm_layer(planes))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if isinstance(self.branches, nn.Conv2d):
-            out = self.branches(x)
-        else:
-            out = sum(branch(x) for branch in self.branches)
-
+        out = self.branches(x) if isinstance(self.branches, nn.Conv2d) else sum(branch(x) for branch in self.branches)
         return self.activation(out)
 
     def reparametrize(self) -> None:
@@ -158,13 +152,11 @@ class RepVGG(nn.Sequential):
             _stages.append(nn.Sequential(*_layers))
 
         super().__init__(
-            OrderedDict(
-                [
-                    ("features", nn.Sequential(*_stages)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                    ("head", nn.Linear(chans[-1], num_classes)),
-                ]
-            )
+            OrderedDict([
+                ("features", nn.Sequential(*_stages)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+                ("head", nn.Linear(chans[-1], num_classes)),
+            ])
         )
         # Init all layers
         init.init_module(self, nonlinearity="relu")
@@ -181,7 +173,6 @@ def _repvgg(
     checkpoint: Union[Checkpoint, None],
     progress: bool,
     num_blocks: List[int],
-    out_chans: List[int],
     a: float,
     b: float,
     **kwargs: Any,
@@ -236,7 +227,7 @@ def repvgg_a0(
         checkpoint,
         RepVGG_A0_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 0.75, 2.5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], 0.75, 2.5, **kwargs)
 
 
 class RepVGG_A1_Checkpoint(Enum):
@@ -284,7 +275,7 @@ def repvgg_a1(
         checkpoint,
         RepVGG_A1_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], 1, 2.5, **kwargs)
 
 
 class RepVGG_A2_Checkpoint(Enum):
@@ -332,7 +323,7 @@ def repvgg_a2(
         checkpoint,
         RepVGG_A2_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1.5, 2.75, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], 1.5, 2.75, **kwargs)
 
 
 class RepVGG_B0_Checkpoint(Enum):
@@ -380,7 +371,7 @@ def repvgg_b0(
         checkpoint,
         RepVGG_B0_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], 1, 2.5, **kwargs)
 
 
 class RepVGG_B1_Checkpoint(Enum):
@@ -428,7 +419,7 @@ def repvgg_b1(
         checkpoint,
         RepVGG_B1_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2, 4, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], 2, 4, **kwargs)
 
 
 class RepVGG_B2_Checkpoint(Enum):
@@ -476,7 +467,7 @@ def repvgg_b2(
         checkpoint,
         RepVGG_B2_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2.5, 5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], 2.5, 5, **kwargs)
 
 
 def repvgg_b3(
@@ -502,4 +493,4 @@ def repvgg_b3(
         checkpoint,
         None,
     )
-    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 3, 5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], 3, 5, **kwargs)

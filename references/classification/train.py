@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -97,33 +97,29 @@ def main(args):
         if args.dataset.lower() == "imagenette":
             train_set = ImageFolder(
                 Path(args.data_path).joinpath("train"),
-                T.Compose(
-                    [
-                        T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
-                        T.RandomHorizontalFlip(),
-                        A.TrivialAugmentWide(interpolation=interpolation),
-                        T.PILToTensor(),
-                        T.ConvertImageDtype(torch.float32),
-                        normalize,
-                        T.RandomErasing(p=args.random_erase, scale=(0.02, 0.2), value="random"),
-                    ]
-                ),
+                T.Compose([
+                    T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
+                    T.RandomHorizontalFlip(),
+                    A.TrivialAugmentWide(interpolation=interpolation),
+                    T.PILToTensor(),
+                    T.ConvertImageDtype(torch.float32),
+                    normalize,
+                    T.RandomErasing(p=args.random_erase, scale=(0.02, 0.2), value="random"),
+                ]),
             )
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
             train_set = cifar_version(
                 args.data_path,
                 True,
-                T.Compose(
-                    [
-                        T.RandomHorizontalFlip(),
-                        A.TrivialAugmentWide(interpolation=interpolation),
-                        T.PILToTensor(),
-                        T.ConvertImageDtype(torch.float32),
-                        normalize,
-                        T.RandomErasing(p=args.random_erase, value="random"),
-                    ]
-                ),
+                T.Compose([
+                    T.RandomHorizontalFlip(),
+                    A.TrivialAugmentWide(interpolation=interpolation),
+                    T.PILToTensor(),
+                    T.ConvertImageDtype(torch.float32),
+                    normalize,
+                    T.RandomErasing(p=args.random_erase, value="random"),
+                ]),
                 download=True,
             )
 
@@ -164,15 +160,13 @@ def main(args):
         if args.dataset.lower() == "imagenette":
             val_set = ImageFolder(
                 Path(args.data_path).joinpath("val"),
-                T.Compose(
-                    [
-                        T.Resize(args.val_resize_size, interpolation=interpolation),
-                        T.CenterCrop(args.val_crop_size),
-                        T.PILToTensor(),
-                        T.ConvertImageDtype(torch.float32),
-                        normalize,
-                    ]
-                ),
+                T.Compose([
+                    T.Resize(args.val_resize_size, interpolation=interpolation),
+                    T.CenterCrop(args.val_crop_size),
+                    T.PILToTensor(),
+                    T.ConvertImageDtype(torch.float32),
+                    normalize,
+                ]),
             )
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10

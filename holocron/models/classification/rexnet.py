@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -218,13 +218,11 @@ class ReXNet(nn.Sequential):
         )
 
         super().__init__(
-            OrderedDict(
-                [
-                    ("features", nn.Sequential(*_layers)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                    ("head", nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes))),
-                ]
-            )
+            OrderedDict([
+                ("features", nn.Sequential(*_layers)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+                ("head", nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes))),
+            ])
         )
 
         # Init all layers

@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -117,10 +117,7 @@ class LARS(Optimizer):
                     d_p.add_(p.data, alpha=weight_decay)
                     denom.add_(p_norm, alpha=weight_decay)
                 # Compute the local LR
-                if p_norm == 0 or denom == 0:
-                    local_lr = 1
-                else:
-                    local_lr = p_norm / denom
+                local_lr = 1 if p_norm == 0 or denom == 0 else p_norm / denom
 
                 if momentum == 0:
                     p.data.add_(d_p, alpha=-group["lr"] * local_lr)
@@ -131,10 +128,7 @@ class LARS(Optimizer):
                     else:
                         momentum_buffer = param_state["momentum_buffer"]
                         momentum_buffer.mul_(momentum).add_(d_p, alpha=1 - dampening)
-                    if nesterov:
-                        d_p = d_p.add(momentum_buffer, alpha=momentum)
-                    else:
-                        d_p = momentum_buffer
+                    d_p = d_p.add(momentum_buffer, alpha=momentum) if nesterov else momentum_buffer
                     p.data.add_(d_p, alpha=-group["lr"] * local_lr)
                     self.state[p]["momentum_buffer"] = momentum_buffer
 

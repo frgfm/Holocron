@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -400,18 +400,16 @@ class PyConv2d(nn.ModuleList):
         **kwargs: Any,
     ) -> None:
         if num_levels == 1:
-            super().__init__(
-                [
-                    nn.Conv2d(
-                        in_channels,
-                        out_channels,
-                        kernel_size,
-                        padding=padding,
-                        groups=groups[0] if isinstance(groups, list) else 1,
-                        **kwargs,
-                    )
-                ]
-            )
+            super().__init__([
+                nn.Conv2d(
+                    in_channels,
+                    out_channels,
+                    kernel_size,
+                    padding=padding,
+                    groups=groups[0] if isinstance(groups, list) else 1,
+                    **kwargs,
+                )
+            ])
         else:
             exp2 = int(math.log2(num_levels))
             reminder = num_levels - 2**exp2
@@ -428,12 +426,10 @@ class PyConv2d(nn.ModuleList):
                 raise ValueError("The argument `group` is expected to be a list of integer of size `num_levels`.")
             paddings = [padding + idx for idx in range(num_levels)]
 
-            super().__init__(
-                [
-                    nn.Conv2d(in_channels, out_chan, k_size, padding=padding, groups=group, **kwargs)
-                    for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, groups)
-                ]
-            )
+            super().__init__([
+                nn.Conv2d(in_channels, out_chan, k_size, padding=padding, groups=group, **kwargs)
+                for out_chan, k_size, padding, group in zip(out_chans, k_sizes, paddings, groups)
+            ])
         self.num_levels = num_levels
 
     def forward(self, x: Tensor) -> Tensor:

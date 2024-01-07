@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023, François-Guillaume Fernandez.
+# Copyright (C) 2020-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -85,25 +85,23 @@ class SKConv2d(nn.Module):
         **kwargs: Any,
     ) -> None:
         super().__init__()
-        self.path_convs = nn.ModuleList(
-            [
-                nn.Sequential(
-                    *conv_sequence(
-                        in_channels,
-                        out_channels,
-                        act_layer,
-                        norm_layer,
-                        drop_layer,
-                        kernel_size=3,
-                        bias=(norm_layer is None),
-                        dilation=idx + 1,
-                        padding=idx + 1,
-                        **kwargs,
-                    )
+        self.path_convs = nn.ModuleList([
+            nn.Sequential(
+                *conv_sequence(
+                    in_channels,
+                    out_channels,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=3,
+                    bias=(norm_layer is None),
+                    dilation=idx + 1,
+                    padding=idx + 1,
+                    **kwargs,
                 )
-                for idx in range(m)
-            ]
-        )
+            )
+            for idx in range(m)
+        ])
         self.sa = SoftAttentionLayer(out_channels, sa_ratio, m, act_layer, norm_layer, drop_layer)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

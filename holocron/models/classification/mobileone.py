@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023, François-Guillaume Fernandez.
+# Copyright (C) 2022-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -47,22 +47,20 @@ class DepthConvBlock(nn.ModuleList):
                 *conv_sequence(channels, channels, kernel_size=1, stride=stride, norm_layer=norm_layer, groups=channels)
             ),
         )
-        _layers.extend(
-            [
-                nn.Sequential(
-                    *conv_sequence(
-                        channels,
-                        channels,
-                        kernel_size=3,
-                        padding=1,
-                        stride=stride,
-                        norm_layer=norm_layer,
-                        groups=channels,
-                    )
+        _layers.extend([
+            nn.Sequential(
+                *conv_sequence(
+                    channels,
+                    channels,
+                    kernel_size=3,
+                    padding=1,
+                    stride=stride,
+                    norm_layer=norm_layer,
+                    groups=channels,
                 )
-                for _ in range(num_blocks)
-            ]
-        )
+            )
+            for _ in range(num_blocks)
+        ])
         super().__init__(_layers)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -111,12 +109,10 @@ class PointConvBlock(nn.ModuleList):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         _layers = [norm_layer(out_channels)] if out_channels == in_channels else []
-        _layers.extend(
-            [
-                nn.Sequential(*conv_sequence(in_channels, out_channels, kernel_size=1, norm_layer=norm_layer))
-                for _ in range(num_blocks)
-            ]
-        )
+        _layers.extend([
+            nn.Sequential(*conv_sequence(in_channels, out_channels, kernel_size=1, norm_layer=norm_layer))
+            for _ in range(num_blocks)
+        ])
         super().__init__(_layers)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -207,24 +203,20 @@ class MobileOne(nn.Sequential):
             # Stride & channel changes
             _stage = [MobileOneBlock(in_planes, _planes, overparam_factor, 2, act_layer, norm_layer)]
             # Depth
-            _stage.extend(
-                [
-                    MobileOneBlock(_planes, _planes, overparam_factor, 1, act_layer, norm_layer)
-                    for _ in range(_num_blocks - 1)
-                ]
-            )
+            _stage.extend([
+                MobileOneBlock(_planes, _planes, overparam_factor, 1, act_layer, norm_layer)
+                for _ in range(_num_blocks - 1)
+            ])
             in_planes = _planes
 
             _layers.append(nn.Sequential(*_stage))
 
         super().__init__(
-            OrderedDict(
-                [
-                    ("features", nn.Sequential(*_layers)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                    ("head", nn.Linear(in_planes, num_classes)),
-                ]
-            )
+            OrderedDict([
+                ("features", nn.Sequential(*_layers)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+                ("head", nn.Linear(in_planes, num_classes)),
+            ])
         )
 
         # Init all layers

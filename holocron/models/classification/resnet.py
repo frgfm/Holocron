@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023, François-Guillaume Fernandez.
+# Copyright (C) 2020-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -338,13 +338,11 @@ class ResNet(nn.Sequential):
             stride = 2
 
         super().__init__(
-            OrderedDict(
-                [
-                    ("features", nn.Sequential(*_layers)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                    ("head", nn.Linear(num_repeats * in_planes, num_classes)),
-                ]
-            )
+            OrderedDict([
+                ("features", nn.Sequential(*_layers)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+                ("head", nn.Linear(num_repeats * in_planes, num_classes)),
+            ])
         )
 
         # Init all layers
@@ -421,22 +419,20 @@ class ResNet(nn.Sequential):
                 **block_args,
             )
         ]
-        layers.extend(
-            [
-                block(
-                    block.expansion * planes,
-                    planes,
-                    1,
-                    None,
-                    base_width=width_per_group,
-                    act_layer=act_layer,
-                    norm_layer=norm_layer,
-                    drop_layer=drop_layer,
-                    **block_args,
-                )
-                for _ in range(num_blocks - 1)
-            ]
-        )
+        layers.extend([
+            block(
+                block.expansion * planes,
+                planes,
+                1,
+                None,
+                base_width=width_per_group,
+                act_layer=act_layer,
+                norm_layer=norm_layer,
+                drop_layer=drop_layer,
+                **block_args,
+            )
+            for _ in range(num_blocks - 1)
+        ])
 
         return nn.Sequential(*layers)
 

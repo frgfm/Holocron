@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -6,7 +6,7 @@
 import multiprocessing as mp
 from math import sqrt
 from multiprocessing.pool import ThreadPool
-from typing import Any, Callable, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Callable, Iterable, Optional, Sequence, Tuple, TypeVar
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +26,7 @@ def parallel(
     num_threads: Optional[int] = None,
     progress: bool = False,
     **kwargs: Any,
-) -> Sequence[Out]:
+) -> Iterable[Out]:
     """Performs parallel tasks by leveraging multi-threading.
 
     >>> from holocron.utils.misc import parallel
@@ -44,16 +44,10 @@ def parallel(
     """
     num_threads = num_threads if isinstance(num_threads, int) else min(16, mp.cpu_count())
     if num_threads < 2:
-        if progress:
-            results = list(map(func, tqdm(arr, total=len(arr), **kwargs)))
-        else:
-            results = map(func, arr)  # type: ignore[assignment]
+        results = list(map(func, tqdm(arr, total=len(arr), **kwargs))) if progress else map(func, arr)
     else:
         with ThreadPool(num_threads) as tp:
-            if progress:
-                results = list(tqdm(tp.imap(func, arr), total=len(arr), **kwargs))
-            else:
-                results = tp.map(func, arr)
+            results = list(tqdm(tp.imap(func, arr), total=len(arr), **kwargs)) if progress else tp.map(func, arr)
 
     return results
 

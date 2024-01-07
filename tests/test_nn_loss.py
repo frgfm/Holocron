@@ -27,20 +27,14 @@ def _test_loss_function(loss_fn, same_loss=0.0, multi_label=False):
 
     # Check that class rescaling works
     x = torch.rand(num_batches, num_classes, requires_grad=True)
-    if multi_label:
-        target = torch.rand(x.shape)
-    else:
-        target = (num_classes * torch.rand(num_batches)).to(torch.long)
+    target = torch.rand(x.shape) if multi_label else (num_classes * torch.rand(num_batches)).to(torch.long)
     weights = torch.ones(num_classes)
     assert loss_fn(x, target).item() == loss_fn(x, target, weight=weights).item()
 
     # Check that ignore_index works
     assert loss_fn(x, target).item() == loss_fn(x, target, ignore_index=num_classes).item()
     # Ignore an index we are certain to be in the target
-    if multi_label:
-        ignore_index = torch.unique(target.argmax(dim=1))[0].item()
-    else:
-        ignore_index = torch.unique(target)[0].item()
+    ignore_index = torch.unique(target.argmax(dim=1))[0].item() if multi_label else torch.unique(target)[0].item()
     assert loss_fn(x, target).item() != loss_fn(x, target, ignore_index=ignore_index)
     # Check backprop
     loss = loss_fn(x, target, ignore_index=0)

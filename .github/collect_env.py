@@ -226,10 +226,7 @@ def get_os(run_lambda):
 def get_env_info():
     run_lambda = run
 
-    if HOLOCRON_AVAILABLE:
-        holocron_str = holocron.__version__
-    else:
-        holocron_str = "N/A"
+    holocron_str = holocron.__version__ if HOLOCRON_AVAILABLE else "N/A"
 
     if TORCH_AVAILABLE:
         torch_str = torch.__version__
@@ -237,10 +234,7 @@ def get_env_info():
     else:
         torch_str = cuda_available_str = "N/A"
 
-    if TORCHVISION_AVAILABLE:
-        torchvision_str = torchvision.__version__
-    else:
-        torchvision_str = "N/A"
+    torchvision_str = torchvision.__version__ if TORCHVISION_AVAILABLE else "N/A"
 
     return SystemEnv(
         holocron_version=holocron_str,
@@ -273,14 +267,14 @@ cuDNN version: {cudnn_version}
 
 def pretty_str(envinfo):
     def replace_nones(dct, replacement="Could not collect"):
-        for key in dct.keys():
+        for key in dct:
             if dct[key] is not None:
                 continue
             dct[key] = replacement
         return dct
 
     def replace_bools(dct, true="Yes", false="No"):
-        for key in dct.keys():
+        for key in dct:
             if dct[key] is True:
                 dct[key] = true
             elif dct[key] is False:

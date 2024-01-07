@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023, François-Guillaume Fernandez.
+# Copyright (C) 2020-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -39,23 +39,19 @@ class FSAggreg(nn.Module):
         # Get UNet depth
         depth = len(e_chans) + 1 + len(d_chans)
         # Downsample = max pooling + conv for channel reduction
-        self.downsamples = nn.ModuleList(
-            [
-                nn.Sequential(nn.MaxPool2d(2 ** (len(e_chans) - idx)), nn.Conv2d(e_chan, base_chan, 3, padding=1))
-                for idx, e_chan in enumerate(e_chans)
-            ]
-        )
+        self.downsamples = nn.ModuleList([
+            nn.Sequential(nn.MaxPool2d(2 ** (len(e_chans) - idx)), nn.Conv2d(e_chan, base_chan, 3, padding=1))
+            for idx, e_chan in enumerate(e_chans)
+        ])
         self.skip = nn.Conv2d(skip_chan, base_chan, 3, padding=1) if len(e_chans) > 0 else nn.Identity()
         # Upsample = bilinear interpolation + conv for channel reduction
-        self.upsamples = nn.ModuleList(
-            [
-                nn.Sequential(
-                    nn.Upsample(scale_factor=2 ** (idx + 1), mode="bilinear", align_corners=True),
-                    nn.Conv2d(d_chan, base_chan, 3, padding=1),
-                )
-                for idx, d_chan in enumerate(d_chans)
-            ]
-        )
+        self.upsamples = nn.ModuleList([
+            nn.Sequential(
+                nn.Upsample(scale_factor=2 ** (idx + 1), mode="bilinear", align_corners=True),
+                nn.Conv2d(d_chan, base_chan, 3, padding=1),
+            )
+            for idx, d_chan in enumerate(d_chans)
+        ])
 
         self.block = nn.Sequential(
             *conv_sequence(

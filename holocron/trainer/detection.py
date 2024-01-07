@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023, François-Guillaume Fernandez.
+# Copyright (C) 2019-2024, François-Guillaume Fernandez.
 
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
@@ -22,14 +22,14 @@ def assign_iou(gt_boxes: Tensor, pred_boxes: Tensor, iou_threshold: float = 0.5)
     assign_unique = torch.unique(iou.indices[gt_kept])
     # Filter
     if iou.indices[gt_kept].shape[0] == assign_unique.shape[0]:
-        return torch.arange(gt_boxes.shape[0])[gt_kept], iou.indices[gt_kept]  # type: ignore[return-value]
+        return torch.arange(gt_boxes.shape[0])[gt_kept], iou.indices[gt_kept]
 
     gt_indices, pred_indices = [], []
     for pred_idx in assign_unique:
         selection = iou.values[gt_kept][iou.indices[gt_kept] == pred_idx].argmax()
         gt_indices.append(torch.arange(gt_boxes.shape[0])[gt_kept][selection].item())
         pred_indices.append(iou.indices[gt_kept][selection].item())
-    return gt_indices, pred_indices  # type: ignore[return-value]
+    return gt_indices, pred_indices
 
 
 class DetectionTrainer(Trainer):
