@@ -252,11 +252,11 @@ class Trainer:
         self.optimizer.zero_grad()
 
     @torch.inference_mode()
-    def evaluate(self):  # type: ignore[no-untyped-def]
+    def evaluate(self):  # type: ignore[no-untyped-def]  # noqa: ANN201
         raise NotImplementedError
 
     @staticmethod
-    def _eval_metrics_str(eval_metrics):  # type: ignore[no-untyped-def]
+    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
         raise NotImplementedError
 
     def _reset_scheduler(self, lr: float, num_epochs: int, sched_type: str = "onecycle", **kwargs: Any) -> None:
