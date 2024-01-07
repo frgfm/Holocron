@@ -256,7 +256,7 @@ class Trainer:
         raise NotImplementedError
 
     @staticmethod
-    def _eval_metrics_str(eval_metrics: Dict[str, float]) -> str:
+    def _eval_metrics_str(eval_metrics) -> str:  # type: ignore[no-untyped-def]  # noqa: ANN001
         raise NotImplementedError
 
     def _reset_scheduler(self, lr: float, num_epochs: int, sched_type: str = "onecycle", **kwargs: Any) -> None:

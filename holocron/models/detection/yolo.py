@@ -70,7 +70,7 @@ class _YOLO(nn.Module):
         gt_labels = [t["labels"] for t in target]
 
         # GT xmin, ymin, xmax, ymax
-        if not all(torch.all(boxes >= 0) and torch.all(boxes <= 1) for boxes in gt_boxes):
+        if not all(torch.all(boxes >= 0) and torch.all(boxes <= 1) for boxes in gt_boxes):  # type: ignore[call-overload]
             raise ValueError("Ground truth boxes are expected to have values between 0 and 1.")
 
         b, h, w, _, _ = pred_scores.shape

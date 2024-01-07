@@ -37,8 +37,8 @@ def hard_mish(x: Tensor, inplace: bool = False) -> Tensor:
         output tensor
     """
     if inplace:
-        return x.mul_(0.5 * (x + 2).clamp(min=0, max=2))
-    return 0.5 * x * (x + 2).clamp(min=0, max=2)
+        return x.mul_(0.5 * (x + 2).clamp(min=0, max=2))  # type: ignore[attr-defined]
+    return 0.5 * x * (x + 2).clamp(min=0, max=2)  # type: ignore[attr-defined]
 
 
 def nl_relu(x: Tensor, beta: float = 1.0, inplace: bool = False) -> Tensor:
@@ -53,7 +53,7 @@ def nl_relu(x: Tensor, beta: float = 1.0, inplace: bool = False) -> Tensor:
     """
     if inplace:
         return torch.log(F.relu_(x).mul_(beta).add_(1), out=x)
-    return torch.log(1 + beta * F.relu(x))
+    return torch.log(1 + beta * F.relu(x))  # type: ignore[arg-type]
 
 
 def focal_loss(
@@ -92,11 +92,11 @@ def focal_loss(
     pt = logpt.exp()
 
     # Weight
-    if weight is not None:
+    if isinstance(weight, Tensor):
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt = weight.gather(0, target.data.view(-1)) * logpt
+        logpt = weight.gather(0, target.data.view(-1)) * logpt  # type: ignore[union-attr]
 
     # Loss
     loss = cast(Tensor, -1 * (1 - pt) ** gamma * logpt)
@@ -177,7 +177,7 @@ def multilabel_cross_entropy(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        logpt = logpt * weight.view(1, -1, *([1] * (x.ndim - 2)))
+        logpt = logpt * weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[union-attr]
 
     # CE Loss
     loss = -target * logpt
@@ -243,7 +243,7 @@ def complement_cross_entropy(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        loss = loss * weight.view(1, -1, *([1] * (x.ndim - 2)))
+        loss = loss * weight.view(1, -1, *([1] * (x.ndim - 2)))  # type: ignore[union-attr]
 
     # Loss reduction
     if reduction == "sum":
@@ -484,7 +484,7 @@ def dropblock2d(x: Tensor, drop_prob: float, block_size: int, inplace: bool = Fa
     gamma = drop_prob / block_size**2
 
     # Sample a mask for the centers of blocks that will be dropped
-    mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= gamma).to(dtype=x.dtype)
+    mask = (torch.rand((x.shape[0], *x.shape[2:]), device=x.device) <= gamma).to(dtype=x.dtype)  # type: ignore[attr-defined]
 
     # Expand zero positions to block size
     mask = 1 - F.max_pool2d(mask, kernel_size=(block_size, block_size), stride=(1, 1), padding=block_size // 2)
@@ -525,7 +525,7 @@ def dice_loss(
         torch.Tensor: loss reduced with `reduction` method
     """
     inter = gamma * (x * target).flatten(2).sum((0, 2))
-    cardinality = (x + gamma * target).flatten(2).sum((0, 2))
+    cardinality = (x + gamma * target).flatten(2).sum((0, 2))  # type: ignore[attr-defined]
 
     dice_coeff = (inter + eps) / (cardinality + eps)
 
@@ -536,7 +536,7 @@ def dice_loss(
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
-        loss = 1 - (1 + 1 / gamma) * (weight * dice_coeff).sum() / weight.sum()
+        loss = 1 - (1 + 1 / gamma) * (weight * dice_coeff).sum() / weight.sum()  # type: ignore[union-attr]
 
     return loss
 
@@ -584,14 +584,14 @@ def poly_loss(
     loss = cast(Tensor, -1 * logpt + eps * (1 - logpt.exp()))
 
     # Weight
-    if weight is not None:
+    if isinstance(weight, Tensor):
         # Tensor type
         if weight.type() != x.data.type():
             weight = weight.type_as(x.data)
         if target.ndim == x.ndim - 1:
-            loss = weight.gather(0, target.data.view(-1)) * loss
+            loss = weight.gather(0, target.data.view(-1)) * loss  # type: ignore[union-attr]
         else:
-            loss = weight.reshape(1, -1) * loss
+            loss = weight.reshape(1, -1) * loss  # type: ignore[union-attr]
 
     # Ignore index (set loss contribution to 0)
     if target.ndim == x.ndim - 1:

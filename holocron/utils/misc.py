@@ -6,7 +6,7 @@
 import multiprocessing as mp
 from math import sqrt
 from multiprocessing.pool import ThreadPool
-from typing import Any, Callable, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Callable, Iterable, Optional, Sequence, Tuple, TypeVar
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +26,7 @@ def parallel(
     num_threads: Optional[int] = None,
     progress: bool = False,
     **kwargs: Any,
-) -> Sequence[Out]:
+) -> Iterable[Out]:
     """Performs parallel tasks by leveraging multi-threading.
 
     >>> from holocron.utils.misc import parallel

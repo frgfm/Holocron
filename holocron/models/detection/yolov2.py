@@ -63,7 +63,7 @@ class YOLOv2(_YOLO):
         if anchors is None:
             # cf. https://github.com/pjreddie/darknet/blob/master/cfg/yolov2-voc.cfg#L242
             anchors = (
-                torch.tensor([
+                torch.tensor([  # type: ignore[assignment]
                     [1.3221, 1.73145],
                     [3.19275, 4.00944],
                     [5.05587, 8.09892],
@@ -131,7 +131,7 @@ class YOLOv2(_YOLO):
         )
 
         # Each box has P_objectness, 4 coords, and score for each class
-        self.head = nn.Conv2d(layout[-1][0], anchors.shape[0] * (5 + num_classes), 1)
+        self.head = nn.Conv2d(layout[-1][0], anchors.shape[0] * (5 + num_classes), 1)  # type: ignore[union-attr]
 
         # Register losses
         self.register_buffer("anchors", anchors)
@@ -248,7 +248,7 @@ class YOLOv2(_YOLO):
             b_coords,
             b_o,
             b_scores,
-            out.shape[-2:],  # type: ignore[arg-type]
+            out.shape[-2:],
             self.rpn_nms_thresh,
             self.box_score_thresh,
         )
