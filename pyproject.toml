@@ -56,12 +56,10 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff==0.1.0",
-    "mypy==1.5.1",
+    "ruff==0.1.11",
+    "mypy==1.8.0",
     "types-tqdm",
-    "black==23.3.0",
-    "bandit[toml]>=1.7.0,<1.8.0",
-    "pre-commit>=2.17.0,<3.0.0",
+    "pre-commit>=3.0.0,<4.0.0",
 ]
 docs = [
     "sphinx>=3.0.0,!=3.5.0",
@@ -83,12 +81,10 @@ dev = [
     "pytest>=7.2.0",
     "coverage[toml]>=4.5.4",
     # style
-    "ruff==0.1.0",
-    "mypy==1.6.1",
+    "ruff==0.1.11",
+    "mypy==1.8.0",
     "types-tqdm",
-    "black==23.3.0",
-    "bandit[toml]>=1.7.0,<1.8.0",
-    "pre-commit>=2.17.0,<3.0.0",
+    "pre-commit>=3.0.0,<4.0.0",
     # docs
     "sphinx>=3.0.0,!=3.5.0",
     "furo>=2022.3.4",
