@@ -39,25 +39,23 @@ class ScaleConv2d(nn.Module):
 
         self.scale = scale
         self.width = planes // scale
-        self.conv = nn.ModuleList(
-            [
-                nn.Sequential(
-                    *conv_sequence(
-                        self.width,
-                        self.width,
-                        act_layer,
-                        norm_layer,
-                        drop_layer,
-                        kernel_size=3,
-                        stride=stride,
-                        padding=1,
-                        groups=groups,
-                        bias=(norm_layer is None),
-                    )
+        self.conv = nn.ModuleList([
+            nn.Sequential(
+                *conv_sequence(
+                    self.width,
+                    self.width,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=3,
+                    stride=stride,
+                    padding=1,
+                    groups=groups,
+                    bias=(norm_layer is None),
                 )
-                for _ in range(max(1, scale - 1))
-            ]
-        )
+            )
+            for _ in range(max(1, scale - 1))
+        ])
 
         if downsample:
             self.downsample = nn.AvgPool2d(kernel_size=3, stride=stride, padding=1)

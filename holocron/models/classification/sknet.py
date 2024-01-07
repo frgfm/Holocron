@@ -85,25 +85,23 @@ class SKConv2d(nn.Module):
         **kwargs: Any,
     ) -> None:
         super().__init__()
-        self.path_convs = nn.ModuleList(
-            [
-                nn.Sequential(
-                    *conv_sequence(
-                        in_channels,
-                        out_channels,
-                        act_layer,
-                        norm_layer,
-                        drop_layer,
-                        kernel_size=3,
-                        bias=(norm_layer is None),
-                        dilation=idx + 1,
-                        padding=idx + 1,
-                        **kwargs,
-                    )
+        self.path_convs = nn.ModuleList([
+            nn.Sequential(
+                *conv_sequence(
+                    in_channels,
+                    out_channels,
+                    act_layer,
+                    norm_layer,
+                    drop_layer,
+                    kernel_size=3,
+                    bias=(norm_layer is None),
+                    dilation=idx + 1,
+                    padding=idx + 1,
+                    **kwargs,
                 )
-                for idx in range(m)
-            ]
-        )
+            )
+            for idx in range(m)
+        ])
         self.sa = SoftAttentionLayer(out_channels, sa_ratio, m, act_layer, norm_layer, drop_layer)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

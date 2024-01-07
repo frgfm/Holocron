@@ -71,7 +71,7 @@ class TAdam(Optimizer):
             raise ValueError(f"Invalid beta parameter at index 0: {betas[0]}")
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError(f"Invalid beta parameter at index 1: {betas[1]}")
-        if not 0.0 <= weight_decay:
+        if not weight_decay >= 0.0:
             raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
         defaults = {"lr": lr, "betas": betas, "eps": eps, "weight_decay": weight_decay, "amsgrad": amsgrad, "dof": dof}
         super().__init__(params, defaults)

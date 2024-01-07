@@ -168,19 +168,17 @@ class ConvNeXt(nn.Sequential):
             block_idx += _num_blocks
 
         super().__init__(
-            OrderedDict(
-                [
-                    ("features", nn.Sequential(*_layers)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                    (
-                        "head",
-                        nn.Sequential(
-                            nn.LayerNorm(planes[-1], eps=1e-6),
-                            nn.Linear(planes[-1], num_classes),
-                        ),
+            OrderedDict([
+                ("features", nn.Sequential(*_layers)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+                (
+                    "head",
+                    nn.Sequential(
+                        nn.LayerNorm(planes[-1], eps=1e-6),
+                        nn.Linear(planes[-1], num_classes),
                     ),
-                ]
-            )
+                ),
+            ])
         )
 
         # Init all layers

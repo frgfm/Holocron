@@ -218,13 +218,11 @@ class ReXNet(nn.Sequential):
         )
 
         super().__init__(
-            OrderedDict(
-                [
-                    ("features", nn.Sequential(*_layers)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                    ("head", nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes))),
-                ]
-            )
+            OrderedDict([
+                ("features", nn.Sequential(*_layers)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+                ("head", nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes))),
+            ])
         )
 
         # Init all layers

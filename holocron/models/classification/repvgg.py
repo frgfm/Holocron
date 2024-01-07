@@ -52,16 +52,14 @@ class RepBlock(nn.Module):
         if act_layer is None:
             act_layer = nn.ReLU(inplace=True)
 
-        self.branches: Union[nn.Conv2d, nn.ModuleList] = nn.ModuleList(
-            [
-                nn.Sequential(
-                    *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=3, padding=1, stride=stride),
-                ),
-                nn.Sequential(
-                    *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=1, padding=0, stride=stride),
-                ),
-            ]
-        )
+        self.branches: Union[nn.Conv2d, nn.ModuleList] = nn.ModuleList([
+            nn.Sequential(
+                *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=3, padding=1, stride=stride),
+            ),
+            nn.Sequential(
+                *conv_sequence(inplanes, planes, None, norm_layer, kernel_size=1, padding=0, stride=stride),
+            ),
+        ])
 
         self.activation = act_layer
 
@@ -158,13 +156,11 @@ class RepVGG(nn.Sequential):
             _stages.append(nn.Sequential(*_layers))
 
         super().__init__(
-            OrderedDict(
-                [
-                    ("features", nn.Sequential(*_stages)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                    ("head", nn.Linear(chans[-1], num_classes)),
-                ]
-            )
+            OrderedDict([
+                ("features", nn.Sequential(*_stages)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+                ("head", nn.Linear(chans[-1], num_classes)),
+            ])
         )
         # Init all layers
         init.init_module(self, nonlinearity="relu")

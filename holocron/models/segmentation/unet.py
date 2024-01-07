@@ -44,16 +44,14 @@ def down_path(
     conv_layer: Optional[Callable[..., nn.Module]] = None,
 ) -> nn.Sequential:
     layers: List[nn.Module] = [nn.MaxPool2d(2)] if downsample else []
-    layers.extend(
-        [
-            *conv_sequence(
-                in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
-            ),
-            *conv_sequence(
-                out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
-            ),
-        ]
-    )
+    layers.extend([
+        *conv_sequence(
+            in_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
+        ),
+        *conv_sequence(
+            out_chan, out_chan, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=3, padding=padding
+        ),
+    ])
     return nn.Sequential(*layers)
 
 
@@ -129,13 +127,11 @@ class UNetBackbone(nn.Sequential):
             _pool = True
 
         super().__init__(
-            OrderedDict(
-                [
-                    ("features", nn.Sequential(*_layers)),
-                    ("pool", GlobalAvgPool2d(flatten=True)),
-                    ("head", nn.Linear(layout[-1], num_classes)),
-                ]
-            )
+            OrderedDict([
+                ("features", nn.Sequential(*_layers)),
+                ("pool", GlobalAvgPool2d(flatten=True)),
+                ("head", nn.Linear(layout[-1], num_classes)),
+            ])
         )
 
         init_module(self, "relu")
@@ -350,9 +346,7 @@ class DynamicUNet(nn.Module):
         self.upsample: Optional[nn.Sequential] = None
         if final_upsampling:
             self.upsample = nn.Sequential(
-                *conv_sequence(
-                    chans[0], chans[0] * 2**2, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1
-                ),
+                *conv_sequence(chans[0], chans[0] * 2**2, act_layer, norm_layer, drop_layer, conv_layer, kernel_size=1),
                 nn.PixelShuffle(upscale_factor=2),
             )
 
