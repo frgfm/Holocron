@@ -185,8 +185,9 @@ indent-style = "space"
 "setup.py" = ["T201"]
 "holocron/nn/modules/**.py" = ["N806"]
 "holocron/models/classification/**.py" = ["N801"]
-"holocron/models/*/**.py" = ["D101"]
-"holocron/nn/functional.py" = ["N802"]
+"holocron/models/*/**.py" = ["D101", "ARG"]
+"holocron/nn/functional.py" = ["N802", "ARG"]
+"holocron/trainer/**.py" = ["ARG"]
 
 [tool.ruff.flake8-quotes]
 docstring-quotes = "double"
