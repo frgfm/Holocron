@@ -22,7 +22,7 @@ from pathlib import Path
 
 from tabulate import tabulate
 
-sys.path.insert(0, Path().resolve().parent.parent)
+sys.path.insert(0, Path().cwd().parent.parent)
 
 
 import holocron
@@ -217,10 +217,12 @@ def inject_checkpoint_metadata(app, what, name, obj, options, lines):
 
             # Loading Meta
             meta = field.value.meta
-            table.append(("url", f"`link <{meta.url}>`__"))
-            table.append(("sha256", meta.sha256[:16]))
-            table.append(("size", f"{meta.size / 1024**2:.1f}MB"))
-            table.append(("num_params", f"{meta.num_params / 1e6:.1f}M"))
+            table.extend((
+                ("url", f"`link <{meta.url}>`__"),
+                ("sha256", meta.sha256[:16]),
+                ("size", f"{meta.size / 1024 ** 2:.1f}MB"),
+                ("num_params", f"{meta.num_params / 1000000.0:.1f}M"),
+            ))
             # Wrap the text
             max_visible = 3
             v = meta.categories

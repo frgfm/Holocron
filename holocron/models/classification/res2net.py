@@ -68,10 +68,7 @@ class ScaleConv2d(nn.Module):
         out = []
         for idx, layer in enumerate(self.conv):
             # If downsampled, don't add previous branch
-            if idx == 0 or self.downsample is not None:
-                _res = split_x[idx]
-            else:
-                _res = out[-1] + split_x[idx]
+            _res = split_x[idx] if idx == 0 or self.downsample is not None else out[-1] + split_x[idx]
             out.append(layer(_res))
         # Use the last chunk as shortcut connection
         if self.scale > 1:

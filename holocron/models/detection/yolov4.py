@@ -638,7 +638,7 @@ class Yolov4Head(nn.Module):
             ]
             return detections
 
-        return {k: y1[k] + y2[k] + y3[k] for k in y1.keys()}
+        return {k: y1[k] + y2[k] + y3[k] for k in y1}
 
 
 class YOLOv4(nn.Module):

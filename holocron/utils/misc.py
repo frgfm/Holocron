@@ -44,16 +44,10 @@ def parallel(
     """
     num_threads = num_threads if isinstance(num_threads, int) else min(16, mp.cpu_count())
     if num_threads < 2:
-        if progress:
-            results = list(map(func, tqdm(arr, total=len(arr), **kwargs)))
-        else:
-            results = map(func, arr)  # type: ignore[assignment]
+        results = list(map(func, tqdm(arr, total=len(arr), **kwargs))) if progress else map(func, arr)
     else:
         with ThreadPool(num_threads) as tp:
-            if progress:
-                results = list(tqdm(tp.imap(func, arr), total=len(arr), **kwargs))
-            else:
-                results = tp.map(func, arr)
+            results = list(tqdm(tp.imap(func, arr), total=len(arr), **kwargs)) if progress else tp.map(func, arr)
 
     return results
 

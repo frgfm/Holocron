@@ -149,6 +149,15 @@ class YOLOv2(_YOLO):
 
     @staticmethod
     def to_isoboxes(b_coords: Tensor, grid_shape: Tuple[int, int], clamp: bool = False) -> Tensor:
+        """Converts xywh boxes to xyxy format.
+
+        Args:
+            b_coords: tensor of shape (..., 4) where the last dimension is xcenter,ycenter,w,h
+            grid_shape: the size of the grid
+            clamp: whether the coords should be clamped to the extreme values
+        Returns:
+            tensor with the boxes using relative coords
+        """
         xy = b_coords[..., :2]
         wh = b_coords[..., 2:]
         pred_xyxy = torch.cat((xy - wh / 2, xy + wh / 2), dim=-1).reshape(*b_coords.shape)

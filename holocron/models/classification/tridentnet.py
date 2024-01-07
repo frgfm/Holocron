@@ -38,10 +38,7 @@ class TridentConv2d(nn.Conv2d):
             raise ValueError("expected number of channels of input tensor to be a multiple of `num_branches`.")
 
         # Dilation for each chunk
-        if self.dilation[0] == 1:
-            dilations = [1] * self.num_branches
-        else:
-            dilations = [1 + idx for idx in range(self.num_branches)]
+        dilations = [1] * self.num_branches if self.dilation[0] == 1 else [1 + idx for idx in range(self.num_branches)]
 
         # Use shared weight to apply the convolution
         out = torch.cat(
@@ -78,7 +75,6 @@ class Tridentneck(_ResBlock):
         act_layer: Optional[nn.Module] = None,
         norm_layer: Optional[Callable[[int], nn.Module]] = None,
         drop_layer: Optional[Callable[..., nn.Module]] = None,
-        conv_layer: Optional[Callable[..., nn.Module]] = None,
         **kwargs: Any,
     ) -> None:
         if norm_layer is None:
@@ -102,6 +98,7 @@ class Tridentneck(_ResBlock):
                     stride=1,
                     bias=(norm_layer is None),
                     dilation=1,
+                    **kwargs,
                 ),
                 *conv_sequence(
                     width,
@@ -117,6 +114,7 @@ class Tridentneck(_ResBlock):
                     groups=groups,
                     bias=(norm_layer is None),
                     dilation=3,
+                    **kwargs,
                 ),
                 *conv_sequence(
                     width,
@@ -130,6 +128,7 @@ class Tridentneck(_ResBlock):
                     stride=1,
                     bias=(norm_layer is None),
                     dilation=1,
+                    **kwargs,
                 ),
             ],
             downsample,

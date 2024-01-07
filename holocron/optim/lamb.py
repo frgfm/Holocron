@@ -128,10 +128,7 @@ class LAMB(Optimizer):
                 update_norm = update.pow(2).sum().sqrt()
                 phi_p = p_norm.clamp(*self.scale_clip)
                 # Compute the local LR
-                if phi_p == 0 or update_norm == 0:
-                    local_lr = 1
-                else:
-                    local_lr = phi_p / update_norm
+                local_lr = 1 if phi_p == 0 or update_norm == 0 else phi_p / update_norm
 
                 state["local_lr"] = local_lr
 

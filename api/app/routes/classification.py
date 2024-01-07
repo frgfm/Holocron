@@ -12,8 +12,8 @@ from app.vision import CLF_CFG, classify_image, decode_image
 router = APIRouter()
 
 
-@router.post("/", response_model=ClsCandidate, status_code=status.HTTP_200_OK, summary="Perform image classification")
-async def classify(file: UploadFile = File(...)):
+@router.post("/", status_code=status.HTTP_200_OK, summary="Perform image classification")
+async def classify(file: UploadFile = File(...)) -> ClsCandidate:
     """Runs holocron vision model to analyze the input image"""
     probs = classify_image(decode_image(file.file.read()))
 

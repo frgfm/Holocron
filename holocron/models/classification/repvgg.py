@@ -69,11 +69,7 @@ class RepBlock(nn.Module):
             self.branches.append(norm_layer(planes))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if isinstance(self.branches, nn.Conv2d):
-            out = self.branches(x)
-        else:
-            out = sum(branch(x) for branch in self.branches)
-
+        out = self.branches(x) if isinstance(self.branches, nn.Conv2d) else sum(branch(x) for branch in self.branches)
         return self.activation(out)
 
     def reparametrize(self) -> None:
@@ -177,7 +173,6 @@ def _repvgg(
     checkpoint: Union[Checkpoint, None],
     progress: bool,
     num_blocks: List[int],
-    out_chans: List[int],
     a: float,
     b: float,
     **kwargs: Any,
@@ -232,7 +227,7 @@ def repvgg_a0(
         checkpoint,
         RepVGG_A0_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 0.75, 2.5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], 0.75, 2.5, **kwargs)
 
 
 class RepVGG_A1_Checkpoint(Enum):
@@ -280,7 +275,7 @@ def repvgg_a1(
         checkpoint,
         RepVGG_A1_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], 1, 2.5, **kwargs)
 
 
 class RepVGG_A2_Checkpoint(Enum):
@@ -328,7 +323,7 @@ def repvgg_a2(
         checkpoint,
         RepVGG_A2_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], [64, 64, 128, 256, 512], 1.5, 2.75, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 2, 4, 14, 1], 1.5, 2.75, **kwargs)
 
 
 class RepVGG_B0_Checkpoint(Enum):
@@ -376,7 +371,7 @@ def repvgg_b0(
         checkpoint,
         RepVGG_B0_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 1, 2.5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], 1, 2.5, **kwargs)
 
 
 class RepVGG_B1_Checkpoint(Enum):
@@ -424,7 +419,7 @@ def repvgg_b1(
         checkpoint,
         RepVGG_B1_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2, 4, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], 2, 4, **kwargs)
 
 
 class RepVGG_B2_Checkpoint(Enum):
@@ -472,7 +467,7 @@ def repvgg_b2(
         checkpoint,
         RepVGG_B2_Checkpoint.DEFAULT.value,
     )
-    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 2.5, 5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], 2.5, 5, **kwargs)
 
 
 def repvgg_b3(
@@ -498,4 +493,4 @@ def repvgg_b3(
         checkpoint,
         None,
     )
-    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], [64, 64, 128, 256, 512], 3, 5, **kwargs)
+    return _repvgg(checkpoint, progress, [1, 4, 6, 16, 1], 3, 5, **kwargs)
