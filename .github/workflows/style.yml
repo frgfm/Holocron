@@ -84,6 +84,7 @@ jobs:
       - name: Run ruff
         run: |
           pip install pre-commit
+          git checkout -b temp
           pre-commit install
           pre-commit --version
           pre-commit run --all-files
