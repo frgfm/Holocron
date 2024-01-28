@@ -16,7 +16,7 @@ jobs:
         with:
           poetry-version: "1.6.1"
       - name: Resolve dependencies
-        run: cd api && poetry export -f requirements.txt --without-hashes --output api/requirements.txt
+        run: cd api && poetry export -f requirements.txt --without-hashes --output requirements.txt
       - name: Build docker
         run: cd api && docker build src/. -t frgfm/holocron:latest
       - name: Login to DockerHub
