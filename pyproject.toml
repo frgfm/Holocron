@@ -46,9 +46,9 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    # cf. https://github.com/frgfm/Holocron/security/dependabot/4
-    "pytest>=7.2.0",
-    "coverage[toml]>=4.5.4",
+    "pytest>=7.3.2",
+    "pytest-cov>=3.0.0,<5.0.0",
+    "pytest-pretty>=1.0.0,<2.0.0",
     "onnx>=1.13.0,<2.0.0",
 ]
 training = [
@@ -56,7 +56,7 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff==0.1.11",
+    "ruff==0.1.14",
     "mypy==1.8.0",
     "types-tqdm",
     "pre-commit>=3.0.0,<4.0.0",
@@ -78,10 +78,12 @@ docs = [
 ]
 dev = [
     # test
-    "pytest>=7.2.0",
-    "coverage[toml]>=4.5.4",
+    "pytest>=7.3.2",
+    "pytest-cov>=3.0.0,<5.0.0",
+    "pytest-pretty>=1.0.0,<2.0.0",
+    "onnx>=1.13.0,<2.0.0",
     # style
-    "ruff==0.1.11",
+    "ruff==0.1.14",
     "mypy==1.8.0",
     "types-tqdm",
     "pre-commit>=3.0.0,<4.0.0",
