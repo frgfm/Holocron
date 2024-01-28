@@ -3,7 +3,7 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
-__all__ = ["IMAGENET", "IMAGENETTE", "CIFAR10"]
+__all__ = ["CIFAR10", "IMAGENET", "IMAGENETTE"]
 
 from dataclasses import dataclass
 from typing import List, Tuple

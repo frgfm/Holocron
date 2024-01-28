@@ -19,7 +19,7 @@ from holocron.nn import BlurPool2d
 from .checkpoints import Checkpoint, Dataset, Evaluation, LoadingMeta, Metric, PreProcessing, TrainingRecipe
 from .presets import IMAGENET, IMAGENETTE
 
-__all__ = ["conv_sequence", "load_pretrained_params", "fuse_conv_bn", "model_from_hf_hub"]
+__all__ = ["conv_sequence", "fuse_conv_bn", "load_pretrained_params", "model_from_hf_hub"]
 
 M = TypeVar("M", bound=nn.Module)
 

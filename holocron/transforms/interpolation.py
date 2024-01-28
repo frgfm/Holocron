@@ -13,7 +13,7 @@ from torch import nn
 from torchvision.transforms import transforms as T
 from torchvision.transforms.functional import pad, resize
 
-__all__ = ["Resize", "RandomZoomOut"]
+__all__ = ["RandomZoomOut", "Resize"]
 
 
 class ResizeMethod(str, Enum):

@@ -17,7 +17,7 @@ Inp = TypeVar("Inp")
 Out = TypeVar("Out")
 
 
-__all__ = ["parallel", "find_image_size"]
+__all__ = ["find_image_size", "parallel"]
 
 
 def parallel(

@@ -10,7 +10,7 @@ import torch
 from torch import Tensor
 from torchvision.ops.boxes import box_area, box_iou
 
-__all__ = ["box_giou", "diou_loss", "ciou_loss"]
+__all__ = ["box_giou", "ciou_loss", "diou_loss"]
 
 
 def _box_iou(boxes1: Tensor, boxes2: Tensor) -> Tuple[Tensor, Tensor]:

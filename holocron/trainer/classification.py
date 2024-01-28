@@ -15,7 +15,7 @@ from tqdm.auto import tqdm
 
 from .core import Trainer
 
-__all__ = ["ClassificationTrainer", "BinaryClassificationTrainer"]
+__all__ = ["BinaryClassificationTrainer", "ClassificationTrainer"]
 
 
 class ClassificationTrainer(Trainer):
@@ -142,8 +142,7 @@ class ClassificationTrainer(Trainer):
         num_cols = 4
         num_rows = int(math.ceil(num_samples / num_cols))
         _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
-        idx = 0
-        for img, pred, prob, target, loss in zip(images, preds, probs, targets, losses):
+        for idx, (img, pred, prob, target, loss) in enumerate(zip(images, preds, probs, targets, losses)):
             _row = int(idx / num_cols)
             _col = idx - num_cols * _row
             axes[_row][_col].imshow(img)
@@ -156,7 +155,6 @@ class ClassificationTrainer(Trainer):
                     f"{loss:.3} / {classes[pred]} ({prob:.1%}) / {classes[target]}"  # type: ignore[index]
                 )
             axes[_row][_col].axis("off")
-            idx += 1
 
         plt.show(**kwargs)
 

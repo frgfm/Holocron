@@ -11,7 +11,7 @@ from torch import Tensor
 
 from .. import functional as F
 
-__all__ = ["HardMish", "NLReLU", "FReLU"]
+__all__ = ["FReLU", "HardMish", "NLReLU"]
 
 
 class _Activation(nn.Module):

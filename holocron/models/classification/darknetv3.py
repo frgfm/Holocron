@@ -17,7 +17,7 @@ from ..checkpoints import Checkpoint, _handle_legacy_pretrained
 from ..utils import _checkpoint, _configure_model, conv_sequence
 from .resnet import _ResBlock
 
-__all__ = ["DarknetV3", "Darknet53_Checkpoint", "darknet53"]
+__all__ = ["Darknet53_Checkpoint", "DarknetV3", "darknet53"]
 
 
 class ResBlock(_ResBlock):

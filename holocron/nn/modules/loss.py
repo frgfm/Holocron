@@ -12,12 +12,12 @@ from torch import Tensor
 from .. import functional as F
 
 __all__ = [
+    "ClassBalancedWrapper",
+    "ComplementCrossEntropy",
+    "DiceLoss",
     "FocalLoss",
     "MultiLabelCrossEntropy",
-    "ComplementCrossEntropy",
-    "ClassBalancedWrapper",
     "MutualChannelLoss",
-    "DiceLoss",
     "PolyLoss",
 ]
 
