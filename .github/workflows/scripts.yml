@@ -22,7 +22,7 @@ jobs:
           python-version: ${{ matrix.python }}
           architecture: x64
       - name: Cache python modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-python-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}-build
