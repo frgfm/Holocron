@@ -71,7 +71,7 @@ docs = [
     "sphinx-markdown-tables==0.0.15",
     # Indirect deps
     # cf. https://github.com/readthedocs/readthedocs.org/issues/9038
-    "Jinja2<3.1",
+    "Jinja2<3.2",
     # cf. https://github.com/ryanfox/sphinx-markdown-tables/issues/36
     "markdown<3.4.0",
     "tabulate>=0.8.0,<1.0.0"
@@ -94,7 +94,7 @@ dev = [
     "sphinx-copybutton>=0.3.1",
     "recommonmark>=0.7.1",
     "sphinx-markdown-tables>=0.0.15",
-    "Jinja2<3.1",
+    "Jinja2<3.2",
 ]
 
 [project.urls]
