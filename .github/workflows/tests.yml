@@ -35,7 +35,7 @@ jobs:
         run: |
           coverage run -m pytest tests/
           coverage xml
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: coverage-main
           path: ./coverage.xml
@@ -45,7 +45,7 @@ jobs:
     needs: pytest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
