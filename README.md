@@ -6,27 +6,28 @@
   <a href="https://github.com/frgfm/Holocron/actions/workflows/builds.yml">
     <img alt="CI Status" src="https://img.shields.io/github/actions/workflow/status/frgfm/holocron/builds.yml?branch=main&label=CI&logo=github&style=flat-square">
   </a>
-  <a href="https://frgfm.github.io/holocron">
-    <img src="https://img.shields.io/github/actions/workflow/status/frgfm/Holocron/docs.yaml?branch=main&label=docs&logo=read-the-docs&style=flat-square" alt="Documentation Status">
+  <a href="https://github.com/astral-sh/ruff">
+    <img src="https://img.shields.io/badge/Linter-Ruff-FCC21B?style=flat-square&logo=ruff&logoColor=white" alt="ruff">
   </a>
+  <a href="https://github.com/astral-sh/ruff">
+    <img src="https://img.shields.io/badge/Formatter-Ruff-FCC21B?style=flat-square&logo=Python&logoColor=white" alt="ruff">
+  </a>
+  <a href="https://www.codacy.com/gh/frgfm/Holocron/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frgfm/Holocron&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/49fc8908c44b45d3b64131e49558f1e9"/></a>
   <a href="https://codecov.io/gh/frgfm/holocron">
     <img src="https://img.shields.io/codecov/c/github/frgfm/holocron.svg?logo=codecov&style=flat-square" alt="Test coverage percentage">
   </a>
-  <a href="https://github.com/ambv/black">
-    <img src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square" alt="black">
-  </a>
-  <a href="https://github.com/PyCQA/bandit">
-    <img src="https://img.shields.io/badge/security-bandit-yellow.svg?style=flat-square" alt="bandit">
-  </a>
-  <a href="https://www.codacy.com/gh/frgfm/Holocron/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frgfm/Holocron&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/49fc8908c44b45d3b64131e49558f1e9"/></a>
 </p>
 <p align="center">
   <a href="https://pypi.org/project/pylocron/">
-    <img src="https://img.shields.io/pypi/v/pylocron.svg?logo=python&logoColor=fff&style=flat-square" alt="PyPi Status">
+    <img src="https://img.shields.io/pypi/v/pylocron.svg?logo=python&logoColor=fff&style=flat-square&label=PyPI" alt="PyPi Status">
   </a>
-  <a href="https://anaconda.org/frgfm/pylocron"> <img src="https://anaconda.org/frgfm/pylocron/badges/version.svg" /> </a>
-  <img src="https://img.shields.io/pypi/pyversions/pylocron.svg?style=flat-square" alt="pyversions">
-  <img src="https://img.shields.io/pypi/l/pylocron.svg?style=flat-square" alt="license">
+  <a href="https://anaconda.org/frgfm/pylocron">
+    <img src="https://img.shields.io/conda/v/frgfm/pylocron.svg?logo=anaconda&label=Conda&logoColor=fff&style=flat-square" alt="Conda Version">
+  </a>
+  <img src="https://img.shields.io/pypi/pyversions/pylocron.svg?logo=Python&label=Python&logoColor=fff&style=flat-square" alt="pyversions">
+  <a href="https://github.com/frgfm/Holocron/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/frgfm/Holocron.svg?label=License&logoColor=fff&style=flat-square" alt="License">
+  </a>
 </p>
 <p align="center">
   <a href="https://huggingface.co/spaces/frgfm/holocron">
@@ -34,6 +35,11 @@
   </a>
   <a href="https://colab.research.google.com/github/frgfm/notebooks/blob/main/holocron/quicktour.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">
+  </a>
+</p>
+<p align="center">
+  <a href="https://frgfm.github.io/holocron">
+    <img src="https://img.shields.io/github/actions/workflow/status/frgfm/holocron/docs.yaml?branch=main&label=Documentation&logo=read-the-docs&logoColor=white&style=flat-square" alt="Documentation Status">
   </a>
 </p>
 
