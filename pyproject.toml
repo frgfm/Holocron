@@ -73,7 +73,7 @@ docs = [
     # cf. https://github.com/readthedocs/readthedocs.org/issues/9038
     "Jinja2<3.1",
     # cf. https://github.com/ryanfox/sphinx-markdown-tables/issues/36
-    "markdown<3.4.0",
+    "markdown<3.6.0",
     "tabulate>=0.8.0,<1.0.0"
 ]
 dev = [
