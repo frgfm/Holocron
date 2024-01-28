@@ -1,49 +1,63 @@
 'module: models':
-- holocron/models/*
+- changed-files:
+  - any-glob-to-any-file: holocron/models/*
 
 'module: nn':
-- holocron/nn/*
+- changed-files:
+  - any-glob-to-any-file: holocron/nn/*
 
 'module: ops':
-- holocron/ops/*
+- changed-files:
+  - any-glob-to-any-file: holocron/ops/*
 
 'module: optim':
-- holocron/optim/*
+- changed-files:
+  - any-glob-to-any-file: holocron/optim/*
 
 'module: trainer':
-- holocron/trainer/*
+- changed-files:
+  - any-glob-to-any-file: holocron/trainer/*
 
 'module: transforms':
-- holocron/transforms/*
+- changed-files:
+  - any-glob-to-any-file: holocron/transforms/*
 
 'module: utils':
-- holocron/utils/*
+- changed-files:
+  - any-glob-to-any-file: holocron/utils/*
 
 'ext: api':
-- api/*
+- changed-files:
+  - any-glob-to-any-file: api/*
 
 'ext: demo':
-- demo/*
+- changed-files:
+  - any-glob-to-any-file: demo/*
 
 'ext: docs':
-- docs/*
+- changed-files:
+  - any-glob-to-any-file: docs/*
 
 'ext: references':
-- references/*
+- changed-files:
+  - any-glob-to-any-file: references/*
 
 'ext: scripts':
-- scripts/*
+- changed-files:
+  - any-glob-to-any-file: scripts/*
 
 'ext: tests':
-- tests/*
+- changed-files:
+  - any-glob-to-any-file: tests/*
 
 'topic: ci':
-- .github/*
+- changed-files:
+  - any-glob-to-any-file: .github/*
 
 'topic: documentation':
-- notebooks/*
-- README.md
-- CONTRIBUTING.md
+- changed-files:
+  - any-glob-to-any-file: ['notebooks/*', 'README.md', 'CONTRIBUTING.md']
 
 'topic: build':
-- setup.py
+- changed-files:
+  - any-glob-to-any-file: setup.py
