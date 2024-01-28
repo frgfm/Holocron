@@ -18,12 +18,12 @@ from ..utils import _checkpoint, _configure_model, conv_sequence, fuse_conv_bn
 
 __all__ = [
     "MobileOne_S0_Checkpoint",
-    "mobileone_s0",
     "MobileOne_S1_Checkpoint",
-    "mobileone_s1",
     "MobileOne_S2_Checkpoint",
-    "mobileone_s2",
     "MobileOne_S3_Checkpoint",
+    "mobileone_s0",
+    "mobileone_s1",
+    "mobileone_s2",
     "mobileone_s3",
 ]
 

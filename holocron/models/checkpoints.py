@@ -12,12 +12,12 @@ from torchvision.transforms.functional import InterpolationMode
 
 __all__ = [
     "Checkpoint",
-    "TrainingRecipe",
-    "Metric",
     "Dataset",
     "Evaluation",
     "LoadingMeta",
+    "Metric",
     "PreProcessing",
+    "TrainingRecipe",
 ]
 
 

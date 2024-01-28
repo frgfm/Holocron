@@ -16,20 +16,20 @@ from ..checkpoints import Checkpoint, _handle_legacy_pretrained
 from ..utils import _checkpoint, _configure_model, conv_sequence, fuse_conv_bn
 
 __all__ = [
-    "RepVGG",
     "RepBlock",
     "RepVGG",
+    "RepVGG",
     "RepVGG_A0_Checkpoint",
-    "repvgg_a0",
     "RepVGG_A1_Checkpoint",
-    "repvgg_a1",
     "RepVGG_A2_Checkpoint",
-    "repvgg_a2",
     "RepVGG_B0_Checkpoint",
-    "repvgg_b0",
     "RepVGG_B1_Checkpoint",
-    "repvgg_b1",
     "RepVGG_B2_Checkpoint",
+    "repvgg_a0",
+    "repvgg_a1",
+    "repvgg_a2",
+    "repvgg_b0",
+    "repvgg_b1",
     "repvgg_b2",
     "repvgg_b3",
 ]

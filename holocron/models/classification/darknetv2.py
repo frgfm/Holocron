@@ -17,7 +17,7 @@ from ..checkpoints import Checkpoint, _handle_legacy_pretrained
 from ..presets import IMAGENETTE
 from ..utils import _checkpoint, _configure_model, conv_sequence
 
-__all__ = ["DarknetV2", "Darknet19_Checkpoint", "darknet19"]
+__all__ = ["Darknet19_Checkpoint", "DarknetV2", "darknet19"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {

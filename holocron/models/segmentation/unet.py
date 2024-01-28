@@ -18,7 +18,7 @@ from ...nn.init import init_module
 from ..classification.rexnet import rexnet1_3x
 from ..utils import conv_sequence, load_pretrained_params
 
-__all__ = ["UNet", "unet", "DynamicUNet", "unet_tvvgg11", "unet_tvresnet34", "unet_rexnet13", "unet2"]
+__all__ = ["DynamicUNet", "UNet", "unet", "unet2", "unet_rexnet13", "unet_tvresnet34", "unet_tvvgg11"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {

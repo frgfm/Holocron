@@ -16,7 +16,7 @@ from ..presets import IMAGENETTE
 from ..utils import _checkpoint, _configure_model, conv_sequence
 from .resnet import ResNet, _ResBlock
 
-__all__ = ["SoftAttentionLayer", "SKConv2d", "SKBottleneck", "SKNet50_Checkpoint", "sknet50", "sknet101", "sknet152"]
+__all__ = ["SKBottleneck", "SKConv2d", "SKNet50_Checkpoint", "SoftAttentionLayer", "sknet50", "sknet101", "sknet152"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {

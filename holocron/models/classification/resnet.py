@@ -19,20 +19,20 @@ from ..utils import _checkpoint, _configure_model, conv_sequence
 __all__ = [
     "BasicBlock",
     "Bottleneck",
+    "ResNeXt50_32x4d_Checkpoint",
     "ResNet",
     "ResNet18_Checkpoint",
-    "resnet18",
     "ResNet34_Checkpoint",
-    "resnet34",
+    "ResNet50D_Checkpoint",
     "ResNet50_Checkpoint",
+    "resnet18",
+    "resnet34",
     "resnet50",
+    "resnet50d",
     "resnet101",
     "resnet152",
-    "ResNeXt50_32x4d_Checkpoint",
     "resnext50_32x4d",
     "resnext101_32x8d",
-    "ResNet50D_Checkpoint",
-    "resnet50d",
 ]
 
 

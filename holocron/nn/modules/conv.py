@@ -15,7 +15,7 @@ from torch.nn.modules.utils import _pair
 
 from .. import functional as F
 
-__all__ = ["NormConv2d", "Add2d", "SlimConv2d", "PyConv2d", "Involution2d"]
+__all__ = ["Add2d", "Involution2d", "NormConv2d", "PyConv2d", "SlimConv2d"]
 
 
 class _NormConvNd(_ConvNd):

@@ -18,7 +18,7 @@ from ..presets import IMAGENETTE
 from ..utils import _checkpoint, _configure_model, conv_sequence
 from .darknetv3 import ResBlock
 
-__all__ = ["DarknetV4", "CSPDarknet53_Checkpoint", "cspdarknet53", "CSPDarknet53_Mish_Checkpoint", "cspdarknet53_mish"]
+__all__ = ["CSPDarknet53_Checkpoint", "CSPDarknet53_Mish_Checkpoint", "DarknetV4", "cspdarknet53", "cspdarknet53_mish"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {

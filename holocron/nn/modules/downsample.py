@@ -13,12 +13,12 @@ from torch import Tensor
 from .. import functional as F
 
 __all__ = [
+    "SPP",
+    "BlurPool2d",
     "ConcatDownsample2d",
     "ConcatDownsample2dJit",
     "GlobalAvgPool2d",
     "GlobalMaxPool2d",
-    "BlurPool2d",
-    "SPP",
     "ZPool",
 ]
 

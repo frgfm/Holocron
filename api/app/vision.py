@@ -15,7 +15,7 @@ from PIL import Image
 
 from app.config import settings
 
-__all__ = ["decode_image", "classify_image"]
+__all__ = ["classify_image", "decode_image"]
 
 logger = logging.getLogger("uvicorn.warning")
 

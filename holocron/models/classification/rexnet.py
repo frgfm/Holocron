@@ -19,18 +19,18 @@ from ..checkpoints import Checkpoint, Dataset, _handle_legacy_pretrained
 from ..utils import _checkpoint, _configure_model, conv_sequence
 
 __all__ = [
-    "SEBlock",
     "ReXBlock",
     "ReXNet",
     "ReXNet1_0x_Checkpoint",
-    "rexnet1_0x",
     "ReXNet1_3x_Checkpoint",
-    "rexnet1_3x",
     "ReXNet1_5x_Checkpoint",
-    "rexnet1_5x",
     "ReXNet2_0x_Checkpoint",
-    "rexnet2_0x",
     "ReXNet2_2x_Checkpoint",
+    "SEBlock",
+    "rexnet1_0x",
+    "rexnet1_3x",
+    "rexnet1_5x",
+    "rexnet2_0x",
     "rexnet2_2x",
 ]
 

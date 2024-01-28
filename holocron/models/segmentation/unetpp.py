@@ -13,7 +13,7 @@ from ...nn.init import init_module
 from ..utils import conv_sequence, load_pretrained_params
 from .unet import UpPath, down_path
 
-__all__ = ["UNetp", "unetp", "UNetpp", "unetpp"]
+__all__ = ["UNetp", "UNetpp", "unetp", "unetpp"]
 
 
 default_cfgs: Dict[str, Dict[str, Any]] = {
