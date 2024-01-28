@@ -319,7 +319,7 @@
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">torchvision.ops.boxes</span> <span class="kn">import</span> <span class="n">box_area</span><span class="p">,</span> <span class="n">box_iou</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;box_giou&quot;</span><span class="p">,</span> <span class="s2">&quot;diou_loss&quot;</span><span class="p">,</span> <span class="s2">&quot;ciou_loss&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;box_giou&quot;</span><span class="p">,</span> <span class="s2">&quot;ciou_loss&quot;</span><span class="p">,</span> <span class="s2">&quot;diou_loss&quot;</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">_box_iou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
