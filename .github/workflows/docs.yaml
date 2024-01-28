@@ -41,7 +41,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_DEPLOY_KEY }}
 
       - name: Deploy to Github Pages
-        uses: JamesIves/github-pages-deploy-action@3.7.1
+        uses: JamesIves/github-pages-deploy-action@v4.5.0
         with:
           BRANCH: gh-pages
           FOLDER: 'docs/build'
