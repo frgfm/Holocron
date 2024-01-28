@@ -5,19 +5,54 @@
 
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directory: "api"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "pip"
-    directory: "demo"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    groups:
+      gh-actions:
+        patterns:
+          - "*"
+    reviewers:
+      - "frgfm"
+    assignees:
+      - "frgfm"
+  - package-ecosystem: "pip"
+    directory: "api"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    reviewers:
+      - "frgfm"
+    assignees:
+      - "frgfm"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "pip"
+    directory: "demo"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    reviewers:
+      - "frgfm"
+    assignees:
+      - "frgfm"
+    open-pull-requests-limit: 10
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    reviewers:
+      - "frgfm"
+    assignees:
+      - "frgfm"
+    open-pull-requests-limit: 10
