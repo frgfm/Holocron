@@ -11,11 +11,11 @@ jobs:
         os: [ubuntu-latest]
         python: [3.9]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           architecture: x64
@@ -36,7 +36,7 @@ jobs:
         run: test -e docs/build/index.html || exit
 
       - name: Install SSH Client 🔑
-        uses: webfactory/ssh-agent@v0.4.1
+        uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_DEPLOY_KEY }}
 
