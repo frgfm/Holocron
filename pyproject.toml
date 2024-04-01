@@ -47,7 +47,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "pytest>=7.3.2",
-    "pytest-cov>=3.0.0,<5.0.0",
+    "pytest-cov>=3.0.0,<6.0.0",
     "pytest-pretty>=1.0.0,<2.0.0",
     "onnx>=1.13.0,<2.0.0",
 ]
@@ -79,7 +79,7 @@ docs = [
 dev = [
     # test
     "pytest>=7.3.2",
-    "pytest-cov>=3.0.0,<5.0.0",
+    "pytest-cov>=3.0.0,<6.0.0",
     "pytest-pretty>=1.0.0,<2.0.0",
     "onnx>=1.13.0,<2.0.0",
     # style
