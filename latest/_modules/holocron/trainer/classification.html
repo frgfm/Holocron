@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
         <title>holocron.trainer.classification - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
@@ -500,7 +500,7 @@
 
         <span class="c1"># AMP</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>  <span class="c1"># type: ignore[attr-defined]</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
                 <span class="c1"># Forward</span>
                 <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
                 <span class="c1"># Loss computation</span>

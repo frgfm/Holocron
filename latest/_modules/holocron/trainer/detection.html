@@ -13,7 +13,7 @@
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
         <title>holocron.trainer.detection - Holocron</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=649a27d8" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
@@ -331,14 +331,14 @@
     <span class="n">assign_unique</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">])</span>
     <span class="c1"># Filter</span>
     <span class="k">if</span> <span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">assign_unique</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">gt_kept</span><span class="p">],</span> <span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">gt_kept</span><span class="p">],</span> <span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span>  <span class="c1"># type: ignore[return-value]</span>
 
     <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">pred_idx</span> <span class="ow">in</span> <span class="n">assign_unique</span><span class="p">:</span>
         <span class="n">selection</span> <span class="o">=</span> <span class="n">iou</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">]</span> <span class="o">==</span> <span class="n">pred_idx</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
         <span class="n">gt_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">gt_boxes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">selection</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">pred_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iou</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">gt_kept</span><span class="p">][</span><span class="n">selection</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="k">return</span> <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span>
+    <span class="k">return</span> <span class="n">gt_indices</span><span class="p">,</span> <span class="n">pred_indices</span>  <span class="c1"># type: ignore[return-value]</span>
 
 
 <div class="viewcode-block" id="DetectionTrainer">
@@ -374,7 +374,7 @@
     <span class="k">def</span> <span class="nf">_get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">target</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>  <span class="c1"># type: ignore[override]</span>
         <span class="c1"># AMP</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>  <span class="c1"># type: ignore[attr-defined]</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
                 <span class="c1"># Forward &amp; loss computation</span>
                 <span class="n">loss_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
                 <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
@@ -410,7 +410,7 @@
             <span class="n">x</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>  <span class="c1"># type: ignore[attr-defined]</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
                     <span class="n">detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
