@@ -3,7 +3,7 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -277,7 +277,7 @@ class YoloLayer(nn.Module):
         c_x = torch.arange(w, dtype=torch.float32, device=output.device).reshape(1, 1, -1, 1)
         c_y = torch.arange(h, dtype=torch.float32, device=output.device).reshape(1, -1, 1, 1)
 
-        b_xy = cast(Tensor, self.scale_xy * torch.sigmoid(output[..., :2]) - 0.5 * (self.scale_xy - 1))
+        b_xy = self.scale_xy * torch.sigmoid(output[..., :2]) - 0.5 * (self.scale_xy - 1)
         b_xy[..., 0].add_(c_x)
         b_xy[..., 1].add_(c_y)
         b_xy[..., 0].div_(w)
@@ -455,7 +455,7 @@ class Yolov4Head(nn.Module):
         # cf. https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg#L1143
         if anchors is None:
             anchors = (
-                torch.tensor(  # type: ignore[assignment]
+                torch.tensor(
                     [
                         [[12, 16], [19, 36], [40, 28]],
                         [[36, 75], [76, 55], [72, 146]],
@@ -468,8 +468,8 @@ class Yolov4Head(nn.Module):
         elif not isinstance(anchors, torch.Tensor):
             anchors = torch.tensor(anchors, dtype=torch.float32)
 
-        if anchors.shape[0] != 3:  # type: ignore[union-attr]
-            raise AssertionError(f"The number of anchors is expected to be 3. received: {anchors.shape[0]}")  # type: ignore[union-attr]
+        if anchors.shape[0] != 3:
+            raise AssertionError(f"The number of anchors is expected to be 3. received: {anchors.shape[0]}")
 
         super().__init__()
 
@@ -480,7 +480,7 @@ class Yolov4Head(nn.Module):
             *conv_sequence(256, (5 + num_classes) * 3, None, None, None, conv_layer, kernel_size=1, bias=True),
         )
 
-        self.yolo1 = YoloLayer(anchors[0], num_classes=num_classes, scale_xy=1.2)  # type: ignore[index]
+        self.yolo1 = YoloLayer(anchors[0], num_classes=num_classes, scale_xy=1.2)
 
         self.pre_head2 = nn.Sequential(
             *conv_sequence(
@@ -536,7 +536,7 @@ class Yolov4Head(nn.Module):
             *conv_sequence(512, (5 + num_classes) * 3, None, None, None, conv_layer, kernel_size=1, bias=True),
         )
 
-        self.yolo2 = YoloLayer(anchors[1], num_classes=num_classes, scale_xy=1.1)  # type: ignore[index]
+        self.yolo2 = YoloLayer(anchors[1], num_classes=num_classes, scale_xy=1.1)
 
         self.pre_head3 = nn.Sequential(
             *conv_sequence(
@@ -598,7 +598,7 @@ class Yolov4Head(nn.Module):
             *conv_sequence(1024, (5 + num_classes) * 3, None, None, None, conv_layer, kernel_size=1, bias=True),
         )
 
-        self.yolo3 = YoloLayer(anchors[2], num_classes=num_classes, scale_xy=1.05)  # type: ignore[index]
+        self.yolo3 = YoloLayer(anchors[2], num_classes=num_classes, scale_xy=1.05)
         init_module(self, "leaky_relu")
         # Zero init
         self.head1[-1].weight.data.zero_()

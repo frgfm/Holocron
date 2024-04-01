@@ -22,14 +22,14 @@ def assign_iou(gt_boxes: Tensor, pred_boxes: Tensor, iou_threshold: float = 0.5)
     assign_unique = torch.unique(iou.indices[gt_kept])
     # Filter
     if iou.indices[gt_kept].shape[0] == assign_unique.shape[0]:
-        return torch.arange(gt_boxes.shape[0])[gt_kept], iou.indices[gt_kept]
+        return torch.arange(gt_boxes.shape[0])[gt_kept], iou.indices[gt_kept]  # type: ignore[return-value]
 
     gt_indices, pred_indices = [], []
     for pred_idx in assign_unique:
         selection = iou.values[gt_kept][iou.indices[gt_kept] == pred_idx].argmax()
         gt_indices.append(torch.arange(gt_boxes.shape[0])[gt_kept][selection].item())
         pred_indices.append(iou.indices[gt_kept][selection].item())
-    return gt_indices, pred_indices
+    return gt_indices, pred_indices  # type: ignore[return-value]
 
 
 class DetectionTrainer(Trainer):
@@ -63,7 +63,7 @@ class DetectionTrainer(Trainer):
     def _get_loss(self, x: List[Tensor], target: List[Dict[str, Tensor]]) -> Tensor:  # type: ignore[override]
         # AMP
         if self.amp:
-            with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
+            with torch.cuda.amp.autocast():
                 # Forward & loss computation
                 loss_dict = self.model(x, target)
                 return sum(loss_dict.values())
@@ -97,7 +97,7 @@ class DetectionTrainer(Trainer):
             x, target = self.to_cuda(x, target)
 
             if self.amp:
-                with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
+                with torch.cuda.amp.autocast():
                     detections = self.model(x)
             else:
                 detections = self.model(x)

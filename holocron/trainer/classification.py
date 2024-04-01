@@ -183,7 +183,7 @@ class BinaryClassificationTrainer(ClassificationTrainer):
 
         # AMP
         if self.amp:
-            with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
+            with torch.cuda.amp.autocast():
                 # Forward
                 out = self.model(x)
                 # Loss computation
