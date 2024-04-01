@@ -191,7 +191,7 @@ class Trainer:
                 # Safeguard for Gradient explosion
                 if isinstance(self.grad_clip, float):
                     self.scaler.unscale_(self.optimizer)
-                    nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)  # type: ignore[attr-defined]
+                    nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
                 self.optimizer.zero_grad()
@@ -202,7 +202,7 @@ class Trainer:
             if self._grad_count == self.gradient_acc:
                 # Safeguard for Gradient explosion
                 if isinstance(self.grad_clip, float):
-                    nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)  # type: ignore[attr-defined]
+                    nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)
                 self.optimizer.step()
                 self.optimizer.zero_grad()
                 self._grad_count = 0
@@ -210,7 +210,7 @@ class Trainer:
     def _get_loss(self, x: Tensor, target: Tensor, return_logits: bool = False) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         # AMP
         if self.amp:
-            with torch.cuda.amp.autocast():  # type: ignore[attr-defined]
+            with torch.cuda.amp.autocast():
                 # Forward
                 out = self.model(x)
                 # Loss computation
@@ -294,7 +294,7 @@ class Trainer:
         self._reset_scheduler(lr, num_epochs, sched_type, **kwargs)
 
         if self.amp:
-            self.scaler = torch.cuda.amp.GradScaler()  # type: ignore[attr-defined]
+            self.scaler = torch.cuda.amp.GradScaler()
 
         mb = master_bar(range(num_epochs))
         for _ in mb:
@@ -347,7 +347,7 @@ class Trainer:
         self.loss_recorder = []
 
         if self.amp:
-            self.scaler = torch.cuda.amp.GradScaler()  # type: ignore[attr-defined]
+            self.scaler = torch.cuda.amp.GradScaler()
 
         for batch_idx, (x, target) in enumerate(self.train_loader):
             x, target = self.to_cuda(x, target)
@@ -433,7 +433,7 @@ class Trainer:
         _losses = []
 
         if self.amp:
-            self.scaler = torch.cuda.amp.GradScaler()  # type: ignore[attr-defined]
+            self.scaler = torch.cuda.amp.GradScaler()
 
         for _ in range(num_it):
             # Forward
