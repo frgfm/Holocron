@@ -8,8 +8,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "monthly"
       time: "06:00"
       timezone: "Europe/Paris"
     groups:
@@ -21,38 +20,16 @@ updates:
     assignees:
       - "frgfm"
   - package-ecosystem: "pip"
-    directory: "api"
-    schedule:
-      interval: "monthly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Paris"
-    reviewers:
-      - "frgfm"
-    assignees:
-      - "frgfm"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "pip"
-    directory: "demo"
-    schedule:
-      interval: "monthly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Paris"
-    reviewers:
-      - "frgfm"
-    assignees:
-      - "frgfm"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "monthly"
-      day: "monday"
+      interval: "daily"
       time: "06:00"
       timezone: "Europe/Paris"
     reviewers:
       - "frgfm"
     assignees:
       - "frgfm"
-    open-pull-requests-limit: 10
+    allow:
+      - dependency-name: "ruff"
+      - dependency-name: "mypy"
+      - dependency-name: "pre-commit"
