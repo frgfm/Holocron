@@ -110,9 +110,7 @@ class SKConv2d(nn.Module):
         b, m, c = paths.shape[:3]
         z = self.sa(paths.sum(dim=1)).view(b, m, c, 1, 1)
         attention_factors = torch.softmax(z, dim=1)
-        out = (attention_factors * paths).sum(dim=1)
-
-        return out
+        return (attention_factors * paths).sum(dim=1)
 
 
 class SKBottleneck(_ResBlock):

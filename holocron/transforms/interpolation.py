@@ -87,14 +87,13 @@ class Resize(T.Resize):
     def forward(self, image: Union[Image.Image, torch.Tensor]) -> Union[Image.Image, torch.Tensor]:
         if self.mode == ResizeMethod.SQUISH:
             return super().forward(image)
-        else:
-            h, w = self.get_params(image)
-            img = resize(image, (h, w), self.interpolation)
-            # get the padding
-            h_pad, w_pad = self.size[0] - h, self.size[1] - w
-            _padding = w_pad // 2, h_pad // 2, w_pad - w_pad // 2, h_pad - h_pad // 2
-            # Fill the rest up to target_size
-            return pad(img, _padding, padding_mode=self.pad_mode)
+        h, w = self.get_params(image)
+        img = resize(image, (h, w), self.interpolation)
+        # get the padding
+        h_pad, w_pad = self.size[0] - h, self.size[1] - w
+        _padding = w_pad // 2, h_pad // 2, w_pad - w_pad // 2, h_pad - h_pad // 2
+        # Fill the rest up to target_size
+        return pad(img, _padding, padding_mode=self.pad_mode)
 
 
 class RandomZoomOut(nn.Module):

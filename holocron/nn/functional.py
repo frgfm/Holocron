@@ -133,9 +133,7 @@ def concat_downsample2d(x: Tensor, scale_factor: int) -> Tensor:
     # N * C * H * W --> N * C * (H/scale_factor) * scale_factor * (W/scale_factor) * scale_factor
     x = x.view(b, c, h // scale_factor, scale_factor, w // scale_factor, scale_factor)
     x = x.permute(0, 3, 5, 1, 2, 4).contiguous()
-    x = x.view(b, int(c * scale_factor**2), h // scale_factor, w // scale_factor)
-
-    return x
+    return x.view(b, int(c * scale_factor**2), h // scale_factor, w // scale_factor)
 
 
 def z_pool(x: Tensor, dim: int) -> Tensor:
@@ -364,9 +362,7 @@ def _xcorr2d(
     h = floor((h + (2 * padding[0]) - (dilation[0] * (weight.shape[-2] - 1)) - 1) / stride[0] + 1)
     w = floor((w + (2 * padding[1]) - (dilation[1] * (weight.shape[-1] - 1)) - 1) / stride[1] + 1)
 
-    x = x.view(-1, weight.shape[0], h, w)
-
-    return x
+    return x.view(-1, weight.shape[0], h, w)
 
 
 def _convNd(x: Tensor, weight: Tensor) -> Tensor:

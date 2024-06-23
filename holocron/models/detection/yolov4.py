@@ -628,7 +628,7 @@ class Yolov4Head(nn.Module):
         y3 = self.yolo3(o3, target)
 
         if not self.training:
-            detections = [
+            return [
                 {
                     "boxes": torch.cat((det1["boxes"], det2["boxes"], det3["boxes"]), dim=0),
                     "scores": torch.cat((det1["scores"], det2["scores"], det3["scores"]), dim=0),
@@ -636,7 +636,6 @@ class Yolov4Head(nn.Module):
                 }
                 for det1, det2, det3 in zip(y1, y2, y3)
             ]
-            return detections
 
         return {k: y1[k] + y2[k] + y3[k] for k in y1}
 

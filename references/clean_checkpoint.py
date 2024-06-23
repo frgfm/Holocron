@@ -27,9 +27,7 @@ def parse_args():
 
     parser.add_argument("checkpoint", type=str, help="path to the training checkpoint")
     parser.add_argument("outfile", type=str, help="model")
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 
 if __name__ == "__main__":

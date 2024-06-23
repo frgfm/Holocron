@@ -220,7 +220,7 @@ def inject_checkpoint_metadata(app, what, name, obj, options, lines):
             table.extend((
                 ("url", f"`link <{meta.url}>`__"),
                 ("sha256", meta.sha256[:16]),
-                ("size", f"{meta.size / 1024 ** 2:.1f}MB"),
+                ("size", f"{meta.size / 1024**2:.1f}MB"),
                 ("num_params", f"{meta.num_params / 1000000.0:.1f}M"),
             ))
             # Wrap the text

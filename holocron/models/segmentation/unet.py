@@ -223,8 +223,7 @@ class UNet(nn.Module):
             x = decoder(xs.pop(), x)
 
         # Classifier
-        x = self.classifier(x)
-        return x
+        return self.classifier(x)
 
 
 class UBlock(nn.Module):
@@ -368,8 +367,7 @@ class DynamicUNet(nn.Module):
             x = self.upsample(x)
 
         # Classifier
-        x = self.classifier(x)
-        return x
+        return self.classifier(x)
 
 
 def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> UNet:

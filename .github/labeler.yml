@@ -60,4 +60,10 @@
 
 'topic: build':
 - changed-files:
-  - any-glob-to-any-file: setup.py
+  - any-glob-to-any-file:
+    - setup.py
+    - pyproject.toml
+
+'topic: style':
+- changed-files:
+  - any-glob-to-any-file: .pre-commit-config.yaml

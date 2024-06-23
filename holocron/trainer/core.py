@@ -362,8 +362,7 @@ class Trainer:
             if torch.isnan(batch_loss) or torch.isinf(batch_loss):
                 if batch_idx == 0:
                     raise ValueError("loss value is NaN or inf.")
-                else:
-                    break
+                break
             self.loss_recorder.append(batch_loss.item())
             # Stop after the number of iterations
             if batch_idx + 1 == num_it:

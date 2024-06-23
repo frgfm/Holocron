@@ -105,5 +105,4 @@ class LambdaLayer(nn.Module):
 
         Y = Yc + Yp
         # B x (H * W) x num_heads x dim_v -> B x (num_heads * dim_v) x H x W
-        out = Y.permute(0, 2, 3, 1).reshape(b, self.num_heads * v.shape[2], h, w)
-        return out
+        return Y.permute(0, 2, 3, 1).reshape(b, self.num_heads * v.shape[2], h, w)
