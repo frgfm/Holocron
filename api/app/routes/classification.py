@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.post("/", status_code=status.HTTP_200_OK, summary="Perform image classification")
-async def classify(file: UploadFile = File(...)) -> ClsCandidate:
+def classify(file: UploadFile = File(...)) -> ClsCandidate:
     """Runs holocron vision model to analyze the input image"""
     probs = classify_image(decode_image(file.file.read()))
 
