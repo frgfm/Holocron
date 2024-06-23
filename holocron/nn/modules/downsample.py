@@ -74,8 +74,7 @@ class GlobalAvgPool2d(nn.Module):
         return x.view(x.size(0), x.size(1), -1).mean(-1).view(x.size(0), x.size(1), 1, 1)
 
     def extra_repr(self) -> str:
-        inplace_str = "flatten=True" if self.flatten else ""
-        return inplace_str
+        return "flatten=True" if self.flatten else ""
 
 
 class GlobalMaxPool2d(nn.Module):
@@ -97,13 +96,11 @@ class GlobalMaxPool2d(nn.Module):
         return x.view(x.size(0), x.size(1), -1).max(-1).values.view(x.size(0), x.size(1), 1, 1)
 
     def extra_repr(self) -> str:
-        inplace_str = "flatten=True" if self.flatten else ""
-        return inplace_str
+        return "flatten=True" if self.flatten else ""
 
 
 def get_padding(kernel_size: int, stride: int = 1, dilation: int = 1) -> int:
-    padding = ((stride - 1) + dilation * (kernel_size - 1)) // 2
-    return padding
+    return ((stride - 1) + dilation * (kernel_size - 1)) // 2
 
 
 class BlurPool2d(nn.Module):

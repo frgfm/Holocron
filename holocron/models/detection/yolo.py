@@ -339,9 +339,7 @@ class YOLOv1(_YOLO):
     def _forward(self, x: Tensor) -> Tensor:
         out = self.backbone(x)
         out = self.block4(out)
-        out = self.classifier(out)
-
-        return out
+        return self.classifier(out)
 
     def forward(
         self, x: Tensor, target: Optional[List[Dict[str, Tensor]]] = None

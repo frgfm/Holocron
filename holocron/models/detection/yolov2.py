@@ -208,9 +208,7 @@ class YOLOv2(_YOLO):
         out = torch.cat((passthrough, out), 1)
         out = self.block6(out)
 
-        out = self.head(out)
-
-        return out
+        return self.head(out)
 
     def forward(
         self, x: Union[Tensor, List[Tensor], Tuple[Tensor, ...]], target: Optional[List[Dict[str, Tensor]]] = None

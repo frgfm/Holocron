@@ -41,7 +41,7 @@ class TridentConv2d(nn.Conv2d):
         dilations = [1] * self.num_branches if self.dilation[0] == 1 else [1 + idx for idx in range(self.num_branches)]
 
         # Use shared weight to apply the convolution
-        out = torch.cat(
+        return torch.cat(
             [
                 F.conv2d(
                     _x,
@@ -56,8 +56,6 @@ class TridentConv2d(nn.Conv2d):
             ],
             1,
         )
-
-        return out
 
 
 class Tridentneck(_ResBlock):

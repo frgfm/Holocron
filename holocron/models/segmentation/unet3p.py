@@ -155,8 +155,7 @@ class UNet3p(nn.Module):
             xs[idx] = self.decoder[idx](xs[:idx], xs[idx], xs[idx + 1 :])
 
         # Classifier
-        x = self.classifier(xs[0])
-        return x
+        return self.classifier(xs[0])
 
 
 def _unet(arch: str, pretrained: bool, progress: bool, **kwargs: Any) -> nn.Module:

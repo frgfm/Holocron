@@ -496,6 +496,4 @@ class Involution2d(nn.Module):
 
         # Multiply-Add operation
         # --> (N, C, H // s, W // s)
-        out = (kernel * x_unfolded).sum(dim=3).view(*x.shape[:2], *kernel.shape[-2:])
-
-        return out
+        return (kernel * x_unfolded).sum(dim=3).view(*x.shape[:2], *kernel.shape[-2:])

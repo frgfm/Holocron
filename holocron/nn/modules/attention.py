@@ -74,5 +74,4 @@ class TripletAttention(nn.Module):
         x_h = cast(Tensor, self.h_branch(x))
         x_w = cast(Tensor, self.w_branch(x))
 
-        out = (x_c + x_h + x_w) / 3
-        return out
+        return (x_c + x_h + x_w) / 3

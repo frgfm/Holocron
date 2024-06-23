@@ -22,8 +22,7 @@ class _Activation(nn.Module):
         self.inplace = inplace
 
     def extra_repr(self) -> str:
-        inplace_str = "inplace=True" if self.inplace else ""
-        return inplace_str
+        return "inplace=True" if self.inplace else ""
 
 
 class HardMish(_Activation):
@@ -80,5 +79,4 @@ class FReLU(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         out = self.conv(x)
         out = self.bn(out)
-        x = torch.max(x, out)
-        return x
+        return torch.max(x, out)
