@@ -446,8 +446,7 @@
         <span class="n">x_h</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_branch</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">x_w</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_branch</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
-        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_c</span> <span class="o">+</span> <span class="n">x_h</span> <span class="o">+</span> <span class="n">x_w</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
-        <span class="k">return</span> <span class="n">out</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x_c</span> <span class="o">+</span> <span class="n">x_h</span> <span class="o">+</span> <span class="n">x_w</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span></div>
 
 </pre></div>
         </article>

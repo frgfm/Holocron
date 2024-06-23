@@ -877,9 +877,7 @@
 
         <span class="c1"># Multiply-Add operation</span>
         <span class="c1"># --&gt; (N, C, H // s, W // s)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel</span> <span class="o">*</span> <span class="n">x_unfolded</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="o">*</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
-
-        <span class="k">return</span> <span class="n">out</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">kernel</span> <span class="o">*</span> <span class="n">x_unfolded</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="o">*</span><span class="n">kernel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span></div>
 
 </pre></div>
         </article>
