@@ -21,7 +21,7 @@ repos:
         args: ['--branch', 'main']
       - id: trailing-whitespace
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.1.14'
+    rev: 'v0.4.10'
     hooks:
       - id: ruff
         args:
