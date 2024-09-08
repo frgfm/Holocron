@@ -1,5 +1,5 @@
 default_language_version:
-    python: python3.9
+    python: python3.11
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -21,7 +21,7 @@ repos:
         args: ['--branch', 'main']
       - id: trailing-whitespace
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.5.0'
+    rev: 'v0.6.4'
     hooks:
       - id: ruff
         args:
