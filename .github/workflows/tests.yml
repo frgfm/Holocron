@@ -67,14 +67,14 @@ jobs:
       - name: Install poetry
         uses: abatilo/actions-poetry@v3
         with:
-          poetry-version: 1.6.1
+          poetry-version: 1.8.3
       - name: Lock the requirements
         run: |
           cd api
           poetry lock
           poetry export -f requirements.txt --without-hashes --with dev --output requirements.txt
       - name: Build & run docker
-        run: cd api && docker-compose up -d --build
+        run: cd api && docker compose up -d --build
       - name: Docker sanity check
         run: sleep 15 && nc -vz localhost 8050
       - name: Ping server

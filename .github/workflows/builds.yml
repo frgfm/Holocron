@@ -40,7 +40,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11
           architecture: x64
       - name: Cache python modules
         uses: actions/cache@v4
@@ -62,7 +62,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
-          python-version: "3.9"
+          python-version: "3.11"
       - name: Install dependencies
         shell: bash -el {0}
         run: conda install -y conda-build conda-verify
@@ -80,7 +80,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python: [3.9]
+        python: [3.11]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -90,14 +90,14 @@ jobs:
       - name: Install poetry
         uses: abatilo/actions-poetry@v3
         with:
-          poetry-version: 1.6.1
+          poetry-version: 1.8.3
       - name: Lock the requirements
         run: |
           cd api
           poetry lock
           poetry export -f requirements.txt --without-hashes --output requirements.txt
       - name: Build & run docker
-        run: cd api && docker-compose up -d --build
+        run: cd api && docker compose up -d --build
       - name: Docker sanity check
         run: sleep 15 && nc -vz localhost 8050
       - name: Ping server
