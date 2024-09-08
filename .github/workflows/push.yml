@@ -14,7 +14,7 @@ jobs:
           architecture: x64
       - uses: abatilo/actions-poetry@v3
         with:
-          poetry-version: "1.6.1"
+          poetry-version: "1.8.3"
       - name: Resolve dependencies
         run: cd api && poetry export -f requirements.txt --without-hashes --output requirements.txt
       - name: Build docker
