@@ -209,7 +209,9 @@ def main(args):
     elif args.opt == "adabelief":
         optimizer = AdaBelief(model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == "ademamix":
-        optimizer = AdEMAMix(model_params, args.lr, betas=(0.95, 0.99, 0.9999), eps=1e-6, weight_decay=args.weight_decay)
+        optimizer = AdEMAMix(
+            model_params, args.lr, betas=(0.95, 0.99, 0.9999), eps=1e-6, weight_decay=args.weight_decay
+        )
 
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = ClassificationTrainer(

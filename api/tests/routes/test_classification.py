@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_classification(test_app_asyncio, mock_classification_image):
     response = await test_app_asyncio.post("/classification", files={"file": mock_classification_image})
     assert response.status_code == 200
