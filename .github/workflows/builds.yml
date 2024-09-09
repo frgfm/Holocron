@@ -97,7 +97,7 @@ jobs:
           poetry lock
           poetry export -f requirements.txt --without-hashes --output requirements.txt
       - name: Build & run docker
-        run: cd api && docker-compose up -d --build
+        run: cd api && docker compose up -d --build
       - name: Docker sanity check
         run: sleep 15 && nc -vz localhost 8050
       - name: Ping server
