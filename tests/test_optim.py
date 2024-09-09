@@ -65,3 +65,7 @@ def test_adamp():
 
 def test_adan():
     _test_optimizer("Adan")
+
+
+def test_ademamix():
+    _test_optimizer("AdEMAMix")
