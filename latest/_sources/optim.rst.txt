@@ -27,6 +27,8 @@ Implementations of recent parameter optimizer for Pytorch modules.
 
 .. autoclass:: Adan
 
+.. autoclass:: AdEMAMix
+
 
 Optimizer wrappers
 ------------------

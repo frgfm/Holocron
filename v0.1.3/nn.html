@@ -14,13 +14,13 @@
 </script>
     <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="holocron.nn.functional" href="nn.functional.html" /><link rel="prev" title="holocron.models" href="models.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 7.3.7 and Furo 2024.08.06 -->
         <title>holocron.nn - Holocron</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=649a27d8" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom_theme.css?v=27ef7d36" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -99,19 +99,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -152,7 +139,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -282,7 +269,7 @@
         <article role="main" id="furo-main-content">
           <section id="holocron-nn">
 <h1>holocron.nn<a class="headerlink" href="#holocron-nn" title="Link to this heading">¶</a></h1>
-<p>An addition to the <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#module-torch.nn" title="(in PyTorch v2.3)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">torch.nn</span></code></a> module of Pytorch to extend the range of neural networks building blocks.</p>
+<p>An addition to the <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#module-torch.nn" title="(in PyTorch v2.4)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">torch.nn</span></code></a> module of Pytorch to extend the range of neural networks building blocks.</p>
 <section id="non-linear-activations">
 <h2>Non-linear activations<a class="headerlink" href="#non-linear-activations" title="Link to this heading">¶</a></h2>
 <dl class="py class">
@@ -378,7 +365,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – exponent parameter of the focal loss</p></li>
-<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
@@ -393,7 +380,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
@@ -410,7 +397,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – smoothing factor</p></li>
-<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
@@ -427,7 +414,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – smoothing factor</p></li>
-<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 </ul>
@@ -437,13 +424,13 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.nn.MutualChannelLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">MutualChannelLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MutualChannelLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.MutualChannelLoss" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">MutualChannelLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MutualChannelLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.MutualChannelLoss" title="Link to this definition">¶</a></dt>
 <dd><p>Implements the mutual channel loss from
 <a class="reference external" href="https://arxiv.org/pdf/2002.04264.pdf">“The Devil is in the Channels: Mutual-Channel Loss for Fine-Grained Image Classification”</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em><em>, </em><em>optional</em>) – class weight for loss computation</p></li>
 <li><p><strong>ignore_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – specifies target value that is ignored and do not contribute to gradient</p></li>
 <li><p><strong>reduction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – type of reduction to apply to the final loss</p></li>
 <li><p><strong>chi</strong> (<em>in</em><em>, </em><em>optional</em>) – num of features per class</p></li>
@@ -458,7 +445,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 <h2>Loss wrappers<a class="headerlink" href="#loss-wrappers" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.nn.MixupLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">MixupLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.3)"><span class="pre">Module</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MixupLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.MixupLoss" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">MixupLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.4)"><span class="pre">Module</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#MixupLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.MixupLoss" title="Link to this definition">¶</a></dt>
 <dd><p>Implements a Mixup wrapper as described in
 <a class="reference external" href="https://arxiv.org/pdf/1710.09412.pdf">“mixup: Beyond Empirical Risk Minimization”</a></p>
 <dl class="field-list simple">
@@ -470,7 +457,7 @@ and <span class="math notranslate nohighlight">\(p_t\)</span> is the predicted p
 
 <dl class="py class">
 <dt class="sig sig-object py" id="holocron.nn.ClassBalancedWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">ClassBalancedWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.3)"><span class="pre">Module</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.99</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#ClassBalancedWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.ClassBalancedWrapper" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">holocron.nn.</span></span><span class="sig-name descname"><span class="pre">ClassBalancedWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.4)"><span class="pre">Module</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.99</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/holocron/nn/modules/loss.html#ClassBalancedWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#holocron.nn.ClassBalancedWrapper" title="Link to this definition">¶</a></dt>
 <dd><p>Implementation of the class-balanced loss as described in <a class="reference external" href="https://arxiv.org/pdf/1901.05555.pdf">“Class-Balanced Loss Based on Effective Number
 of Samples”</a>.</p>
 <p>Given a loss function <span class="math notranslate nohighlight">\(\mathcal{L}\)</span>, the class-balanced loss is described by:</p>
@@ -483,8 +470,8 @@ samples for class <span class="math notranslate nohighlight">\(y\)</span>, and <
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>criterion</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.3)"><em>torch.nn.Module</em></a>) – loss module</p></li>
-<li><p><strong>num_samples</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em>) – number of samples for each class</p></li>
+<li><p><strong>criterion</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.4)"><em>torch.nn.Module</em></a>) – loss module</p></li>
+<li><p><strong>num_samples</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)"><em>torch.Tensor</em></a><em>[</em><em>K</em><em>]</em>) – number of samples for each class</p></li>
 <li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><em>optional</em>) – rebalancing exponent</p></li>
 </ul>
 </dd>
@@ -734,7 +721,7 @@ module as described in <a class="reference external" href="https://arxiv.org/pdf
 <dd class="field-even"><p>the transformed tensor.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.3)">torch.Tensor</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.4)">torch.Tensor</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -909,7 +896,7 @@ modified in <a class="reference external" href="https://arxiv.org/pdf/2004.10934
 </div><script src="_static/documentation_options.js?v=d495dbd9"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
     <script src="_static/js/custom.js?v=f1ff372a"></script>
