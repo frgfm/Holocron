@@ -22,7 +22,7 @@ class LAMB(Optimizer):
         v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
 
     where :math:`g_t` is the gradient of :math:`\theta_t`,
-    :math:`\beta_1, \beta_2 \in [0, 1]^3` are the exponential average smoothing coefficients,
+    :math:`\beta_1, \beta_2 \in [0, 1]^2` are the exponential average smoothing coefficients,
     :math:`m_0 = 0,\ v_0 = 0`.
 
     Then we correct their biases using:

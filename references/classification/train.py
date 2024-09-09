@@ -30,7 +30,7 @@ from torchvision.transforms.functional import InterpolationMode, to_pil_image
 from holocron.models import classification
 from holocron.models.presets import CIFAR10 as CIF10
 from holocron.models.presets import IMAGENETTE
-from holocron.optim import AdaBelief, AdamP
+from holocron.optim import AdaBelief, AdamP, AdEMAMix
 from holocron.trainer import ClassificationTrainer
 from holocron.utils.data import Mixup
 from holocron.utils.misc import find_image_size
@@ -208,6 +208,10 @@ def main(args):
         optimizer = AdamP(model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
     elif args.opt == "adabelief":
         optimizer = AdaBelief(model_params, args.lr, betas=(0.95, 0.99), eps=1e-6, weight_decay=args.weight_decay)
+    elif args.opt == "ademamix":
+        optimizer = AdEMAMix(
+            model_params, args.lr, betas=(0.95, 0.99, 0.9999), eps=1e-6, weight_decay=args.weight_decay
+        )
 
     log_wb = lambda metrics: wandb.log(metrics) if args.wb else None
     trainer = ClassificationTrainer(
