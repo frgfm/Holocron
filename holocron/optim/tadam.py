@@ -26,7 +26,7 @@ class TAdam(Optimizer):
         v_t \leftarrow \beta_2 v_{t-1} + (1 - \beta_2) (g_t - g_{t-1})
 
     where :math:`g_t` is the gradient of :math:`\theta_t`,
-    :math:`\beta_1, \beta_2 \in [0, 1]^3` are the exponential average smoothing coefficients,
+    :math:`\beta_1, \beta_2 \in [0, 1]^2` are the exponential average smoothing coefficients,
     :math:`m_0 = 0,\ v_0 = 0,\ W_0 = \frac{\beta_1}{1 - \beta_1}`;
     :math:`\nu` is the degrees of freedom and :math:`d` if the number of dimensions of the parameter gradient.
 

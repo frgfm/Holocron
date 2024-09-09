@@ -24,7 +24,7 @@ class AdaBelief(Adam):
         s_t \leftarrow \beta_2 s_{t-1} + (1 - \beta_2) (g_t - m_t)^2 + \epsilon
 
     where :math:`g_t` is the gradient of :math:`\theta_t`,
-    :math:`\beta_1, \beta_2 \in [0, 1]^3` are the exponential average smoothing coefficients,
+    :math:`\beta_1, \beta_2 \in [0, 1]^2` are the exponential average smoothing coefficients,
     :math:`m_0 = 0,\ s_0 = 0`, :math:`\epsilon > 0`.
 
     Then we correct their biases using:
