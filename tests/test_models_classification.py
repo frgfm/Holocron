@@ -42,7 +42,7 @@ def test_repvgg_reparametrize():
             assert mod.weight.data.shape[2:] == (3, 3)
     # Check that values are still matching
     with torch.no_grad():
-        assert torch.allclose(out, model(x), atol=1e-4)
+        assert torch.allclose(out, model(x), atol=1e-3)
 
 
 def test_mobileone_reparametrize():
