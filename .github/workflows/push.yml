@@ -10,11 +10,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11
           architecture: x64
       - uses: abatilo/actions-poetry@v3
         with:
-          poetry-version: "1.6.1"
+          poetry-version: "1.8.3"
       - name: Resolve dependencies
         run: cd api && poetry export -f requirements.txt --without-hashes --output requirements.txt
       - name: Build docker

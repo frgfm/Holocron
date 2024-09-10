@@ -11,7 +11,7 @@ function deploy_doc(){
     fi
     sed -i "s/torchvision>=.*',/&,<0.11.0',/" ../setup.py
     sed -i "s/',,/,/" ../setup.py
-    pip install -U ..
+    uv pip install --system --upgrade ..
     git checkout ../setup.py
     if [ -d ../requirements.txt ]; then
         git checkout ../requirements.txt
