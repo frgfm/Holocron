@@ -29,7 +29,7 @@ jobs:
         run: |
           python -m pip install --upgrade uv
           uv pip install --system -e . --upgrade
-          uv pip install onnx onnxruntime
+          uv pip install --system onnx onnxruntime
 
       - name: Run analysis script
         run: python scripts/eval_latency.py rexnet1_0x
