@@ -16,8 +16,7 @@ jobs:
         python: [3.11]
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           architecture: x64
@@ -28,9 +27,9 @@ jobs:
           key: ${{ runner.os }}-python-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}-build
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -e . --upgrade
-          pip install onnx onnxruntime
+          python -m pip install --upgrade uv
+          uv pip install --system -e . --upgrade
+          uv pip install onnx onnxruntime
 
       - name: Run analysis script
         run: python scripts/eval_latency.py rexnet1_0x
