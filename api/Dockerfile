@@ -11,8 +11,8 @@ ENV PYTHONPATH "${PYTHONPATH}:/app"
 COPY requirements.txt  /app/requirements.txt
 
 RUN set -eux \
-	&& pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r /app/requirements.txt
+	&& pip install --no-cache-dir uv \
+    && uv pip install --no-cache --system -r /app/requirements.txt
 
 # copy project
 COPY app /app/app
