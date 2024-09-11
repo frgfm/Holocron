@@ -18,7 +18,7 @@ jobs:
       - name: Resolve dependencies
         run: cd api && poetry export -f requirements.txt --without-hashes --output requirements.txt
       - name: Build docker
-        run: cd api && docker build api/. -t frgfm/holocron:latest
+        run: docker build api/. -t frgfm/holocron:latest
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
