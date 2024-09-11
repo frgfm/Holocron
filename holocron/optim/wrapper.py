@@ -30,7 +30,7 @@ class Lookahead(Optimizer):
 
     def __init__(
         self,
-        base_optimizer: torch.optim.Optimizer,
+        base_optimizer: torch.optim.Optimizer,  # type: ignore[name-defined]
         sync_rate: float = 0.5,
         sync_period: int = 6,
     ) -> None:
@@ -154,7 +154,7 @@ class Scout(Optimizer):
 
     def __init__(
         self,
-        base_optimizer: torch.optim.Optimizer,
+        base_optimizer: torch.optim.Optimizer,  # type: ignore[name-defined]
         sync_rate: float = 0.5,
         sync_period: int = 6,
     ) -> None:
