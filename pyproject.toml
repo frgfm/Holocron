@@ -204,7 +204,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.11"
 files = "holocron/"
 show_error_codes = true
 pretty = true
