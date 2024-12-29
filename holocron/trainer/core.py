@@ -48,7 +48,7 @@ class Trainer:
         train_loader: DataLoader,
         val_loader: DataLoader,
         criterion: nn.Module,
-        optimizer: torch.optim.Optimizer,  # type: ignore[name-defined]
+        optimizer: torch.optim.Optimizer,
         gpu: Optional[int] = None,
         output_file: str = "./checkpoint.pth",
         amp: bool = False,

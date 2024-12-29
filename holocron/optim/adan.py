@@ -8,7 +8,7 @@ from typing import Callable, Iterable, List, Optional, Tuple
 
 import torch
 from torch import Tensor
-from torch.optim import Adam  # type: ignore[attr-defined]
+from torch.optim import Adam
 
 __all__ = ["Adan", "adan"]
 
