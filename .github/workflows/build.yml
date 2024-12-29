@@ -32,7 +32,7 @@ jobs:
           version: ${{ env.UV_VERSION }}
       - name: Install package
         run: |
-          uv pip install --system -e .
+          make install
           python -c "import holocron; print(holocron.__version__)"
 
   pypi:
@@ -95,8 +95,8 @@ jobs:
           version: ${{ env.UV_VERSION }}
       - name: Install & run demo app
         run: |
-          uv pip install --system -r demo/requirements.txt
-          screen -dm python demo/app.py --port 8080
+          make install-demo
+          screen -dm make run-demo
           sleep 20 && nc -vz localhost 8080
 
   docs:
@@ -113,6 +113,6 @@ jobs:
       - name: Build documentation
         run: |
           make install-docs
-          make full-docs
+          make docs-full
       - name: Documentation sanity check
         run: test -e docs/build/index.html || exit

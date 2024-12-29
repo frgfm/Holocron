@@ -24,7 +24,7 @@ jobs:
       - name: Build documentation
         run: |
           make install-docs
-          make full-docs
+          make docs-full
       - name: Documentation sanity check
         run: test -e docs/build/index.html || exit
       - name: Install SSH Client 🔑
@@ -34,11 +34,10 @@ jobs:
       - name: Deploy to Github Pages
         uses: JamesIves/github-pages-deploy-action@v4.7.2
         with:
-          BRANCH: gh-pages
-          FOLDER: 'docs/build'
-          COMMIT_MESSAGE: '[skip ci] Documentation updates'
-          CLEAN: true
-          SSH: true
+          branch: gh-pages
+          folder: docs/build
+          commit-message: '[skip ci] Documentation updates'
+          clean: true
 
   dockerhub:
     runs-on: ubuntu-latest
@@ -49,13 +48,6 @@ jobs:
           version: ${{ env.UV_VERSION }}
       - name: Build docker image
         run: make build
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: frgfm
-          password: ${{ secrets.DOCKERHUB_PW }}
-      - name: Push to hub
-        run: docker push frgfm/holocron:latest
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -64,5 +56,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push to GitHub container registry
         run: |
-          docker tag frgfm/holocron:latest ghcr.io/${{ github.repository_owner }}/holocron:latest
+          docker tag holocron/backend:latest ghcr.io/${{ github.repository_owner }}/holocron:latest
           docker push ghcr.io/${{ github.repository_owner }}/holocron:latest

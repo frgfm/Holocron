@@ -42,7 +42,7 @@ jobs:
           version: ${{ env.UV_VERSION }}
       - name: Run the tests
         run: |
-          uv pip install --system -e ".[test]"
+          make install-test
           pytest --cov=holocron --cov-report xml tests/
       - uses: actions/upload-artifact@v4
         with:
@@ -104,6 +104,6 @@ jobs:
           version: ${{ env.UV_VERSION }}
       - name: Run script
         run: |
-          uv pip install --system -e .
+          make install
           uv pip install --system onnx onnxruntime
           python scripts/eval_latency.py rexnet1_0x
