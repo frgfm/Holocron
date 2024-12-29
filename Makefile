@@ -90,10 +90,14 @@ build-api: req ${DOCKERFILE_PATH}
 push-api: build-api
 	docker push ${DOCKER_NAMESPACE}/${DOCKER_REPO}:${DOCKER_TAG}
 
-# Run the docker
 start-api: build-api ${API_DIR}/docker-compose.yml
 	docker compose -f ${API_DIR}/docker-compose.yml up -d --wait
 
-# Run the docker
 stop-api: ${API_DIR}/docker-compose.yml
+	docker compose -f ${API_DIR}/docker-compose.yml down
+
+test-api:  ${API_CONFIG_FILE} ${PYTHON_LOCK_FILE} ${DOCKERFILE_PATH} ${API_DIR}/tests
+	uv export --no-hashes --locked --extra test -q -o ${API_REQ_FILE} --project ${API_DIR}
+	docker compose -f ${API_DIR}/docker-compose.yml up -d --wait --build
+	- docker compose -f ${API_DIR}/docker-compose.yml exec -T backend pytest tests/
 	docker compose -f ${API_DIR}/docker-compose.yml down
