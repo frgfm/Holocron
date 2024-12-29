@@ -6,32 +6,47 @@ on:
   pull_request:
     branches: main
 
+env:
+  PYTHON_VERSION: "3.11"
+  UV_VERSION: "0.5.13"
+
 jobs:
+  deps-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: Run dependency sync checker
+        run: |
+          uv pip install --system PyYAML
+          make deps-check
+
   pytest:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python: [3.11]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
-      - name: Install dependencies
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: Run the tests
         run: |
-          python -m pip install --upgrade uv
-          uv pip install --system -e ".[test]" --upgrade
-      - name: Run unittests
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
+          uv pip install --system -e ".[test]"
+          pytest --cov=holocron --cov-report xml tests/
       - uses: actions/upload-artifact@v4
         with:
-          name: coverage-main
+          name: coverage-reports
           path: ./coverage.xml
 
   codecov-upload:
@@ -40,48 +55,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
-          directory: ./coverage-main
+          directory: ./coverage-reports
           fail_ci_if_error: true
 
   api:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python: [3.11]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v3
+      - uses: astral-sh/setup-uv@v5
         with:
-          poetry-version: 1.8.3
-      - name: Lock the requirements
-        run: |
-          cd api
-          poetry lock
-          poetry export -f requirements.txt --without-hashes --with dev --output requirements.txt
-      - name: Build & run docker
-        run: cd api && docker compose up -d --build
-      - name: Docker sanity check
-        run: sleep 15 && nc -vz localhost 8050
-      - name: Ping server
-        run: curl http://api.localhost:8050/docs
+          version: ${{ env.UV_VERSION }}
       - name: Run docker test
-        run: docker compose -f api/docker-compose.yml exec -T backend pytest tests/
+        run: make test-api
 
   headers:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -93,4 +89,21 @@ jobs:
           owner: 'François-Guillaume Fernandez'
           starting-year: 2019
           folders: 'holocron,scripts,references,api/app,demo,docs,.github'
-          ignores: 'version.py,__init__.py'
+          ignore-files: 'version.py,__init__.py'
+
+  eval-latency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: Run script
+        run: |
+          uv pip install --system -e .
+          uv pip install --system onnx onnxruntime
+          python scripts/eval_latency.py rexnet1_0x

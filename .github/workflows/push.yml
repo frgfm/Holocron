@@ -3,22 +3,52 @@ on:
   push:
     branches: main
 
+env:
+  PYTHON_VERSION: "3.11"
+  UV_VERSION: "0.5.13"
+
 jobs:
+  docs-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: Build documentation
+        run: |
+          make install-docs
+          make full-docs
+      - name: Documentation sanity check
+        run: test -e docs/build/index.html || exit
+      - name: Install SSH Client 🔑
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_DEPLOY_KEY }}
+      - name: Deploy to Github Pages
+        uses: JamesIves/github-pages-deploy-action@v4.7.2
+        with:
+          BRANCH: gh-pages
+          FOLDER: 'docs/build'
+          COMMIT_MESSAGE: '[skip ci] Documentation updates'
+          CLEAN: true
+          SSH: true
+
   dockerhub:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.11
-          architecture: x64
-      - uses: abatilo/actions-poetry@v3
-        with:
-          poetry-version: "1.8.3"
-      - name: Resolve dependencies
-        run: cd api && poetry export -f requirements.txt --without-hashes --output requirements.txt
-      - name: Build docker
-        run: docker build api/. -t frgfm/holocron:latest
+          version: ${{ env.UV_VERSION }}
+      - name: Build docker image
+        run: make build
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -26,3 +56,13 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PW }}
       - name: Push to hub
         run: docker push frgfm/holocron:latest
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push to GitHub container registry
+        run: |
+          docker tag frgfm/holocron:latest ghcr.io/${{ github.repository_owner }}/holocron:latest
+          docker push ghcr.io/${{ github.repository_owner }}/holocron:latest
