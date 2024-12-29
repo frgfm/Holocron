@@ -75,7 +75,7 @@ class MockDetDataset(Dataset):
 
 
 def collate_fn(batch):
-    imgs, target = zip(*batch)
+    imgs, target = zip(*batch, strict=False)
     return imgs, target
 
 

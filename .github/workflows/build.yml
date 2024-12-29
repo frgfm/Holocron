@@ -98,7 +98,7 @@ jobs:
           uv pip install --system -r demo/requirements.txt
           screen -dm python demo/app.py --port 8080
           sleep 20 && nc -vz localhost 8080
-  
+
   docs:
     runs-on: ubuntu-latest
     steps:

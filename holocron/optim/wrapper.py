@@ -126,8 +126,8 @@ class Lookahead(Optimizer):
         Args:
             sync_rate (float): synchronization rate of parameters
         """
-        for fast_group, slow_group in zip(self.base_optimizer.param_groups, self.param_groups):
-            for fast_p, slow_p in zip(fast_group["params"], slow_group["params"]):
+        for fast_group, slow_group in zip(self.base_optimizer.param_groups, self.param_groups, strict=False):
+            for fast_p, slow_p in zip(fast_group["params"], slow_group["params"], strict=False):
                 # Outer update
                 if sync_rate > 0:
                     slow_p.data.add_(fast_p.data - slow_p.data, alpha=sync_rate)
@@ -274,8 +274,8 @@ class Scout(Optimizer):
         Args:
             sync_rate (float): synchronization rate of parameters
         """
-        for fast_group, slow_group in zip(self.base_optimizer.param_groups, self.param_groups):
-            for fast_p, slow_p in zip(fast_group["params"], slow_group["params"]):
+        for fast_group, slow_group in zip(self.base_optimizer.param_groups, self.param_groups, strict=False):
+            for fast_p, slow_p in zip(fast_group["params"], slow_group["params"], strict=False):
                 # Outer update
                 if sync_rate > 0:
                     slow_p.data.add_(fast_p.data - slow_p.data, alpha=sync_rate)

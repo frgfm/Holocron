@@ -97,4 +97,3 @@ start: build ${API_DIR}/docker-compose.yml
 # Run the docker
 stop: ${API_DIR}/docker-compose.yml
 	docker compose -f ${API_DIR}/docker-compose.yml down
-

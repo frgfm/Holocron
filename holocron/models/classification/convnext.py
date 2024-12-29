@@ -150,12 +150,12 @@ class ConvNeXt(nn.Sequential):
 
         block_idx = 0
         tot_blocks = sum(num_blocks)
-        for _num_blocks, _planes, _oplanes in zip(num_blocks, planes, planes[1:] + [planes[-1]]):
+        for _num_blocks, _planes, _oplanes in zip(num_blocks, planes, planes[1:] + [planes[-1]], strict=False):
             # adjust stochastic depth probability based on the depth of the stage block
             sd_probs = [stochastic_depth_prob * (block_idx + _idx) / (tot_blocks - 1.0) for _idx in range(_num_blocks)]
             _stage: List[nn.Module] = [
                 Bottlenext(_planes, act_layer, norm_layer, drop_layer, stochastic_depth_prob=sd_prob)
-                for _idx, sd_prob in zip(range(_num_blocks), sd_probs)
+                for _idx, sd_prob in zip(range(_num_blocks), sd_probs, strict=False)
             ]
             if _planes != _oplanes:
                 _stage.append(

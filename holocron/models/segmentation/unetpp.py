@@ -54,7 +54,7 @@ class UNetp(nn.Module):
         self.encoder = nn.ModuleList([])
         _layout = [in_channels, *layout]
         _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
+        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
             self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
@@ -71,7 +71,7 @@ class UNetp(nn.Module):
         # Expansive path
         self.decoder = nn.ModuleList([])
         _layout = [layout[-1]] + layout[1:][::-1]
-        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1)):
+        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1), strict=False):
             self.decoder.append(
                 nn.ModuleList([
                     UpPath(left_chan + up_chan, left_chan, True, 1, act_layer, norm_layer, drop_layer, conv_layer)
@@ -133,7 +133,7 @@ class UNetpp(nn.Module):
         self.encoder = nn.ModuleList([])
         _layout = [in_channels, *layout]
         _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
+        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
             self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             _pool = True
 
@@ -150,7 +150,7 @@ class UNetpp(nn.Module):
         # Expansive path
         self.decoder = nn.ModuleList([])
         _layout = [layout[-1]] + layout[1:][::-1]
-        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1)):
+        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1), strict=False):
             self.decoder.append(
                 nn.ModuleList([
                     UpPath(

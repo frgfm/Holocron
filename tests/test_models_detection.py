@@ -50,7 +50,7 @@ def _test_detection_model(name, input_size):
     gt_labels = [(num_classes * torch.rand(num)).to(dtype=torch.long) for num in num_boxes]
 
     # Loss computation
-    loss = model(x, [{"boxes": boxes, "labels": labels} for boxes, labels in zip(gt_boxes, gt_labels)])
+    loss = model(x, [{"boxes": boxes, "labels": labels} for boxes, labels in zip(gt_boxes, gt_labels, strict=False)])
     assert isinstance(loss, dict)
     for subloss in loss.values():
         assert isinstance(subloss, torch.Tensor)
@@ -60,7 +60,7 @@ def _test_detection_model(name, input_size):
     # Loss computation with no GT
     gt_boxes = [torch.zeros((0, 4)) for _ in num_boxes]
     gt_labels = [torch.zeros(0, dtype=torch.long) for _ in num_boxes]
-    loss = model(x, [{"boxes": boxes, "labels": labels} for boxes, labels in zip(gt_boxes, gt_labels)])
+    loss = model(x, [{"boxes": boxes, "labels": labels} for boxes, labels in zip(gt_boxes, gt_labels, strict=False)])
     sum(v for v in loss.values()).backward()
 
 

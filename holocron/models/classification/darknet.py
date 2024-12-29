@@ -65,7 +65,7 @@ class DarknetBodyV1(nn.Sequential):
                     "layers",
                     nn.Sequential(*[
                         self._make_layer([_in_chans, *planes], act_layer, norm_layer, drop_layer, conv_layer)
-                        for _in_chans, planes in zip(in_chans, layout)
+                        for _in_chans, planes in zip(in_chans, layout, strict=False)
                     ]),
                 ),
             ])
@@ -82,7 +82,7 @@ class DarknetBodyV1(nn.Sequential):
     ) -> nn.Sequential:
         _layers: List[nn.Module] = [nn.MaxPool2d(2)]
         k1 = True
-        for in_planes, out_planes in zip(planes[:-1], planes[1:]):
+        for in_planes, out_planes in zip(planes[:-1], planes[1:], strict=False):
             _layers.extend(
                 conv_sequence(
                     in_planes,

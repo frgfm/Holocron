@@ -120,7 +120,7 @@ class UNetBackbone(nn.Sequential):
         _layers: List[nn.Module] = []
         _layout = [in_channels, *layout]
         _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
+        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
             _layers.append(
                 down_path(in_chan, out_chan, _pool, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
             )
@@ -173,7 +173,7 @@ class UNet(nn.Module):
         self.encoder = nn.ModuleList([])
         _layout = [in_channels, *layout]
         _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
+        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
             self.encoder.append(
                 down_path(in_chan, out_chan, _pool, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
             )
@@ -192,7 +192,7 @@ class UNet(nn.Module):
         # Expansive path
         self.decoder = nn.ModuleList([])
         _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][:-1]] + [layout[0]]
-        for in_chan, out_chan in zip([2 * layout[-1]] + layout[::-1][:-1], _layout):
+        for in_chan, out_chan in zip([2 * layout[-1]] + layout[::-1][:-1], _layout, strict=False):
             self.decoder.append(
                 UpPath(
                     in_chan,
@@ -336,7 +336,7 @@ class DynamicUNet(nn.Module):
         # Expansive path
         self.decoder = nn.ModuleList([])
         _layout = chans[::-1][1:] + [chans[0]]
-        for up_chan, out_chan in zip(chans[::-1], _layout):
+        for up_chan, out_chan in zip(chans[::-1], _layout, strict=False):
             self.decoder.append(
                 UBlock(up_chan, up_chan, out_chan, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
             )

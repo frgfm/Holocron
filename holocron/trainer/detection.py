@@ -102,7 +102,7 @@ class DetectionTrainer(Trainer):
             else:
                 detections = self.model(x)
 
-            for dets, t in zip(detections, target):
+            for dets, t in zip(detections, target, strict=False):
                 if t["boxes"].shape[0] > 0 and dets["boxes"].shape[0] > 0:
                     gt_indices, pred_indices = assign_iou(t["boxes"], dets["boxes"], iou_threshold)
                     loc_assigns += len(gt_indices)

@@ -52,7 +52,7 @@ class TridentConv2d(nn.Conv2d):
                     (dilation,) * len(self.dilation),
                     self.groups,
                 )
-                for _x, dilation in zip(torch.chunk(x, self.num_branches, 1), dilations)
+                for _x, dilation in zip(torch.chunk(x, self.num_branches, 1), dilations, strict=False)
             ],
             1,
         )

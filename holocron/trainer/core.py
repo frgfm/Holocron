@@ -246,7 +246,7 @@ class Trainer:
             self.optimizer.add_param_group({"params": self._params[0]})
         else:
             wd_groups = [norm_weight_decay, self.optimizer.defaults.get("weight_decay", 0)]
-            for _params, _wd in zip(self._params, wd_groups):
+            for _params, _wd in zip(self._params, wd_groups, strict=False):
                 if len(_params) > 0:
                     self.optimizer.add_param_group({"params": _params, "weight_decay": _wd})
         self.optimizer.zero_grad()
@@ -307,8 +307,7 @@ class Trainer:
 
             if eval_metrics["val_loss"] < self.min_loss:
                 print(  # noqa: T201
-                    f"Validation loss decreased {self.min_loss:.4} --> "
-                    f"{eval_metrics['val_loss']:.4}: saving state..."
+                    f"Validation loss decreased {self.min_loss:.4} --> {eval_metrics['val_loss']:.4}: saving state..."
                 )
                 self.min_loss = eval_metrics["val_loss"]
                 self.save(self.output_file)

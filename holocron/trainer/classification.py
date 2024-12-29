@@ -142,7 +142,7 @@ class ClassificationTrainer(Trainer):
         num_cols = 4
         num_rows = int(math.ceil(num_samples / num_cols))
         _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
-        for idx, (img, pred, prob, target, loss) in enumerate(zip(images, preds, probs, targets, losses)):
+        for idx, (img, pred, prob, target, loss) in enumerate(zip(images, preds, probs, targets, losses, strict=False)):
             _row = int(idx / num_cols)
             _col = idx - num_cols * _row
             axes[_row][_col].imshow(img)

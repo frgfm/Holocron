@@ -146,8 +146,7 @@ def main(args):
         )
 
         print(
-            f"Training set loaded in {time.time() - st:.2f}s "
-            f"({len(train_set)} samples in {len(train_loader)} batches)"
+            f"Training set loaded in {time.time() - st:.2f}s ({len(train_set)} samples in {len(train_loader)} batches)"
         )
 
     if args.show_samples:

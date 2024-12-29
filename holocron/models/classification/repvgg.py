@@ -146,7 +146,7 @@ class RepVGG(nn.Sequential):
         chans.append(int(final_width_multiplier * planes[-1]))
 
         # Build the layers
-        for nb_blocks, in_chan, out_chan in zip(num_blocks, chans[:-1], chans[1:]):
+        for nb_blocks, in_chan, out_chan in zip(num_blocks, chans[:-1], chans[1:], strict=False):
             _layers = [RepBlock(in_chan, out_chan, 2, False, act_layer, norm_layer)]
             _layers.extend([RepBlock(out_chan, out_chan, 1, True, act_layer, norm_layer) for _ in range(nb_blocks)])
             _stages.append(nn.Sequential(*_layers))

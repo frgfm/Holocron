@@ -60,7 +60,7 @@ def worker_init_fn(worker_id: int) -> None:
 
 
 def collate_fn(batch):
-    imgs, target = zip(*batch)
+    imgs, target = zip(*batch, strict=False)
     return imgs, target
 
 
@@ -81,7 +81,7 @@ def plot_samples(images, targets, num_samples=8):
 
         axes[_row][_col].imshow(img)
         axes[_row][_col].axis("off")
-        for box, label in zip(targets[idx]["boxes"], targets[idx]["labels"]):
+        for box, label in zip(targets[idx]["boxes"], targets[idx]["labels"], strict=False):
             xmin = int(box[0] * images[idx].shape[-1])
             ymin = int(box[1] * images[idx].shape[-2])
             xmax = int(box[2] * images[idx].shape[-1])
@@ -143,8 +143,7 @@ def main(args):
         )
 
         print(
-            f"Training set loaded in {time.time() - st:.2f}s "
-            f"({len(train_set)} samples in {len(train_loader)} batches)"
+            f"Training set loaded in {time.time() - st:.2f}s ({len(train_set)} samples in {len(train_loader)} batches)"
         )
 
     if args.show_samples:

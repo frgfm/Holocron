@@ -192,14 +192,14 @@ class MobileOne(nn.Sequential):
             act_layer = nn.ReLU(inplace=True)
 
         base_planes = [64, 128, 256, 512]
-        planes = [int(round(mult * chans)) for mult, chans in zip(width_multipliers, base_planes)]
+        planes = [int(round(mult * chans)) for mult, chans in zip(width_multipliers, base_planes, strict=False)]
 
         in_planes = min(64, planes[0])
         # Stem
         _layers: List[nn.Module] = [MobileOneBlock(in_channels, in_planes, overparam_factor, 2, act_layer, norm_layer)]
 
         # Consecutive convolutional blocks
-        for _num_blocks, _planes in zip(num_blocks, planes):
+        for _num_blocks, _planes in zip(num_blocks, planes, strict=False):
             # Stride & channel changes
             _stage = [MobileOneBlock(in_planes, _planes, overparam_factor, 2, act_layer, norm_layer)]
             # Depth

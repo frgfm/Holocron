@@ -9,7 +9,6 @@ from pathlib import Path
 
 import yaml
 
-
 DOCKERFILE_PATH = "api/Dockerfile"
 PRECOMMIT_PATH = ".pre-commit-config.yaml"
 PYPROJECT_PATH = "pyproject.toml"
