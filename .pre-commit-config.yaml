@@ -20,10 +20,20 @@ repos:
       - id: no-commit-to-branch
         args: ['--branch', 'main']
       - id: trailing-whitespace
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: 'v3.6.0'
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.6.4'
+    rev: 'v0.8.4'
     hooks:
       - id: ruff
-        args:
-          - --fix
+        args: ["--fix", "--config", "pyproject.toml"]
       - id: ruff-format
+        args: ["--config", "pyproject.toml"]
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: '0.5.13'
+    hooks:
+      - id: uv-lock
+        args: ["--locked", "--project", "api"]
