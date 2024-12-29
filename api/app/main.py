@@ -5,8 +5,9 @@
 
 import time
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.openapi.utils import get_openapi
+from pydantic import BaseModel
 
 from app.config import settings
 from app.routes import classification
@@ -21,6 +22,21 @@ app = FastAPI(
 
 # Routing
 app.include_router(classification.router, prefix="/classification", tags=["classification"])
+
+
+class Status(BaseModel):
+    status: str
+
+
+# Healthcheck
+@app.get(
+    "/status",
+    status_code=status.HTTP_200_OK,
+    summary="Healthcheck for the API",
+    include_in_schema=False,
+)
+def get_status() -> Status:
+    return Status(status="ok")
 
 
 # Middleware
