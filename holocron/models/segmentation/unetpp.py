@@ -4,7 +4,7 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 import sys
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, cast
 
 import torch.nn as nn
 from torch import Tensor
@@ -52,11 +52,11 @@ class UNetp(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels, *layout]
-        _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
-            _pool = True
+        layout_ = [in_channels, *layout]
+        pool = False
+        for in_chan, out_chan in zip(layout_[:-1], layout_[1:]):
+            self.encoder.append(down_path(in_chan, out_chan, pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
+            pool = True
 
         self.bridge = nn.Sequential(
             nn.MaxPool2d((2, 2)),
@@ -70,8 +70,8 @@ class UNetp(nn.Module):
 
         # Expansive path
         self.decoder = nn.ModuleList([])
-        _layout = [layout[-1]] + layout[1:][::-1]
-        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1)):
+        layout_ = [layout[-1]] + layout[1:][::-1]
+        for left_chan, up_chan, num_cells in zip(layout[::-1], layout_, range(1, len(layout) + 1)):
             self.decoder.append(
                 nn.ModuleList([
                     UpPath(left_chan + up_chan, left_chan, True, 1, act_layer, norm_layer, drop_layer, conv_layer)
@@ -96,7 +96,7 @@ class UNetp(nn.Module):
         for j in range(len(self.decoder)):
             for i in range(len(xs) - 1):
                 up_feat = xs[i + 1] if (i + 2) < len(xs) else xs.pop()
-                xs[i] = self.decoder[-1 - i][j](xs[i], up_feat)
+                xs[i] = cast(nn.ModuleList, self.decoder[-1 - i])[j](xs[i], up_feat)
 
         return self.classifier(xs.pop())
 
@@ -131,11 +131,11 @@ class UNetpp(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels, *layout]
-        _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:]):
-            self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
-            _pool = True
+        layout_ = [in_channels, *layout]
+        pool = False
+        for in_chan, out_chan in zip(layout_[:-1], layout_[1:]):
+            self.encoder.append(down_path(in_chan, out_chan, pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
+            pool = True
 
         self.bridge = nn.Sequential(
             nn.MaxPool2d((2, 2)),
@@ -149,8 +149,8 @@ class UNetpp(nn.Module):
 
         # Expansive path
         self.decoder = nn.ModuleList([])
-        _layout = [layout[-1]] + layout[1:][::-1]
-        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1)):
+        layout_ = [layout[-1]] + layout[1:][::-1]
+        for left_chan, up_chan, num_cells in zip(layout[::-1], layout_, range(1, len(layout) + 1)):
             self.decoder.append(
                 nn.ModuleList([
                     UpPath(
@@ -184,7 +184,7 @@ class UNetpp(nn.Module):
         for j in range(len(self.decoder)):
             for i in range(len(xs) - 1):
                 up_feat = xs[i + 1][j] if (i + 2) < len(xs) else xs.pop()[-1]
-                xs[i].append(self.decoder[-1 - i][j](xs[i], up_feat))
+                xs[i].append(cast(nn.ModuleList, self.decoder[-1 - i])[j](xs[i], up_feat))
 
         # Classifier
         return self.classifier(xs.pop()[-1])

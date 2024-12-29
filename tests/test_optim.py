@@ -20,8 +20,8 @@ def _test_optimizer(name: str, **kwargs: Any) -> None:
     optimizer = optim.__dict__[name](model.classifier[3].parameters(), lr=lr, **kwargs)
 
     # Save param value
-    _p = model.classifier[3].weight
-    p_val = _p.data.clone()
+    p_ = model.classifier[3].weight
+    p_val = p_.data.clone()
 
     # Random inputs
     input_t = torch.rand((num_batches, *input_shape), dtype=torch.float32)
@@ -35,8 +35,8 @@ def _test_optimizer(name: str, **kwargs: Any) -> None:
     optimizer.step()
 
     # Test
-    assert _p.grad is not None
-    assert not torch.equal(_p.data, p_val)
+    assert p_.grad is not None
+    assert not torch.equal(p_.data, p_val)
 
 
 def test_lars():

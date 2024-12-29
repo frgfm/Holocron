@@ -60,7 +60,7 @@ def worker_init_fn(worker_id: int) -> None:
 
 
 def collate_fn(batch):
-    imgs, target = zip(*batch)
+    imgs, target = zip(*batch, strict=False)
     return imgs, target
 
 
@@ -68,7 +68,7 @@ def plot_samples(images, targets, num_samples=8):
     # Unnormalize image
     nb_samples = min(num_samples, len(images))
     num_cols = min(nb_samples, 4)
-    num_rows = int(math.ceil(nb_samples / num_cols))
+    num_rows = math.ceil(nb_samples / num_cols)
     _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
@@ -76,20 +76,20 @@ def plot_samples(images, targets, num_samples=8):
         img += torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
         img = to_pil_image(img)
 
-        _row = int(idx / num_cols)
-        _col = idx - _row * num_cols
+        row = int(idx / num_cols)
+        col = idx - row * num_cols
 
-        axes[_row][_col].imshow(img)
-        axes[_row][_col].axis("off")
-        for box, label in zip(targets[idx]["boxes"], targets[idx]["labels"]):
+        axes[row][col].imshow(img)
+        axes[row][col].axis("off")
+        for box, label in zip(targets[idx]["boxes"], targets[idx]["labels"], strict=False):
             xmin = int(box[0] * images[idx].shape[-1])
             ymin = int(box[1] * images[idx].shape[-2])
             xmax = int(box[2] * images[idx].shape[-1])
             ymax = int(box[3] * images[idx].shape[-2])
 
             rect = Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=2, edgecolor="lime", facecolor="none")
-            axes[_row][_col].add_patch(rect)
-            axes[_row][_col].text(xmin, ymin, VOC_CLASSES[label.item()], color="lime", fontsize=12)
+            axes[row][col].add_patch(rect)
+            axes[row][col].text(xmin, ymin, VOC_CLASSES[label.item()], color="lime", fontsize=12)
 
     plt.show()
 
@@ -143,8 +143,7 @@ def main(args):
         )
 
         print(
-            f"Training set loaded in {time.time() - st:.2f}s "
-            f"({len(train_set)} samples in {len(train_loader)} batches)"
+            f"Training set loaded in {time.time() - st:.2f}s ({len(train_set)} samples in {len(train_loader)} batches)"
         )
 
     if args.show_samples:
@@ -243,7 +242,7 @@ def main(args):
         return
 
     # Training monitoring
-    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    current_time = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y%m%d-%H%M%S")
     exp_name = f"{args.arch}-{current_time}" if args.name is None else args.name
 
     # W&B

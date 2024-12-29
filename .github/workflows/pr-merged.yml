@@ -1,9 +1,13 @@
-name: pr-labels
+name: pr-merged
 
 on:
   pull_request:
     branches: main
     types: closed
+
+env:
+  PYTHON_VERSION: "3.11"
+  UV_VERSION: "0.5.13"
 
 jobs:
   is-properly-labeled:
@@ -12,8 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      - name: Install requests
-        run: pip install requests
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+      - run: uv pip install requests
       - name: Process commit and find merger responsible for labeling
         id: commit
         run: echo "::set-output name=merger::$(python .github/verify_labels.py ${{ github.event.pull_request.number }})"
@@ -24,4 +33,4 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.issues.createComment({ issue_number, owner, repo, body: 'Hey ${{ steps.commit.outputs.merger }} 👋\nYou merged this PR, but it is not correctly labeled. The list of valid labels is available at https://github.com/frgfm/Holocron/blob/main/.github/verify_labels.py' });
+            github.issues.createComment({ issue_number, owner, repo, body: 'Hey ${{ steps.commit.outputs.merger }} 👋\nYou merged this PR, but it is not correctly labeled. The list of valid labels is available at https://github.com/frgfm/Holocron/blob/main/.github/pull-labels.yml' });

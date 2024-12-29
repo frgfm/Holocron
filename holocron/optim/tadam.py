@@ -181,7 +181,7 @@ def tadam(
         exp_avg = exp_avgs[i]
         exp_avg_sq = exp_avg_sqs[i]
         W_t = W_ts[i]  # noqa: N806
-        _dof = param.data.numel() if dof is None else dof
+        dof_ = param.data.numel() if dof is None else dof
         step = state_steps[i]
         if amsgrad:
             max_exp_avg_sq = max_exp_avg_sqs[i]
@@ -194,7 +194,7 @@ def tadam(
 
         # Decay the first and second moment running average coefficient
         w_t = grad.sub(exp_avg).pow_(2).div_(exp_avg_sq.add(eps)).sum()
-        w_t.add_(_dof).pow_(-1).mul_(_dof + param.data.numel())
+        w_t.add_(dof_).pow_(-1).mul_(dof_ + param.data.numel())
         exp_avg.mul_(W_t / (W_t + w_t)).addcdiv_(w_t * grad, W_t + w_t)
         W_t.mul_((2 * beta1 - 1) / beta1)
         W_t.add_(w_t)

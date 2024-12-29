@@ -48,7 +48,7 @@ class Trainer:
         train_loader: DataLoader,
         val_loader: DataLoader,
         criterion: nn.Module,
-        optimizer: torch.optim.Optimizer,  # type: ignore[name-defined]
+        optimizer: torch.optim.Optimizer,
         gpu: Optional[int] = None,
         output_file: str = "./checkpoint.pth",
         amp: bool = False,
@@ -307,8 +307,7 @@ class Trainer:
 
             if eval_metrics["val_loss"] < self.min_loss:
                 print(  # noqa: T201
-                    f"Validation loss decreased {self.min_loss:.4} --> "
-                    f"{eval_metrics['val_loss']:.4}: saving state..."
+                    f"Validation loss decreased {self.min_loss:.4} --> {eval_metrics['val_loss']:.4}: saving state..."
                 )
                 self.min_loss = eval_metrics["val_loss"]
                 self.save(self.output_file)
@@ -429,7 +428,7 @@ class Trainer:
         x, target = next(iter(self.train_loader))
         x, target = self.to_cuda(x, target)
 
-        _losses = []
+        losses = []
 
         if self.amp:
             self.scaler = torch.cuda.amp.GradScaler()
@@ -443,9 +442,9 @@ class Trainer:
             if torch.isnan(batch_loss) or torch.isinf(batch_loss):
                 raise ValueError("loss value is NaN or inf.")
 
-            _losses.append(batch_loss.item())
+            losses.append(batch_loss.item())
 
-        plt.plot(np.arange(len(_losses)), _losses)
+        plt.plot(np.arange(len(losses)), losses)
         plt.xlabel("Optimization steps")
         plt.ylabel("Training loss")
         plt.grid(True, linestyle="--", axis="x")

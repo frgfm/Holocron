@@ -252,7 +252,7 @@ class ResNet(nn.Sequential):
         in_planes = 64
         # Deep stem from ResNet-C
         if deep_stem:
-            _layers = [
+            layers = [
                 *conv_sequence(
                     in_channels,
                     in_planes // 2,
@@ -291,7 +291,7 @@ class ResNet(nn.Sequential):
                 ),
             ]
         else:
-            _layers = conv_sequence(
+            layers = conv_sequence(
                 in_channels,
                 in_planes,
                 act_layer,
@@ -304,11 +304,11 @@ class ResNet(nn.Sequential):
                 bias=(norm_layer is None),
             )
         if stem_pool:
-            _layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
+            layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
 
         # Optional tensor repetitions along channel axis (mainly for TridentNet)
         if num_repeats > 1:
-            _layers.append(ChannelRepeat(num_repeats))
+            layers.append(ChannelRepeat(num_repeats))
 
         # Consecutive convolutional blocks
         stride = 1
@@ -318,7 +318,7 @@ class ResNet(nn.Sequential):
         if not isinstance(block_args, list):
             block_args = [block_args] * len(num_blocks)
         for _num_blocks, _planes, _block_args in zip(num_blocks, planes, block_args):
-            _layers.append(
+            layers.append(
                 self._make_layer(
                     block,
                     _num_blocks,
@@ -339,7 +339,7 @@ class ResNet(nn.Sequential):
 
         super().__init__(
             OrderedDict([
-                ("features", nn.Sequential(*_layers)),
+                ("features", nn.Sequential(*layers)),
                 ("pool", GlobalAvgPool2d(flatten=True)),
                 ("head", nn.Linear(num_repeats * in_planes, num_classes)),
             ])

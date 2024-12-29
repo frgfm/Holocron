@@ -22,6 +22,7 @@ from .presets import IMAGENET, IMAGENETTE
 __all__ = ["conv_sequence", "fuse_conv_bn", "load_pretrained_params", "model_from_hf_hub"]
 
 M = TypeVar("M", bound=nn.Module)
+logger = logging.getLogger(__name__)
 
 
 def conv_sequence(
@@ -102,7 +103,7 @@ def load_pretrained_params(
         key_filter: prefix of the checkpoint keys to be loaded
     """
     if url is None:
-        logging.warning("Invalid model URL, using default initialization.")
+        logger.warning("Invalid model URL, using default initialization.")
     else:
         state_dict = load_state_dict_from_url(url, progress=progress, map_location="cpu")
         if isinstance(key_filter, str):
@@ -134,7 +135,7 @@ def fuse_conv_bn(conv: nn.Conv2d, bn: nn.BatchNorm2d) -> Tuple[torch.Tensor, tor
     # Compute the new bias
     fused_bias = bn.bias.data - scale_factor * bn.running_mean
     if conv.bias is not None:
-        logging.warning("convolution layers placed before batch normalization should not have a bias.")
+        logger.warning("convolution layers placed before batch normalization should not have a bias.")
         fused_bias += scale_factor * conv.bias.data
     # Scale the kernel
     fused_kernel = scale_factor.view(-1, 1, 1, 1) * conv.weight.data

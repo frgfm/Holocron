@@ -5,11 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pylocron"
 description = "Modules, operations and models for computer vision in PyTorch"
-authors = [
-    {name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com"}
-]
+authors = [{name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com"}]
+maintainers = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com" }]
 readme = "README.md"
-requires-python = ">=3.8,<4"
+requires-python = ">=3.9,<4"
 license = {file = "LICENSE"}
 keywords = ["pytorch", "deep learning", "computer vision", "models"]
 classifiers = [
@@ -46,8 +45,8 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    "pytest>=7.3.2",
-    "pytest-cov>=3.0.0,<6.0.0",
+    "pytest>=8.3.3,<9.0.0",
+    "pytest-cov>=4.0.0,<6.0.0",
     "pytest-pretty>=1.0.0,<2.0.0",
     "onnx>=1.13.0,<2.0.0",
 ]
@@ -56,10 +55,10 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff==0.6.4",
-    "mypy==1.10.0",
+    "ruff==0.8.4",
+    "mypy==1.13.0",
     "types-tqdm",
-    "pre-commit>=3.0.0,<5.0.0",
+    "pre-commit>=3.8.0,<5.0.0",
 ]
 docs = [
     "sphinx>=3.0.0,!=3.5.0",
@@ -78,15 +77,15 @@ docs = [
 ]
 dev = [
     # test
-    "pytest>=7.3.2",
-    "pytest-cov>=3.0.0,<6.0.0",
+    "pytest>=8.3.3,<9.0.0",
+    "pytest-cov>=4.0.0,<6.0.0",
     "pytest-pretty>=1.0.0,<2.0.0",
     "onnx>=1.13.0,<2.0.0",
     # style
-    "ruff==0.6.4",
-    "mypy==1.10.0",
+    "ruff==0.8.4",
+    "mypy==1.13.0",
     "types-tqdm",
-    "pre-commit>=3.0.0,<5.0.0",
+    "pre-commit>=3.8.0,<5.0.0",
     # docs
     "sphinx>=3.0.0,!=3.5.0",
     "furo>=2022.3.4",
@@ -95,6 +94,8 @@ dev = [
     "recommonmark>=0.7.1",
     "sphinx-markdown-tables>=0.0.15",
     "Jinja2<3.1",
+    "markdown<3.4.0",
+    "tabulate>=0.8.0,<1.0.0"
 ]
 
 [project.urls]
@@ -136,6 +137,7 @@ select = [
     "COM",  # flake8-commas
     "CPY",  # flake8-copyright
     "C4",  # flake8-comprehensions
+    "DTZ",  # flake8-datetimez
     "T10",  # flake8-debugger
     "ISC",  # flake8-implicit-str-concat
     "ICN",  # flake8-import-conventions
@@ -158,12 +160,11 @@ ignore = [
     "E203",  # space before slice
     "B008",  # do not perform function calls in argument defaults
     "B904",  # raise from
+    "B905",  # strict zip
     "C901",  # too complex
     "F403",  # star imports
     "E731",  # lambda assignment
     "C416",  # list comprehension to list()
-    "ANN101",  # missing type annotations on self
-    "ANN102",  # missing type annotations on cls
     "ANN002",  # missing type annotations on *args
     "ANN003",  # missing type annotations on **kwargs
     "PT011",  # pytest.raises must have a match pattern
@@ -179,7 +180,7 @@ docstring-quotes = "double"
 
 [tool.ruff.lint.isort]
 known-first-party = ["holocron", "app"]
-known-third-party = ["wandb"]
+known-third-party = ["wandb", "fastapi"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/__init__.py" = ["I001", "F401", "CPY001"]
@@ -188,7 +189,7 @@ known-third-party = ["wandb"]
 "docs/**.py" = ["E402", "D103", "ANN", "A001", "ARG001"]
 "tests/**.py" = ["D103", "CPY001", "S101", "ANN"]
 "demo/**.py" = ["D103", "ANN"]
-"api/**.py" = ["D103"]
+"api/**.py" = ["D103", "D101"]
 "api/app/main.py" = ["ANN"]
 "api/tests/**.py" = ["CPY001", "S101", "ANN", "ARG001"]
 "references/**.py" = ["D101", "D103", "T201", "ANN"]
@@ -204,7 +205,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.9"
 files = "holocron/"
 show_error_codes = true
 pretty = true

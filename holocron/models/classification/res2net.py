@@ -68,8 +68,8 @@ class ScaleConv2d(nn.Module):
         out: List[torch.Tensor] = []
         for idx, layer in enumerate(self.conv):
             # If downsampled, don't add previous branch
-            _res = split_x[idx] if idx == 0 or self.downsample is not None else out[-1] + split_x[idx]
-            out.append(layer(_res))
+            res = split_x[idx] if idx == 0 or self.downsample is not None else out[-1] + split_x[idx]
+            out.append(layer(res))
         # Use the last chunk as shortcut connection
         if self.scale > 1:
             # If the convs were strided, the shortcut needs to be downsampled
@@ -104,9 +104,9 @@ class Bottle2neck(_ResBlock):
             act_layer = nn.ReLU(inplace=True)
 
         # Check if ScaleConv2d needs to downsample the identity branch
-        _downsample = stride > 1 or downsample is not None
+        downsample_ = stride > 1 or downsample is not None
 
-        width = int(math.floor(planes * (base_width / 64.0))) * groups
+        width = math.floor(planes * (base_width / 64.0)) * groups
         super().__init__(
             [
                 *conv_sequence(
@@ -119,7 +119,7 @@ class Bottle2neck(_ResBlock):
                     stride=1,
                     bias=(norm_layer is None),
                 ),
-                ScaleConv2d(scale, width * scale, 3, stride, groups, _downsample, act_layer, norm_layer, drop_layer),
+                ScaleConv2d(scale, width * scale, 3, stride, groups, downsample_, act_layer, norm_layer, drop_layer),
                 *conv_sequence(
                     width * scale,
                     planes * self.expansion,

@@ -6,86 +6,62 @@ on:
   pull_request:
     branches: main
 
+env:
+  PYTHON_VERSION: "3.11"
+  UV_VERSION: "0.5.13"
+
 jobs:
   ruff:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python: [3.11]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
       - name: Run ruff
         run: |
-          python -m pip install --upgrade uv
-          uv pip install --system -e '.[quality]'
+          make install-quality
           ruff --version
-          ruff check --diff .
+          make lint-check
 
   mypy:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python: [3.11]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
-      - name: Cache python modules
-        uses: actions/cache@v4
+      - uses: astral-sh/setup-uv@v5
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-python-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}-quality
-      - name: Install dependencies
+          version: ${{ env.UV_VERSION }}
+      - name: Run mypy
         run: |
-          python -m pip install --upgrade uv
-          uv pip install --system -e '.[quality]'
+          uv export --no-hashes --locked -o api/requirements.txt --project api
+          uv pip install --system -r api/requirements.txt
+          uv pip install --system -e .[quality]
           mypy --version
-          mypy
-
-  ruff-format:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python: [3.11]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-          architecture: x64
-      - name: Run ruff
-        run: |
-          python -m pip install --upgrade uv
-          uv pip install --system -e '.[quality]'
-          ruff --version
-          ruff format --check --diff .
+          make typing-check
 
   precommit-hooks:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python: [3.11]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
-      - name: Run ruff
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: Run pre-commit hooks
         run: |
-          python -m pip install --upgrade uv
-          uv pip install --system -e '.[quality]'
+          make install-quality
           git checkout -b temp
           pre-commit install
           pre-commit --version
-          pre-commit run --all-files
+          make precommit

@@ -17,7 +17,7 @@
 #
 import sys
 import textwrap
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from tabulate import tabulate
@@ -32,7 +32,7 @@ from holocron import models
 
 master_doc = "index"
 project = "holocron"
-copyright = f"2019-{datetime.now().year}, François-Guillaume Fernandez"
+copyright = f"2019-{datetime.now(tz=timezone.utc).year}, François-Guillaume Fernandez"
 author = "François-Guillaume Fernandez"
 
 # The full version, including alpha/beta/rc tags

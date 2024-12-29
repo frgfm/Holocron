@@ -52,11 +52,11 @@ class ClassificationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            _loss, out = self._get_loss(x, target, return_logits=True)
+            loss, out = self._get_loss(x, target, return_logits=True)
 
             # Safeguard for NaN loss
-            if not torch.isnan(_loss) and not torch.isinf(_loss):
-                val_loss += _loss.item()
+            if not torch.isnan(loss) and not torch.isinf(loss):
+                val_loss += loss.item()
                 num_valid_batches += 1
 
             pred = out.topk(5, dim=1)[1] if out.shape[1] >= 5 else out.argmax(dim=1, keepdim=True)
@@ -95,7 +95,7 @@ class ClassificationTrainer(Trainer):
         images = [None] * num_samples
 
         # Switch to unreduced loss
-        _reduction = self.criterion.reduction
+        reduction = self.criterion.reduction
         self.criterion.reduction = "none"  # type: ignore[assignment]
         self.model.eval()
 
@@ -110,9 +110,9 @@ class ClassificationTrainer(Trainer):
             # Binary
             if self.is_binary:
                 batch_loss = batch_loss.squeeze(1)
-                _probs = torch.sigmoid(logits.squeeze(1))
+                probs_ = torch.sigmoid(logits.squeeze(1))
             else:
-                _probs = torch.softmax(logits, 1).max(dim=1).values
+                probs_ = torch.softmax(logits, 1).max(dim=1).values
 
             if torch.any(batch_loss > losses.min()):
                 idcs = np.concatenate((losses, batch_loss.cpu().numpy())).argsort()[-num_samples:]
@@ -120,41 +120,41 @@ class ClassificationTrainer(Trainer):
                 added_idcs = [idx - num_samples for idx in idcs if idx >= num_samples]
                 # Update
                 losses = np.concatenate((losses[kept_idcs], batch_loss.cpu().numpy()[added_idcs]))
-                probs = np.concatenate((probs[kept_idcs], _probs.cpu().numpy()))
+                probs = np.concatenate((probs[kept_idcs], probs_.cpu().numpy()))
                 if not self.is_binary:
                     preds = np.concatenate((preds[kept_idcs], logits[added_idcs].argmax(dim=1).cpu().numpy()))
                 targets = np.concatenate((targets[kept_idcs], target[added_idcs].cpu().numpy()))
-                _imgs = x[added_idcs].cpu() * torch.tensor(std).view(-1, 1, 1)
-                _imgs += torch.tensor(mean).view(-1, 1, 1)
-                images = [images[idx] for idx in kept_idcs] + [to_pil_image(img) for img in _imgs]
+                imgs = x[added_idcs].cpu() * torch.tensor(std).view(-1, 1, 1)
+                imgs += torch.tensor(mean).view(-1, 1, 1)
+                images = [images[idx] for idx in kept_idcs] + [to_pil_image(img) for img in imgs]
 
-        self.criterion.reduction = _reduction
+        self.criterion.reduction = reduction
 
         if not self.is_binary and classes is None:
             raise AssertionError("arg 'classes' must be specified for multi-class classification")
 
         # Final sort
-        _idcs = losses.argsort()[::-1]
-        losses, preds, probs, targets = losses[_idcs], preds[_idcs], probs[_idcs], targets[_idcs]
-        images = [images[idx] for idx in _idcs]
+        idcs_ = losses.argsort()[::-1]
+        losses, preds, probs, targets = losses[idcs_], preds[idcs_], probs[idcs_], targets[idcs_]
+        images = [images[idx] for idx in idcs_]
 
         # Plot it
         num_cols = 4
-        num_rows = int(math.ceil(num_samples / num_cols))
+        num_rows = math.ceil(num_samples / num_cols)
         _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
         for idx, (img, pred, prob, target, loss) in enumerate(zip(images, preds, probs, targets, losses)):
-            _row = int(idx / num_cols)
-            _col = idx - num_cols * _row
-            axes[_row][_col].imshow(img)
+            row = int(idx / num_cols)
+            col = idx - num_cols * row
+            axes[row][col].imshow(img)
             # Loss, prob, target
             if self.is_binary:
-                axes[_row][_col].title.set_text(f"{loss:.3} / {prob:.2} / {target:.2}")
+                axes[row][col].title.set_text(f"{loss:.3} / {prob:.2} / {target:.2}")
             # Loss, pred (prob), target
             else:
-                axes[_row][_col].title.set_text(
+                axes[row][col].title.set_text(
                     f"{loss:.3} / {classes[pred]} ({prob:.1%}) / {classes[target]}"  # type: ignore[index]
                 )
-            axes[_row][_col].axis("off")
+            axes[row][col].axis("off")
 
         plt.show(**kwargs)
 
@@ -212,11 +212,11 @@ class BinaryClassificationTrainer(ClassificationTrainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            _loss, out = self._get_loss(x, target, return_logits=True)
+            loss, out = self._get_loss(x, target, return_logits=True)
 
             # Safeguard for NaN loss
-            if not torch.isnan(_loss) and not torch.isinf(_loss):
-                val_loss += _loss.item()
+            if not torch.isnan(loss) and not torch.isinf(loss):
+                val_loss += loss.item()
                 num_valid_batches += 1
 
             top1 += torch.sum((target.view_as(out) >= 0.5) == (torch.sigmoid(out) >= 0.5)).item() / out[0].numel()

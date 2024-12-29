@@ -54,11 +54,11 @@ class SegmentationTrainer(Trainer):
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 
-            _loss, out = self._get_loss(x, target, return_logits=True)
+            loss, out = self._get_loss(x, target, return_logits=True)
 
             # Safeguard for NaN loss
-            if not torch.isnan(_loss) and not torch.isinf(_loss):
-                val_loss += _loss.item()
+            if not torch.isnan(loss) and not torch.isinf(loss):
+                val_loss += loss.item()
                 num_valid_batches += 1
 
             # borrowed from https://github.com/pytorch/vision/blob/master/references/segmentation/train.py

@@ -1,35 +1,33 @@
-[build-system]
-requires = ["poetry>=1.0"]
-build-backend = "poetry.masonry.api"
-
-[tool.poetry]
-name = "holocron-api"
+[project]
+name = "holocron"
 version = "0.2.2.dev0"
 description = "Backend template for your Vision API with Holocron"
-authors = ["François-Guillaume Fernandez <fg-feedback@protonmail.com>"]
-license = "Apache-2.0"
+requires-python = ">=3.11,<4.0"
+license = { text = "Apache-2.0" }
+authors = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com" }]
+maintainers = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com" }]
 readme = "README.md"
-repository = "https://github.com/frgfm/Holocron"
-keywords = ["backend", "api", "computer vision"]
+keywords = ["backend", "api", "computer vision", "fastapi", "onnx"]
+dependencies = [
+    "uvicorn>=0.23.0,<1.0.0",
+    "fastapi>=0.109.1,<1.0.0",
+    "python-multipart>=0.0.9",
+    "Pillow>=8.4.0,!=9.2.0",
+    "onnxruntime>=1.16.3,<2.0.0",
+    "huggingface-hub>=0.4.0,<1.0.0",
+    "numpy>=1.19.5,<3.0.0",
+    "pydantic-settings>=2.0.0,<3.0.0"
 
-[tool.poetry.dependencies]
-python = "^3.9"
-uvicorn = ">=0.11.1"
-fastapi = ">=0.100.0,<1.0.0"
-python-multipart = "==0.0.9"
-Pillow = ">=8.4.0,!=9.2.0"
-onnxruntime = "^1.16.3"
-huggingface-hub = ">=0.4.0,<1.0.0"
-numpy = "^1.19.5"
-pydantic-settings = "^2.0.0"
+]
 
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-httpx = ">=0.23.0"
-requests = "^2.32.0"
-pytest = ">=7.2.0,<9.0.0"
-pytest-asyncio = ">=0.17.0,<1.0.0"
-pytest-cov = ">=3.0.0,<5.0.0"
-pytest-pretty = "^1.0.0"
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.3,<9.0.0",
+    "pytest-asyncio>=0.17.0,<1.0.0",
+    "httpx>=0.23.0,<1.0.0",
+    "pytest-cov>=4.0.0,<5.0.0",
+    "pytest-pretty>=1.0.0,<2.0.0",
+    "httpx>=0.23.0,<1.0.0",
+    "requests>=2.32.0,<3.0.0",
+    "asyncpg>=0.29.0,<1.0.0"
+]

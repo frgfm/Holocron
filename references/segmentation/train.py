@@ -157,8 +157,7 @@ def main(args):
         )
 
         print(
-            f"Training set loaded in {time.time() - st:.2f}s "
-            f"({len(train_set)} samples in {len(train_loader)} batches)"
+            f"Training set loaded in {time.time() - st:.2f}s ({len(train_set)} samples in {len(train_loader)} batches)"
         )
 
     if args.show_samples:
@@ -274,7 +273,7 @@ def main(args):
         return
 
     # Training monitoring
-    current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    current_time = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Y%m%d-%H%M%S")
     exp_name = f"{args.arch}-{current_time}" if args.name is None else args.name
 
     # W&B

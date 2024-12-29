@@ -80,10 +80,10 @@ class DarknetBodyV1(nn.Sequential):
         drop_layer: Optional[Callable[..., nn.Module]] = None,
         conv_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> nn.Sequential:
-        _layers: List[nn.Module] = [nn.MaxPool2d(2)]
+        layers: List[nn.Module] = [nn.MaxPool2d(2)]
         k1 = True
         for in_planes, out_planes in zip(planes[:-1], planes[1:]):
-            _layers.extend(
+            layers.extend(
                 conv_sequence(
                     in_planes,
                     out_planes,
@@ -98,7 +98,7 @@ class DarknetBodyV1(nn.Sequential):
             )
             k1 = not k1
 
-        return nn.Sequential(*_layers)
+        return nn.Sequential(*layers)
 
 
 class DarknetV1(nn.Sequential):

@@ -97,8 +97,8 @@ class _YOLO(nn.Module):
             # Assign GT to anchors
             for _idx in range(gt_boxes[idx].shape[0]):
                 # Assign the anchor inside the cell
-                _iou = box_iou(gt_boxes[idx][_idx].unsqueeze(0), pred_xyxy[idx, gt_idcs[_idx, 1], gt_idcs[_idx, 0]])
-                iou, anchor_idx = _iou.squeeze(0).max(dim=0)
+                iou_ = box_iou(gt_boxes[idx][_idx].unsqueeze(0), pred_xyxy[idx, gt_idcs[_idx, 1], gt_idcs[_idx, 0]])
+                iou, anchor_idx = iou_.squeeze(0).max(dim=0)
                 # Flag that there is an object here
                 is_noobj[idx, gt_idcs[_idx, 1], gt_idcs[_idx, 0], anchor_idx] = False
                 # Classification loss
@@ -119,8 +119,8 @@ class _YOLO(nn.Module):
 
             # Ignore high ious
             if ignore_high_iou:
-                _iou = box_iou(pred_xyxy[idx].reshape(-1, 4), gt_boxes[idx]).max(dim=-1).values.reshape(h, w, -1)
-                is_noobj[idx, _iou >= 0.5] = False
+                iou_ = box_iou(pred_xyxy[idx].reshape(-1, 4), gt_boxes[idx]).max(dim=-1).values.reshape(h, w, -1)
+                is_noobj[idx, iou_ >= 0.5] = False
         # Non-objectness loss
         noobj_loss += pred_o[is_noobj].pow(2).sum()
 
