@@ -37,16 +37,16 @@ def _test_detection_model(name, input_size):
     num_boxes = [3, 4]
     gt_boxes = []
     for num in num_boxes:
-        _boxes = torch.rand((num, 4), dtype=torch.float)
+        boxes = torch.rand((num, 4), dtype=torch.float)
         # Ensure format xmin, ymin, xmax, ymax
-        _boxes[:, :2] *= _boxes[:, 2:]
+        boxes[:, :2] *= boxes[:, 2:]
         # Ensure some anchors will be assigned
-        _boxes[0, :2] = 0
-        _boxes[0, 2:] = 1
+        boxes[0, :2] = 0
+        boxes[0, 2:] = 1
         # Check cases where cell can get two assignments
-        _boxes[1, :2] = 0.2
-        _boxes[1, 2:] = 0.8
-        gt_boxes.append(_boxes)
+        boxes[1, :2] = 0.2
+        boxes[1, 2:] = 0.8
+        gt_boxes.append(boxes)
     gt_labels = [(num_classes * torch.rand(num)).to(dtype=torch.long) for num in num_boxes]
 
     # Loss computation

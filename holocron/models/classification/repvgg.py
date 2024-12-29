@@ -139,7 +139,7 @@ class RepVGG(nn.Sequential):
         if len(num_blocks) != len(planes):
             raise AssertionError("the length of `num_blocks` and `planes` are expected to be the same")
 
-        _stages: List[nn.Sequential] = []
+        stages: List[nn.Sequential] = []
         # Assign the width multipliers
         chans = [in_channels, int(min(1, width_multiplier) * planes[0])]
         chans.extend([int(width_multiplier * chan) for chan in planes[1:-1]])
@@ -147,13 +147,13 @@ class RepVGG(nn.Sequential):
 
         # Build the layers
         for nb_blocks, in_chan, out_chan in zip(num_blocks, chans[:-1], chans[1:], strict=False):
-            _layers = [RepBlock(in_chan, out_chan, 2, False, act_layer, norm_layer)]
-            _layers.extend([RepBlock(out_chan, out_chan, 1, True, act_layer, norm_layer) for _ in range(nb_blocks)])
-            _stages.append(nn.Sequential(*_layers))
+            layers = [RepBlock(in_chan, out_chan, 2, False, act_layer, norm_layer)]
+            layers.extend([RepBlock(out_chan, out_chan, 1, True, act_layer, norm_layer) for _ in range(nb_blocks)])
+            stages.append(nn.Sequential(*layers))
 
         super().__init__(
             OrderedDict([
-                ("features", nn.Sequential(*_stages)),
+                ("features", nn.Sequential(*stages)),
                 ("pool", GlobalAvgPool2d(flatten=True)),
                 ("head", nn.Linear(chans[-1], num_classes)),
             ])

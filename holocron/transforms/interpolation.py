@@ -78,11 +78,11 @@ class Resize(T.Resize):
         h, w = _get_image_shape(image)
         o_ratio = h / w
         if self.size[0] / self.size[1] > o_ratio:
-            _h, _w = int(round(self.size[1] * o_ratio)), self.size[1]
+            h_, w_ = round(self.size[1] * o_ratio), self.size[1]
         else:
-            _h, _w = self.size[0], int(round(self.size[0] / o_ratio))
+            h_, w_ = self.size[0], round(self.size[0] / o_ratio)
 
-        return _h, _w
+        return h_, w_
 
     def forward(self, image: Union[Image.Image, torch.Tensor]) -> Union[Image.Image, torch.Tensor]:
         if self.mode == ResizeMethod.SQUISH:
@@ -91,9 +91,9 @@ class Resize(T.Resize):
         img = resize(image, (h, w), self.interpolation)
         # get the padding
         h_pad, w_pad = self.size[0] - h, self.size[1] - w
-        _padding = w_pad // 2, h_pad // 2, w_pad - w_pad // 2, h_pad - h_pad // 2
+        padding = w_pad // 2, h_pad // 2, w_pad - w_pad // 2, h_pad - h_pad // 2
         # Fill the rest up to target_size
-        return pad(img, _padding, padding_mode=self.pad_mode)
+        return pad(img, padding, padding_mode=self.pad_mode)
 
 
 class RandomZoomOut(nn.Module):
@@ -129,17 +129,17 @@ class RandomZoomOut(nn.Module):
     def get_params(self, image: Union[Image.Image, torch.Tensor]) -> Tuple[int, int]:
         h, w = _get_image_shape(image)
 
-        _scale = (self.scale[1] - self.scale[0]) * torch.rand(1).item() + self.scale[0]
-        _aratio = h / w
+        scale = (self.scale[1] - self.scale[0]) * torch.rand(1).item() + self.scale[0]
+        aratio = h / w
         # Preserve the aspect ratio
-        _tratio = self.size[0] / self.size[1]
-        _max_area = self.size[1] ** 2 * _aratio if _tratio > _aratio else self.size[0] ** 2 / _aratio
-        _area = _max_area * _scale
+        tratio = self.size[0] / self.size[1]
+        max_area = self.size[1] ** 2 * aratio if tratio > aratio else self.size[0] ** 2 / aratio
+        area = max_area * scale
 
-        _w = int(round(sqrt(_area / _aratio)))
-        _h = int(round(_area / _w))
+        w_ = round(sqrt(area / aratio))
+        h_ = round(area / w_)
 
-        return _h, _w
+        return h_, w_
 
     def forward(self, image: Union[Image.Image, torch.Tensor]) -> Union[Image.Image, torch.Tensor]:
         # Skip dummy cases
@@ -151,6 +151,6 @@ class RandomZoomOut(nn.Module):
         img = resize(image, (h, w), **self._kwargs)
         # get the padding
         h_delta, w_delta = self.size[0] - h, self.size[1] - w
-        _padding = w_delta // 2, h_delta // 2, w_delta - w_delta // 2, h_delta - h_delta // 2
+        padding = w_delta // 2, h_delta // 2, w_delta - w_delta // 2, h_delta - h_delta // 2
         # Fill the rest up to size
-        return pad(img, _padding)
+        return pad(img, padding)

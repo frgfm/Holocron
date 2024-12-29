@@ -135,7 +135,7 @@ class ConvNeXt(nn.Sequential):
         self.dilation = 1
 
         # Patchify-like stem
-        _layers = conv_sequence(
+        layers = conv_sequence(
             in_channels,
             planes[0],
             None,
@@ -153,23 +153,23 @@ class ConvNeXt(nn.Sequential):
         for _num_blocks, _planes, _oplanes in zip(num_blocks, planes, planes[1:] + [planes[-1]], strict=False):
             # adjust stochastic depth probability based on the depth of the stage block
             sd_probs = [stochastic_depth_prob * (block_idx + _idx) / (tot_blocks - 1.0) for _idx in range(_num_blocks)]
-            _stage: List[nn.Module] = [
+            stage: List[nn.Module] = [
                 Bottlenext(_planes, act_layer, norm_layer, drop_layer, stochastic_depth_prob=sd_prob)
                 for _idx, sd_prob in zip(range(_num_blocks), sd_probs, strict=False)
             ]
             if _planes != _oplanes:
-                _stage.append(
+                stage.append(
                     nn.Sequential(
                         LayerNorm2d(_planes),
                         nn.Conv2d(_planes, _oplanes, kernel_size=2, stride=2),
                     )
                 )
-            _layers.append(nn.Sequential(*_stage))
+            layers.append(nn.Sequential(*stage))
             block_idx += _num_blocks
 
         super().__init__(
             OrderedDict([
-                ("features", nn.Sequential(*_layers)),
+                ("features", nn.Sequential(*layers)),
                 ("pool", GlobalAvgPool2d(flatten=True)),
                 (
                     "head",

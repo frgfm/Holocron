@@ -3,6 +3,7 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
+import itertools
 from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -88,17 +89,17 @@ class UpPath(nn.Module):
         if not isinstance(downfeats, list):
             downfeats = [downfeats]
         # Upsample expansive features
-        _upfeat = self.upsample(upfeat)
+        upfeat_ = self.upsample(upfeat)
         # Crop contracting path features
         for idx, downfeat in enumerate(downfeats):
-            if downfeat.shape != _upfeat.shape:
-                delta_w = downfeat.shape[-1] - _upfeat.shape[-1]
+            if downfeat.shape != upfeat_.shape:
+                delta_w = downfeat.shape[-1] - upfeat_.shape[-1]
                 w_slice = slice(delta_w // 2, -(delta_w // 2) if delta_w > 0 else downfeat.shape[-1])
-                delta_h = downfeat.shape[-2] - _upfeat.shape[-2]
+                delta_h = downfeat.shape[-2] - upfeat_.shape[-2]
                 h_slice = slice(delta_h // 2, -(delta_h // 2) if delta_h > 0 else downfeat.shape[-2])
                 downfeats[idx] = downfeat[..., h_slice, w_slice]
         # Concatenate both feature maps and forward them
-        return self.block(torch.cat((*downfeats, _upfeat), dim=1))
+        return self.block(torch.cat((*downfeats, upfeat_), dim=1))
 
 
 class UNetBackbone(nn.Sequential):
@@ -117,18 +118,18 @@ class UNetBackbone(nn.Sequential):
             act_layer = nn.ReLU(inplace=True)
 
         # Contracting path
-        _layers: List[nn.Module] = []
-        _layout = [in_channels, *layout]
-        _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
-            _layers.append(
-                down_path(in_chan, out_chan, _pool, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
+        layers: List[nn.Module] = []
+        layout_ = [in_channels, *layout]
+        pool = False
+        for in_chan, out_chan in itertools.pairwise(layout_):
+            layers.append(
+                down_path(in_chan, out_chan, pool, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
             )
-            _pool = True
+            pool = True
 
         super().__init__(
             OrderedDict([
-                ("features", nn.Sequential(*_layers)),
+                ("features", nn.Sequential(*layers)),
                 ("pool", GlobalAvgPool2d(flatten=True)),
                 ("head", nn.Linear(layout[-1], num_classes)),
             ])
@@ -171,13 +172,13 @@ class UNet(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels, *layout]
-        _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
+        layout_ = [in_channels, *layout]
+        pool = False
+        for in_chan, out_chan in itertools.pairwise(layout_):
             self.encoder.append(
-                down_path(in_chan, out_chan, _pool, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
+                down_path(in_chan, out_chan, pool, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
             )
-            _pool = True
+            pool = True
 
         self.bridge = nn.Sequential(
             nn.MaxPool2d((2, 2)),
@@ -191,8 +192,8 @@ class UNet(nn.Module):
 
         # Expansive path
         self.decoder = nn.ModuleList([])
-        _layout = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][:-1]] + [layout[0]]
-        for in_chan, out_chan in zip([2 * layout[-1]] + layout[::-1][:-1], _layout, strict=False):
+        layout_ = [chan // 2 if bilinear_upsampling else chan for chan in layout[::-1][:-1]] + [layout[0]]
+        for in_chan, out_chan in zip([2 * layout[-1]] + layout[::-1][:-1], layout_, strict=False):
             self.decoder.append(
                 UpPath(
                     in_chan,
@@ -269,14 +270,14 @@ class UBlock(nn.Module):
 
     def forward(self, downfeat: Tensor, upfeat: Tensor) -> Tensor:
         # Upsample expansive features
-        _upfeat = self.upsample(upfeat)
+        upfeat_ = self.upsample(upfeat)
 
         # Crop upsampled features
-        if downfeat.shape[-2:] != _upfeat.shape[-2:]:
-            _upfeat = F.interpolate(_upfeat, downfeat.shape[-2:], mode="nearest")
+        if downfeat.shape[-2:] != upfeat_.shape[-2:]:
+            upfeat_ = F.interpolate(upfeat_, downfeat.shape[-2:], mode="nearest")
 
         # Concatenate both feature maps and forward them
-        return self.block(torch.cat((self.bn(downfeat), _upfeat), dim=1))
+        return self.block(torch.cat((self.bn(downfeat), upfeat_), dim=1))
 
 
 class DynamicUNet(nn.Module):
@@ -335,8 +336,8 @@ class DynamicUNet(nn.Module):
 
         # Expansive path
         self.decoder = nn.ModuleList([])
-        _layout = chans[::-1][1:] + [chans[0]]
-        for up_chan, out_chan in zip(chans[::-1], _layout, strict=False):
+        layout = chans[::-1][1:] + [chans[0]]
+        for up_chan, out_chan in zip(chans[::-1], layout, strict=False):
             self.decoder.append(
                 UBlock(up_chan, up_chan, out_chan, int(same_padding), act_layer, norm_layer, drop_layer, conv_layer)
             )

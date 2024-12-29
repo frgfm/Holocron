@@ -52,7 +52,7 @@ def plot_samples(images, targets, num_samples=8):
     # Unnormalize image
     nb_samples = min(num_samples, images.shape[0])
     num_cols = min(nb_samples, 4)
-    num_rows = int(math.ceil(nb_samples / num_cols))
+    num_rows = math.ceil(nb_samples / num_cols)
     _, axes = plt.subplots(num_rows, num_cols, figsize=(20, 5))
     for idx in range(nb_samples):
         img = images[idx]
@@ -60,17 +60,17 @@ def plot_samples(images, targets, num_samples=8):
         img += torch.tensor(IMAGENETTE.mean).view(-1, 1, 1)
         img = to_pil_image(img)
 
-        _row = int(idx / num_cols)
-        _col = idx - _row * num_cols
+        row = int(idx / num_cols)
+        col = idx - row * num_cols
 
-        axes[_row][_col].imshow(img)
-        axes[_row][_col].axis("off")
+        axes[row][col].imshow(img)
+        axes[row][col].axis("off")
         if targets.ndim == 1:
-            axes[_row][_col].set_title(IMAGENETTE.classes[targets[idx].item()])
+            axes[row][col].set_title(IMAGENETTE.classes[targets[idx].item()])
         else:
             class_idcs = torch.where(targets[idx] > 0)[0]
-            _info = [f"{IMAGENETTE.classes[_idx.item()]} ({targets[idx, _idx]:.2f})" for _idx in class_idcs]
-            axes[_row][_col].set_title(" ".join(_info))
+            info = [f"{IMAGENETTE.classes[_idx.item()]} ({targets[idx, _idx]:.2f})" for _idx in class_idcs]
+            axes[row][col].set_title(" ".join(info))
 
     plt.show()
 

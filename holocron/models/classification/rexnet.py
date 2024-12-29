@@ -91,10 +91,10 @@ class ReXBlock(nn.Module):
         self.in_channels = in_channels
         self.out_channels = channels
 
-        _layers = []
+        layers = []
         if t != 1:
             dw_channels = in_channels * t
-            _layers.extend(
+            layers.extend(
                 conv_sequence(
                     in_channels,
                     dw_channels,
@@ -109,7 +109,7 @@ class ReXBlock(nn.Module):
         else:
             dw_channels = in_channels
 
-        _layers.extend(
+        layers.extend(
             conv_sequence(
                 dw_channels,
                 dw_channels,
@@ -125,15 +125,15 @@ class ReXBlock(nn.Module):
         )
 
         if use_se:
-            _layers.append(SEBlock(dw_channels, se_ratio, act_layer, norm_layer, drop_layer))
+            layers.append(SEBlock(dw_channels, se_ratio, act_layer, norm_layer, drop_layer))
 
-        _layers.append(act_layer)
-        _layers.extend(
+        layers.append(act_layer)
+        layers.extend(
             conv_sequence(
                 dw_channels, channels, None, norm_layer, drop_layer, kernel_size=1, stride=1, bias=(norm_layer is None)
             )
         )
-        self.conv = nn.Sequential(*_layers)
+        self.conv = nn.Sequential(*layers)
 
     def forward(self, x: Tensor) -> Tensor:
         out = self.conv(x)
@@ -180,12 +180,12 @@ class ReXNet(nn.Sequential):
         inplanes = in_planes / width_mult if width_mult < 1.0 else in_planes
 
         # The following channel configuration is a simple instance to make each layer become an expand layer
-        chans = [int(round(width_mult * stem_channel))]
-        chans.extend([int(round(width_mult * (inplanes + idx * final_planes / depth))) for idx in range(depth)])
+        chans = [round(width_mult * stem_channel)]
+        chans.extend([round(width_mult * (inplanes + idx * final_planes / depth)) for idx in range(depth)])
 
         ses = [False] * (num_blocks[0] + num_blocks[1]) + [use_se] * sum(num_blocks[2:])
 
-        _layers = conv_sequence(
+        layers = conv_sequence(
             in_channels,
             chans[0],
             act_layer,
@@ -199,11 +199,11 @@ class ReXNet(nn.Sequential):
 
         t = 1
         for in_c, c, s, se in zip(chans[:-1], chans[1:], strides, ses, strict=False):
-            _layers.append(ReXBlock(in_channels=in_c, channels=c, t=t, stride=s, use_se=se, se_ratio=se_ratio))
+            layers.append(ReXBlock(in_channels=in_c, channels=c, t=t, stride=s, use_se=se, se_ratio=se_ratio))
             t = 6
 
         pen_channels = int(width_mult * 1280)
-        _layers.extend(
+        layers.extend(
             conv_sequence(
                 chans[-1],
                 pen_channels,
@@ -219,7 +219,7 @@ class ReXNet(nn.Sequential):
 
         super().__init__(
             OrderedDict([
-                ("features", nn.Sequential(*_layers)),
+                ("features", nn.Sequential(*layers)),
                 ("pool", GlobalAvgPool2d(flatten=True)),
                 ("head", nn.Sequential(nn.Dropout(dropout_ratio), nn.Linear(pen_channels, num_classes))),
             ])

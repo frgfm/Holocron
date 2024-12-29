@@ -181,8 +181,8 @@ def adan(
         exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
         delta_grad = grad - prev_grad
         exp_avg_sq.mul_(beta2).add_(delta_grad, alpha=1 - beta2)
-        _tmp = grad + beta2 * delta_grad
-        exp_avg_delta.mul_(beta3).addcmul_(_tmp, _tmp, value=1 - beta3)
+        tmp = grad + beta2 * delta_grad
+        exp_avg_delta.mul_(beta3).addcmul_(tmp, tmp, value=1 - beta3)
         if amsgrad:
             # Maintains the maximum of all 2nd moment running avg. till now
             torch.maximum(max_exp_avg_deltas[i], exp_avg_delta, out=max_exp_avg_deltas[i])

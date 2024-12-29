@@ -30,8 +30,8 @@ def _test_wrapper(name: str) -> None:
                 assert torch.all(p.grad == 0.0)
 
     # Check update step
-    _p = model.classifier[3].weight
-    p_val = _p.data.clone()
+    p_ = model.classifier[3].weight
+    p_val = p_.data.clone()
 
     # Random inputs
     input_t = torch.rand((num_batches, *input_shape), dtype=torch.float32)
@@ -44,8 +44,8 @@ def _test_wrapper(name: str) -> None:
         loss.backward()
         opt_wrapper.step()
     # Check update rule
-    assert not torch.equal(_p.data, p_val)
-    assert not torch.equal(_p.data, p_val - lr * _p.grad)
+    assert not torch.equal(p_.data, p_val)
+    assert not torch.equal(p_.data, p_val - lr * p_.grad)
 
     # Repr
     assert len(repr(opt_wrapper).split("\n")) == len(repr(optimizer).split("\n")) + 4

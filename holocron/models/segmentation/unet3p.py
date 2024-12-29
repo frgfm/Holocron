@@ -3,6 +3,7 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
+import itertools
 from typing import Any, Callable, Dict, List, Optional
 
 import torch
@@ -118,11 +119,11 @@ class UNet3p(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels, *layout]
-        _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
-            self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
-            _pool = True
+        layout_ = [in_channels, *layout]
+        pool = False
+        for in_chan, out_chan in itertools.pairwise(layout_):
+            self.encoder.append(down_path(in_chan, out_chan, pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
+            pool = True
 
         # Expansive path
         self.decoder = nn.ModuleList([])

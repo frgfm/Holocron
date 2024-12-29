@@ -63,9 +63,9 @@ def find_image_size(dataset: Sequence[Tuple[Image.Image, Any]], **kwargs: Any) -
         the suggested height and width to be used
     """
     # Record height & width
-    _shapes = parallel(lambda x: x[0].size, dataset, progress=True)
+    shapes_ = parallel(lambda x: x[0].size, dataset, progress=True)
 
-    shapes = np.asarray(_shapes)[:, ::-1]
+    shapes = np.asarray(shapes_)[:, ::-1]
     ratios = shapes[:, 0] / shapes[:, 1]
     sides = np.sqrt(shapes[:, 0] * shapes[:, 1])
 
@@ -73,8 +73,8 @@ def find_image_size(dataset: Sequence[Tuple[Image.Image, Any]], **kwargs: Any) -
     median_ratio = np.median(ratios)
     median_side = np.median(sides)
 
-    height = int(round(median_side * sqrt(median_ratio)))
-    width = int(round(median_side / sqrt(median_ratio)))
+    height = round(median_side * sqrt(median_ratio))
+    width = round(median_side / sqrt(median_ratio))
 
     # Double histogram
     fig, axes = plt.subplots(1, 2)

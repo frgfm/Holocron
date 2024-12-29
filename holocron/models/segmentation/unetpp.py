@@ -3,6 +3,7 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
+import itertools
 import sys
 from typing import Any, Callable, Dict, List, Optional
 
@@ -52,11 +53,11 @@ class UNetp(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels, *layout]
-        _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
-            self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
-            _pool = True
+        layout_ = [in_channels, *layout]
+        pool = False
+        for in_chan, out_chan in itertools.pairwise(layout_):
+            self.encoder.append(down_path(in_chan, out_chan, pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
+            pool = True
 
         self.bridge = nn.Sequential(
             nn.MaxPool2d((2, 2)),
@@ -70,8 +71,8 @@ class UNetp(nn.Module):
 
         # Expansive path
         self.decoder = nn.ModuleList([])
-        _layout = [layout[-1]] + layout[1:][::-1]
-        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1), strict=False):
+        layout_ = [layout[-1]] + layout[1:][::-1]
+        for left_chan, up_chan, num_cells in zip(layout[::-1], layout_, range(1, len(layout) + 1), strict=False):
             self.decoder.append(
                 nn.ModuleList([
                     UpPath(left_chan + up_chan, left_chan, True, 1, act_layer, norm_layer, drop_layer, conv_layer)
@@ -131,11 +132,11 @@ class UNetpp(nn.Module):
 
         # Contracting path
         self.encoder = nn.ModuleList([])
-        _layout = [in_channels, *layout]
-        _pool = False
-        for in_chan, out_chan in zip(_layout[:-1], _layout[1:], strict=False):
-            self.encoder.append(down_path(in_chan, out_chan, _pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
-            _pool = True
+        layout_ = [in_channels, *layout]
+        pool = False
+        for in_chan, out_chan in itertools.pairwise(layout_):
+            self.encoder.append(down_path(in_chan, out_chan, pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
+            pool = True
 
         self.bridge = nn.Sequential(
             nn.MaxPool2d((2, 2)),
@@ -149,8 +150,8 @@ class UNetpp(nn.Module):
 
         # Expansive path
         self.decoder = nn.ModuleList([])
-        _layout = [layout[-1]] + layout[1:][::-1]
-        for left_chan, up_chan, num_cells in zip(layout[::-1], _layout, range(1, len(layout) + 1), strict=False):
+        layout_ = [layout[-1]] + layout[1:][::-1]
+        for left_chan, up_chan, num_cells in zip(layout[::-1], layout_, range(1, len(layout) + 1), strict=False):
             self.decoder.append(
                 nn.ModuleList([
                     UpPath(

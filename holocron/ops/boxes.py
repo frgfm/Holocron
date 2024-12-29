@@ -205,7 +205,7 @@ def ciou_loss(boxes1: Tensor, boxes2: Tensor) -> Tensor:
     ciou_loss = cast(Tensor, 1 - iou + iou_penalty(boxes1, boxes2))
 
     # Check
-    _filter = (v != 0) & (iou != 0)
-    ciou_loss[_filter].addcdiv_(v[_filter], 1 - iou[_filter] + v[_filter])
+    filter_ = (v != 0) & (iou != 0)
+    ciou_loss[filter_].addcdiv_(v[filter_], 1 - iou[filter_] + v[filter_])
 
     return ciou_loss

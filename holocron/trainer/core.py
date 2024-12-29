@@ -428,7 +428,7 @@ class Trainer:
         x, target = next(iter(self.train_loader))
         x, target = self.to_cuda(x, target)
 
-        _losses = []
+        losses = []
 
         if self.amp:
             self.scaler = torch.cuda.amp.GradScaler()
@@ -442,9 +442,9 @@ class Trainer:
             if torch.isnan(batch_loss) or torch.isinf(batch_loss):
                 raise ValueError("loss value is NaN or inf.")
 
-            _losses.append(batch_loss.item())
+            losses.append(batch_loss.item())
 
-        plt.plot(np.arange(len(_losses)), _losses)
+        plt.plot(np.arange(len(losses)), losses)
         plt.xlabel("Optimization steps")
         plt.ylabel("Training loss")
         plt.grid(True, linestyle="--", axis="x")

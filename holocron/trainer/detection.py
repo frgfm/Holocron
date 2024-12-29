@@ -106,12 +106,12 @@ class DetectionTrainer(Trainer):
                 if t["boxes"].shape[0] > 0 and dets["boxes"].shape[0] > 0:
                     gt_indices, pred_indices = assign_iou(t["boxes"], dets["boxes"], iou_threshold)
                     loc_assigns += len(gt_indices)
-                    _correct = (t["labels"][gt_indices] == dets["labels"][pred_indices]).sum().item()
+                    correct_ = (t["labels"][gt_indices] == dets["labels"][pred_indices]).sum().item()
                 else:
                     gt_indices, pred_indices = [], []
-                    _correct = 0
-                correct += _correct
-                clf_error += len(gt_indices) - _correct
+                    correct_ = 0
+                correct += correct_
+                clf_error += len(gt_indices) - correct_
                 loc_fn += t["boxes"].shape[0] - len(gt_indices)
                 loc_fp += dets["boxes"].shape[0] - len(pred_indices)
             num_samples += sum(t["boxes"].shape[0] for t in target)

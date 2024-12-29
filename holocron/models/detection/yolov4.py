@@ -350,8 +350,8 @@ class YoloLayer(nn.Module):
         gt_labels = [t["labels"] for t in target]
 
         # GT coords --> left, top, width, height
-        _boxes = torch.cat(gt_boxes, dim=0)
-        gt_centers = _boxes[..., [0, 2, 1, 3]].reshape(-1, 2, 2).mean(dim=-1)
+        boxes = torch.cat(gt_boxes, dim=0)
+        gt_centers = boxes[..., [0, 2, 1, 3]].reshape(-1, 2, 2).mean(dim=-1)
         gt_centers[:, 0] *= w
         gt_centers[:, 1] *= h
         gt_centers = gt_centers.to(dtype=torch.long)
@@ -363,7 +363,7 @@ class YoloLayer(nn.Module):
         )
         if target_selection.shape[0] > 0:
             # Anchors IoU
-            gt_wh = _boxes[:, 2:] - _boxes[:, :2]
+            gt_wh = boxes[:, 2:] - boxes[:, :2]
             anchor_idxs = box_iou(
                 torch.cat((-gt_wh, gt_wh), dim=-1), torch.cat((-self.anchors, self.anchors), dim=-1)
             ).argmax(dim=1)

@@ -41,13 +41,13 @@ class DepthConvBlock(nn.ModuleList):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
 
-        _layers = [norm_layer(channels)] if stride == 1 else []
-        _layers.append(
+        layers = [norm_layer(channels)] if stride == 1 else []
+        layers.append(
             nn.Sequential(
                 *conv_sequence(channels, channels, kernel_size=1, stride=stride, norm_layer=norm_layer, groups=channels)
             ),
         )
-        _layers.extend([
+        layers.extend([
             nn.Sequential(
                 *conv_sequence(
                     channels,
@@ -61,39 +61,39 @@ class DepthConvBlock(nn.ModuleList):
             )
             for _ in range(num_blocks)
         ])
-        super().__init__(_layers)
+        super().__init__(layers)
 
     def forward(self, x: Tensor) -> Tensor:
         return sum(mod(x) for mod in self)
 
     def reparametrize(self) -> nn.Conv2d:
-        _chans = self[1][0].in_channels
+        chans = self[1][0].in_channels
         # Fuse the conv & BN
-        _conv = nn.Conv2d(_chans, _chans, 3, padding=1, bias=True, stride=self[1][0].stride, groups=_chans).to(
+        conv = nn.Conv2d(chans, chans, 3, padding=1, bias=True, stride=self[1][0].stride, groups=chans).to(
             self[1][0].weight.data.device
         )
-        _conv.weight.data.zero_()
-        _conv.bias.data.zero_()  # type: ignore[union-attr]
+        conv.weight.data.zero_()
+        conv.bias.data.zero_()  # type: ignore[union-attr]
         bn_idx, conv1_idx, branch_idx = (None, 0, 1) if isinstance(self[0], nn.Sequential) else (0, 1, 2)
         # BN branch
         if isinstance(bn_idx, int):
             bn = self[bn_idx]
             scale_factor = bn.weight.data / torch.sqrt(bn.running_var + bn.eps)
-            _conv.bias.data += bn.bias.data - scale_factor * bn.running_mean  # type: ignore[union-attr]
-            _conv.weight.data[..., 1, 1] += scale_factor.unsqueeze(1)
+            conv.bias.data += bn.bias.data - scale_factor * bn.running_mean  # type: ignore[union-attr]
+            conv.weight.data[..., 1, 1] += scale_factor.unsqueeze(1)
 
         # Conv 1x1 branch
-        _k, _b = fuse_conv_bn(self[conv1_idx][0], self[conv1_idx][1])
-        _conv.bias.data += _b  # type: ignore[union-attr]
-        _conv.weight.data[..., 1:2, 1:2] += _k
+        k, b = fuse_conv_bn(self[conv1_idx][0], self[conv1_idx][1])
+        conv.bias.data += b  # type: ignore[union-attr]
+        conv.weight.data[..., 1:2, 1:2] += k
 
         # Conv 3x3 branches
         for mod_idx in range(branch_idx, len(self)):
-            _k, _b = fuse_conv_bn(self[mod_idx][0], self[mod_idx][1])
-            _conv.bias.data += _b  # type: ignore[union-attr]
-            _conv.weight.data += _k
+            k, b = fuse_conv_bn(self[mod_idx][0], self[mod_idx][1])
+            conv.bias.data += b  # type: ignore[union-attr]
+            conv.weight.data += k
 
-        return _conv
+        return conv
 
 
 class PointConvBlock(nn.ModuleList):
@@ -108,12 +108,12 @@ class PointConvBlock(nn.ModuleList):
     ) -> None:
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-        _layers = [norm_layer(out_channels)] if out_channels == in_channels else []
-        _layers.extend([
+        layers = [norm_layer(out_channels)] if out_channels == in_channels else []
+        layers.extend([
             nn.Sequential(*conv_sequence(in_channels, out_channels, kernel_size=1, norm_layer=norm_layer))
             for _ in range(num_blocks)
         ])
-        super().__init__(_layers)
+        super().__init__(layers)
 
     def forward(self, x: Tensor) -> Tensor:
         return sum(mod(x) for mod in self)
@@ -122,25 +122,25 @@ class PointConvBlock(nn.ModuleList):
         seq_idx = 1 if not isinstance(self[0], nn.Sequential) else 0
         in_chans, out_chans = self[seq_idx][0].in_channels, self[seq_idx][0].out_channels
         # Fuse the conv & BN
-        _conv = nn.Conv2d(in_chans, out_chans, 1, bias=True).to(self[seq_idx][0].weight.data.device)
-        _conv.weight.data.zero_()
-        _conv.bias.data.zero_()  # type: ignore[union-attr]
+        conv = nn.Conv2d(in_chans, out_chans, 1, bias=True).to(self[seq_idx][0].weight.data.device)
+        conv.weight.data.zero_()
+        conv.bias.data.zero_()  # type: ignore[union-attr]
         bn_idx, branch_idx = (None, 0) if isinstance(self[0], nn.Sequential) else (0, 1)
         # BN branch
         if isinstance(bn_idx, int):
             bn = self[bn_idx]
             scale_factor = bn.weight.data / torch.sqrt(bn.running_var + bn.eps)
-            _conv.bias.data += bn.bias.data - scale_factor * bn.running_mean  # type: ignore[union-attr]
-            for chan_idx in range(_conv.weight.data.shape[0]):
-                _conv.weight.data[chan_idx, chan_idx] += scale_factor[chan_idx]
+            conv.bias.data += bn.bias.data - scale_factor * bn.running_mean  # type: ignore[union-attr]
+            for chan_idx in range(conv.weight.data.shape[0]):
+                conv.weight.data[chan_idx, chan_idx] += scale_factor[chan_idx]
 
         # Conv branches
         for mod_idx in range(branch_idx, len(self)):
-            _k, _b = fuse_conv_bn(self[mod_idx][0], self[mod_idx][1])
-            _conv.bias.data += _b  # type: ignore[union-attr]
-            _conv.weight.data += _k
+            k, b = fuse_conv_bn(self[mod_idx][0], self[mod_idx][1])
+            conv.bias.data += b  # type: ignore[union-attr]
+            conv.weight.data += k
 
-        return _conv
+        return conv
 
 
 class MobileOneBlock(nn.Sequential):
@@ -192,28 +192,28 @@ class MobileOne(nn.Sequential):
             act_layer = nn.ReLU(inplace=True)
 
         base_planes = [64, 128, 256, 512]
-        planes = [int(round(mult * chans)) for mult, chans in zip(width_multipliers, base_planes, strict=False)]
+        planes = [round(mult * chans) for mult, chans in zip(width_multipliers, base_planes, strict=False)]
 
         in_planes = min(64, planes[0])
         # Stem
-        _layers: List[nn.Module] = [MobileOneBlock(in_channels, in_planes, overparam_factor, 2, act_layer, norm_layer)]
+        layers: List[nn.Module] = [MobileOneBlock(in_channels, in_planes, overparam_factor, 2, act_layer, norm_layer)]
 
         # Consecutive convolutional blocks
         for _num_blocks, _planes in zip(num_blocks, planes, strict=False):
             # Stride & channel changes
-            _stage = [MobileOneBlock(in_planes, _planes, overparam_factor, 2, act_layer, norm_layer)]
+            stage = [MobileOneBlock(in_planes, _planes, overparam_factor, 2, act_layer, norm_layer)]
             # Depth
-            _stage.extend([
+            stage.extend([
                 MobileOneBlock(_planes, _planes, overparam_factor, 1, act_layer, norm_layer)
                 for _ in range(_num_blocks - 1)
             ])
             in_planes = _planes
 
-            _layers.append(nn.Sequential(*_stage))
+            layers.append(nn.Sequential(*stage))
 
         super().__init__(
             OrderedDict([
-                ("features", nn.Sequential(*_layers)),
+                ("features", nn.Sequential(*layers)),
                 ("pool", GlobalAvgPool2d(flatten=True)),
                 ("head", nn.Linear(in_planes, num_classes)),
             ])
