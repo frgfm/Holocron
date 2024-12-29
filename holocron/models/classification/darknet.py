@@ -3,7 +3,6 @@
 # This program is licensed under the Apache License 2.0.
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
-import itertools
 from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Optional
 
@@ -66,7 +65,7 @@ class DarknetBodyV1(nn.Sequential):
                     "layers",
                     nn.Sequential(*[
                         self._make_layer([_in_chans, *planes], act_layer, norm_layer, drop_layer, conv_layer)
-                        for _in_chans, planes in zip(in_chans, layout, strict=False)
+                        for _in_chans, planes in zip(in_chans, layout)
                     ]),
                 ),
             ])
@@ -83,7 +82,7 @@ class DarknetBodyV1(nn.Sequential):
     ) -> nn.Sequential:
         layers: List[nn.Module] = [nn.MaxPool2d(2)]
         k1 = True
-        for in_planes, out_planes in itertools.pairwise(planes):
+        for in_planes, out_planes in zip(planes[:-1], planes[1:]):
             layers.extend(
                 conv_sequence(
                     in_planes,

@@ -5,7 +5,7 @@
 
 from collections import OrderedDict
 from enum import Enum
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, cast
 
 import torch
 import torch.nn as nn
@@ -76,10 +76,10 @@ class RepBlock(nn.Module):
         """Reparametrize the block by fusing convolutions and BN in each branch, then fusing all branches"""
         if not isinstance(self.branches, nn.ModuleList):
             raise AssertionError
-        inplanes = self.branches[0][0].weight.data.shape[1]
-        planes = self.branches[0][0].weight.data.shape[0]
+        inplanes = cast(nn.Sequential, self.branches[0])[0].weight.data.shape[1]
+        planes = cast(nn.Sequential, self.branches[0])[0].weight.data.shape[0]
         # Instantiate the equivalent Conv 3x3
-        rep = nn.Conv2d(inplanes, planes, 3, padding=1, bias=True, stride=self.branches[0][0].stride)
+        rep = nn.Conv2d(inplanes, planes, 3, padding=1, bias=True, stride=cast(nn.Sequential, self.branches[0])[0].stride)
 
         # Fuse convolutions with their BN
         fused_k3, fused_b3 = fuse_conv_bn(*self.branches[0])
@@ -146,7 +146,7 @@ class RepVGG(nn.Sequential):
         chans.append(int(final_width_multiplier * planes[-1]))
 
         # Build the layers
-        for nb_blocks, in_chan, out_chan in zip(num_blocks, chans[:-1], chans[1:], strict=False):
+        for nb_blocks, in_chan, out_chan in zip(num_blocks, chans[:-1], chans[1:]):
             layers = [RepBlock(in_chan, out_chan, 2, False, act_layer, norm_layer)]
             layers.extend([RepBlock(out_chan, out_chan, 1, True, act_layer, norm_layer) for _ in range(nb_blocks)])
             stages.append(nn.Sequential(*layers))

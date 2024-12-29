@@ -634,7 +634,7 @@ class Yolov4Head(nn.Module):
                     "scores": torch.cat((det1["scores"], det2["scores"], det3["scores"]), dim=0),
                     "labels": torch.cat((det1["labels"], det2["labels"], det3["labels"]), dim=0),
                 }
-                for det1, det2, det3 in zip(y1, y2, y3, strict=False)
+                for det1, det2, det3 in zip(y1, y2, y3)
             ]
 
         return {k: y1[k] + y2[k] + y3[k] for k in y1}

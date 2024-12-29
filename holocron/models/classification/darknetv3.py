@@ -113,7 +113,7 @@ class DarknetBodyV3(nn.Sequential):
                         self._make_layer(
                             num_blocks, _in_chans, out_chans, act_layer, norm_layer, drop_layer, conv_layer
                         )
-                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout, strict=False)
+                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)
                     ]),
                 ),
             ])

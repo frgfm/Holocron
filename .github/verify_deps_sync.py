@@ -4,9 +4,9 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 import re
-import tomllib
 from pathlib import Path
 
+import tomllib
 import yaml
 
 DOCKERFILE_PATH = "api/Dockerfile"

@@ -198,7 +198,7 @@ class ReXNet(nn.Sequential):
         )
 
         t = 1
-        for in_c, c, s, se in zip(chans[:-1], chans[1:], strides, ses, strict=False):
+        for in_c, c, s, se in zip(chans[:-1], chans[1:], strides, ses):
             layers.append(ReXBlock(in_channels=in_c, channels=c, t=t, stride=s, use_se=se, se_ratio=se_ratio))
             t = 6
 

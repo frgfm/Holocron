@@ -246,7 +246,7 @@ class Trainer:
             self.optimizer.add_param_group({"params": self._params[0]})
         else:
             wd_groups = [norm_weight_decay, self.optimizer.defaults.get("weight_decay", 0)]
-            for _params, _wd in zip(self._params, wd_groups, strict=False):
+            for _params, _wd in zip(self._params, wd_groups):
                 if len(_params) > 0:
                     self.optimizer.add_param_group({"params": _params, "weight_decay": _wd})
         self.optimizer.zero_grad()

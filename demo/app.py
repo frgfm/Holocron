@@ -51,7 +51,7 @@ def main(args):
         out_exp = np.exp(ort_out[0][0])
         probs = out_exp / out_exp.sum()
 
-        return {class_name: float(conf) for class_name, conf in zip(cfg["classes"], probs, strict=False)}
+        return {class_name: float(conf) for class_name, conf in zip(cfg["classes"], probs)}
 
     interface = gr.Interface(
         fn=predict,

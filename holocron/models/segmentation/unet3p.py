@@ -77,9 +77,9 @@ class FSAggreg(nn.Module):
         # Concatenate full-scale features
         x = torch.cat(
             (
-                *[downsample(downfeat) for downsample, downfeat in zip(self.downsamples, downfeats, strict=False)],
+                *[downsample(downfeat) for downsample, downfeat in zip(self.downsamples, downfeats)],
                 self.skip(feat),
-                *[upsample(upfeat) for upsample, upfeat in zip(self.upsamples, upfeats, strict=False)],
+                *[upsample(upfeat) for upsample, upfeat in zip(self.upsamples, upfeats)],
             ),
             dim=1,
         )
@@ -121,7 +121,7 @@ class UNet3p(nn.Module):
         self.encoder = nn.ModuleList([])
         layout_ = [in_channels, *layout]
         pool = False
-        for in_chan, out_chan in itertools.pairwise(layout_):
+        for in_chan, out_chan in zip(layout_[:-1], layout_[1:]):
             self.encoder.append(down_path(in_chan, out_chan, pool, 1, act_layer, norm_layer, drop_layer, conv_layer))
             pool = True
 

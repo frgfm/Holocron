@@ -5,7 +5,7 @@
 
 from collections import OrderedDict
 from enum import Enum
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, cast
 
 import torch
 import torch.nn as nn
@@ -67,10 +67,10 @@ class DepthConvBlock(nn.ModuleList):
         return sum(mod(x) for mod in self)
 
     def reparametrize(self) -> nn.Conv2d:
-        chans = self[1][0].in_channels
+        chans = cast(nn.Sequential, self[1])[0].in_channels
         # Fuse the conv & BN
-        conv = nn.Conv2d(chans, chans, 3, padding=1, bias=True, stride=self[1][0].stride, groups=chans).to(
-            self[1][0].weight.data.device
+        conv = nn.Conv2d(chans, chans, 3, padding=1, bias=True, stride=cast(nn.Sequential, self[1])[0].stride, groups=chans).to(
+            cast(nn.Sequential, self[1])[0].weight.data.device
         )
         conv.weight.data.zero_()
         conv.bias.data.zero_()  # type: ignore[union-attr]
@@ -83,13 +83,13 @@ class DepthConvBlock(nn.ModuleList):
             conv.weight.data[..., 1, 1] += scale_factor.unsqueeze(1)
 
         # Conv 1x1 branch
-        k, b = fuse_conv_bn(self[conv1_idx][0], self[conv1_idx][1])
+        k, b = fuse_conv_bn(cast(nn.Sequential, self[conv1_idx])[0], cast(nn.Sequential, self[conv1_idx])[1])
         conv.bias.data += b  # type: ignore[union-attr]
         conv.weight.data[..., 1:2, 1:2] += k
 
         # Conv 3x3 branches
         for mod_idx in range(branch_idx, len(self)):
-            k, b = fuse_conv_bn(self[mod_idx][0], self[mod_idx][1])
+            k, b = fuse_conv_bn(cast(nn.Sequential, self[mod_idx])[0], cast(nn.Sequential, self[mod_idx])[1])
             conv.bias.data += b  # type: ignore[union-attr]
             conv.weight.data += k
 
@@ -120,9 +120,9 @@ class PointConvBlock(nn.ModuleList):
 
     def reparametrize(self) -> nn.Conv2d:
         seq_idx = 1 if not isinstance(self[0], nn.Sequential) else 0
-        in_chans, out_chans = self[seq_idx][0].in_channels, self[seq_idx][0].out_channels
+        in_chans, out_chans = cast(nn.Sequential, self[seq_idx])[0].in_channels, cast(nn.Sequential, self[seq_idx])[0].out_channels
         # Fuse the conv & BN
-        conv = nn.Conv2d(in_chans, out_chans, 1, bias=True).to(self[seq_idx][0].weight.data.device)
+        conv = nn.Conv2d(in_chans, out_chans, 1, bias=True).to(cast(nn.Sequential, self[seq_idx])[0].weight.data.device)
         conv.weight.data.zero_()
         conv.bias.data.zero_()  # type: ignore[union-attr]
         bn_idx, branch_idx = (None, 0) if isinstance(self[0], nn.Sequential) else (0, 1)
@@ -136,7 +136,7 @@ class PointConvBlock(nn.ModuleList):
 
         # Conv branches
         for mod_idx in range(branch_idx, len(self)):
-            k, b = fuse_conv_bn(self[mod_idx][0], self[mod_idx][1])
+            k, b = fuse_conv_bn(cast(nn.Sequential, self[mod_idx])[0], cast(nn.Sequential, self[mod_idx])[1])
             conv.bias.data += b  # type: ignore[union-attr]
             conv.weight.data += k
 
@@ -192,14 +192,14 @@ class MobileOne(nn.Sequential):
             act_layer = nn.ReLU(inplace=True)
 
         base_planes = [64, 128, 256, 512]
-        planes = [round(mult * chans) for mult, chans in zip(width_multipliers, base_planes, strict=False)]
+        planes = [round(mult * chans) for mult, chans in zip(width_multipliers, base_planes)]
 
         in_planes = min(64, planes[0])
         # Stem
         layers: List[nn.Module] = [MobileOneBlock(in_channels, in_planes, overparam_factor, 2, act_layer, norm_layer)]
 
         # Consecutive convolutional blocks
-        for _num_blocks, _planes in zip(num_blocks, planes, strict=False):
+        for _num_blocks, _planes in zip(num_blocks, planes):
             # Stride & channel changes
             stage = [MobileOneBlock(in_planes, _planes, overparam_factor, 2, act_layer, norm_layer)]
             # Depth

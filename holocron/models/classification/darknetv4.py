@@ -158,7 +158,7 @@ class DarknetBodyV4(nn.Sequential):
                     "stages",
                     nn.Sequential(*[
                         CSPStage(_in_chans, out_chans, num_blocks, act_layer, norm_layer, drop_layer, conv_layer)
-                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout, strict=False)
+                        for _in_chans, (out_chans, num_blocks) in zip(in_chans, layout)
                     ]),
                 ),
             ])

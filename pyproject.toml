@@ -115,7 +115,7 @@ source = ["holocron"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py311"
+target-version = "py39"
 preview = true
 
 [tool.ruff.lint]
@@ -160,6 +160,7 @@ ignore = [
     "E203",  # space before slice
     "B008",  # do not perform function calls in argument defaults
     "B904",  # raise from
+    "B905",  # strict zip
     "C901",  # too complex
     "F403",  # star imports
     "E731",  # lambda assignment
@@ -204,7 +205,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.9"
 files = "holocron/"
 show_error_codes = true
 pretty = true

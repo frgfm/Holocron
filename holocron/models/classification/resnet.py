@@ -317,7 +317,7 @@ class ResNet(nn.Sequential):
             block_args = {"groups": 1}
         if not isinstance(block_args, list):
             block_args = [block_args] * len(num_blocks)
-        for _num_blocks, _planes, _block_args in zip(num_blocks, planes, block_args, strict=False):
+        for _num_blocks, _planes, _block_args in zip(num_blocks, planes, block_args):
             layers.append(
                 self._make_layer(
                     block,

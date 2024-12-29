@@ -257,7 +257,7 @@ def generate_checkpoint_table(module, table_name, metrics):
     # Unpack the enum
     [c for checkpoint_enum in checkpoint_enums for c in checkpoint_enum]
 
-    metrics_keys, metrics_names = zip(*metrics, strict=False)
+    metrics_keys, metrics_names = zip(*metrics)
     column_names = ["Checkpoint", *metrics_names, "Params", "Size (MB)"]  # Final column order
     column_names = [f"**{name}**" for name in column_names]  # Add bold
 
