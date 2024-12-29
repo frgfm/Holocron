@@ -82,18 +82,18 @@ lock: ${API_CONFIG_FILE}
 	uv lock --project ${API_DIR}
 
 req: ${API_CONFIG_FILE} ${PYTHON_LOCK_FILE}
-	uv export --no-hashes --locked --no-dev -q -o ${PYTHON_REQ_FILE} --project ${API_DIR}
+	uv export --no-hashes --locked --no-dev -q -o ${API_REQ_FILE} --project ${API_DIR}
 
-build: req ${DOCKERFILE_PATH}
-	docker build --platform linux/amd64 ${BACKEND_DIR} -t ${DOCKER_NAMESPACE}/${DOCKER_REPO}:${DOCKER_TAG}
+build-api: req ${DOCKERFILE_PATH}
+	docker build --platform linux/amd64 ${API_DIR} -t ${DOCKER_NAMESPACE}/${DOCKER_REPO}:${DOCKER_TAG}
 
-push: build
+push-api: build-api
 	docker push ${DOCKER_NAMESPACE}/${DOCKER_REPO}:${DOCKER_TAG}
 
 # Run the docker
-start: build ${API_DIR}/docker-compose.yml
+start-api: build-api ${API_DIR}/docker-compose.yml
 	docker compose -f ${API_DIR}/docker-compose.yml up -d --wait
 
 # Run the docker
-stop: ${API_DIR}/docker-compose.yml
+stop-api: ${API_DIR}/docker-compose.yml
 	docker compose -f ${API_DIR}/docker-compose.yml down
