@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pylocron"
 description = "Modules, operations and models for computer vision in PyTorch"
-authors = [{name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com"}
-maintainers = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com" }]]
+authors = [{name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com"}]
+maintainers = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com" }]
 readme = "README.md"
 repository = { url = "https://github.com/frgfm/holocron" }
 requires-python = ">=3.8,<4"
