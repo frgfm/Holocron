@@ -79,7 +79,9 @@ class RepBlock(nn.Module):
         inplanes = cast(nn.Sequential, self.branches[0])[0].weight.data.shape[1]
         planes = cast(nn.Sequential, self.branches[0])[0].weight.data.shape[0]
         # Instantiate the equivalent Conv 3x3
-        rep = nn.Conv2d(inplanes, planes, 3, padding=1, bias=True, stride=cast(nn.Sequential, self.branches[0])[0].stride)
+        rep = nn.Conv2d(
+            inplanes, planes, 3, padding=1, bias=True, stride=cast(nn.Sequential, self.branches[0])[0].stride
+        )
 
         # Fuse convolutions with their BN
         fused_k3, fused_b3 = fuse_conv_bn(*self.branches[0])

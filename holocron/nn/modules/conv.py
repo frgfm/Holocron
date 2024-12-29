@@ -420,8 +420,7 @@ class PyConv2d(nn.ModuleList):
             k_sizes = [kernel_size + 2 * idx for idx in range(num_levels)]
             if groups is None:
                 groups = [1] + [
-                    min(2 ** (2 + idx), out_chan)
-                    for idx, out_chan in zip(range(num_levels - 1), out_chans[1:])
+                    min(2 ** (2 + idx), out_chan) for idx, out_chan in zip(range(num_levels - 1), out_chans[1:])
                 ]
             elif not isinstance(groups, list) or len(groups) != num_levels:
                 raise ValueError("The argument `group` is expected to be a list of integer of size `num_levels`.")

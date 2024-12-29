@@ -69,9 +69,9 @@ class DepthConvBlock(nn.ModuleList):
     def reparametrize(self) -> nn.Conv2d:
         chans = cast(nn.Sequential, self[1])[0].in_channels
         # Fuse the conv & BN
-        conv = nn.Conv2d(chans, chans, 3, padding=1, bias=True, stride=cast(nn.Sequential, self[1])[0].stride, groups=chans).to(
-            cast(nn.Sequential, self[1])[0].weight.data.device
-        )
+        conv = nn.Conv2d(
+            chans, chans, 3, padding=1, bias=True, stride=cast(nn.Sequential, self[1])[0].stride, groups=chans
+        ).to(cast(nn.Sequential, self[1])[0].weight.data.device)
         conv.weight.data.zero_()
         conv.bias.data.zero_()  # type: ignore[union-attr]
         bn_idx, conv1_idx, branch_idx = (None, 0, 1) if isinstance(self[0], nn.Sequential) else (0, 1, 2)
@@ -120,7 +120,10 @@ class PointConvBlock(nn.ModuleList):
 
     def reparametrize(self) -> nn.Conv2d:
         seq_idx = 1 if not isinstance(self[0], nn.Sequential) else 0
-        in_chans, out_chans = cast(nn.Sequential, self[seq_idx])[0].in_channels, cast(nn.Sequential, self[seq_idx])[0].out_channels
+        in_chans, out_chans = (
+            cast(nn.Sequential, self[seq_idx])[0].in_channels,
+            cast(nn.Sequential, self[seq_idx])[0].out_channels,
+        )
         # Fuse the conv & BN
         conv = nn.Conv2d(in_chans, out_chans, 1, bias=True).to(cast(nn.Sequential, self[seq_idx])[0].weight.data.device)
         conv.weight.data.zero_()
