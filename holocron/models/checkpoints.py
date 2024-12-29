@@ -20,6 +20,8 @@ __all__ = [
     "TrainingRecipe",
 ]
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class TrainingRecipe:
@@ -102,6 +104,6 @@ def _handle_legacy_pretrained(
     checkpoint = checkpoint or (default_checkpoint if pretrained else None)
 
     if pretrained and checkpoint is None:
-        logging.warning("Invalid model URL, using default initialization.")
+        logger.warning("Invalid model URL, using default initialization.")
 
     return checkpoint

@@ -165,8 +165,6 @@ ignore = [
     "F403",  # star imports
     "E731",  # lambda assignment
     "C416",  # list comprehension to list()
-    "ANN101",  # missing type annotations on self
-    "ANN102",  # missing type annotations on cls
     "ANN002",  # missing type annotations on *args
     "ANN003",  # missing type annotations on **kwargs
     "PT011",  # pytest.raises must have a match pattern
@@ -191,7 +189,7 @@ known-third-party = ["wandb", "fastapi"]
 "docs/**.py" = ["E402", "D103", "ANN", "A001", "ARG001"]
 "tests/**.py" = ["D103", "CPY001", "S101", "ANN"]
 "demo/**.py" = ["D103", "ANN"]
-"api/**.py" = ["D103"]
+"api/**.py" = ["D103", "D101"]
 "api/app/main.py" = ["ANN"]
 "api/tests/**.py" = ["CPY001", "S101", "ANN", "ARG001"]
 "references/**.py" = ["D101", "D103", "T201", "ANN"]
