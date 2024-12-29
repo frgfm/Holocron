@@ -50,19 +50,30 @@
 - changed-files:
   - any-glob-to-any-file: tests/*
 
-'topic: ci':
+'ext: ci':
 - changed-files:
   - any-glob-to-any-file: .github/*
 
-'topic: documentation':
+'topic: docs':
 - changed-files:
-  - any-glob-to-any-file: ['notebooks/*', 'README.md', 'CONTRIBUTING.md']
+  - any-glob-to-any-file:
+    - README.md
+    - CONTRIBUTING.md
+    - CODE_OF_CONDUCT.md
+    - Makefile
+    - .env.example
+    - SECURITY.md
+    - notebooks/*
 
-'topic: build':
+'func: build':
 - changed-files:
   - any-glob-to-any-file:
     - setup.py
     - pyproject.toml
+    - api/Dockerfile
+    - api/pyproject.toml
+    - api/*.lock
+    - api/docker-compose.*
 
 'topic: style':
 - changed-files:
