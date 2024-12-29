@@ -5,10 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pylocron"
 description = "Modules, operations and models for computer vision in PyTorch"
-authors = [
-    {name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com"}
-]
+authors = [{name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com"}
+maintainers = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com" }]]
 readme = "README.md"
+repository = { url = "https://github.com/frgfm/holocron" }
 requires-python = ">=3.8,<4"
 license = {file = "LICENSE"}
 keywords = ["pytorch", "deep learning", "computer vision", "models"]
@@ -46,8 +46,8 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    "pytest>=7.3.2",
-    "pytest-cov>=3.0.0,<6.0.0",
+    "pytest>=8.3.3,<9.0.0",
+    "pytest-cov>=4.0.0,<6.0.0",
     "pytest-pretty>=1.0.0,<2.0.0",
     "onnx>=1.13.0,<2.0.0",
 ]
@@ -56,10 +56,10 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff==0.6.4",
-    "mypy==1.10.0",
+    "ruff==0.8.4",
+    "mypy==1.13.0",
     "types-tqdm",
-    "pre-commit>=3.0.0,<4.0.0",
+    "pre-commit>=3.8.0,<5.0.0",
 ]
 docs = [
     "sphinx>=3.0.0,!=3.5.0",
@@ -78,15 +78,15 @@ docs = [
 ]
 dev = [
     # test
-    "pytest>=7.3.2",
-    "pytest-cov>=3.0.0,<6.0.0",
+    "pytest>=8.3.3,<9.0.0",
+    "pytest-cov>=4.0.0,<6.0.0",
     "pytest-pretty>=1.0.0,<2.0.0",
     "onnx>=1.13.0,<2.0.0",
     # style
-    "ruff==0.6.4",
-    "mypy==1.10.0",
+    "ruff==0.8.4",
+    "mypy==1.13.0",
     "types-tqdm",
-    "pre-commit>=3.0.0,<4.0.0",
+    "pre-commit>=3.8.0,<5.0.0",
     # docs
     "sphinx>=3.0.0,!=3.5.0",
     "furo>=2022.3.4",
@@ -95,6 +95,8 @@ dev = [
     "recommonmark>=0.7.1",
     "sphinx-markdown-tables>=0.0.15",
     "Jinja2<3.1",
+    "markdown<3.4.0",
+    "tabulate>=0.8.0,<1.0.0"
 ]
 
 [project.urls]
@@ -114,7 +116,7 @@ source = ["holocron"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py39"
+target-version = "py311"
 preview = true
 
 [tool.ruff.lint]
@@ -136,6 +138,7 @@ select = [
     "COM",  # flake8-commas
     "CPY",  # flake8-copyright
     "C4",  # flake8-comprehensions
+    "DTZ",  # flake8-datetimez
     "T10",  # flake8-debugger
     "ISC",  # flake8-implicit-str-concat
     "ICN",  # flake8-import-conventions
@@ -179,7 +182,7 @@ docstring-quotes = "double"
 
 [tool.ruff.lint.isort]
 known-first-party = ["holocron", "app"]
-known-third-party = ["wandb"]
+known-third-party = ["wandb", "fastapi"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/__init__.py" = ["I001", "F401", "CPY001"]
