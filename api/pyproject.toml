@@ -7,7 +7,6 @@ license = { text = "Apache-2.0" }
 authors = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com" }]
 maintainers = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@protonmail.com" }]
 readme = "README.md"
-repository = { url = "https://github.com/frgfm/Holocron" }
 keywords = ["backend", "api", "computer vision", "fastapi", "onnx"]
 dependencies = [
     "uvicorn>=0.23.0,<1.0.0",
