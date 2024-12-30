@@ -16,7 +16,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.9"
           architecture: x64
       - uses: astral-sh/setup-uv@v5
         with:
