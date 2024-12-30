@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/frgfm/Holocron/actions/workflows/builds.yml">
-    <img alt="CI Status" src="https://img.shields.io/github/actions/workflow/status/frgfm/holocron/builds.yml?branch=main&label=CI&logo=github&style=flat-square">
+  <a href="https://github.com/frgfm/Holocron/actions/workflows/build.yml">
+    <img alt="CI Status" src="https://img.shields.io/github/actions/workflow/status/frgfm/holocron/build.yml?branch=main&label=CI&logo=github&style=flat-square">
   </a>
   <a href="https://github.com/astral-sh/ruff">
     <img src="https://img.shields.io/badge/Linter-Ruff-FCC21B?style=flat-square&logo=ruff&logoColor=white" alt="ruff">
@@ -39,7 +39,7 @@
 </p>
 <p align="center">
   <a href="https://frgfm.github.io/holocron">
-    <img src="https://img.shields.io/github/actions/workflow/status/frgfm/holocron/docs.yaml?branch=main&label=Documentation&logo=read-the-docs&logoColor=white&style=flat-square" alt="Documentation Status">
+    <img src="https://img.shields.io/github/actions/workflow/status/frgfm/holocron/page-build.yml?branch=main&label=Documentation&logo=read-the-docs&logoColor=white&style=flat-square" alt="Documentation Status">
   </a>
 </p>
 
@@ -88,7 +88,7 @@ print(config['classes'][output.squeeze(0).argmax().item()], output.squeeze(0).so
 
 ### Prerequisites
 
-Python 3.8 (or higher) and [pip](https://pip.pypa.io/en/stable/)/[conda](https://docs.conda.io/en/latest/miniconda.html) are required to install Holocron.
+Python 3.9 (or higher) and [pip](https://pip.pypa.io/en/stable/)/[conda](https://docs.conda.io/en/latest/miniconda.html) are required to install Holocron.
 
 ### Latest stable release
 
@@ -211,7 +211,7 @@ python scripts/eval_latency.py rexnet1_0x
 If you wish to deploy containerized environments, you can use the provided Dockerfile to build a docker image:
 
 ```shell
-docker build . -t <YOUR_IMAGE_TAG>
+make build-api
 ```
 
 ### Minimal API template
@@ -223,9 +223,7 @@ Looking for a boilerplate to deploy a model from Holocron with a REST API? Thank
 Run your API in a docker container as follows:
 
 ```shell
-cd api/
-make lock-api
-make run-api
+make start-api
 ```
 
 *In order to stop the container, use `make stop-api`*
