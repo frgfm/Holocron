@@ -434,10 +434,10 @@
         <span class="n">drop_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">conv_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">:</span>
-        <span class="n">_layers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
+        <span class="n">layers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
         <span class="n">k1</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">for</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">out_planes</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">planes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">planes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="n">_layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
                 <span class="n">conv_sequence</span><span class="p">(</span>
                     <span class="n">in_planes</span><span class="p">,</span>
                     <span class="n">out_planes</span><span class="p">,</span>
@@ -452,7 +452,7 @@
             <span class="p">)</span>
             <span class="n">k1</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">k1</span>
 
-        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_layers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">DarknetV1</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
