@@ -55,7 +55,7 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff==0.8.4",
+    "ruff==0.8.5",
     "mypy==1.13.0",
     "types-tqdm",
     "pre-commit>=3.8.0,<5.0.0",
@@ -82,7 +82,7 @@ dev = [
     "pytest-pretty>=1.0.0,<2.0.0",
     "onnx>=1.13.0,<2.0.0",
     # style
-    "ruff==0.8.4",
+    "ruff==0.8.5",
     "mypy==1.13.0",
     "types-tqdm",
     "pre-commit>=3.8.0,<5.0.0",
