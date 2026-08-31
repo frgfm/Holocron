@@ -61,11 +61,11 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff==0.16.3",
-    "ty==0.0.73",
+    "ruff==0.16.5",
+    "ty==0.0.75",
     "types-tqdm",
     "types-Pillow",
-    "prek==0.4.14",
+    "prek==0.5.0",
 ]
 scripts = [
     "onnxruntime>=1.22.0,<2.0.0",
