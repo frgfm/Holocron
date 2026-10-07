@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "model": {"name": "convnext_atto", "initialization": {"kind": "random"}},
+  "dataset": {
+    "format": "imagefolder",
+    "train": "tiny-data/train",
+    "validation": "tiny-data/validation",
+    "test": "tiny-data/test"
+  },
+  "preprocessing": {"train_crop_size": 32, "val_resize_size": 36, "val_crop_size": 32},
+  "training": {
+    "epochs": 2,
+    "batch_size": 2,
+    "workers": 0,
+    "opt": "adamw",
+    "sched": "cosine",
+    "lr": 0.001,
+    "mixup_alpha": 0
+  },
+  "seed": 0,
+  "training_device": "cpu",
+  "deployment_target": "owner's CPU (intent only)"
+}

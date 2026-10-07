@@ -9,11 +9,11 @@ import logging
 import math
 import time
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
+from functools import partial
 from pathlib import Path
 
 import numpy as np
 import torch
-from codecarbon import track_emissions
 from torch import nn
 from torch.utils.data._utils.collate import default_collate
 from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
@@ -47,6 +47,14 @@ def worker_init_fn(worker_id: int) -> None:
     np.random.default_rng((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
 
 
+def collate_mixup(batch, *, num_classes, alpha):
+    return Mixup(num_classes, alpha=alpha)(*default_collate(batch))
+
+
+def scheduler_kwargs(args):
+    return {"div_factor": 100, "pct_start": 0.1} if args.sched == "onecycle" else {}
+
+
 def plot_samples(images, targets, num_samples=8):
     # Unnormalize image
     import matplotlib.pyplot as plt  # noqa: PLC0415
@@ -76,6 +84,29 @@ def plot_samples(images, targets, num_samples=8):
     plt.show()
 
 
+def imagefolder_transforms(args):
+    normalize = T.Normalize(mean=IMAGENETTE.mean, std=IMAGENETTE.std)
+    interpolation = InterpolationMode.BILINEAR
+    return (
+        T.Compose([
+            T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
+            T.RandomHorizontalFlip(),
+            T.TrivialAugmentWide(interpolation=interpolation),
+            T.PILToTensor(),
+            T.ConvertImageDtype(torch.float32),
+            normalize,
+            T.RandomErasing(p=args.random_erase, scale=(0.02, 0.2), value="random"),
+        ]),
+        T.Compose([
+            T.Resize(args.val_resize_size, interpolation=interpolation),
+            T.CenterCrop(args.val_crop_size),
+            T.PILToTensor(),
+            T.ConvertImageDtype(torch.float32),
+            normalize,
+        ]),
+    )
+
+
 def main(args):
     if args.threads is not None:
         torch.set_num_threads(args.threads)
@@ -86,7 +117,6 @@ def main(args):
     return _train(args)
 
 
-@track_emissions()
 def _train(args, on_epoch_end=None):
     print(args)
 
@@ -105,6 +135,7 @@ def _train(args, on_epoch_end=None):
     ])
 
     interpolation = InterpolationMode.BILINEAR
+    train_transform, val_transform = imagefolder_transforms(args)
 
     num_classes = None
     if not args.test_only:
@@ -112,15 +143,7 @@ def _train(args, on_epoch_end=None):
         if args.dataset.lower() == "imagenette":
             train_set = ImageFolder(
                 Path(args.data_path).joinpath("train"),
-                T.Compose([
-                    T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
-                    T.RandomHorizontalFlip(),
-                    T.TrivialAugmentWide(interpolation=interpolation),
-                    T.PILToTensor(),
-                    T.ConvertImageDtype(torch.float32),
-                    normalize,
-                    T.RandomErasing(p=args.random_erase, scale=(0.02, 0.2), value="random"),
-                ]),
+                train_transform,
             )
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
@@ -166,13 +189,7 @@ def _train(args, on_epoch_end=None):
         if args.dataset.lower() == "imagenette":
             val_set = ImageFolder(
                 Path(args.data_path).joinpath("val"),
-                T.Compose([
-                    T.Resize(args.val_resize_size, interpolation=interpolation),
-                    T.CenterCrop(args.val_crop_size),
-                    T.PILToTensor(),
-                    T.ConvertImageDtype(torch.float32),
-                    normalize,
-                ]),
+                val_transform,
             )
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
@@ -235,8 +252,7 @@ def _train(args, on_epoch_end=None):
             "mixup_alpha": args.mixup_alpha,
             "seed": args.seed,
         },
-        div_factor=100,
-        pct_start=0.1,
+        **scheduler_kwargs(args),
     )
     return trainer
 
@@ -297,5 +313,7 @@ def get_parser():
 
 
 if __name__ == "__main__":
+    from codecarbon import track_emissions
+
     args = get_parser().parse_args()
-    main(args)
+    track_emissions()(main)(args)
