@@ -138,6 +138,9 @@ def test_success_and_independent_reader(configuration, monkeypatch):
         (RuntimeError("training broke"), "failed", 1),
         (KeyboardInterrupt(), "interrupted", 130),
         (SystemExit(143), "interrupted", 143),
+        (SystemExit(0), "interrupted", 0),
+        (SystemExit(None), "interrupted", 0),
+        (SystemExit("exit message"), "interrupted", 1),
     ],
 )
 def test_failure_and_interruption(configuration, monkeypatch, error, state, exit_code):

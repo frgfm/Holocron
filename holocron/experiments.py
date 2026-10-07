@@ -103,8 +103,8 @@ class Trial:
         if exc is not None:
             state = "interrupted" if isinstance(exc, (KeyboardInterrupt, SystemExit)) else "failed"
             code = 130 if isinstance(exc, KeyboardInterrupt) else 1
-            if isinstance(exc, SystemExit) and isinstance(exc.code, int):
-                code = exc.code
+            if isinstance(exc, SystemExit):
+                code = int(exc.code) if isinstance(exc.code, int) else int(exc.code is not None)
             error = {
                 "type": type(exc).__name__,
                 "message": str(exc),

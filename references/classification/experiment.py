@@ -65,6 +65,75 @@ def _number(value, name, lower=0, upper=math.inf, *, integer=False):
         raise ValueError(f"invalid {name}: {value!r}")
 
 
+def _resolve_model(value, base):
+    model = dict(_object(value, ("name", "initialization"), ("name", "initialization")))
+    if not isinstance(model["name"], str) or get_model_info(model["name"]).task != "classification":
+        raise ValueError("model must be a catalog classification model")
+    initialization = dict(_object(model["initialization"], ("kind", "path"), ("kind",)))
+    if initialization["kind"] == "random":
+        if set(initialization) != {"kind"}:
+            raise ValueError("random initialization does not accept a path")
+    elif initialization["kind"] == "checkpoint":
+        path = initialization.get("path")
+        if not isinstance(path, str) or not path:
+            raise ValueError("checkpoint initialization requires a path")
+        initialization["path"] = str((base / path).resolve())
+        if not Path(initialization["path"]).is_file():
+            raise ValueError("initialization checkpoint does not exist")
+    else:
+        raise ValueError("initialization kind must be random or checkpoint (weights only)")
+    model["initialization"] = initialization
+    return model
+
+
+def _resolve_dataset(value, base):
+    dataset = dict(_object(value, ("format", "train", "validation", "test"), ("format", "train", "validation")))
+    if dataset["format"] != "imagefolder":
+        raise ValueError("only imagefolder is supported")
+    for split in dataset.keys() - {"format"}:
+        if not isinstance(dataset[split], str) or not dataset[split]:
+            raise ValueError(f"{split} must be a directory path")
+        dataset[split] = str((base / dataset[split]).resolve())
+    return dataset
+
+
+def _validate_settings(training, preprocessing):
+    for key in ("epochs", "batch_size", "grad_acc"):
+        _number(training[key], key, 1, integer=True)
+    _number(training["workers"], "workers", integer=True)
+    _number(training["lr"], "lr", 0)
+    if training["lr"] == 0:
+        raise ValueError("lr must be positive")
+    for key in ("weight_decay", "mixup_alpha"):
+        _number(training[key], key)
+    if training["norm_wd"] is not None:
+        _number(training["norm_wd"], "norm_wd")
+    _number(training["label_smoothing"], "label_smoothing", 0, 1)
+    for key in ("train_crop_size", "val_resize_size", "val_crop_size"):
+        _number(preprocessing[key], key, 1, integer=True)
+    _number(preprocessing["random_erase"], "random_erase", 0, 1)
+    if not isinstance(training["opt"], str) or training["opt"] not in {
+        "sgd",
+        "radam",
+        "adamw",
+        "adamp",
+        "adabelief",
+        "ademamix",
+    }:
+        raise ValueError("unsupported optimizer")
+    if not isinstance(training["sched"], str) or training["sched"] not in {"onecycle", "cosine"}:
+        raise ValueError("unsupported scheduler")
+
+
+def _validate_device(device, amp):
+    if not isinstance(device, str) or (device != "cpu" and not re.fullmatch(r"cuda:\d+", device)):
+        raise ValueError("training_device must be cpu or cuda:N")
+    if device != "cpu" and (not torch.cuda.is_available() or int(device[5:]) >= torch.cuda.device_count()):
+        raise ValueError("requested CUDA device is unavailable")
+    if type(amp) is not bool or (amp and device == "cpu"):
+        raise ValueError("amp must be a boolean and requires CUDA")
+
+
 def resolve_config(raw, base):
     """Validate input and resolve settings from the existing CLI parser.
 
@@ -91,70 +160,17 @@ def resolve_config(raw, base):
     )
     if type(raw["schema_version"]) is not int or raw["schema_version"] != 1:
         raise ValueError("unsupported schema_version")
-    model = dict(_object(raw["model"], ("name", "initialization"), ("name", "initialization")))
-    if not isinstance(model["name"], str) or get_model_info(model["name"]).task != "classification":
-        raise ValueError("model must be a catalog classification model")
-    initialization = dict(_object(model["initialization"], ("kind", "path"), ("kind",)))
-    if initialization["kind"] == "random":
-        if set(initialization) != {"kind"}:
-            raise ValueError("random initialization does not accept a path")
-    elif initialization["kind"] == "checkpoint":
-        path = initialization.get("path")
-        if not isinstance(path, str) or not path:
-            raise ValueError("checkpoint initialization requires a path")
-        initialization["path"] = str((base / path).resolve())
-        if not Path(initialization["path"]).is_file():
-            raise ValueError("initialization checkpoint does not exist")
-    else:
-        raise ValueError("initialization kind must be random or checkpoint (weights only)")
-    model["initialization"] = initialization
-    dataset = dict(
-        _object(raw["dataset"], ("format", "train", "validation", "test"), ("format", "train", "validation"))
-    )
-    if dataset["format"] != "imagefolder":
-        raise ValueError("only imagefolder is supported")
-    for split in dataset.keys() - {"format"}:
-        if not isinstance(dataset[split], str) or not dataset[split]:
-            raise ValueError(f"{split} must be a directory path")
-        dataset[split] = str((base / dataset[split]).resolve())
+    model = _resolve_model(raw["model"], base)
+    dataset = _resolve_dataset(raw["dataset"], base)
     defaults = vars(get_parser().parse_args(["."]))
     settings = {}
     for section, keys in (("training", TRAINING_KEYS), ("preprocessing", PREPROCESSING_KEYS)):
         overrides = _object(raw.get(section, {}), keys)
         settings[section] = {key: overrides.get(key, defaults[key]) for key in keys}
     training, preprocessing = settings["training"], settings["preprocessing"]
-    for key in ("epochs", "batch_size", "grad_acc"):
-        _number(training[key], key, 1, integer=True)
-    _number(training["workers"], "workers", integer=True)
-    _number(training["lr"], "lr", 0)
-    if training["lr"] == 0:
-        raise ValueError("lr must be positive")
-    for key in ("weight_decay", "mixup_alpha"):
-        _number(training[key], key)
-    if training["norm_wd"] is not None:
-        _number(training["norm_wd"], "norm_wd")
-    _number(training["label_smoothing"], "label_smoothing", 0, 1)
-    for key in ("train_crop_size", "val_resize_size", "val_crop_size"):
-        _number(preprocessing[key], key, 1, integer=True)
-    _number(preprocessing["random_erase"], "random_erase", 0, 1)
-    if not isinstance(training["opt"], str) or training["opt"] not in {
-        "sgd",
-        "radam",
-        "adamw",
-        "adamp",
-        "adabelief",
-        "ademamix",
-    }:
-        raise ValueError("unsupported optimizer")
-    if not isinstance(training["sched"], str) or training["sched"] not in {"onecycle", "cosine"}:
-        raise ValueError("unsupported scheduler")
+    _validate_settings(training, preprocessing)
     device = raw["training_device"]
-    if not isinstance(device, str) or (device != "cpu" and not re.fullmatch(r"cuda:\d+", device)):
-        raise ValueError("training_device must be cpu or cuda:N")
-    if device != "cpu" and (not torch.cuda.is_available() or int(device[5:]) >= torch.cuda.device_count()):
-        raise ValueError("requested CUDA device is unavailable")
-    if type(training["amp"]) is not bool or (training["amp"] and device == "cpu"):
-        raise ValueError("amp must be a boolean and requires CUDA")
+    _validate_device(device, training["amp"])
     target = raw["deployment_target"]
     if target is not None and (not isinstance(target, str) or not target.strip()):
         raise ValueError("deployment_target must be null or a nonempty description")
