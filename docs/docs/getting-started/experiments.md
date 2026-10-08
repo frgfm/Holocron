@@ -58,6 +58,8 @@ full training batch is required. Mixup and label smoothing remain configurable.
 | `result.json` | Atomic status/result, UTC timestamps, elapsed seconds, metrics, selected checkpoint and exception traceback |
 | `checkpoint.pth` | Checkpoint with lowest validation loss; ties keep the earlier epoch |
 
+Checkpoint replacement is atomic: a failed save preserves the previous model file.
+
 JSON records use `schema_version: 1`. Paths in `artifacts` and `selected_checkpoint`
 are relative to the trial. The latter includes SHA-256, epoch, loss, associated
 metrics and `fully_resumable: false`. Setup failures may leave partial metadata.
@@ -74,6 +76,7 @@ Metrics carry split, epoch and direction: validation `val_loss` minimizes;
 the trainer's mean of batch losses. `final_epoch_metrics` means last reported epoch,
 even on failure; `selected_checkpoint.metrics` means the selected epoch. No training
 or test metrics are invented. Existing callbacks and optional W&B logging remain.
+Any non-finite validation loss fails the trial instead of being omitted from its metrics.
 
 ## Identity and limits
 

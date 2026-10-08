@@ -259,13 +259,16 @@ def run_experiment(config_path, directory):
         trainer.on_epoch_end = lambda metrics: trial.record_epoch(
             trainer, {key: value for key, value in metrics.items() if key != "acc5" or num_classes >= 5}
         )
-        run_training(
-            trainer,
-            args,
-            project="holocron-image-classification",
-            config=config,
-            **scheduler_kwargs(args),
-        )
+        try:
+            run_training(
+                trainer,
+                args,
+                project="holocron-image-classification",
+                config=config,
+                **scheduler_kwargs(args),
+            )
+        finally:
+            trainer.on_epoch_end = None
         if trial.selected is None or trial.epoch != args.epochs:
             raise RuntimeError("training ended without the requested epochs and a selected checkpoint")
 

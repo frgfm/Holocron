@@ -3,6 +3,7 @@ import sys
 import warnings
 from argparse import Namespace
 from io import StringIO
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pytest
@@ -481,6 +482,40 @@ def test_classification_trainer_few_classes():
     learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
     # Fewer than 5 classes
     assert learner.evaluate()["acc5"] == 0
+
+
+@pytest.mark.parametrize("binary", [False, True])
+def test_classification_validation_rejects_partial_nonfinite_loss(binary):
+    model = nn.Linear(1, 1 if binary else 2)
+    with torch.no_grad():
+        model.weight.fill_(1)
+        model.bias.fill_(1)
+    model.register_forward_hook(lambda _module, _inputs, output: output.log())
+    loader = DataLoader(TensorDataset(torch.tensor([[0.0], [-2.0]]), torch.zeros(2, dtype=torch.long)))
+    learner_type = trainer.BinaryClassificationTrainer if binary else trainer.ClassificationTrainer
+    criterion = nn.BCEWithLogitsLoss() if binary else nn.CrossEntropyLoss()
+    learner = learner_type(model, loader, loader, criterion, torch.optim.SGD(model.parameters(), lr=0.01))
+    with pytest.raises(ValueError, match="non-finite validation loss"):
+        learner.evaluate()
+
+
+def test_checkpoint_save_failure_preserves_previous_file(monkeypatch, tmp_path):
+    model = nn.Linear(1, 1)
+    loader = DataLoader(TensorDataset(torch.zeros(1, 1), torch.zeros(1, 1)))
+    learner = trainer.Trainer(model, loader, loader, nn.MSELoss(), torch.optim.SGD(model.parameters(), lr=0.01))
+    path = tmp_path / "checkpoint.pth"
+    learner.save(str(path))
+    previous = path.read_bytes()
+
+    def fail_save(_state, destination, **_kwargs):
+        Path(destination).write_bytes(b"partial checkpoint")
+        raise OSError("save failed")
+
+    monkeypatch.setattr(torch, "save", fail_save)
+    with pytest.raises(OSError, match="save failed"):
+        learner.save(str(path))
+    assert path.read_bytes() == previous
+    assert list(tmp_path.iterdir()) == [path]
 
 
 def test_binary_classification_trainer():

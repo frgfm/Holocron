@@ -1,8 +1,10 @@
 import copy
+import gc
 import json
 import random
 import shutil
 import sys
+import weakref
 from argparse import Namespace
 
 import numpy as np
@@ -218,6 +220,27 @@ def test_mixup_with_spawn_worker(configuration):
     path.write_text(json.dumps(config), encoding="utf-8")
     experiment.run_experiment(path, path.parent / "worker-trial")
     assert json.loads((path.parent / "worker-trial/result.json").read_text())["state"] == "completed"
+
+
+def test_trial_releases_trainer_without_garbage_collection(configuration, monkeypatch):
+    path, _ = configuration
+    references = []
+    create_trainer = experiment.create_trainer
+
+    def observe_trainer(*args, **kwargs):
+        learner = create_trainer(*args, **kwargs)
+        references.append(weakref.ref(learner))
+        return learner
+
+    monkeypatch.setattr(experiment, "create_trainer", observe_trainer)
+    was_enabled = gc.isenabled()
+    gc.disable()
+    try:
+        experiment.run_experiment(path, path.parent / "release-trial")
+        assert references[0]() is None
+    finally:
+        if was_enabled:
+            gc.enable()
 
 
 @pytest.mark.parametrize("problem", ["overlap", "mapping"])

@@ -7,6 +7,8 @@ import math
 from collections import defaultdict
 from collections.abc import Callable, Sequence
 from pathlib import Path
+from shutil import copymode
+from tempfile import TemporaryDirectory
 from typing import Any, cast
 
 import torch
@@ -114,22 +116,28 @@ class Trainer:
             self.criterion = self.criterion.to(self.device)
 
     def save(self, output_file: str) -> None:
-        """Save a trainer checkpoint
+        """Save a trainer checkpoint atomically
 
         Args:
             output_file: destination file path
         """
-        Path(output_file).parent.mkdir(parents=True, exist_ok=True)
-        torch.save(
-            {
-                "epoch": self.epoch,
-                "step": self.step,
-                "min_loss": self.min_loss,
-                "model": self.model.state_dict(),
-            },
-            output_file,
-            _use_new_zipfile_serialization=False,
-        )
+        path = Path(output_file).resolve()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with TemporaryDirectory(dir=path.parent) as directory:
+            candidate = Path(directory) / path.name
+            torch.save(
+                {
+                    "epoch": self.epoch,
+                    "step": self.step,
+                    "min_loss": self.min_loss,
+                    "model": self.model.state_dict(),
+                },
+                candidate,
+                _use_new_zipfile_serialization=False,
+            )
+            if path.exists():
+                copymode(path, candidate)
+            candidate.replace(path)
 
     def load(self, state: dict[str, Any]) -> None:
         """Resume from a trainer state
