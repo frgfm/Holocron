@@ -1,9 +1,11 @@
 import copy
 import json
+import random
 import shutil
 import sys
 from argparse import Namespace
 
+import numpy as np
 import pytest
 import torch
 from PIL import Image
@@ -18,6 +20,9 @@ from references.classification import experiment
 
 @pytest.fixture
 def configuration(tmp_path, monkeypatch):
+    python_rng = random.getstate()
+    numpy_rng = np.random.get_state()  # noqa: NPY002
+    benchmark = torch.backends.cudnn.benchmark
     for offset, split in enumerate(("train", "validation", "test")):
         for index, label in enumerate(("a", "b")):
             directory = tmp_path / split / label
@@ -42,7 +47,12 @@ def configuration(tmp_path, monkeypatch):
         "get_model",
         lambda *_args, **_kwargs: nn.Sequential(nn.AdaptiveAvgPool2d(1), nn.Flatten(), nn.Linear(3, 2)),
     )
-    return path, config
+    # The runner seeds process globals; keep later tests independent.
+    with torch.random.fork_rng():
+        yield path, config
+    random.setstate(python_rng)
+    np.random.set_state(numpy_rng)  # noqa: NPY002
+    torch.backends.cudnn.benchmark = benchmark
 
 
 @pytest.mark.parametrize(
