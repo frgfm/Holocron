@@ -17,16 +17,15 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from torch import nn
 from torch.utils.data._utils.collate import default_collate
 from torchvision.datasets import ImageFolder
 
 from holocron.experiments import Trial, imagefolder_manifest, sha256, write_json
 from holocron.models import get_model, get_model_info
-from holocron.trainer import ClassificationTrainer
-from references._common import create_loader, create_optimizer, run_training
+from references._common import create_loader, run_training
 from references.classification.train import (
     collate_mixup,
+    create_trainer,
     get_parser,
     imagefolder_transforms,
     scheduler_kwargs,
@@ -143,21 +142,8 @@ def resolve_config(raw, base):
     Raises:
         ValueError: If a setting is invalid or unsupported.
     """
-    _object(
-        raw,
-        (
-            "schema_version",
-            "model",
-            "dataset",
-            "training",
-            "preprocessing",
-            "seed",
-            "training_device",
-            "deployment_target",
-            "tracking",
-        ),
-        ("schema_version", "model", "dataset", "training_device", "deployment_target"),
-    )
+    required = ("schema_version", "model", "dataset", "training_device", "deployment_target")
+    _object(raw, (*required, "training", "preprocessing", "seed", "tracking"), required)
     if type(raw["schema_version"]) is not int or raw["schema_version"] != 1:
         raise ValueError("unsupported schema_version")
     model = _resolve_model(raw["model"], base)
@@ -251,17 +237,7 @@ def run_experiment(config_path, directory):
         initialization["state_dict_sha256"] = digest.hexdigest()
         trial.record_provenance(initialization=initialization)
         args.output_file = str(trial.directory / "checkpoint.pth")
-        trainer = ClassificationTrainer(
-            model,
-            train_loader,
-            val_loader,
-            nn.CrossEntropyLoss(label_smoothing=args.label_smoothing),
-            create_optimizer(model, args),
-            args.device,
-            args.output_file,
-            gradient_acc=args.grad_acc,
-            amp=args.amp,
-        )
+        trainer = create_trainer(model, train_loader, val_loader, args)
         trial.actual_device = str(next(trainer.model.parameters()).device)
         trial.record_provenance(
             actual_device=trial.actual_device,

@@ -11,6 +11,7 @@ from torch import nn
 from torchvision.datasets import ImageFolder
 
 from holocron.experiments import Trial, imagefolder_manifest, sha256
+from holocron.trainer import ClassificationTrainer
 from references._common import run_training  # noqa: PLC2701
 from references.classification import experiment
 
@@ -149,7 +150,7 @@ def test_failure_and_interruption(configuration, monkeypatch, error, state, exit
     def fail(*_args, **_kwargs):
         raise error
 
-    monkeypatch.setattr(experiment.ClassificationTrainer, "fit_n_epochs", fail)
+    monkeypatch.setattr(ClassificationTrainer, "fit_n_epochs", fail)
     directory = path.parent / "failed-trial"
     with pytest.raises(type(error)):
         experiment.run_experiment(path, directory)

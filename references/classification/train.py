@@ -55,6 +55,21 @@ def scheduler_kwargs(args):
     return {"div_factor": 100, "pct_start": 0.1} if args.sched == "onecycle" else {}
 
 
+def create_trainer(model, train_loader, val_loader, args, on_epoch_end=None):
+    return ClassificationTrainer(
+        model,
+        train_loader,
+        val_loader,
+        nn.CrossEntropyLoss(label_smoothing=args.label_smoothing),
+        create_optimizer(model, args),
+        output_file=args.output_file,
+        device=args.device,
+        gradient_acc=args.grad_acc,
+        amp=args.amp,
+        on_epoch_end=on_epoch_end,
+    )
+
+
 def plot_samples(images, targets, num_samples=8):
     # Unnormalize image
     import matplotlib.pyplot as plt  # noqa: PLC0415
@@ -207,23 +222,7 @@ def _train(args, on_epoch_end=None):
 
     model = classification.__dict__[args.arch](args.pretrained, num_classes=num_classes)
 
-    criterion = nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
-
-    # Create the contiguous parameters.
-    optimizer = create_optimizer(model, args)
-
-    trainer = ClassificationTrainer(
-        model,
-        train_loader,
-        val_loader,
-        criterion,
-        optimizer,
-        output_file=args.output_file,
-        device=args.device,
-        gradient_acc=args.grad_acc,
-        amp=args.amp,
-        on_epoch_end=on_epoch_end,
-    )
+    trainer = create_trainer(model, train_loader, val_loader, args, on_epoch_end)
     load_checkpoint(trainer, args.resume)
 
     if args.plot_loss and not args.test_only:

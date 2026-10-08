@@ -1,125 +1,102 @@
 # Local classification experiments
 
-An owner's existing agent can submit JSON and read one trial directory. Run from
-the repository checkout. No server, agent framework, or log parser is needed.
+Submit JSON; read a trial directory. Run from the checkout:
 
 ```sh
 uv sync --locked
 uv run --no-sync python -m references.classification.experiment CONFIG.json runs/TRIAL
 ```
 
-`runs/TRIAL` must not exist, even as an empty directory. Paths in the configuration
-are relative to its file; the trial path is relative to the working directory.
-`runs/` and checkpoints are ignored by Git. Keep outputs there or outside the
-checkout; custom output locations inside the checkout need their own ignore rule.
+The trial path must not exist, even as an empty directory. Input paths are relative
+to the config file; output paths are relative to the working directory. `runs/`
+and checkpoints are ignored by Git; use that directory or an external location.
 
-## Input version 1
+## Input v1
 
-See [the example configuration](https://github.com/frgfm/Holocron/blob/main/references/classification/experiment.example.json).
-The required fields are `schema_version: 1`, `model`, `dataset`, `training_device`,
-and `deployment_target`. All unknown fields, unsupported versions, invalid values,
-and unsupported limits are rejected before training. Configuration errors create
-no trial; setup errors after directory creation produce a failed trial.
+Use [the example](https://github.com/frgfm/Holocron/blob/main/references/classification/experiment.example.json).
+Required fields: `schema_version: 1`, `model`, `dataset`, `training_device`,
+`deployment_target`. Optional values resolve from the existing classification CLI
+defaults. Unknown fields, invalid values, unsupported versions and limits fail
+before training. Config errors create no trial; later setup errors record `failed`.
 
 | Field | Supported values |
 | --- | --- |
-| `model.name` | A classification factory from `holocron.models.list_models("classification")` |
-| `model.initialization` | `{"kind": "random"}` or `{"kind": "checkpoint", "path": "local.pth"}` |
-| `dataset` | `format: "imagefolder"`, `train` and `validation` directory paths, optional `test` path |
-| `training_device` | `"cpu"` or an available `"cuda:N"`; CPU AMP and MPS are rejected |
-| `deployment_target` | `null` or a nonempty description of intended deployment; never a measurement |
-| `seed` | Integer from 0 through 2³²−1 |
+| `model.name` | Catalog classification factory; see `holocron.models.list_models("classification")` |
+| `model.initialization` | `{"kind":"random"}` or `{"kind":"checkpoint","path":"local.pth"}`; no downloads |
+| `dataset` | `format: "imagefolder"`, `train`, `validation`, optional `test` directory |
+| `training_device` | `"cpu"` or available `"cuda:N"`; AMP requires CUDA |
+| `deployment_target` | `null` or nonempty description; intent only, never measured deployment evidence |
+| `seed` | Integer 0 through 2³²−1; sets Python, NumPy and PyTorch seeds |
 | `preprocessing` | `train_crop_size`, `val_resize_size`, `val_crop_size`, `random_erase` |
 | `training` | `epochs`, `lr`, `batch_size`, `workers`, `grad_acc`, `opt`, `sched`, `weight_decay`, `norm_wd`, `label_smoothing`, `mixup_alpha`, `amp` |
-| `tracking` | Optional `wb` boolean and `name` string or null; requires `uv sync --locked --extra training` for W&B |
+| `tracking` | Optional `wb` boolean and `name` string/null; W&B needs `uv sync --locked --extra training` |
 
-Optional settings use the existing classification CLI parser's defaults, resolved
-and saved in `config.json`. Optimizers are the existing `sgd`, `radam`, `adamw`,
-`adamp`, `adabelief`, and `ademamix`; schedulers are `onecycle` and `cosine`.
-OneCycle uses the reference's `div_factor=100`, `pct_start=0.1`; cosine uses its
-native defaults. Optimizer defaults and scheduler arguments are saved in provenance.
-Epochs are the only supported execution budget. For example `wall_time_seconds`,
-`max_steps`, and `resume` are rejected, wherever placed.
+Optimizers: `sgd`, `radam`, `adamw`, `adamp`, `adabelief`, `ademamix`. Schedulers:
+`onecycle` (reference `div_factor=100`, `pct_start=0.1`) and `cosine` (native defaults).
+Epochs are the only execution budget; `wall_time_seconds`, `max_steps` and `resume`
+are rejected. Checkpoint initialization strictly loads a local state dictionary or
+trainer `model` dictionary, then starts fresh optimizer, scheduler and epoch state.
 
-The ImageFolder recipe is the same as the existing Imagenette reference:
-PIL RGB loading; bilinear random resized crop with scale `(0.3, 1.0)`, horizontal
-flip, TrivialAugmentWide, float32 conversion, Imagenette normalization, and random
-erasing with scale `(0.02, 0.2)`. Validation uses bilinear resize and center crop,
-float32 conversion, and the same normalization. Provenance records the actual
-transform representations, including normalization values and torchvision defaults.
-Mixup and cross-entropy label smoothing are recorded in the resolved configuration.
-Training randomly samples the declared train pool and drops the last incomplete
-batch, as the reference does; validation reads every sample. A train split smaller
-than one full batch is rejected.
-
-Random initialization records a digest of the initial model state. Checkpoint
-initialization accepts a local tensor state dictionary or the trainer's `model`
-dictionary, loads strictly, records the file hash and initial state digest, and
-starts a fresh optimizer, scheduler, and epoch count. No weights are downloaded.
-
-## Data identity
-
-`data.json` records the class-to-index mapping and each split's ordered ImageFolder
-sample list: relative file path, class index, and SHA-256 of **raw file bytes**.
-The split digest is SHA-256 of the UTF-8 JSON sample list with sorted object keys
-and separators `(',', ':')`; absolute roots are recorded separately. Renaming,
-relabeling, adding, removing, or changing sample bytes changes the split digest.
-The initial-state digest hashes sorted state-dictionary entries: UTF-8 JSON
-`[name, dtype, shape]` followed by each contiguous CPU tensor's raw bytes.
-
-All declared splits must have identical class mappings and disjoint content
-hashes. This rejects aliases, hard links, and byte-identical copies across splits,
-including a declared test split. It does not detect re-encoded near-duplicate
-images. The optional test split is enumerated and hashed only: its images are not
-decoded, evaluated, trained on, or used for checkpoint selection. Keep data fixed
-for the whole trial; this slice fingerprints before training and does not lock or
-snapshot dataset files. The mapping is stored separately from each split digest.
+Preprocessing reuses the Imagenette reference: PIL RGB, bilinear random resized crop
+(scale 0.3–1), horizontal flip, TrivialAugmentWide, float32 conversion, Imagenette
+normalization and random erasing (scale 0.02–0.2). Validation uses bilinear resize
+and center crop with the same conversion/normalization. Provenance saves actual
+transform representations, optimizer defaults and scheduler arguments. Training
+shuffles and drops incomplete batches; validation reads every sample. At least one
+full training batch is required. Mixup and label smoothing remain configurable.
 
 ## Read a trial
 
-| File | Meaning |
+| File | Contents |
 | --- | --- |
-| `config.json` | Versioned resolved inputs, including absolute data/initialization paths |
-| `provenance.json` | Source revision/dirty state, package/Python/platform versions, data digests, initialization identity, actual transforms, optimizer/scheduler settings, threads and device |
-| `data.json` | Exact class mappings, split membership, and file/split digests |
-| `progress.jsonl` | Append-only epoch-end events from the existing trainer callback |
-| `result.json` | Atomic current status or terminal result, timestamps, elapsed seconds, final epoch metrics, selected checkpoint, and exception details |
-| `checkpoint.pth` | Existing trainer's checkpoint selected by the lowest validation loss; strict improvement wins, so ties keep the earlier epoch |
+| `config.json` | Versioned resolved inputs and absolute data/checkpoint paths |
+| `provenance.json` | Source revision/dirty state, package/Python/platform versions, data/init identity, actual transforms, optimizer/scheduler settings, threads and device |
+| `data.json` | Class mapping; ordered split membership with relative path, class index and file SHA-256 |
+| `progress.jsonl` | Append-only epoch-end events; empty before the first complete epoch, no intra-epoch heartbeat |
+| `result.json` | Atomic status/result, UTC timestamps, elapsed seconds, metrics, selected checkpoint and exception traceback |
+| `checkpoint.pth` | Checkpoint with lowest validation loss; ties keep the earlier epoch |
 
-JSON records use `schema_version: 1`; timestamps use UTC ISO 8601. Metadata and
-result replacements are atomic within the trial directory. `artifacts` lists
-metadata paths relative to that directory; `selected_checkpoint` contains its
-relative path, SHA-256, epoch, validation loss, associated metrics, and
-`fully_resumable: false`. Early setup failures can leave only some metadata files.
-Progress is empty until the first complete epoch; it has no intra-epoch heartbeat.
+JSON records use `schema_version: 1`. Paths in `artifacts` and `selected_checkpoint`
+are relative to the trial. The latter includes SHA-256, epoch, loss, associated
+metrics and `fully_resumable: false`. Setup failures may leave partial metadata.
 
-| State | Meaning |
-| --- | --- |
-| `running` | Preparation or training is in progress; `epoch` counts reported epochs, `exit_code` and `finished_at` are null |
-| `completed` | All requested epochs returned and a checkpoint was selected; exit code 0 |
-| `failed` | A setup/training/tracking exception escaped; traceback is preserved, exit code 1 |
-| `interrupted` | KeyboardInterrupt (exit 130), SIGTERM (exit 143), or SystemExit; the integer SystemExit code is preserved |
+| State | Meaning | Exit code |
+| --- | --- | --- |
+| `running` | Preparing/training; `epoch` counts reported epochs, `finished_at` is null | null |
+| `completed` | All requested epochs returned and a checkpoint was selected | 0 |
+| `failed` | Setup/training/tracking exception; re-raised with traceback preserved | 1 |
+| `interrupted` | KeyboardInterrupt, SIGTERM or SystemExit | 130, 143 or Python's SystemExit code |
 
-Exceptions are re-raised and process exit codes remain nonzero on failure. An
-abrupt kill (SIGKILL), power loss, or storage failure can leave an incomplete
-`running` record, an incomplete last progress line, or a partly written checkpoint.
-Check the selected checkpoint hash before using it. `running` is not proof of
-process liveness. Git metadata is null if no Git checkout is available; dirty
-source is identified as dirty, but its contents are not snapshotted.
+Metrics carry split, epoch and direction: validation `val_loss` minimizes;
+`acc1` and `acc5` maximize (fractions; `acc5` requires five classes). Loss retains
+the trainer's mean of batch losses. `final_epoch_metrics` means last reported epoch,
+even on failure; `selected_checkpoint.metrics` means the selected epoch. No training
+or test metrics are invented. Existing callbacks and optional W&B logging remain.
 
-Metrics include their split, epoch, and direction. Available metrics are validation
-`val_loss` (minimize), `acc1` (maximize), and `acc5` (maximize, only for at least
-five classes). Accuracy is a fraction. Validation loss retains the trainer's mean
-of batch losses. No training or test metrics are invented. `final_epoch_metrics`
-describes the last reported epoch, even on failure; `selected_checkpoint.metrics`
-describes the selected epoch, which can be earlier. Existing callbacks and optional
-W&B logging receive the usual trainer metrics; the local record is written first.
+## Identity and limits
 
-## Tiny offline CPU example
+- Files: SHA-256 of raw bytes. Split digest: SHA-256 of the UTF-8 JSON sample list,
+  sorted object keys, separators `(',', ':')`; absolute root and class mapping are
+  stored separately. Renaming, relabeling, membership or byte changes alter identity.
+- Initial model: hash sorted state-dictionary entries, each UTF-8 JSON
+  `[name, dtype, shape]` followed by contiguous CPU tensor bytes. Local initialization
+  also records the checkpoint file hash.
+- All declared splits need identical class mappings and disjoint content hashes.
+  Copies, aliases and hard links are caught; re-encoded near-duplicates are not.
+  **Test is enumerated and hashed only**, never decoded, trained on or evaluated.
+- Keep data fixed during the trial: files are fingerprinted before training, not
+  locked/snapshotted. Seeds do not promise bitwise reproducibility across runtimes.
+- Abrupt kills, power/storage failures can leave `running`, a partial progress line
+  or a partial checkpoint. `running` is not liveness proof; verify checkpoint hashes.
+  Missing Git metadata is null; dirty source contents are not snapshotted.
+- Checkpoints lack optimizer, scheduler and RNG state: **no true resume**. No final
+  checkpoint unless selected. Wall-time enforcement, search, providers, export/latency,
+  dashboards and agent/MCP servers remain deferred.
 
-Run these exact commands from the checkout. They generate local PNGs and use random
-weights; training needs no dataset or checkpoint downloads. Environment setup may
-install packages. Use a new trial name on subsequent runs.
+## Offline CPU example
+
+Environment setup may install packages; the trial uses local PNGs and random weights.
+Use a fresh trial name each time.
 
 ```sh
 uv sync --locked
@@ -144,26 +121,12 @@ import json
 from pathlib import Path
 
 root = Path("runs/tiny-trial")
-config, provenance, data, result = [json.loads((root / name).read_text()) for name in
-    ("config.json", "provenance.json", "data.json", "result.json")]
+records = {name: json.loads((root / f"{name}.json").read_text())
+           for name in ("config", "provenance", "data", "result")}
+result = records["result"]
 selected = result["selected_checkpoint"]
 assert result["state"] == "completed" and result["exit_code"] == 0
 assert hashlib.sha256((root / selected["path"]).read_bytes()).hexdigest() == selected["sha256"]
-print(config["model"], config["training"], config["preprocessing"])
-print(provenance["source"], provenance["actual_device"], data["class_to_idx"])
-print({split: value["sha256"] for split, value in data["splits"].items()})
-print(result["state"], result["final_epoch_metrics"], selected)
+print(json.dumps(records, indent=2))
 PY
 ```
-
-## Limits
-
-Only local ImageFolder classification is integrated. Seeds are recorded and set
-for Python, NumPy and PyTorch, but bitwise reproducibility across devices, package
-versions and worker counts is not promised. The existing checkpoints contain model
-weights and counters; they lack optimizer, scheduler and random-number states and
-are **not fully resumable**. There is no last-epoch checkpoint unless that epoch
-was selected. Deployment intent is not export, accuracy on a deployment runtime,
-latency, throughput, or memory evidence. True resume, wall-time enforcement, search,
-external providers, export/latency integration, dashboards and agent/MCP servers
-remain outside this contract.
