@@ -33,6 +33,8 @@ before training. Config errors create no trial; later setup errors record `faile
 
 Optimizers: `sgd`, `radam`, `adamw`, `adamp`, `adabelief`, `ademamix`. Schedulers:
 `onecycle` (reference `div_factor=100`, `pct_start=0.1`) and `cosine` (native defaults).
+OneCycle rejects a ten-update schedule (a zero-length warmup phase);
+change the epoch limit or use cosine. This check runs before the first epoch.
 Epochs are the only execution budget; `wall_time_seconds`, `max_steps` and `resume`
 are rejected. Checkpoint initialization strictly loads a local state dictionary or
 trainer `model` dictionary, then starts fresh optimizer, scheduler and epoch state.

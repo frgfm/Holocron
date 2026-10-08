@@ -264,7 +264,7 @@ def run_experiment(config_path, directory):
             args,
             project="holocron-image-classification",
             config=config,
-            **trial.provenance["scheduler"]["kwargs"],
+            **scheduler_kwargs(args),
         )
         if trial.selected is None or trial.epoch != args.epochs:
             raise RuntimeError("training ended without the requested epochs and a selected checkpoint")

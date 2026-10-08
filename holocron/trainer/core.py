@@ -299,6 +299,8 @@ class Trainer:
         self.scheduler: LRScheduler
         num_steps = num_epochs * math.ceil(len(self.train_loader) / self.gradient_acc)
         if sched_type == "onecycle":
+            if "pct_start" in kwargs and num_steps * kwargs["pct_start"] == 1:
+                raise ValueError("OneCycle cannot use exactly one warmup update; change epochs or use cosine")
             self.scheduler = OneCycleLR(self.optimizer, lr, num_steps, **kwargs)
         elif sched_type == "cosine":
             self.scheduler = CosineAnnealingLR(self.optimizer, num_steps, **kwargs)

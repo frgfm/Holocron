@@ -80,8 +80,11 @@ def test_configuration_rejection(configuration, section, key, value):
     assert not (path.parent / "rejected").exists()
 
 
-def test_success_and_independent_reader(configuration, monkeypatch):
-    path, _ = configuration
+@pytest.mark.parametrize("scheduler", ["cosine", "onecycle"])
+def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
+    path, config = configuration
+    config["training"]["sched"] = scheduler
+    path.write_text(json.dumps(config), encoding="utf-8")
     original_getitem = ImageFolder.__getitem__
 
     def no_test_reads(dataset, index):
@@ -174,6 +177,29 @@ def test_overwrite_protection(configuration):
         experiment.run_experiment(path, directory)
     assert (directory / "result.json").read_text() == "do not replace"
     assert list(directory.iterdir()) == [directory / "result.json"]
+
+
+def test_existing_dangling_symlink_is_not_a_new_trial(configuration):
+    path, _ = configuration
+    target, alias = path.parent / "missing", path.parent / "existing-link"
+    alias.symlink_to(target, target_is_directory=True)
+    with pytest.raises(FileExistsError):
+        experiment.run_experiment(path, alias)
+    assert alias.is_symlink()
+    assert not target.exists()
+
+
+def test_onecycle_rejects_single_warmup_update(configuration):
+    path, config = configuration
+    config["training"].update(sched="onecycle", epochs=5)
+    path.write_text(json.dumps(config), encoding="utf-8")
+    directory = path.parent / "invalid-schedule"
+    with pytest.raises(ValueError, match="exactly one warmup update"):
+        experiment.run_experiment(path, directory)
+    result = json.loads((directory / "result.json").read_text())
+    assert result["state"] == "failed"
+    assert result["epoch"] == 0
+    assert not (directory / "checkpoint.pth").exists()
 
 
 def test_mixup_with_spawn_worker(configuration):

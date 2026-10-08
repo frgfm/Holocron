@@ -78,8 +78,8 @@ class Trial:
     """
 
     def __init__(self, directory: Path, configuration: dict[str, Any]) -> None:
+        directory.mkdir(parents=True, exist_ok=False)
         self.directory = directory.resolve()
-        self.directory.mkdir(parents=True, exist_ok=False)
         self.started_at = datetime.now(UTC).isoformat()
         self.started = time.monotonic()
         self.epoch = 0
@@ -113,7 +113,7 @@ class Trial:
         self._status(state, exit_code=code, error=error)
 
     def record_provenance(self, **records: Any) -> None:
-        """Atomically add preparation records, including partial setup on failure."""
+        """Atomically add preparation records and refresh running status."""
         self.provenance.update(records)
         write_json(self.directory / "provenance.json", self.provenance)
         self._status("running")
