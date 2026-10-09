@@ -217,6 +217,7 @@ def test_cpu_benchmark_writes_real_results_and_rejects_overwrite(tmp_path, monke
     assert result["selected_epoch"] == 1
     assert result["checkpoint_sha256"]
     assert 0 <= result["selected_metrics"]["acc1"] <= 1
+    assert result["deployment_metrics"]["acc1"] == pytest.approx(result["selected_metrics"]["acc1"])
     assert result["parameters"]["deployment"] < result["parameters"]["training"]
     assert result["macs"]["deployment"] > 0
     assert result["deployment_latency"]["median_ms"] > 0

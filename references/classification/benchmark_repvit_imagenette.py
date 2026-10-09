@@ -207,6 +207,8 @@ def main(args):
         }
         result["macs"] = {"training": count_macs(unfused), "deployment": count_macs(fused)}
         fused = fused.to(device)
+        learner.model = fused
+        result["deployment_metrics"] = learner.evaluate()
         image = torch.randn(1, 3, 224, 224, device=device)
         with torch.inference_mode(), torch.autocast(device.type, enabled=args.amp):
             result["deployment_latency"], _ = measure(
