@@ -1,110 +1,92 @@
 # Local classification experiments
 
-Submit JSON; read a trial directory. Run from the checkout:
+From the checkout, submit JSON and read one new trial directory:
 
 ```sh
 uv sync --locked
 uv run --no-sync python -m references.classification.experiment CONFIG.json runs/TRIAL
 ```
 
-The trial path must not exist, even as an empty directory. Input paths are relative
-to the config file; output paths are relative to the working directory. `runs/`
-and checkpoints are ignored by Git; use that directory or an external location.
+The trial path must not exist, including as a symlink. Input paths are relative to
+CONFIG; output paths to the working directory. Use Git-ignored `runs/` or an external directory.
 
 ## Input v1
 
 Use [the example](https://github.com/frgfm/Holocron/blob/main/references/classification/experiment.example.json).
-Required fields: `schema_version: 1`, `model`, `dataset`, `training_device`,
-`deployment_target`. Optional values resolve from the existing classification CLI
-defaults. Unknown fields, invalid values, unsupported versions and limits fail
-before training. Config errors create no trial; later setup errors record `failed`.
+Required: `schema_version: 1`, `model`, `dataset`, `training_device`, `deployment_target`.
+Optional settings resolve from the existing CLI defaults. Unknown fields/versions,
+invalid values and unsupported limits are rejected. Config errors create no trial;
+setup/training errors leave a failed record.
 
-| Field | Supported values |
+| Field | Values |
 | --- | --- |
-| `model.name` | Catalog classification factory; see `holocron.models.list_models("classification")` |
-| `model.initialization` | `{"kind":"random"}` or `{"kind":"checkpoint","path":"local.pth"}`; no downloads |
-| `dataset` | `format: "imagefolder"`, `train`, `validation`, optional `test` directory |
+| `model` | Catalog classification `name`; `initialization` is `{"kind":"random"}` or `{"kind":"checkpoint","path":"local.pth"}` |
+| `dataset` | `format: "imagefolder"`; `train`, `validation`, optional `test` directories |
 | `training_device` | `"cpu"` or available `"cuda:N"`; AMP requires CUDA |
-| `deployment_target` | `null` or nonempty description; intent only, never measured deployment evidence |
-| `seed` | Integer 0 through 2³²−1; sets Python, NumPy and PyTorch seeds |
+| `deployment_target` | null or nonempty description; intent only, never a measurement |
+| `seed` | Integer 0 through 2³²−1; seeds Python, NumPy and PyTorch |
 | `preprocessing` | `train_crop_size`, `val_resize_size`, `val_crop_size`, `random_erase` |
 | `training` | `epochs`, `lr`, `batch_size`, `workers`, `grad_acc`, `opt`, `sched`, `weight_decay`, `norm_wd`, `label_smoothing`, `mixup_alpha`, `amp` |
-| `tracking` | Optional `wb` boolean and `name` string/null; W&B needs `uv sync --locked --extra training` |
+| `tracking` | Optional `wb` boolean, `name` string/null; W&B requires `--extra training` at install |
 
 Optimizers: `sgd`, `radam`, `adamw`, `adamp`, `adabelief`, `ademamix`. Schedulers:
-`onecycle` (reference `div_factor=100`, `pct_start=0.1`) and `cosine` (native defaults).
-OneCycle rejects a ten-update schedule (a zero-length warmup phase);
-change the epoch limit or use cosine. This check runs before the first epoch.
-Epochs are the only execution budget; `wall_time_seconds`, `max_steps` and `resume`
-are rejected. Checkpoint initialization strictly loads a local state dictionary or
-trainer `model` dictionary, then starts fresh optimizer, scheduler and epoch state.
+`cosine` or `onecycle` with reference `div_factor=100`, `pct_start=0.1`. OneCycle rejects
+exactly ten planned updates; change epochs or use cosine. Epochs are the only budget;
+`wall_time_seconds`, `max_steps` and `resume` are rejected. Local initialization loads
+weights strictly and starts fresh optimizer/scheduler/epoch state. No weights are downloaded.
 
-Preprocessing reuses the Imagenette reference: PIL RGB, bilinear random resized crop
+Preprocessing is the shared Imagenette recipe: PIL RGB, bilinear random resized crop
 (scale 0.3–1), horizontal flip, TrivialAugmentWide, float32 conversion, Imagenette
-normalization and random erasing (scale 0.02–0.2). Validation uses bilinear resize
-and center crop with the same conversion/normalization. Provenance saves actual
-transform representations, optimizer defaults and scheduler arguments. Training
-shuffles and drops incomplete batches; validation reads every sample. At least one
-full training batch is required. Mixup and label smoothing remain configurable.
+normalization and random erasing (scale 0.02–0.2). Validation uses resize/center crop
+and the same conversion/normalization. Exact transforms and optimizer/scheduler defaults
+are recorded. Training shuffles and drops incomplete batches; validation reads all samples.
+At least one full training batch is required. Mixup and label smoothing remain configurable.
 
-## Read a trial
+## Output v1
 
 | File | Contents |
 | --- | --- |
-| `config.json` | Versioned resolved inputs and absolute data/checkpoint paths |
-| `provenance.json` | Source revision/dirty state, package/Python/platform versions, data/init identity, actual transforms, optimizer/scheduler settings, threads and device |
-| `data.json` | Class mapping; ordered split membership with relative path, class index and file SHA-256 |
-| `progress.jsonl` | Append-only epoch-end events; empty before the first complete epoch, no intra-epoch heartbeat |
-| `result.json` | Atomic status/result, UTC timestamps, elapsed seconds, metrics, selected checkpoint and exception traceback |
-| `checkpoint.pth` | Checkpoint with lowest validation loss; ties keep the earlier epoch |
+| `config.json` | Resolved inputs and absolute data/initialization paths |
+| `provenance.json` | Git revision/dirty state, package/runtime versions, data/init hashes, actual preprocessing, optimizer/scheduler, threads/device |
+| `data.json` | Class mapping and ordered membership: relative path, class index, file SHA-256 |
+| `progress.jsonl` | Append-only epoch events; empty until the first reported epoch, no intra-epoch heartbeat |
+| `result.json` | Atomic status, UTC start/finish timestamps, elapsed seconds, final metrics, selected checkpoint, traceback/exit code |
+| `checkpoint.pth` | Lowest validation-loss checkpoint; ties retain the earlier epoch; atomic saves preserve the previous file on failure |
 
-Checkpoint replacement is atomic: a failed save preserves the previous model file.
+`selected_checkpoint` records the relative path, SHA-256, epoch, loss, metrics and
+`fully_resumable: false`. Metric records contain split, epoch and direction:
+validation `val_loss` minimizes; `acc1`/`acc5` maximize (fractions; acc5 needs five classes).
+Loss is the trainer's mean of batch losses; non-finite validation loss fails the trial.
+`final_epoch_metrics` is the last reported epoch, even on failure; selected metrics
+belong to the chosen checkpoint. No training/test metrics are invented. Callbacks and W&B remain.
 
-JSON records use `schema_version: 1`. Paths in `artifacts` and `selected_checkpoint`
-are relative to the trial. The latter includes SHA-256, epoch, loss, associated
-metrics and `fully_resumable: false`. Setup failures may leave partial metadata.
-
-| State | Meaning | Exit code |
-| --- | --- | --- |
-| `running` | Preparing/training; `epoch` counts reported epochs, `finished_at` is null | null |
-| `completed` | All requested epochs returned and a checkpoint was selected | 0 |
-| `failed` | Setup/training/tracking exception; re-raised with traceback preserved | 1 |
-| `interrupted` | KeyboardInterrupt, SIGTERM or SystemExit | 130, 143 or Python's SystemExit code |
-
-Metrics carry split, epoch and direction: validation `val_loss` minimizes;
-`acc1` and `acc5` maximize (fractions; `acc5` requires five classes). Loss retains
-the trainer's mean of batch losses. `final_epoch_metrics` means last reported epoch,
-even on failure; `selected_checkpoint.metrics` means the selected epoch. No training
-or test metrics are invented. Existing callbacks and optional W&B logging remain.
-Any non-finite validation loss fails the trial instead of being omitted from its metrics.
+| State | Meaning / exit code |
+| --- | --- |
+| `running` | Preparing/training; epoch counts reports; exit/finish are null |
+| `completed` | All requested epochs returned and a model was selected; 0 |
+| `failed` | Setup/training/tracking error, traceback preserved and exception re-raised; 1 |
+| `interrupted` | KeyboardInterrupt 130, SIGTERM 143, or Python's SystemExit code |
 
 ## Identity and limits
 
-- Files: SHA-256 of raw bytes. Split digest: SHA-256 of the UTF-8 JSON sample list,
-  sorted object keys, separators `(',', ':')`; absolute root and class mapping are
-  stored separately. Renaming, relabeling, membership or byte changes alter identity.
-- Initial model: hash sorted state-dictionary entries, each UTF-8 JSON
-  `[name, dtype, shape]` followed by contiguous CPU tensor bytes. Local initialization
-  also records the checkpoint file hash.
-- All declared splits need identical class mappings and disjoint content hashes.
-  Copies, aliases and hard links are caught; re-encoded near-duplicates are not.
-  **Test is enumerated and hashed only**, never decoded, trained on or evaluated.
-- Keep data fixed during the trial: files are fingerprinted before training, not
-  locked/snapshotted. Seeds do not promise bitwise reproducibility across runtimes.
-- Abrupt kills, power/storage failures can leave `running`, a partial progress line
-  or a partial checkpoint. `running` is not liveness proof; verify checkpoint hashes.
-  Missing Git metadata is null; dirty source contents are not snapshotted.
-- Checkpoints lack optimizer, scheduler and RNG state: **no true resume**. No final
-  checkpoint unless selected. Wall-time enforcement, search, providers, export/latency,
-  dashboards and agent/MCP servers remain deferred.
+- File hashes use raw bytes. Split hashes use the UTF-8 JSON sample list with sorted
+  keys and separators `(',', ':')`; roots/class mapping are stored separately.
+- Initial-state hashes use sorted entries: Python JSON `[name, dtype, shape]` followed
+  by contiguous CPU tensor bytes. Local initialization also records its file hash.
+- All splits require matching classes and disjoint hashes. Copies/aliases are caught;
+  re-encoded duplicates are not. **Test is hashed only**, never decoded, trained or evaluated.
+- Keep data fixed: it is hashed before training, not locked/snapshotted. Seeds do not
+  promise identical bits across runtimes. Missing Git metadata is null; dirty source is not snapshotted.
+- Abrupt kills/power/storage failures can leave `running` or a partial progress line.
+  Running is not liveness proof; verify the checkpoint hash before use. Setup failures may leave partial metadata.
+- No true resume: optimizer/scheduler/RNG state is absent. No final checkpoint unless
+  selected. Wall-time enforcement, search, providers, export/latency, dashboards and servers remain deferred.
 
 ## Offline CPU example
 
-Environment setup may install packages; the trial uses local PNGs and random weights.
-Use a fresh trial name each time.
+After installation above, generate PNGs and run random weights. Use a fresh trial name:
 
 ```sh
-uv sync --locked
 mkdir -p runs
 cp references/classification/experiment.example.json runs/tiny.json
 uv run --no-sync python - <<'PY'
@@ -120,18 +102,5 @@ for split_index, split in enumerate(("train", "validation", "test")):
             Image.new("RGB", (40, 40), color).save(root / f"{sample}.png")
 PY
 OMP_NUM_THREADS=2 uv run --no-sync python -m references.classification.experiment runs/tiny.json runs/tiny-trial
-uv run --no-sync python - <<'PY'
-import hashlib
-import json
-from pathlib import Path
-
-root = Path("runs/tiny-trial")
-records = {name: json.loads((root / f"{name}.json").read_text())
-           for name in ("config", "provenance", "data", "result")}
-result = records["result"]
-selected = result["selected_checkpoint"]
-assert result["state"] == "completed" and result["exit_code"] == 0
-assert hashlib.sha256((root / selected["path"]).read_bytes()).hexdigest() == selected["sha256"]
-print(json.dumps(records, indent=2))
-PY
+uv run --no-sync python -m json.tool runs/tiny-trial/result.json
 ```

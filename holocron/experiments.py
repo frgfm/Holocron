@@ -80,17 +80,24 @@ class Trial:
     def __init__(self, directory: Path, configuration: dict[str, Any]) -> None:
         directory.mkdir(parents=True, exist_ok=False)
         self.directory = directory.resolve()
-        self.started_at = datetime.now(UTC).isoformat()
         self.started = time.monotonic()
-        self.epoch = 0
-        self.final_metrics: list[dict[str, Any]] = []
-        self.selected: dict[str, Any] | None = None
-        self.actual_device: str | None = None
+        self.result: dict[str, Any] = {
+            "schema_version": 1,
+            "state": "running",
+            "started_at": datetime.now(UTC).isoformat(),
+            "finished_at": None,
+            "epoch": 0,
+            "actual_device": None,
+            "final_epoch_metrics": [],
+            "selected_checkpoint": None,
+            "exit_code": None,
+            "error": None,
+        }
+        self.provenance: dict[str, Any] = {"schema_version": 1}
         write_json(self.directory / "config.json", configuration)
-        self.provenance: dict[str, Any] = {"schema_version": 1, "started_at": self.started_at}
         write_json(self.directory / "provenance.json", self.provenance)
         (self.directory / "progress.jsonl").touch()
-        self._status("running")
+        self._write_result()
 
     def __enter__(self) -> Self:
         return self
@@ -98,8 +105,7 @@ class Trial:
     def __exit__(
         self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None
     ) -> None:
-        state, code = "completed", 0
-        error = None
+        state, code, error = "completed", 0, None
         if exc is not None:
             state = "interrupted" if isinstance(exc, (KeyboardInterrupt, SystemExit)) else "failed"
             code = 130 if isinstance(exc, KeyboardInterrupt) else 1
@@ -110,13 +116,14 @@ class Trial:
                 "message": str(exc),
                 "traceback": "".join(traceback.format_exception(exc)),
             }
-        self._status(state, exit_code=code, error=error)
+        self.result.update(state=state, exit_code=code, error=error, finished_at=datetime.now(UTC).isoformat())
+        self._write_result()
 
     def record_provenance(self, **records: Any) -> None:
-        """Atomically add preparation records and refresh running status."""
+        """Atomically add preparation records and refresh the current result."""
         self.provenance.update(records)
         write_json(self.directory / "provenance.json", self.provenance)
-        self._status("running")
+        self._write_result()
 
     def record_environment(self) -> None:
         """Record the loaded source checkout and relevant installed package versions."""
@@ -146,31 +153,32 @@ class Trial:
         )
 
     def record_epoch(self, trainer: Trainer, metrics: dict[str, float]) -> None:
-        """Record validation metrics after the trainer has selected its checkpoint.
+        """Record validation metrics after checkpoint selection.
 
         Raises:
             ValueError: If any recorded metric is not finite.
         """
         if not all(math.isfinite(value) for value in metrics.values()):
             raise ValueError("non-finite epoch metrics")
-        self.epoch = trainer.epoch
-        self.final_metrics = [
+        rows = [
             {
                 "name": name,
                 "value": value,
                 "split": "validation",
-                "epoch": self.epoch,
+                "epoch": trainer.epoch,
                 "direction": "minimize" if name == "val_loss" else "maximize",
             }
             for name, value in metrics.items()
         ]
-        if self.selected is None or metrics["val_loss"] < self.selected["validation_loss"]:
-            self.selected = {
+        self.result.update(epoch=trainer.epoch, final_epoch_metrics=rows)
+        selected = self.result["selected_checkpoint"]
+        if selected is None or metrics["val_loss"] < selected["validation_loss"]:
+            self.result["selected_checkpoint"] = {
                 "path": "checkpoint.pth",
                 "sha256": sha256(Path(trainer.output_file)),
-                "epoch": self.epoch,
+                "epoch": trainer.epoch,
                 "validation_loss": metrics["val_loss"],
-                "metrics": self.final_metrics,
+                "metrics": rows,
                 "fully_resumable": False,
             }
         event = {
@@ -178,37 +186,13 @@ class Trial:
             "event": "epoch_end",
             "timestamp": datetime.now(UTC).isoformat(),
             "elapsed_seconds": time.monotonic() - self.started,
-            "epoch": self.epoch,
-            "metrics": self.final_metrics,
-            "selected_checkpoint": self.selected,
+            "epoch": trainer.epoch,
+            "metrics": rows,
         }
         with (self.directory / "progress.jsonl").open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(event, allow_nan=False) + "\n")
-        self._status("running")
+        self._write_result()
 
-    def _status(self, state: str, **fields: Any) -> None:
-        now = datetime.now(UTC).isoformat()
-        write_json(
-            self.directory / "result.json",
-            {
-                "schema_version": 1,
-                "state": state,
-                "started_at": self.started_at,
-                "updated_at": now,
-                "finished_at": None if state == "running" else now,
-                "elapsed_seconds": time.monotonic() - self.started,
-                "epoch": self.epoch,
-                "actual_device": self.actual_device,
-                "final_epoch_metrics": self.final_metrics,
-                "selected_checkpoint": self.selected,
-                "artifacts": {
-                    "configuration": "config.json",
-                    "provenance": "provenance.json",
-                    "data": "data.json",
-                    "progress": "progress.jsonl",
-                },
-                "exit_code": None,
-                "error": None,
-                **fields,
-            },
-        )
+    def _write_result(self) -> None:
+        self.result["elapsed_seconds"] = time.monotonic() - self.started
+        write_json(self.directory / "result.json", self.result)

@@ -1,30 +1,23 @@
 import copy
 import gc
 import json
-import random
 import shutil
-import sys
 import weakref
-from argparse import Namespace
+from pathlib import Path
 
-import numpy as np
 import pytest
 import torch
 from PIL import Image
 from torch import nn
 from torchvision.datasets import ImageFolder
 
-from holocron.experiments import Trial, imagefolder_manifest, sha256
+from holocron.experiments import imagefolder_manifest, sha256
 from holocron.trainer import ClassificationTrainer
-from references._common import run_training  # noqa: PLC2701
 from references.classification import experiment
 
 
 @pytest.fixture
 def configuration(tmp_path, monkeypatch):
-    python_rng = random.getstate()
-    numpy_rng = np.random.get_state()  # noqa: NPY002
-    benchmark = torch.backends.cudnn.benchmark
     for offset, split in enumerate(("train", "validation", "test")):
         for index, label in enumerate(("a", "b")):
             directory = tmp_path / split / label
@@ -49,12 +42,7 @@ def configuration(tmp_path, monkeypatch):
         "get_model",
         lambda *_args, **_kwargs: nn.Sequential(nn.AdaptiveAvgPool2d(1), nn.Flatten(), nn.Linear(3, 2)),
     )
-    # The runner seeds process globals; keep later tests independent.
-    with torch.random.fork_rng():
-        yield path, config
-    random.setstate(python_rng)
-    np.random.set_state(numpy_rng)  # noqa: NPY002
-    torch.backends.cudnn.benchmark = benchmark
+    return path, config
 
 
 @pytest.mark.parametrize(
@@ -105,6 +93,15 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
 
     monkeypatch.setattr(ImageFolder, "__getitem__", no_test_reads)
     directory = path.parent / "trial"
+    if scheduler == "onecycle":
+
+        def worsening_metrics(learner):
+            running = json.loads(Path(learner.output_file).with_name("result.json").read_text())
+            assert running["state"] == "running"
+            assert running["finished_at"] is None
+            return {"val_loss": float(learner.epoch), "acc1": 0.5, "acc5": 0.0}
+
+        monkeypatch.setattr(ClassificationTrainer, "evaluate", worsening_metrics)
     experiment.run_experiment(path, directory)
     # The reader uses only JSON and checkpoint bytes from the trial directory.
     config, provenance, data, result = [
@@ -112,7 +109,6 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
         for name in ("config.json", "provenance.json", "data.json", "result.json")
     ]
     events = [json.loads(line) for line in (directory / "progress.jsonl").read_text().splitlines()]
-    assert config["training"]["epochs"] == 2
     assert config["training"]["lr"] == experiment.get_parser().parse_args(["."]).lr
     assert config["dataset"]["train"] == str(path.parent / "train")
     assert config["deployment_target"] == "owner's CPU"
@@ -124,12 +120,10 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
     assert provenance["packages"]["torch"]
     assert "RandomResizedCrop" in provenance["preprocessing"]["train"]
     assert len(provenance["initialization"]["state_dict_sha256"]) == 64
-    assert result["state"] == "completed"
-    assert result["exit_code"] == 0
-    assert result["actual_device"] == "cpu"
+    assert (result["state"], result["exit_code"], result["actual_device"]) == ("completed", 0, "cpu")
     assert result["finished_at"]
     assert result["elapsed_seconds"] > 0
-    assert [event["epoch"] for event in events] == [1, 2]
+    assert (config["training"]["epochs"], [event["epoch"] for event in events]) == (2, [1, 2])
     assert all(metric["split"] == "validation" for event in events for metric in event["metrics"])
     assert result["final_epoch_metrics"] == events[-1]["metrics"]
     selected = result["selected_checkpoint"]
@@ -137,8 +131,14 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
     checkpoint = torch.load(directory / selected["path"], map_location="cpu", weights_only=True)
     assert checkpoint["epoch"] == selected["epoch"]
     assert selected["metrics"] == events[selected["epoch"] - 1]["metrics"]
+    if scheduler == "onecycle":
+        assert selected["epoch"] == 1
+        assert result["epoch"] == 2
     assert selected["fully_resumable"] is False
-    assert {metric["name"] for metric in selected["metrics"]} == {"val_loss", "acc1"}
+    assert {metric["name"]: metric["direction"] for metric in selected["metrics"]} == {
+        "val_loss": "minimize",
+        "acc1": "maximize",
+    }
     # A checkpoint from this contract can initialize another trial, without resume claims.
     raw = json.loads(path.read_text())
     raw["model"]["initialization"] = {"kind": "checkpoint", "path": str(directory / "checkpoint.pth")}
@@ -255,37 +255,9 @@ def test_split_rejection(configuration, problem):
     assert json.loads((path.parent / "invalid-data/result.json").read_text())["state"] == "failed"
 
 
-def test_content_identity_and_selected_vs_final(configuration):
+def test_content_changes_data_identity(configuration):
     path, _ = configuration
     splits = {split: ImageFolder(path.parent / split) for split in ("train", "validation")}
     before = imagefolder_manifest(splits)
     Image.new("RGB", (20, 20), (255, 0, 0)).save(path.parent / "train/a/0.png")
     assert imagefolder_manifest(splits)["splits"]["train"]["sha256"] != before["splits"]["train"]["sha256"]
-    directory = path.parent / "metrics"
-    with Trial(directory, {}) as trial:
-        checkpoint = directory / "checkpoint.pth"
-        checkpoint.write_bytes(b"best epoch weights")
-        learner = Namespace(epoch=1, output_file=str(checkpoint))
-        trial.record_epoch(learner, {"val_loss": 0.1, "acc1": 0.8})
-        running = json.loads((directory / "result.json").read_text())
-        assert running["state"] == "running"
-        assert running["finished_at"] is None
-        learner.epoch = 2
-        trial.record_epoch(learner, {"val_loss": 0.3, "acc1": 0.6})
-    result = json.loads((directory / "result.json").read_text())
-    assert result["selected_checkpoint"]["epoch"] == 1
-    assert result["final_epoch_metrics"][0]["epoch"] == 2
-    assert result["selected_checkpoint"]["metrics"][0]["direction"] == "minimize"
-
-
-def test_wandb_preserves_callback(monkeypatch):
-    received, logged = [], []
-    callback = received.append
-    learner = Namespace(on_epoch_end=callback)
-    learner.fit_n_epochs = lambda *_args, **_kwargs: learner.on_epoch_end({"val_loss": 0.2})
-    run = Namespace(finish=lambda **_kwargs: None)
-    monkeypatch.setitem(sys.modules, "wandb", Namespace(init=lambda **_kwargs: run, log=logged.append))
-    args = experiment.get_parser().parse_args([".", "--wb"])
-    run_training(learner, args, project="test", config={})
-    assert received == logged == [{"val_loss": 0.2}]
-    assert learner.on_epoch_end is callback

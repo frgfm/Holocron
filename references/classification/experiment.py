@@ -22,7 +22,7 @@ from torchvision.datasets import ImageFolder
 
 from holocron.experiments import Trial, imagefolder_manifest, sha256, write_json
 from holocron.models import get_model, get_model_info
-from references._common import create_loader, run_training
+from references._common import OPTIMIZERS, create_loader, run_training
 from references.classification.train import (
     collate_mixup,
     create_trainer,
@@ -111,14 +111,7 @@ def _validate_settings(training, preprocessing):
     for key in ("train_crop_size", "val_resize_size", "val_crop_size"):
         _number(preprocessing[key], key, 1, integer=True)
     _number(preprocessing["random_erase"], "random_erase", 0, 1)
-    if not isinstance(training["opt"], str) or training["opt"] not in {
-        "sgd",
-        "radam",
-        "adamw",
-        "adamp",
-        "adabelief",
-        "ademamix",
-    }:
+    if not isinstance(training["opt"], str) or training["opt"] not in OPTIMIZERS:
         raise ValueError("unsupported optimizer")
     if not isinstance(training["sched"], str) or training["sched"] not in {"onecycle", "cosine"}:
         raise ValueError("unsupported scheduler")
@@ -133,22 +126,13 @@ def _validate_device(device, amp):
         raise ValueError("amp must be a boolean and requires CUDA")
 
 
-def resolve_config(raw, base):
-    """Validate input and resolve settings from the existing CLI parser.
-
-    Returns:
-        Resolved version-1 configuration with absolute data and checkpoint paths.
-
-    Raises:
-        ValueError: If a setting is invalid or unsupported.
-    """
+def _resolve_config(raw, base, defaults):
     required = ("schema_version", "model", "dataset", "training_device", "deployment_target")
     _object(raw, (*required, "training", "preprocessing", "seed", "tracking"), required)
     if type(raw["schema_version"]) is not int or raw["schema_version"] != 1:
         raise ValueError("unsupported schema_version")
     model = _resolve_model(raw["model"], base)
     dataset = _resolve_dataset(raw["dataset"], base)
-    defaults = vars(get_parser().parse_args(["."]))
     settings = {}
     for section, keys in (("training", TRAINING_KEYS), ("preprocessing", PREPROCESSING_KEYS)):
         overrides = _object(raw.get(section, {}), keys)
@@ -166,12 +150,10 @@ def resolve_config(raw, base):
     if type(tracking["wb"]) is not bool or (tracking["name"] is not None and not isinstance(tracking["name"], str)):
         raise ValueError("invalid tracking settings")
     return {
-        "schema_version": 1,
+        **raw,
         "model": model,
         "dataset": dataset,
         **settings,
-        "training_device": device,
-        "deployment_target": target,
         "seed": seed,
         "tracking": tracking,
     }
@@ -185,8 +167,8 @@ def run_experiment(config_path, directory):
         RuntimeError: If training ends without a selected checkpoint or all epochs.
     """
     config_path = Path(config_path).resolve()
-    config = resolve_config(json.loads(config_path.read_text(encoding="utf-8")), config_path.parent)
     args = get_parser().parse_args(["."])
+    config = _resolve_config(json.loads(config_path.read_text(encoding="utf-8")), config_path.parent, vars(args))
     vars(args).update(config["training"], **config["preprocessing"], **config["tracking"])
     args.arch, args.seed = config["model"]["name"], config["seed"]
     args.device = None if config["training_device"] == "cpu" else int(config["training_device"][5:])
@@ -238,9 +220,9 @@ def run_experiment(config_path, directory):
         trial.record_provenance(initialization=initialization)
         args.output_file = str(trial.directory / "checkpoint.pth")
         trainer = create_trainer(model, train_loader, val_loader, args)
-        trial.actual_device = str(next(trainer.model.parameters()).device)
+        trial.result["actual_device"] = str(next(trainer.model.parameters()).device)
         trial.record_provenance(
-            actual_device=trial.actual_device,
+            actual_device=trial.result["actual_device"],
             threads=torch.get_num_threads(),
             cudnn_benchmark=False,
             deterministic_algorithms=torch.are_deterministic_algorithms_enabled(),
@@ -269,7 +251,7 @@ def run_experiment(config_path, directory):
             )
         finally:
             trainer.on_epoch_end = None
-        if trial.selected is None or trial.epoch != args.epochs:
+        if trial.result["selected_checkpoint"] is None or trial.result["epoch"] != args.epochs:
             raise RuntimeError("training ended without the requested epochs and a selected checkpoint")
 
 

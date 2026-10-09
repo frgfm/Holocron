@@ -27,6 +27,7 @@ from holocron.trainer import ClassificationTrainer
 from holocron.utils.data import Mixup
 from holocron.utils.misc import find_image_size
 from references._common import (
+    OPTIMIZERS,
     add_loading_args,
     create_loader,
     create_optimizer,
@@ -285,7 +286,7 @@ def get_parser():
     group.add_argument("--lr", default=1e-3, type=float, help="initial learning rate")
     group.add_argument("--freeze-until", default=None, type=str, help="Last layer to freeze")
     group.add_argument("--grad-acc", default=1, type=int, help="Number of batches to accumulate the gradient of")
-    group.add_argument("--opt", default="adamp", type=str, help="optimizer")
+    group.add_argument("--opt", default="adamp", type=str, choices=OPTIMIZERS, help="optimizer")
     group.add_argument("--sched", default="onecycle", type=str, help="Scheduler to be used")
     group.add_argument("--wd", "--weight-decay", default=0, type=float, help="weight decay", dest="weight_decay")
     group.add_argument("--norm-wd", default=None, type=float, help="weight decay of norm parameters")
