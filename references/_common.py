@@ -8,7 +8,7 @@
 import datetime
 import os
 import time
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from typing import Any
 
 import torch
@@ -70,7 +70,14 @@ def run_training(
         timestamp = datetime.datetime.now(tz=datetime.UTC).strftime("%Y%m%d-%H%M%S")
         name = f"{args.arch}-{timestamp}" if args.name is None else args.name
         run = wandb.init(name=name, project=project, config=config)
-        trainer.on_epoch_end = wandb.log
+        callback = getattr(trainer, "on_epoch_end", None)
+
+        def log_epoch(metrics):
+            if callback is not None:
+                callback(metrics)
+            wandb.log(metrics)
+
+        trainer.on_epoch_end = log_epoch
 
     print("Start training")
     start_time = time.time()
@@ -83,6 +90,7 @@ def run_training(
         exit_code = 0
     finally:
         if run is not None:
+            trainer.on_epoch_end = callback
             run.finish(exit_code=exit_code)
 
 
@@ -136,7 +144,7 @@ def add_loading_args(parser: ArgumentParser) -> None:
     """Add the common hardware and data-loading argument groups."""
     group = parser.add_argument_group("Hardware")
     group.add_argument("--device", default="auto", help="auto, cpu, cuda, cuda:N, mps, or a legacy CUDA index")
-    group.add_argument("--amp", help="Use Automatic Mixed Precision", action="store_true")
+    group.add_argument("--amp", help="Use Automatic Mixed Precision", action=BooleanOptionalAction, default=False)
     group = parser.add_argument_group("Data loading")
     group.add_argument("-b", "--batch-size", default=32, type=int, help="batch size")
     group.add_argument(

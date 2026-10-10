@@ -76,8 +76,18 @@ def plot_samples(images, targets, num_samples=8):
     plt.show()
 
 
+def main(args):
+    if args.threads is not None:
+        torch.set_num_threads(args.threads)
+    if args.benchmark:
+        from references.classification._benchmark import run_benchmark  # noqa: PLC0415
+
+        return run_benchmark(args, _train)
+    return _train(args)
+
+
 @track_emissions()
-def main(args, on_epoch_end=None):
+def _train(args, on_epoch_end=None):
     print(args)
 
     torch.manual_seed(args.seed)
@@ -243,6 +253,7 @@ def get_parser():
     group.add_argument("--resume", default="", help="resume from checkpoint")
     group.add_argument("--seed", default=0, type=int, help="random seed")
     add_loading_args(parser)
+    parser.add_argument("--threads", type=int, help="CPU intra-op threads; defaults to PyTorch's current setting")
     # Transformations
     group = parser.add_argument_group("Transformations")
     group.add_argument("--train-crop-size", default=176, type=int, help="training image size")
@@ -269,6 +280,11 @@ def get_parser():
     group.add_argument("--show-samples", action="store_true", help="Whether training samples should be displayed")
     group.add_argument("--test-only", help="Only test the model", action="store_true")
     group.add_argument("--plot-loss", help="Check the top losses of the model", action="store_true")
+    group.add_argument(
+        "--benchmark",
+        action="store_true",
+        help="Record training metrics and deployment profiling beside the checkpoint",
+    )
     # Experiment tracking
     group = parser.add_argument_group("Experiment tracking")
     group.add_argument("--wb", action="store_true", help="Log to Weights & Biases")

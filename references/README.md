@@ -36,20 +36,28 @@ For line recognition, use `--device mps` with the recognition script. Its CTC
 loss runs on CPU because PyTorch has no MPS CTC kernel; gradients return to the
 MPS model. Other training and inference remain on the requested device.
 
-The reproducible [RepViT comparison](classification/benchmark_repvit_imagenette.py)
-uses the same reference recipe for all three RepViT variants and MobileOne-S2:
+Add `--benchmark` to the standard classification training command to record
+metrics and deployment profiling beside its checkpoint. There is no separate
+benchmark training recipe. Benchmark mode requires fresh training, without
+resume or diagnostic actions; normal W&B logging remains available.
+
+The [RepViT campaign](classification/benchmark_repvit_imagenette.sh) runs that
+same command for all three RepViT variants and MobileOne-S2:
 
 ```shell
-uv run --no-sync python -m references.classification.benchmark_repvit_imagenette \
+bash references/classification/benchmark_repvit_imagenette.sh \
   /path/to/imagenette2-320 /path/to/fresh-results --device mps
 ```
 
-The default is 20 epochs, seed 0, AMP, and effective batch size 32. Smaller
-physical batches use gradient accumulation. Results include selected and final
+The default is 20 epochs, seed 0, AMP, and batch size 32. To use a physical batch
+of 8 with the same effective batch, pass `--batch-size 8 --grad-acc 4`. Other
+options come directly from the training CLI. Each model runs in a fresh process.
+Results include selected and final
 validation accuracy, model size, convolution/linear MACs, synchronized deployment
 latency, elapsed wall time, and backend-specific memory readings. MPS memory is
 sampled tensor/driver allocation, not CUDA VRAM or an exact peak. Checkpoints and
-progress records stay in the requested output directory, which must be empty.
+progress records stay in the requested output directory, which must be empty
+for the campaign. Each checkpoint has its own JSON report and progress file.
 
 ## Available tasks
 

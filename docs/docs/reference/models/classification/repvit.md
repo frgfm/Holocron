@@ -165,12 +165,13 @@ effective batch size 32, AMP, AdamP at `1e-3`, OneCycle, Mixup `0.2`, and label
 smoothing `0.1`. MobileOne-S2 uses the identical command as the baseline.
 
 The controlled comparison can run on CPU, CUDA, or Apple Silicon MPS using
-[`benchmark_repvit_imagenette.py`](https://github.com/frgfm/holocron/blob/main/references/classification/benchmark_repvit_imagenette.py).
+the standard classification training CLI with `--benchmark`.
 Use the same backend, precision, and physical batch size for all four models.
-The default campaign trains all variants for 20 epochs:
+The [Bash campaign](https://github.com/frgfm/holocron/blob/main/references/classification/benchmark_repvit_imagenette.sh)
+only selects the four architectures; the training CLI owns the recipe:
 
 ```shell
-uv run --no-sync python -m references.classification.benchmark_repvit_imagenette \
+bash references/classification/benchmark_repvit_imagenette.sh \
   /path/to/imagenette2-320 /path/to/fresh-results --device mps
 ```
 
@@ -178,6 +179,9 @@ The campaign records selected and final validation metrics, parameter counts,
 convolution/linear MACs, synchronized fused inference timing, and memory readings.
 MPS reports sampled tensor and driver allocations rather than CUDA VRAM. A CUDA
 measurement cannot be inferred from a CPU or MPS run.
+The launcher uses a fresh process per model and writes a report beside each
+checkpoint. With a smaller physical batch, set gradient accumulation explicitly
+(for example, `--batch-size 8 --grad-acc 4`).
 
 ### Measured Apple Silicon comparison
 
@@ -211,6 +215,8 @@ MACs use a 224px image and exclude normalization and activations. MPS memory was
 sampled every 50 ms; it is not an exact peak or CUDA VRAM. The models ran serially
 in one process, and driver allocation includes allocator/graph caches. Process
 RSS in the raw report is a lifetime peak, not a fresh per-model peak.
+These rows come from the original single-process campaign. The current Bash
+launcher isolates each model in a fresh process; this table has not been rerun.
 
 Under this single-seed, short recipe, MobileOne-S2 has the lowest MPS inference
 latency. RepViT-M1.1 has the highest fused validation top-1, about 1.45 points
