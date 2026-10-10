@@ -100,7 +100,7 @@ class UpPath(nn.Module):
         if self.padding > 0 and not self.bilinear_upsampling:
             delta_h = downfeats[0].shape[-2] - upfeat_.shape[-2]
             delta_w = downfeats[0].shape[-1] - upfeat_.shape[-1]
-            if torch.jit.is_tracing() or delta_h != 0 or delta_w != 0:
+            if torch.jit.is_tracing() or torch.compiler.is_compiling() or delta_h != 0 or delta_w != 0:
                 upfeat_ = F.pad(upfeat_, (delta_w // 2, delta_w - delta_w // 2, delta_h // 2, delta_h - delta_h // 2))
         # Crop contracting path features
         for idx, downfeat in enumerate(downfeats):
