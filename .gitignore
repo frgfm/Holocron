@@ -127,6 +127,7 @@ flagged/
 
 # Training
 checkpoints/
+/repvit-imagenette-mps.json
 
 # Docs
 docs/site
