@@ -423,7 +423,7 @@ def test_classification_trainer(tmpdir_factory):
         optimizer,
         output_file=file_path,
         gpu=0 if torch.cuda.is_available() else None,
-        amp=True,
+        amp=torch.cuda.is_available(),
     )
     # Top losses
     learner.plot_top_losses((0, 0, 0), (1, 1, 1), [str(idx) for idx in range(5)], block=False)
@@ -462,7 +462,10 @@ def test_binary_classification_trainer():
     optimizer = torch.optim.Adam(model.parameters())
     criterion = nn.BCEWithLogitsLoss()
 
-    learner = trainer.BinaryClassificationTrainer(model, train_loader, train_loader, criterion, optimizer, amp=True)
+    gpu = 0 if torch.cuda.is_available() else None
+    learner = trainer.BinaryClassificationTrainer(
+        model, train_loader, train_loader, criterion, optimizer, gpu=gpu, amp=gpu is not None
+    )
 
     res = learner.evaluate()
     assert 0 <= res["acc"] <= 1
@@ -505,7 +508,7 @@ def test_segmentation_trainer(tmpdir_factory):
         num_classes=5,
         output_file=file_path,
         gpu=0 if torch.cuda.is_available() else None,
-        amp=True,
+        amp=torch.cuda.is_available(),
     )
     _test_trainer(learner, num_it, "2.weight", None)
 
@@ -543,7 +546,7 @@ def test_detection_trainer(tmpdir_factory):
         optimizer,
         output_file=file_path,
         gpu=0 if torch.cuda.is_available() else None,
-        amp=True,
+        amp=torch.cuda.is_available(),
         gradient_clip=0.1,
     )
     _test_trainer(learner, num_it, "roi_heads.box_predictor.cls_score.weight", "backbone", 5e-4)

@@ -80,18 +80,19 @@ def test_up_path_does_not_mutate_dense_skips():
     assert all(actual is original for actual, original in zip(skips, originals, strict=True))
 
 
-def test_dynamic_unet_preserves_encoder_weights_and_stats():
+@pytest.mark.parametrize("shape", [(32, 48), (35, 39)])
+def test_dynamic_unet_preserves_encoder_weights_and_stats(shape):
     backbone = torch.nn.Sequential(
         torch.nn.Sequential(torch.nn.Conv2d(3, 4, 3, stride=2, padding=1), torch.nn.BatchNorm2d(4)),
         torch.nn.Conv2d(4, 8, 3, stride=2, padding=1),
     )
     encoder = IntermediateLayerGetter(backbone, {"0": "0", "1": "1"})
     original = {name: value.clone() for name, value in encoder.state_dict().items()}
-    model = DynamicUNet(encoder, num_classes=3, input_shape=(3, 35, 39), final_upsampling=True)
+    model = DynamicUNet(encoder, num_classes=3, input_shape=(3, *shape), final_upsampling=True)
     assert encoder.training
     assert all(torch.equal(value, original[name]) for name, value in encoder.state_dict().items())
-    output = model(torch.rand(2, 3, 35, 39))
-    assert output.shape == (2, 3, 35, 39)
+    output = model(torch.rand(2, 3, *shape))
+    assert output.shape == (2, 3, *shape)
     output.mean().backward()
 
 

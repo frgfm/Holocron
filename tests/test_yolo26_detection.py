@@ -95,6 +95,8 @@ def test_yolo26_nms_free_and_optional_nms():
     model.nms = True
     assert len(model.post_process(boxes, logits)[0]["boxes"]) == 1
     assert len(model.post_process(boxes + 2, logits)[0]["boxes"]) == 0
+    # Saturated scores must retain the class with the largest logit.
+    assert model.post_process(boxes[:, :1], logits.new_tensor([[[20, 30]]]))[0]["labels"].item() == 1
 
 
 def test_yolo26_detection_trainer_tuple_collation():
@@ -127,9 +129,15 @@ def test_yolo26_deployment_parity_and_serialization(nms, tmp_path):
         deployed = model.to_deploy()
         after = deployed(images)
         # Verify each feature point before top-k can reorder nearly tied scores.
-        raw_before = model._inference_head()(model.neck(model.backbone(images)))
+        features = model.neck(model.backbone(images))
+        raw_before = model._inference_head()(features)
         raw_after = deployed._inference_head()(deployed.neck(deployed.backbone(images)))
         torch.testing.assert_close(raw_before, raw_after, atol=1e-6, rtol=1e-5)
+        if not nms:
+            dynamic_shapes = (tuple({2: torch.export.Dim.DYNAMIC, 3: torch.export.Dim.DYNAMIC} for _ in features),)
+            exported = torch.export.export(model._inference_head(), (features,), dynamic_shapes=dynamic_shapes)
+            features = tuple(feature.transpose(-2, -1) for feature in features)
+            torch.testing.assert_close(exported.module()(features), model._inference_head()(features))
     assert not model.deployed
     assert deployed.deployed
     assert sum(parameter.numel() for parameter in deployed.parameters()) < sum(
