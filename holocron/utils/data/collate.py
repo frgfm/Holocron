@@ -20,10 +20,9 @@ class Mixup(torch.nn.Module):
     Example:
         ```python
         import torch
-        from torch.utils.data._utils.collate import default_collate
         from holocron.utils.data import Mixup
         mix = Mixup(num_classes=10, alpha=0.4)
-        loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=lambda b: mix(*default_collate(b)))
+        loader = torch.utils.data.DataLoader(dataset, batch_size, collate_fn=mix.collate)
         ```
 
     Args:

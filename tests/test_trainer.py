@@ -4,6 +4,7 @@ import warnings
 from argparse import Namespace
 from io import StringIO
 
+import matplotlib.pyplot as plt
 import pytest
 import torch
 from torch import nn
@@ -428,6 +429,24 @@ def test_classification_trainer(tmpdir_factory):
     # Top losses
     learner.plot_top_losses((0, 0, 0), (1, 1, 1), [str(idx) for idx in range(5)], block=False)
     _test_trainer(learner, num_it, "3.weight", None)
+
+
+def test_top_loss_confidence_matches_selected_samples(monkeypatch):
+    logits = torch.zeros(16, 3)
+    logits[:, 1] = torch.arange(16)
+    loader = DataLoader(TensorDataset(logits.view(16, 3, 1, 1), torch.zeros(16, dtype=torch.long)), batch_size=16)
+    model = nn.Sequential(nn.Flatten(), nn.Linear(3, 3, bias=False))
+    with torch.no_grad():
+        model[1].weight.copy_(torch.eye(3))
+    learner = trainer.ClassificationTrainer(
+        model, loader, loader, nn.CrossEntropyLoss(), torch.optim.SGD(model.parameters(), lr=0.01)
+    )
+    monkeypatch.setattr(plt, "show", lambda **_kwargs: None)
+    learner.plot_top_losses((0, 0, 0), (1, 1, 1), ["A", "B", "C"], num_samples=8)
+    figure = plt.gcf()
+    expected = logits.softmax(1).max(1).values[-8:].flip(0)
+    assert all(f"({prob:.1%})" in axis.get_title() for prob, axis in zip(expected, figure.axes, strict=True))
+    plt.close(figure)
 
 
 def test_classification_trainer_few_classes():

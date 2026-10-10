@@ -134,7 +134,7 @@ class ClassificationTrainer(Trainer):
                 added_idcs = [idx - num_samples for idx in idcs if idx >= num_samples]
                 # Update
                 losses = np.concatenate((losses[kept_idcs], batch_loss.cpu().numpy()[added_idcs]))
-                probs = np.concatenate((probs[kept_idcs], probs_.float().cpu().numpy()))
+                probs = np.concatenate((probs[kept_idcs], probs_.float().cpu().numpy()[added_idcs]))
                 if not self.is_binary:
                     preds = np.concatenate((preds[kept_idcs], logits[added_idcs].argmax(dim=1).cpu().numpy()))
                 targets = np.concatenate((targets[kept_idcs], target[added_idcs].cpu().numpy()))  # ty: ignore[invalid-argument-type]
