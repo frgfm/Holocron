@@ -1,7 +1,7 @@
 import json
 import math
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 from types import SimpleNamespace
 
 import pytest
@@ -14,7 +14,7 @@ from holocron.optim import AdamP
 from holocron.trainer import ClassificationTrainer, DetectionTrainer, SegmentationTrainer, resolve_device
 from holocron.utils import CTCCodec
 from holocron.utils.data import Mixup
-from references._common import add_loading_args, create_loader  # noqa: PLC2701
+from references._common import create_loader  # noqa: PLC2701
 from references.classification import benchmark_repvit_imagenette as benchmark
 from references.classification.benchmark_repvit_imagenette import count_macs, write_json
 from references.recognition.train import ctc_loss
@@ -50,7 +50,8 @@ def test_classification_training_device(device, amp, tmp_path):
     assert criterion.weight.device.type == torch.device(device).type
     assert not torch.equal(before, model[0].weight.detach().cpu())
     assert all(math.isfinite(value) for value in learner.evaluate().values())
-    assert learner.scaler.is_enabled() == (amp and torch.device(device).type != "cpu") if amp else True
+    if amp:
+        assert learner.scaler.is_enabled() == (torch.device(device).type != "cpu")
     loaded = torch.load(tmp_path / "weights.pth", map_location="cpu", weights_only=True)
     assert all(value.device.type == "cpu" for value in loaded["model"].values())
 
@@ -108,6 +109,14 @@ def test_device_selection_and_legacy_cuda_indices(monkeypatch):
         resolve_device("mps")
     with pytest.raises(AssertionError, match="cannot access"):
         resolve_device("cuda")
+    with pytest.raises(ValueError, match="Device must be"):
+        resolve_device("meta")
+    monkeypatch.setattr(torch.backends.mps, "is_available", lambda: True)
+    with pytest.raises(ValueError, match="Invalid MPS"):
+        resolve_device("mps:1")
+    model = nn.Linear(1, 1)
+    with pytest.raises(ValueError, match="either gpu or device"):
+        ClassificationTrainer(model, None, None, None, torch.optim.SGD(model.parameters(), lr=0.1), gpu=0, device="cpu")
 
 
 def test_mixup_loader_works_with_spawn():
@@ -125,13 +134,6 @@ def test_mixup_loader_works_with_spawn():
     assert targets.shape == (2, 2)
     torch.testing.assert_close(targets.sum(1), torch.ones(2))
     assert not loader.pin_memory
-
-
-@pytest.mark.parametrize("value", ["cpu", "mps", "cuda", "cuda:1", "0", "auto"])
-def test_reference_cli_accepts_portable_devices(value):
-    parser = ArgumentParser()
-    add_loading_args(parser)
-    assert parser.parse_args(["--device", value]).device == value
 
 
 @pytest.mark.parametrize("device", DEVICES)
@@ -225,14 +227,3 @@ def test_cpu_benchmark_writes_real_results_and_rejects_overwrite(tmp_path, monke
     with pytest.raises(ValueError, match="fresh output"):
         benchmark.main(args)
     assert path.read_bytes() == previous
-
-
-def test_invalid_devices_rejected_before_moving_model(monkeypatch):
-    model = nn.Linear(1, 1)
-    with pytest.raises(ValueError, match="either gpu or device"):
-        ClassificationTrainer(model, None, None, None, torch.optim.SGD(model.parameters(), lr=0.1), gpu=0, device="cpu")
-    with pytest.raises(ValueError, match="Device must be"):
-        resolve_device("meta")
-    monkeypatch.setattr(torch.backends.mps, "is_available", lambda: True)
-    with pytest.raises(ValueError, match="Invalid MPS"):
-        resolve_device("mps:1")

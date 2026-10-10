@@ -68,8 +68,6 @@ def main(args):
     if args.output_dir.is_dir() and any(args.output_dir.iterdir()):
         raise ValueError("Use a fresh output directory to preserve previous results")
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    if (args.output_dir / "results.json").exists():
-        raise ValueError("Use a fresh output directory to preserve previous results")
     if not (args.data_path / "train").is_dir() or not (args.data_path / "val").is_dir():
         raise ValueError("Expected Imagenette train and val directories")
     torch.set_num_threads(args.threads)
@@ -141,29 +139,20 @@ def main(args):
         sampler = threading.Thread(target=sample_memory, daemon=True)
         synchronize(device)
         sampler.start()
-        options = [
-            str(args.data_path),
-            "--arch",
-            arch,
-            "--device",
-            str(device),
-            "--epochs",
-            str(args.epochs),
-            "--seed",
-            str(args.seed),
-            "--batch-size",
-            str(args.batch_size),
-            "--grad-acc",
-            str(32 // args.batch_size),
-            "--workers",
-            str(args.workers),
-            "--output-file",
-            str(checkpoint),
-        ]
-        if args.amp:
-            options.append("--amp")
+        options = get_parser().parse_args([str(args.data_path)])
+        vars(options).update(
+            arch=arch,
+            device=str(device),
+            epochs=args.epochs,
+            seed=args.seed,
+            batch_size=args.batch_size,
+            grad_acc=32 // args.batch_size,
+            workers=args.workers,
+            output_file=str(checkpoint),
+            amp=args.amp,
+        )
         try:
-            learner = train(get_parser().parse_args(options), on_epoch_end=record)
+            learner = train(options, on_epoch_end=record)
             synchronize(device)
             elapsed = time.perf_counter() - start
         finally:
