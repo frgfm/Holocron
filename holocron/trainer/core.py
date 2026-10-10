@@ -83,7 +83,6 @@ class Trainer:
         self.epoch = 0
         self._grad_count = 0
         self.min_loss = math.inf
-        self.gpu = gpu
         self._params: tuple[ParamSeq, ParamSeq] = ([], [])
         self.lr_recorder: list[float] = []
         self.loss_recorder: list[float] = []

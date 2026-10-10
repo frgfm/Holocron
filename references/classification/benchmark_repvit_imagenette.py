@@ -199,7 +199,7 @@ def main(args):
         learner.model = fused
         result["deployment_metrics"] = learner.evaluate()
         image = torch.randn(1, 3, 224, 224, device=device)
-        with torch.inference_mode(), torch.autocast(device.type, enabled=args.amp):
+        with torch.inference_mode(), torch.amp.autocast(device.type, enabled=args.amp):
             result["deployment_latency"], _ = measure(
                 lambda model=fused, image=image: model(image), 1, 100, 20, sync=lambda: synchronize(device)
             )

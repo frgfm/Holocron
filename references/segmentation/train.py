@@ -233,7 +233,7 @@ def main(args):
     if args.show_preds:
         x, target = next(iter(train_loader))
         with torch.no_grad():
-            x, target = trainer.to_cuda(x, target)
+            x, target = trainer.to_device(x, target)
             trainer.model.eval()
             _, preds = trainer._get_loss(x, target, return_logits=True)
         plot_predictions(x.cpu(), preds.cpu(), target.cpu(), ignore_index=255)

@@ -169,6 +169,8 @@ def main(args):
         torch.set_rng_state(last["rng"])
         if str(args.device).startswith("cuda"):
             torch.cuda.set_rng_state_all(last["cuda_rng"])
+        elif args.device == "mps" and last.get("mps_rng") is not None:
+            torch.mps.set_rng_state(last["mps_rng"])
         start, best, history = last["epoch"], last["best_cer"], last["history"]
         initialized_from = last["initialized_from"]
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -240,6 +242,7 @@ def main(args):
             "scheduler": scheduler.state_dict(),
             "rng": torch.get_rng_state(),
             "cuda_rng": torch.cuda.get_rng_state_all() if str(args.device).startswith("cuda") else [],
+            "mps_rng": torch.mps.get_rng_state() if args.device == "mps" else None,
             "history": history,
         }
         torch.save(checkpoint, args.output_dir / "last.pth")

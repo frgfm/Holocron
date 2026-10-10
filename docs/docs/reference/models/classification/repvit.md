@@ -222,6 +222,7 @@ Imagenette/MPS measurements, not ImageNet paper reproduction or CUDA results.
 The [raw report](https://github.com/frgfm/holocron/blob/main/references/classification/results/repvit-imagenette-mps.json)
 records the recipe, dataset archive hash, selected/final/deployment metrics,
 learning curves, checkpoint hashes, counts, timing, memory, and validation limits.
+Its source revision identifies the training run, not subsequent report or test edits.
 Checkpoints remain local and are not published with this comparison.
 
 These parameter counts use Imagenette's 10 classes. The paper's counts use
