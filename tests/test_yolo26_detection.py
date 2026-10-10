@@ -134,9 +134,10 @@ def test_yolo26_deployment_parity_and_serialization(nms, tmp_path):
         raw_after = deployed._inference_head()(deployed.neck(deployed.backbone(images)))
         torch.testing.assert_close(raw_before, raw_after, atol=1e-6, rtol=1e-5)
         if not nms:
-            traced = torch.jit.trace(model._inference_head(), (features,))
+            dynamic_shapes = (tuple({2: torch.export.Dim.DYNAMIC, 3: torch.export.Dim.DYNAMIC} for _ in features),)
+            exported = torch.export.export(model._inference_head(), (features,), dynamic_shapes=dynamic_shapes)
             features = tuple(feature.transpose(-2, -1) for feature in features)
-            torch.testing.assert_close(traced(features), model._inference_head()(features))
+            torch.testing.assert_close(exported.module()(features), model._inference_head()(features))
     assert not model.deployed
     assert deployed.deployed
     assert sum(parameter.numel() for parameter in deployed.parameters()) < sum(
