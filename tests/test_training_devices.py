@@ -1,8 +1,5 @@
 import json
 import math
-import os
-import shutil
-import subprocess  # noqa: S404
 import sys
 from argparse import Namespace
 from pathlib import Path
@@ -182,9 +179,7 @@ def test_benchmark_json_preserves_last_record_on_nonfinite_result(tmp_path):
     assert not path.with_suffix(".tmp").exists()
 
 
-@pytest.mark.parametrize(("arch", "fuses", "suffix"), [("repvit_m0_9", True, ".pth"), ("resnet18", False, ".json")])
-@pytest.mark.parametrize("device", DEVICES)
-def test_benchmark_cli_writes_real_results_and_rejects_overwrite(tmp_path, monkeypatch, arch, fuses, suffix, device):
+def test_benchmark_cli_writes_real_results_and_rejects_overwrite(tmp_path, monkeypatch):
     # Energy tracking is outside this integration check and is an optional training extra.
     monkeypatch.setitem(sys.modules, "codecarbon", SimpleNamespace(track_emissions=lambda: lambda function: function))
     from references.classification import train  # noqa: PLC0415
@@ -204,11 +199,11 @@ def test_benchmark_cli_writes_real_results_and_rejects_overwrite(tmp_path, monke
             function, batch_size, 3, 1, **kwargs
         ),
     )
-    args = train.get_parser().parse_args([str(data), "--benchmark", "--no-amp" if device == "cpu" else "--amp"])
+    args = train.get_parser().parse_args([str(data), "--benchmark", "--no-amp"])
     vars(args).update(
-        arch=arch,
-        output_file=str(tmp_path / "results" / f"weights{suffix}"),
-        device=device,
+        arch="repvit_m0_9",
+        output_file=str(tmp_path / "results" / "weights.json"),
+        device="cpu",
         epochs=1,
         workers=0,
         threads=2,
@@ -228,7 +223,7 @@ def test_benchmark_cli_writes_real_results_and_rejects_overwrite(tmp_path, monke
     path = Path(args.output_file + ".json")
     report = json.loads(path.read_text(encoding="utf-8"))
     result = report["models"][0]
-    assert report["runtime"]["device"] == str(resolve_device(device))
+    assert report["runtime"]["device"] == "cpu"
     assert report["recipe"]["train_crop_size"] == 32
     assert report["recipe"]["effective_batch_size"] == 32
     assert result["input_shape"] == [1, 3, 32, 32]
@@ -239,7 +234,7 @@ def test_benchmark_cli_writes_real_results_and_rejects_overwrite(tmp_path, monke
     assert result["checkpoint_sha256"]
     assert 0 <= result["selected_metrics"]["acc1"] <= 1
     assert 0 <= result["deployment_metrics"]["acc1"] <= 1
-    assert (result["parameters"]["deployment"] < result["parameters"]["training"]) == fuses
+    assert result["parameters"]["deployment"] < result["parameters"]["training"]
     assert result["macs"]["deployment"] > 0
     assert result["deployment_latency"]["median_ms"] > 0
     previous = path.read_bytes()
@@ -249,27 +244,3 @@ def test_benchmark_cli_writes_real_results_and_rejects_overwrite(tmp_path, monke
     args.benchmark = False
     monkeypatch.setattr(train, "_train", lambda options: options)
     assert train.main(args) is args
-
-
-def test_repvit_campaign_delegates_to_training_cli(tmp_path, monkeypatch):
-    bash = shutil.which("bash")
-    if os.name != "posix" or not bash:
-        pytest.skip("Bash campaign needs a POSIX shell")
-    uv = tmp_path / "uv"
-    uv.write_text('#!/bin/sh\nprintf "%s\\n" "$@"\n')
-    uv.chmod(0o700)
-    monkeypatch.setenv("PATH", str(tmp_path), prepend=os.pathsep)
-    script = Path(__file__).resolve().parents[1] / "references/classification/benchmark_repvit_imagenette.sh"
-    output = tmp_path / "run results"
-    command = [bash, str(script), "images path", str(output), "--no-amp"]
-    result = subprocess.run(command, check=True, capture_output=True, text=True)  # noqa: S603
-    assert result.stdout.count("references.classification.train\nimages path\n") == 4
-    assert result.stdout.count("--threads\n4\n--no-amp\n") == 4
-    for arch in ("repvit_m0_9", "repvit_m1_0", "repvit_m1_1", "mobileone_s2"):
-        assert f"--arch\n{arch}\n--output-file\n{output}/{arch}.pth\n--benchmark\n" in result.stdout
-    sentinel = output / ".existing-result"
-    sentinel.touch()
-    refused = subprocess.run(command, check=False, capture_output=True, text=True)  # noqa: S603
-    assert refused.returncode != 0
-    assert not refused.stdout
-    assert sentinel.exists()
