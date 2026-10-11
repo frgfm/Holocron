@@ -30,48 +30,36 @@ Some detection and segmentation factories load pretrained backbones by default.
 
 ## Local inference measurements
 
-Run every public model factory plus `CharacterClassifier` and `CTCRecognizer` locally:
+Benchmark every public model factory plus `CharacterClassifier` and `CTCRecognizer`:
 
 ```bash
 UV_TORCH_BACKEND=cpu uv sync --locked --extra scripts
 uv run --no-sync python scripts/eval_latency.py all --output /tmp/holocron-inference.json
 ```
 
-Use `--list-models` to inspect coverage, or replace `all` with one model name.
-The existing Make target accepts `LATENCY_ARCH=all` and
-`LATENCY_ARGS="--output /tmp/holocron-inference.json"`.
-For a quick coverage smoke run, add `--it 1 --warmup 0 --repeat 1`; use the default
-100 iterations, 10 warmups and five fresh processes for measurements.
-The full suite runs sequentially and can take substantial time for larger models.
+Replace `all` with a model name, or use `--list-models` to inspect coverage.
+The Make target accepts `LATENCY_ARCH=all` and `LATENCY_ARGS="--output /tmp/holocron-inference.json"`.
+Defaults are 100 iterations, 10 warmups and five fresh processes per model, run
+sequentially. Add `--it 1 --warmup 0 --repeat 1` for a coverage smoke run.
 
-Models run in FP32 evaluation mode under `torch.inference_mode()`, with seeded
-random weights and inputs, without downloading pretrained backbones. RepVGG,
-MobileOne and RepViT are reparametrized before inference, as in the existing
-classification benchmark. Other models use their ordinary evaluation forwards,
-including detection postprocessing. Recognition decoding and image preprocessing
-are outside the measured call. This is a synthetic performance check, not an
-accuracy evaluation or a measurement with production images and trained weights.
+Models use FP32 evaluation forwards under `torch.inference_mode()`, with seeded
+random weights/inputs and no backbone downloads. RepVGG, MobileOne and RepViT are
+reparametrized; other models use ordinary evaluation forwards, including detection
+postprocessing. Preprocessing and recognition decoding are excluded.
 
-Default inputs are `(batch, 3, 224, 224)`, except YOLOv1 uses 448 pixels and
-recognition uses grayscale `(batch, 1, 32, 128)` with full-width lengths. `--size`
-overrides the image side or recognition width; YOLOv1 requires 448, so omit this
-override for the full suite. `--num-classes` overrides each architecture's default
-(recognition defaults to 83 characters). Batch size, device, seed, thread count
-and iteration counts are configurable; CPU intra-op threads default to one and
-inter-op threads stay at one. Existing single-classification ONNX measurements
-remain available through `--backend onnx`.
+Inputs default to `(batch, 3, 224, 224)`, except YOLOv1 requires 448 pixels and
+recognition uses `(batch, 1, 32, 128)` with full-width lengths and 83 characters.
+`--size` overrides the image side or recognition width; omit it for the full suite.
+Use `--help` for class, batch, device, seed and thread settings (CPU threads default
+to one). Single-classification ONNX measurements use `--backend onnx`.
 
-Each JSON record includes the UTC start time, Git revision and tracked dirty
-state, CPU model/architecture/count/affinity, OS and runtime versions, tested
-forward and source path, input shapes, dtype and settings. Raw repeats accompany
-first-call, median and p95 latency, throughput, and peak RSS in MiB. Timings exclude
-setup and device transfer; peak RSS covers the worker lifetime through inference,
-including imports and model construction, and is unavailable on Windows.
-Each repeat gets a new process so another model's memory peak cannot carry over.
-The suite saves completed models as it goes and marks the report `complete` only
-after every expected model succeeds; errors stop the run with a nonzero exit.
-Compare records on the same hardware, OS, runtime versions and input settings;
-these records describe the environment and do not remove measurement noise.
+JSON records contain UTC time, Git revision/dirty state, CPU hardware/affinity,
+OS/runtime versions, tested forward/source path, input settings, latency, throughput
+and peak RSS in MiB, with raw repeats. Latency excludes setup and transfer; RSS
+includes imports and model construction and is unavailable on Windows. Fresh
+processes isolate memory peaks. Progress is saved with `complete: false` until
+every model succeeds; errors exit nonzero. These are synthetic performance checks;
+compare runs on the same hardware, OS, runtime versions and input settings.
 
 ## Support status
 

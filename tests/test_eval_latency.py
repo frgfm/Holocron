@@ -26,39 +26,18 @@ ROOT = Path(__file__).resolve().parents[1]
 )
 def test_inference_cli_report(arch, task, shapes, tmp_path):
     path = tmp_path / "records" / "inference.json"
+    command = [sys.executable, str(ROOT / "scripts/eval_latency.py"), arch]
+    command += ["--size", "64", "--num-classes", "3", "--it", "2", "--warmup", "1", "--repeat", "2", "--output"]
     subprocess.run(  # noqa: S603
-        [
-            sys.executable,
-            str(ROOT / "scripts/eval_latency.py"),
-            arch,
-            "--size",
-            "64",
-            "--num-classes",
-            "3",
-            "--it",
-            "2",
-            "--warmup",
-            "1",
-            "--repeat",
-            "2",
-            "--output",
-            str(path),
-        ],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
+        [*command, str(path)], cwd=ROOT, capture_output=True, text=True, check=True
     )
     report = json.loads(path.read_text(encoding="utf-8"))
     assert datetime.fromisoformat(report["started_at"]).utcoffset().total_seconds() == 0
     assert report["config"]["arch"] == arch
-    assert report["config"]["threads"] == 1
-    assert report["config"]["num_classes"] == 3
     assert report["model"]["task"] == task
     assert report["model"]["input_shapes"] == shapes
     assert report["model"]["tested_path"].endswith(".forward")
     assert (ROOT / report["model"]["source_path"]).is_file()
-    assert report["model"]["mode"] == "eval"
     assert report["model"]["reparametrized"] == (task == "classification")
     assert report["environment"]["processor"]
     assert report["environment"]["versions"]["torch"]

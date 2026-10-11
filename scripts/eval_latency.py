@@ -134,11 +134,8 @@ def check_finite(output):
     if isinstance(output, torch.Tensor):
         if not torch.isfinite(output).all():
             raise ValueError("Model output contains non-finite values")
-    elif isinstance(output, dict):
-        for value in output.values():
-            check_finite(value)
     else:
-        for value in output:
+        for value in output.values() if isinstance(output, dict) else output:
             check_finite(value)
 
 
