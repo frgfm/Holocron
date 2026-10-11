@@ -47,7 +47,7 @@ def measure(fn, batch_size, num_it, warmup_it, sync=lambda: None):
     # Measure the first call before any warm-up.
     sync()
     start = time.perf_counter()
-    output = fn()
+    fn()
     sync()
     first_ms = 1000 * (time.perf_counter() - start)
 
@@ -64,8 +64,9 @@ def measure(fn, batch_size, num_it, warmup_it, sync=lambda: None):
 
     # A separate loop measures sustained throughput, without a wait after each call.
     start = time.perf_counter()
-    for _ in range(num_it):
+    for _ in range(num_it - 1):
         fn()
+    output = fn()
     sync()
     elapsed = time.perf_counter() - start
 
@@ -94,6 +95,7 @@ def prepare_model(args):
     torch.set_num_threads(args.threads)
     torch.set_num_interop_threads(1)
     torch.manual_seed(args.seed)
+    input_generator = torch.Generator().manual_seed(args.seed)
     from holocron import models
 
     if args.arch in RECOGNITION_MODELS:
@@ -101,7 +103,7 @@ def prepare_model(args):
             raise ValueError("Recognition models have no built-in pretrained weights")
         task = "recognition"
         model = getattr(models.recognition, args.arch)(num_classes=args.num_classes or 83).eval()
-        image = torch.rand((args.batch_size, 1, 32, args.size))
+        image = torch.rand((args.batch_size, 1, 32, args.size), generator=input_generator)
         inputs = (image, torch.full((args.batch_size,), args.size // 4, dtype=torch.long))
     else:
         task = models.get_model_info(args.arch).task
@@ -112,7 +114,7 @@ def prepare_model(args):
         if args.num_classes is not None:
             kwargs["num_classes"] = args.num_classes
         model = models.get_model(args.arch, **kwargs).eval()
-        inputs = (torch.rand((args.batch_size, 3, args.size, args.size)),)
+        inputs = (torch.rand((args.batch_size, 3, args.size, args.size), generator=input_generator),)
     if hasattr(model, "reparametrize"):
         model.reparametrize()
     root = Path(models.__file__).resolve().parents[2]
@@ -167,7 +169,10 @@ def evaluate(args):
         if device.type not in {"cpu", "cuda", "mps"}:
             raise ValueError("Use a CPU, CUDA, or MPS device")
         model = model.to(device)
-        inputs = tuple(value.to(device) for value in inputs)
+        if args.arch == "CTCRecognizer":
+            inputs = (inputs[0].to(device), inputs[1])  # Packed recurrence requires CPU lengths.
+        else:
+            inputs = tuple(value.to(device) for value in inputs)
         if device.type == "cuda":
             torch.cuda.reset_peak_memory_stats(device)
         with torch.inference_mode():
@@ -367,7 +372,10 @@ def main(args):
 
 def save_report(path, report):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    with tempfile.TemporaryDirectory(dir=path.parent) as directory:
+        temporary = Path(directory) / path.name
+        temporary.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+        temporary.replace(path)
 
 
 def positive_int(value):
