@@ -111,7 +111,7 @@ class DetectionTrainer(Trainer):
         correct, clf_error, loc_fn, loc_fp, num_samples = 0, 0, 0, 0, 0
 
         for x, target in self.val_loader:
-            x, target = self.to_device(x, target)
+            x, target = self.to_cuda(x, target)
 
             if self.amp:
                 with torch.amp.autocast(self.device.type):

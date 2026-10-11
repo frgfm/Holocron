@@ -55,6 +55,23 @@ def test_reference_tracking_reports_training_status(monkeypatch, failure):
     assert learner.on_epoch_end == recorded.append
 
 
+def test_legacy_trainer_device_hooks():
+    class _LegacyTrainer(trainer.Trainer):
+        def set_device(self, gpu=None):
+            assert self.gpu == gpu
+            super().set_device(gpu)
+
+        def to_cuda(self, x, target):
+            return super().to_cuda(x, torch.as_tensor(target))
+
+    model = nn.Linear(1, 1)
+    loader = [(torch.ones(1, 1), [[0.0]])]
+    learner = _LegacyTrainer(model, loader, loader, nn.MSELoss(), torch.optim.SGD(model.parameters(), lr=0.1))
+    learner._reset_scheduler(0.1, 1, "cosine")
+    learner._fit_epoch()
+    assert learner.step == 1
+
+
 class MockClassificationDataset(Dataset):
     """Mock dataset generating a random sample and a fixed zero target"""
 

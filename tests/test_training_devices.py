@@ -101,6 +101,9 @@ def test_device_selection_and_legacy_cuda_indices(monkeypatch):
         resolve_device(2)
     with pytest.raises(ValueError, match="Invalid device index"):
         resolve_device(-1)
+    for invalid in ("-1", "cuda:-1", ""):
+        with pytest.raises(ValueError):
+            resolve_device(invalid)
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
     monkeypatch.setattr(torch.backends.mps, "is_available", lambda: True)
     assert resolve_device("auto") == torch.device("mps")

@@ -83,10 +83,14 @@ class Trainer:
         self.epoch = 0
         self._grad_count = 0
         self.min_loss = math.inf
+        self.gpu = gpu
         self._params: tuple[ParamSeq, ParamSeq] = ([], [])
         self.lr_recorder: list[float] = []
         self.loss_recorder: list[float] = []
-        self.set_device(gpu, device=device)
+        if device is None:
+            self.set_device(gpu)
+        else:
+            self.set_device(gpu, device=device)
         self._reset_opt(self.optimizer.defaults["lr"])
 
     def set_device(self, gpu: int | None = None, *, device: str | torch.device | None = None) -> None:
@@ -151,7 +155,7 @@ class Trainer:
 
         pb = tqdm(self.train_loader, desc="Training", leave=False)
         for x, target in pb:
-            x, target = self.to_device(x, target)
+            x, target = self.to_cuda(x, target)
 
             # Forward
             batch_loss: Tensor = self._get_loss(x, target)  # type: ignore[assignment]
@@ -395,7 +399,7 @@ class Trainer:
                         x, target = next(batch_iter)
                     except StopIteration as exc:
                         raise RuntimeError("LR finder ran out of batches while recovering from AMP overflow") from exc
-                    x, target = self.to_device(x, target)
+                    x, target = self.to_cuda(x, target)
 
                     # Forward
                     batch_loss: Tensor = self._get_loss(x, target)  # type: ignore[assignment]
@@ -468,7 +472,7 @@ class Trainer:
         self._reset_opt(lr, norm_weight_decay)
 
         x, target = next(iter(self.train_loader))
-        x, target = self.to_device(x, target)
+        x, target = self.to_cuda(x, target)
 
         losses = []
 

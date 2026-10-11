@@ -66,7 +66,7 @@ Training uses AdamW, cosine learning-rate decay, gradient clipping, and greedy C
 
 `history.json` records losses, validation CER, exact matches, timing, arguments, font checksums, initialization provenance, and runtime versions. `best.pth` is selected by a fixed, degraded validation set drawn only from training families, using the training seed plus 100000; `last.pth` additionally supports exact continuation. Evaluation uses an independent seed, records runtime versions, checkpoint and font hashes, and reports clean/degraded results separately for seen/unseen families. CER and WER are micro-averaged edit distance divided by the total reference characters/words; exact match counts entirely correct strings. Page CER includes newlines, so missing lines affect transcript scoring.
 
-To resume an interrupted run, repeat its configuration and add `--resume checkpoints/ocr/transfer/last.pth`. Keep the total epoch count unchanged. Optimizer, scheduler, training history, and PyTorch RNG are restored; changed training settings or font checksums are rejected. To deliberately start another training phase with a different budget or line length, use `--init` instead.
+To resume an interrupted run, repeat its configuration and add `--resume checkpoints/ocr/transfer/last.pth`. Keep the total epoch count unchanged. Optimizer, scheduler, training history, and PyTorch RNG are restored; changed training settings or font checksums are rejected. Switching backends is supported, but does not promise identical RNG streams or results. To deliberately start another training phase with a different budget or line length, use `--init` instead.
 
 ## Longer-line curriculum and normalization
 

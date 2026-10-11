@@ -73,7 +73,7 @@ class SegmentationTrainer(Trainer):
         val_loss, num_valid_samples = 0.0, 0
         conf_mat = torch.zeros((self.num_classes, self.num_classes), dtype=torch.int64, device=self.device)
         for x, target in self.val_loader:
-            x, target = self.to_device(x, target)
+            x, target = self.to_cuda(x, target)
 
             loss, out = self._get_loss(x, target, return_logits=True)  # ty: ignore[invalid-argument-type]
             labeled = int((target != getattr(self.criterion, "ignore_index", 255)).flatten(1).any(1).sum())

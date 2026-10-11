@@ -49,7 +49,7 @@ class ClassificationTrainer(Trainer):
 
         val_loss, top1, top5, num_samples, num_valid_batches = 0.0, 0, 0, 0, 0
         for x, target in self.val_loader:
-            x, target = self.to_device(x, target)
+            x, target = self.to_cuda(x, target)
 
             loss, out = self._get_loss(x, target, return_logits=True)  # ty: ignore[invalid-argument-type]
 
@@ -116,7 +116,7 @@ class ClassificationTrainer(Trainer):
         train_iter = iter(self.train_loader)
 
         for x, target in tqdm(train_iter):
-            x, target = self.to_device(x, target)
+            x, target = self.to_cuda(x, target)
 
             # Forward
             batch_loss, logits = self._get_loss(x, target, return_logits=True)  # ty: ignore[invalid-argument-type]
@@ -224,7 +224,7 @@ class BinaryClassificationTrainer(ClassificationTrainer):
 
         val_loss, top1, num_samples, num_valid_batches = 0.0, 0.0, 0, 0
         for x, target in self.val_loader:
-            x, target = self.to_device(x, target)
+            x, target = self.to_cuda(x, target)
 
             loss, out = self._get_loss(x, target, return_logits=True)  # ty: ignore[invalid-argument-type]
 

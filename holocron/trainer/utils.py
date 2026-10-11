@@ -29,8 +29,11 @@ def resolve_device(device: int | str | torch.device | None = None) -> torch.devi
     if isinstance(device, int) or (isinstance(device, str) and device.isdecimal()):
         if int(device) < 0:
             raise ValueError("Invalid device index")
-        device = f"cuda:{device}"
-    device = torch.device("cpu" if device is None else device)
+        device = f"cuda:{int(device)}"
+    try:
+        device = torch.device("cpu" if device is None else device)
+    except RuntimeError as error:
+        raise ValueError(str(error)) from error
     if device.type == "cuda":
         if not torch.cuda.is_available():
             raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
