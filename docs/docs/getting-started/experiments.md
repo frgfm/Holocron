@@ -54,7 +54,7 @@ device, autocast dtype and CUDA-only pinned memory are recorded. MPS tensors sta
 | File | Contents |
 | --- | --- |
 | `config.json` | Resolved inputs and absolute data/initialization paths |
-| `provenance.json` | Git revision/dirty state, package/runtime versions, data/init hashes, actual preprocessing, optimizer/scheduler, threads/device |
+| `provenance.json` | Git revision/dirty state before trial creation, package/runtime versions, data/init hashes, actual preprocessing, optimizer/scheduler, threads/device |
 | `data.json` | Class mapping and ordered membership: relative path, class index, file SHA-256 |
 | `progress.jsonl` | Append-only epoch events; empty until the first reported epoch, no intra-epoch heartbeat |
 | `result.json` | Atomic status, UTC start/finish timestamps, elapsed seconds, final metrics, selected checkpoint, traceback/exit code |

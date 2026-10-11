@@ -2,6 +2,7 @@ import copy
 import gc
 import json
 import shutil
+import subprocess  # noqa: S404
 import weakref
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from PIL import Image
 from torch import nn
 from torchvision.datasets import ImageFolder
 
-from holocron.experiments import imagefolder_manifest, sha256
+from holocron.experiments import Trial, imagefolder_manifest, sha256
 from holocron.trainer import ClassificationTrainer
 from references.classification import experiment
 
@@ -283,3 +284,35 @@ def test_content_changes_data_identity(configuration):
     before = imagefolder_manifest(splits)
     Image.new("RGB", (20, 20), (255, 0, 0)).save(path.parent / "train/a/0.png")
     assert imagefolder_manifest(splits)["splits"]["train"]["sha256"] != before["splits"]["train"]["sha256"]
+
+
+@pytest.mark.parametrize("dirty", [False, True])
+def test_source_identity_precedes_trial_artifacts(tmp_path, monkeypatch, dirty):
+    git = shutil.which("git")
+    assert git is not None
+    subprocess.run([git, "init", "--quiet", str(tmp_path)], check=True)  # noqa: S603
+    subprocess.run(  # noqa: S603
+        [
+            git,
+            "-c",
+            "user.name=Test",
+            "-c",
+            "user.email=test@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "--quiet",
+            "--allow-empty",
+            "-m",
+            "test",
+        ],
+        cwd=tmp_path,
+        check=True,
+    )
+    if dirty:
+        (tmp_path / "owner.py").write_text("uncommitted work", encoding="utf-8")
+    monkeypatch.setattr("holocron.experiments.__file__", str(tmp_path / "holocron" / "experiments.py"))
+    Trial(tmp_path / "unignored-trial", {"schema_version": 1})
+    source = json.loads((tmp_path / "unignored-trial/provenance.json").read_text())["source"]
+    assert source["dirty"] is dirty
+    assert len(source["revision"]) == 40

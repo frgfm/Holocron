@@ -78,6 +78,8 @@ class Trial:
     """
 
     def __init__(self, directory: Path, configuration: dict[str, Any]) -> None:
+        self.provenance: dict[str, Any] = {"schema_version": 1}
+        self._record_environment()
         directory.mkdir(parents=True, exist_ok=False)
         self.directory = directory.resolve()
         self.started = time.monotonic()
@@ -93,7 +95,6 @@ class Trial:
             "exit_code": None,
             "error": None,
         }
-        self.provenance: dict[str, Any] = {"schema_version": 1}
         write_json(self.directory / "config.json", configuration)
         write_json(self.directory / "provenance.json", self.provenance)
         (self.directory / "progress.jsonl").touch()
@@ -125,8 +126,8 @@ class Trial:
         write_json(self.directory / "provenance.json", self.provenance)
         self._write_result()
 
-    def record_environment(self) -> None:
-        """Record the loaded source checkout and relevant installed package versions."""
+    def _record_environment(self) -> None:
+        """Capture source and package versions before creating trial artifacts."""
         root = Path(__file__).resolve().parents[1]
         source = {"root": str(root), "revision": None, "dirty": None}
         try:
@@ -148,7 +149,7 @@ class Trial:
                 packages[name] = version(name)
             except PackageNotFoundError:
                 packages[name] = None
-        self.record_provenance(
+        self.provenance.update(
             source=source, python=platform.python_version(), platform=platform.platform(), packages=packages
         )
 

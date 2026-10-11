@@ -165,7 +165,6 @@ def run_experiment(config_path, directory):
     args.arch, args.seed = config["model"]["name"], config["seed"]
     args.device = config["training_device"]
     with Trial(Path(directory), config) as trial:
-        trial.record_environment()
         random.seed(args.seed)
         np.random.seed(args.seed)  # noqa: NPY002
         torch.manual_seed(args.seed)
