@@ -238,6 +238,23 @@ model = get_model(info.name, pretrained=info.pretrained, checkpoint=checkpoints[
 
 Some detection and segmentation factories load pretrained backbones by default. `pretrained=False` disables full-model weights only. Pass `pretrained_backbone=False` to those factories to avoid backbone downloads.
 
+## Local inference measurements
+
+Benchmark every public model factory plus `CharacterClassifier` and `CTCRecognizer`:
+
+```bash
+UV_TORCH_BACKEND=cpu uv sync --locked --extra scripts
+uv run --no-sync python scripts/eval_latency.py all --output /tmp/holocron-inference.json
+```
+
+Replace `all` with a model name, or use `--list-models` to inspect coverage. The Make target accepts `LATENCY_ARCH=all` and `LATENCY_ARGS="--output /tmp/holocron-inference.json"`. Defaults are 100 iterations, 10 warmups and five fresh processes per model, run sequentially. Add `--it 1 --warmup 0 --repeat 1` for a coverage smoke run.
+
+Models use FP32 evaluation forwards under `torch.inference_mode()`, with seeded random weights/inputs and no backbone downloads. RepVGG, MobileOne and RepViT are reparametrized; other models use ordinary evaluation forwards, including detection postprocessing. Preprocessing and recognition decoding are excluded.
+
+Inputs default to `(batch, 3, 224, 224)`, except YOLOv1 requires 448 pixels and recognition uses `(batch, 1, 32, 128)` with full-width lengths and 83 characters. `--size` overrides the image side or recognition width; omit it for the full suite. Use `--help` for class, batch, device, seed and thread settings (CPU threads default to one). Single-classification ONNX measurements use `--backend onnx`.
+
+JSON records contain UTC time, Git revision/dirty state, CPU hardware/affinity, OS/runtime versions, tested forward/source path, input settings, latency, throughput and peak RSS in MiB, with raw repeats. Latency excludes setup and transfer; RSS includes imports and model construction and is unavailable on Windows. Fresh processes isolate memory peaks. Progress is saved with `complete: false` until every model succeeds; errors exit nonzero. These are synthetic performance checks; compare runs on the same hardware, OS, runtime versions and input settings.
+
 ## Support status
 
 | Task                                | Architectures                                                  | Published checkpoints                                                                    | Training                                                                                           | ONNX                                                          | Status                                                                                |
