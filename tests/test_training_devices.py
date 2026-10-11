@@ -198,7 +198,7 @@ def test_benchmark_cli_writes_real_results_and_rejects_overwrite(tmp_path, monke
         normalize = next(op for op in dataset.transform.transforms if isinstance(op, train.T.Compose))
         image = torch.arange(192, dtype=torch.float32).reshape(8, 8, 3).permute(2, 0, 1) / 255
         # Only deserialize the transform created by this test.
-        actual = pickle.loads(pickle.dumps(normalize))(image)  # noqa: S301
+        actual = pickle.loads(pickle.dumps(normalize))(image)  # noqa: S301 # nosec B301
         assert actual.is_contiguous()
         expected = train.T.Normalize(train.IMAGENETTE.mean, train.IMAGENETTE.std)(image)
         torch.testing.assert_close(actual, expected, rtol=0, atol=0)
