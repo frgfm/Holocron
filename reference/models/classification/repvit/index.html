@@ -1498,6 +1498,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Controlled Holocron benchmark">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#measured-apple-silicon-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measured Apple Silicon comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2060,6 +2077,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Controlled Holocron benchmark">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#measured-apple-silicon-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measured Apple Silicon comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2485,55 +2519,137 @@ layers. Local timing can change with host load.</p>
 176px training crops, 232px resize and 224px validation crops, 20 epochs,
 effective batch size 32, AMP, AdamP at <code>1e-3</code>, OneCycle, Mixup <code>0.2</code>, and label
 smoothing <code>0.1</code>. MobileOne-S2 uses the identical command as the baseline.</p>
-<p>CUDA measurements remain a separate acceptance gate for
-<a href="https://github.com/frgfm/holocron/issues/499">issue #499</a>; they are not inferred
-from local CPU or MPS checks.</p>
+<p>The controlled comparison can run on CPU, CUDA, or Apple Silicon MPS using
+the standard classification training CLI with <code>--benchmark</code>.
+Use the same backend, precision, and physical batch size for all four models.
+The <a href="https://github.com/frgfm/holocron/blob/main/references/classification/benchmark_repvit_imagenette.sh">Bash campaign</a>
+only selects the four architectures; the training CLI owns the recipe:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>bash<span class="w"> </span>references/classification/benchmark_repvit_imagenette.sh<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>/path/to/imagenette2-320<span class="w"> </span>/path/to/fresh-results<span class="w"> </span>--device<span class="w"> </span>mps
+</span></code></pre></div>
+<p>The campaign records selected and final validation metrics, parameter counts,
+convolution/linear MACs, synchronized fused inference timing, and memory readings.
+MPS reports sampled tensor and driver allocations rather than CUDA VRAM. A CUDA
+measurement cannot be inferred from a CPU or MPS run.
+The launcher uses a fresh process per model and writes a report beside each
+checkpoint. With a smaller physical batch, set gradient accumulation explicitly
+(for example, <code>--batch-size 8 --grad-acc 4</code>).</p>
+<h3 id="measured-apple-silicon-comparison">Measured Apple Silicon comparison<a class="headerlink" href="#measured-apple-silicon-comparison" title="Permanent link">&para;</a></h3>
+<p>All four models completed the same 20-epoch scratch recipe on an Apple M3 Pro
+with 36 GiB unified memory, macOS 15.7.7, Python 3.12.13, and PyTorch 2.13.0.
+The campaign used seed 0, four loading workers, four CPU threads, physical and
+effective batch size 32, and FP16 autocasting with gradient scaling. Validation
+contains 3,925 images. Checkpoints are selected by minimum validation loss.</p>
 <table>
 <thead>
 <tr>
 <th>Model</th>
-<th style="text-align: right;">Parameters before/after fusion</th>
-<th style="text-align: right;">MACs</th>
-<th style="text-align: right;">Top-1</th>
-<th style="text-align: right;">Top-5</th>
-<th>Status</th>
+<th style="text-align: right;">Params before / after fusion</th>
+<th style="text-align: right;">Fused GMACs</th>
+<th style="text-align: right;">Unfused top-1</th>
+<th style="text-align: right;">Fused top-1 / top-5</th>
+<th style="text-align: right;">Selected epoch</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>RepViT-M0.9</td>
 <td style="text-align: right;">4,722,410 / 4,685,906</td>
-<td style="text-align: right;">Pending</td>
-<td style="text-align: right;">Pending</td>
-<td style="text-align: right;">Pending</td>
-<td>CUDA run required</td>
+<td style="text-align: right;">0.815</td>
+<td style="text-align: right;">76.97%</td>
+<td style="text-align: right;">76.87% / 96.76%</td>
+<td style="text-align: right;">19</td>
 </tr>
 <tr>
 <td>RepViT-M1.0</td>
 <td style="text-align: right;">6,408,390 / 6,365,802</td>
-<td style="text-align: right;">Pending</td>
-<td style="text-align: right;">Pending</td>
-<td style="text-align: right;">Pending</td>
-<td>CUDA run required</td>
+<td style="text-align: right;">1.106</td>
+<td style="text-align: right;">80.33%</td>
+<td style="text-align: right;">80.31% / 97.38%</td>
+<td style="text-align: right;">19</td>
 </tr>
 <tr>
 <td>RepViT-M1.1</td>
 <td style="text-align: right;">7,781,018 / 7,736,442</td>
-<td style="text-align: right;">Pending</td>
-<td style="text-align: right;">Pending</td>
-<td style="text-align: right;">Pending</td>
-<td>CUDA run required</td>
+<td style="text-align: right;">1.337</td>
+<td style="text-align: right;">81.53%</td>
+<td style="text-align: right;">81.53% / 97.83%</td>
+<td style="text-align: right;">20</td>
 </tr>
 <tr>
 <td>MobileOne-S2</td>
-<td style="text-align: right;">Pending rerun</td>
-<td style="text-align: right;">Pending</td>
-<td style="text-align: right;">Pending</td>
-<td style="text-align: right;">Pending</td>
-<td>CUDA run required</td>
+<td style="text-align: right;">5,854,324 / 5,778,152</td>
+<td style="text-align: right;">1.277</td>
+<td style="text-align: right;">80.18%</td>
+<td style="text-align: right;">80.08% / 97.61%</td>
+<td style="text-align: right;">20</td>
 </tr>
 </tbody>
 </table>
+<p>The accuracy table includes a complete validation pass before and after fusion.
+FP16 fusion changes a few borderline class decisions; the measurements are not
+assumed identical. Fused inference uses batch 1, 20 warmups, and 100 synchronized
+timing samples. Preprocessing and data transfer are excluded from inference timing.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th style="text-align: right;">Wall min</th>
+<th style="text-align: right;">Median / p95 ms</th>
+<th style="text-align: right;">Images/s</th>
+<th style="text-align: right;">Sampled tensor / driver GiB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RepViT-M0.9</td>
+<td style="text-align: right;">30.3</td>
+<td style="text-align: right;">4.75 / 5.56</td>
+<td style="text-align: right;">237.2</td>
+<td style="text-align: right;">1.42 / 2.50</td>
+</tr>
+<tr>
+<td>RepViT-M1.0</td>
+<td style="text-align: right;">37.0</td>
+<td style="text-align: right;">4.42 / 4.88</td>
+<td style="text-align: right;">251.3</td>
+<td style="text-align: right;">1.66 / 2.78</td>
+</tr>
+<tr>
+<td>RepViT-M1.1</td>
+<td style="text-align: right;">39.0</td>
+<td style="text-align: right;">5.85 / 7.56</td>
+<td style="text-align: right;">165.9</td>
+<td style="text-align: right;">1.81 / 2.94</td>
+</tr>
+<tr>
+<td>MobileOne-S2</td>
+<td style="text-align: right;">46.3</td>
+<td style="text-align: right;">2.56 / 2.99</td>
+<td style="text-align: right;">479.3</td>
+<td style="text-align: right;">2.29 / 3.32</td>
+</tr>
+</tbody>
+</table>
+<p>Wall time includes data/model setup, training, and validation. Convolution/linear
+MACs use a 224px image and exclude normalization and activations. MPS memory was
+sampled every 50 ms; it is not an exact peak or CUDA VRAM. The models ran serially
+in one process, and driver allocation includes allocator/graph caches. Process
+RSS in the raw report is a lifetime peak, not a fresh per-model peak.
+These rows come from the original single-process campaign. The current Bash
+launcher isolates each model in a fresh process; this table has not been rerun.</p>
+<p>Under this single-seed, short recipe, MobileOne-S2 has the lowest MPS inference
+latency. RepViT-M1.1 has the highest fused validation top-1, about 1.45 points
+higher at roughly 2.3 times the median latency. RepViT-M1.0 trains faster and
+uses less sampled training memory than MobileOne-S2, but its small accuracy gain
+does not establish a clear inference advantage on this backend. These are
+Imagenette/MPS measurements, not ImageNet paper reproduction or CUDA results.</p>
+<p>The local <code>repvit-imagenette-mps.json</code> report in the repository root records
+the recipe, dataset archive hash, selected/final/deployment metrics,
+learning curves, checkpoint hashes, counts, timing, memory, and validation limits.
+It is ignored by Git; only the curated comparison and recipe are published here.
+Its source revision identifies the training run, not subsequent report or test edits.
+Checkpoints remain local and are not published with this comparison.</p>
 <p>These parameter counts use Imagenette's 10 classes. The paper's counts use
 an ImageNet-1K classifier with 1,000 classes.</p>
 <h2 id="model-builders">Model builders<a class="headerlink" href="#model-builders" title="Permanent link">&para;</a></h2>

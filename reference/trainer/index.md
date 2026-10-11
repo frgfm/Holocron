@@ -2,10 +2,16 @@
 
 `holocron.trainer` provides some basic objects for training purposes.
 
+Pass `device="cpu"`, `device="cuda:0"`, or `device="mps"` to a trainer. Use `device="auto"` to prefer CUDA, then Apple Silicon MPS, then CPU. The trainer moves the model, criterion, input tensors, and targets to that device.
+
+Existing `gpu=0` callers still select CUDA. Omitting both `gpu` and `device` retains the library's CPU default. Specify only one of these arguments. `to_cuda` remains a compatibility alias for `to_device`.
+
+With `amp=True`, CPU uses BF16 autocasting without gradient scaling; CUDA and MPS use FP16 autocasting with gradient scaling. Without AMP, training stays in the model's original precision. MPS mixed precision was validated with the locked PyTorch 2.13 environment on an M3 Pro; backend operator support can vary with PyTorch and macOS versions.
+
 ### Trainer
 
 ```python
-Trainer(model: Module, train_loader: DataLoader, val_loader: DataLoader, criterion: Module, optimizer: Optimizer, gpu: int | None = None, output_file: str = './checkpoint.pth', amp: bool = False, skip_nan_loss: bool = False, nan_tolerance: int = 5, gradient_acc: int = 1, gradient_clip: float | None = None, on_epoch_end: Callable[[dict[str, float]], Any] | None = None)
+Trainer(model: Module, train_loader: DataLoader, val_loader: DataLoader, criterion: Module, optimizer: Optimizer, gpu: int | None = None, output_file: str = './checkpoint.pth', amp: bool = False, skip_nan_loss: bool = False, nan_tolerance: int = 5, gradient_acc: int = 1, gradient_clip: float | None = None, on_epoch_end: Callable[[dict[str, float]], Any] | None = None, *, device: str | device | None = None)
 ```
 
 Baseline trainer class.
@@ -25,6 +31,7 @@ Baseline trainer class.
 | `gradient_acc`  | number of batches to accumulate the gradient of before performing the update step **TYPE:** `int` **DEFAULT:** `1` |
 | `gradient_clip` | the gradient clip value **TYPE:** \`float                                                                          |
 | `on_epoch_end`  | callback triggered at the end of an epoch **TYPE:** \`Callable\[\[dict[str, float]\], Any\]                        |
+| `device`        | CPU, CUDA, MPS, or auto; cannot be combined with gpu **TYPE:** \`str                                               |
 
 Source code in `holocron/trainer/core.py`
 
@@ -44,6 +51,8 @@ def __init__(
     gradient_acc: int = 1,
     gradient_clip: float | None = None,
     on_epoch_end: Callable[[dict[str, float]], Any] | None = None,
+    *,
+    device: str | torch.device | None = None,
 ) -> None:
     self.model = model
     self.train_loader = train_loader
@@ -71,49 +80,52 @@ def __init__(
     self._params: tuple[ParamSeq, ParamSeq] = ([], [])
     self.lr_recorder: list[float] = []
     self.loss_recorder: list[float] = []
-    self.set_device(gpu)
+    if device is None:
+        self.set_device(gpu)
+    else:
+        self.set_device(gpu, device=device)
     self._reset_opt(self.optimizer.defaults["lr"])
 ```
 
 #### set_device
 
 ```python
-set_device(gpu: int | None = None) -> None
+set_device(gpu: int | None = None, *, device: str | device | None = None) -> None
 ```
 
-Move tensor objects to the target GPU
+Move the model and criterion to CPU, CUDA, or MPS.
 
-| PARAMETER | DESCRIPTION                                    |
-| --------- | ---------------------------------------------- |
-| `gpu`     | index of the target GPU device **TYPE:** \`int |
+| PARAMETER | DESCRIPTION                                                          |
+| --------- | -------------------------------------------------------------------- |
+| `gpu`     | index of the target GPU device **TYPE:** \`int                       |
+| `device`  | explicit device or auto; legacy gpu=None selects CPU **TYPE:** \`str |
 
-| RAISES           | DESCRIPTION                      |
-| ---------------- | -------------------------------- |
-| `AssertionError` | if PyTorch cannot access the GPU |
-| `ValueError`     | if the device index is invalid   |
+| RAISES       | DESCRIPTION                          |
+| ------------ | ------------------------------------ |
+| `ValueError` | if both gpu and device are specified |
 
 Source code in `holocron/trainer/core.py`
 
 ```python
-def set_device(self, gpu: int | None = None) -> None:
-    """Move tensor objects to the target GPU
+def set_device(self, gpu: int | None = None, *, device: str | torch.device | None = None) -> None:
+    """Move the model and criterion to CPU, CUDA, or MPS.
 
     Args:
         gpu: index of the target GPU device
+        device: explicit device or auto; legacy gpu=None selects CPU
 
     Raises:
-        AssertionError: if PyTorch cannot access the GPU
-        ValueError: if the device index is invalid
+        ValueError: if both gpu and device are specified
     """
-    if isinstance(gpu, int):
-        if not torch.cuda.is_available():
-            raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
-        if gpu >= torch.cuda.device_count():
-            raise ValueError("Invalid device index")
-        torch.cuda.set_device(gpu)
-        self.model = self.model.cuda()
-        if isinstance(self.criterion, torch.nn.Module):
-            self.criterion = self.criterion.cuda()
+    if gpu is not None and device is not None:
+        raise ValueError("Specify either gpu or device, not both")
+    self.device = resolve_device(gpu if device is None else device)
+    self.gpu = self.device.index if self.device.type == "cuda" else None
+    if self.device.type == "cuda":
+        torch.cuda.set_device(self.device)
+    self.model = self.model.to(self.device)
+    if isinstance(self.criterion, nn.Module):
+        self.criterion = self.criterion.to(self.device)
 ```
 
 #### to_cuda
@@ -122,7 +134,7 @@ def set_device(self, gpu: int | None = None) -> None:
 to_cuda(x: Tensor, target: Tensor | list[dict[str, Tensor]]) -> tuple[Tensor, Tensor | list[dict[str, Tensor]]]
 ```
 
-Move input and target to GPU
+Compatibility alias for moving input and target to the selected device.
 
 | PARAMETER | DESCRIPTION                                                     |
 | --------- | --------------------------------------------------------------- |
@@ -133,17 +145,13 @@ Move input and target to GPU
 | ----------------------- | ----------------------------- |
 | \`tuple\[Tensor, Tensor | list\[dict[str, Tensor]\]\]\` |
 
-| RAISES       | DESCRIPTION                    |
-| ------------ | ------------------------------ |
-| `ValueError` | if the device index is invalid |
-
 Source code in `holocron/trainer/core.py`
 
 ```python
 def to_cuda(
     self, x: Tensor, target: Tensor | list[dict[str, Tensor]]
 ) -> tuple[Tensor, Tensor | list[dict[str, Tensor]]]:
-    """Move input and target to GPU
+    """Compatibility alias for moving input and target to the selected device.
 
     Args:
         x: input tensor
@@ -152,13 +160,44 @@ def to_cuda(
     Returns:
         tuple of input and target tensors
 
-    Raises:
-        ValueError: if the device index is invalid
     """
-    if isinstance(self.gpu, int):
-        if self.gpu >= torch.cuda.device_count():
-            raise ValueError("Invalid device index")
-        return self._to_cuda(x, target)  # type: ignore[arg-type]
+    return self.to_device(x, target)
+```
+
+#### to_device
+
+```python
+to_device(x: Tensor, target: Tensor | list[dict[str, Tensor]]) -> tuple[Tensor, Tensor | list[dict[str, Tensor]]]
+```
+
+Move input and target tensors to the selected device.
+
+| PARAMETER | DESCRIPTION                                           |
+| --------- | ----------------------------------------------------- |
+| `x`       | input tensor **TYPE:** `Tensor`                       |
+| `target`  | class, pixel, or detection targets **TYPE:** \`Tensor |
+
+| RETURNS                 | DESCRIPTION                   |
+| ----------------------- | ----------------------------- |
+| \`tuple\[Tensor, Tensor | list\[dict[str, Tensor]\]\]\` |
+
+Source code in `holocron/trainer/core.py`
+
+```python
+def to_device(
+    self, x: Tensor, target: Tensor | list[dict[str, Tensor]]
+) -> tuple[Tensor, Tensor | list[dict[str, Tensor]]]:
+    """Move input and target tensors to the selected device.
+
+    Args:
+        x: input tensor
+        target: class, pixel, or detection targets
+
+    Returns:
+        Inputs and targets on the trainer device.
+    """
+    x = x.to(self.device, non_blocking=self.device.type == "cuda")
+    target = target.to(self.device, non_blocking=self.device.type == "cuda")  # type: ignore[union-attr]
     return x, target
 ```
 
@@ -270,7 +309,7 @@ def fit_n_epochs(
     self._reset_scheduler(lr, num_epochs, sched_type, **kwargs)
 
     if self.amp:
-        self.scaler = GradScaler("cuda")
+        self.scaler = GradScaler(self.device.type, enabled=self.device.type != "cpu")
 
     for _ in tqdm(range(num_epochs), desc="Epochs"):
         self._fit_epoch()
@@ -349,7 +388,7 @@ def find_lr(
     self.loss_recorder = []
 
     if self.amp:
-        self.scaler = GradScaler("cuda")
+        self.scaler = GradScaler(self.device.type, enabled=self.device.type != "cpu")
 
     batch_iter = iter(self.train_loader)
     final_step_batches = num_it - self.gradient_acc * (num_steps - 1)
@@ -486,7 +525,7 @@ def check_setup(
     losses = []
 
     if self.amp:
-        self.scaler = GradScaler("cuda")
+        self.scaler = GradScaler(self.device.type, enabled=self.device.type != "cpu")
 
     for idx in range(num_it):
         # Forward
@@ -511,7 +550,7 @@ def check_setup(
 ### ClassificationTrainer
 
 ```python
-ClassificationTrainer(model: Module, train_loader: DataLoader, val_loader: DataLoader, criterion: Module, optimizer: Optimizer, gpu: int | None = None, output_file: str = './checkpoint.pth', amp: bool = False, skip_nan_loss: bool = False, nan_tolerance: int = 5, gradient_acc: int = 1, gradient_clip: float | None = None, on_epoch_end: Callable[[dict[str, float]], Any] | None = None)
+ClassificationTrainer(model: Module, train_loader: DataLoader, val_loader: DataLoader, criterion: Module, optimizer: Optimizer, gpu: int | None = None, output_file: str = './checkpoint.pth', amp: bool = False, skip_nan_loss: bool = False, nan_tolerance: int = 5, gradient_acc: int = 1, gradient_clip: float | None = None, on_epoch_end: Callable[[dict[str, float]], Any] | None = None, *, device: str | device | None = None)
 ```
 
 Bases: `Trainer`
@@ -552,6 +591,8 @@ def __init__(
     gradient_acc: int = 1,
     gradient_clip: float | None = None,
     on_epoch_end: Callable[[dict[str, float]], Any] | None = None,
+    *,
+    device: str | torch.device | None = None,
 ) -> None:
     self.model = model
     self.train_loader = train_loader
@@ -579,7 +620,10 @@ def __init__(
     self._params: tuple[ParamSeq, ParamSeq] = ([], [])
     self.lr_recorder: list[float] = []
     self.loss_recorder: list[float] = []
-    self.set_device(gpu)
+    if device is None:
+        self.set_device(gpu)
+    else:
+        self.set_device(gpu, device=device)
     self._reset_opt(self.optimizer.defaults["lr"])
 ```
 
@@ -711,7 +755,7 @@ def plot_top_losses(
             added_idcs = [idx - num_samples for idx in idcs if idx >= num_samples]
             # Update
             losses = np.concatenate((losses[kept_idcs], batch_loss.cpu().numpy()[added_idcs]))
-            probs = np.concatenate((probs[kept_idcs], probs_.cpu().numpy()))
+            probs = np.concatenate((probs[kept_idcs], probs_.float().cpu().numpy()[added_idcs]))
             if not self.is_binary:
                 preds = np.concatenate((preds[kept_idcs], logits[added_idcs].argmax(dim=1).cpu().numpy()))
             targets = np.concatenate((targets[kept_idcs], target[added_idcs].cpu().numpy()))  # ty: ignore[invalid-argument-type]
@@ -753,7 +797,7 @@ def plot_top_losses(
 ### BinaryClassificationTrainer
 
 ```python
-BinaryClassificationTrainer(model: Module, train_loader: DataLoader, val_loader: DataLoader, criterion: Module, optimizer: Optimizer, gpu: int | None = None, output_file: str = './checkpoint.pth', amp: bool = False, skip_nan_loss: bool = False, nan_tolerance: int = 5, gradient_acc: int = 1, gradient_clip: float | None = None, on_epoch_end: Callable[[dict[str, float]], Any] | None = None)
+BinaryClassificationTrainer(model: Module, train_loader: DataLoader, val_loader: DataLoader, criterion: Module, optimizer: Optimizer, gpu: int | None = None, output_file: str = './checkpoint.pth', amp: bool = False, skip_nan_loss: bool = False, nan_tolerance: int = 5, gradient_acc: int = 1, gradient_clip: float | None = None, on_epoch_end: Callable[[dict[str, float]], Any] | None = None, *, device: str | device | None = None)
 ```
 
 Bases: `ClassificationTrainer`
@@ -789,6 +833,8 @@ def __init__(
     gradient_acc: int = 1,
     gradient_clip: float | None = None,
     on_epoch_end: Callable[[dict[str, float]], Any] | None = None,
+    *,
+    device: str | torch.device | None = None,
 ) -> None:
     self.model = model
     self.train_loader = train_loader
@@ -816,7 +862,10 @@ def __init__(
     self._params: tuple[ParamSeq, ParamSeq] = ([], [])
     self.lr_recorder: list[float] = []
     self.loss_recorder: list[float] = []
-    self.set_device(gpu)
+    if device is None:
+        self.set_device(gpu)
+    else:
+        self.set_device(gpu, device=device)
     self._reset_opt(self.optimizer.defaults["lr"])
 ```
 
@@ -930,9 +979,7 @@ def evaluate(self, ignore_index: int | None = None) -> dict[str, float]:
 
     ignore_index = getattr(self.criterion, "ignore_index", 255) if ignore_index is None else ignore_index
     val_loss, num_valid_samples = 0.0, 0
-    conf_mat = torch.zeros(
-        (self.num_classes, self.num_classes), dtype=torch.int64, device=next(self.model.parameters()).device
-    )
+    conf_mat = torch.zeros((self.num_classes, self.num_classes), dtype=torch.int64, device=self.device)
     for x, target in self.val_loader:
         x, target = self.to_cuda(x, target)
 
@@ -969,7 +1016,7 @@ def evaluate(self, ignore_index: int | None = None) -> dict[str, float]:
 ### DetectionTrainer
 
 ```python
-DetectionTrainer(model: Module, train_loader: DataLoader, val_loader: DataLoader, criterion: Module, optimizer: Optimizer, gpu: int | None = None, output_file: str = './checkpoint.pth', amp: bool = False, skip_nan_loss: bool = False, nan_tolerance: int = 5, gradient_acc: int = 1, gradient_clip: float | None = None, on_epoch_end: Callable[[dict[str, float]], Any] | None = None)
+DetectionTrainer(model: Module, train_loader: DataLoader, val_loader: DataLoader, criterion: Module, optimizer: Optimizer, gpu: int | None = None, output_file: str = './checkpoint.pth', amp: bool = False, skip_nan_loss: bool = False, nan_tolerance: int = 5, gradient_acc: int = 1, gradient_clip: float | None = None, on_epoch_end: Callable[[dict[str, float]], Any] | None = None, *, device: str | device | None = None)
 ```
 
 Bases: `Trainer`
@@ -1010,6 +1057,8 @@ def __init__(
     gradient_acc: int = 1,
     gradient_clip: float | None = None,
     on_epoch_end: Callable[[dict[str, float]], Any] | None = None,
+    *,
+    device: str | torch.device | None = None,
 ) -> None:
     self.model = model
     self.train_loader = train_loader
@@ -1037,8 +1086,48 @@ def __init__(
     self._params: tuple[ParamSeq, ParamSeq] = ([], [])
     self.lr_recorder: list[float] = []
     self.loss_recorder: list[float] = []
-    self.set_device(gpu)
+    if device is None:
+        self.set_device(gpu)
+    else:
+        self.set_device(gpu, device=device)
     self._reset_opt(self.optimizer.defaults["lr"])
+```
+
+#### to_device
+
+```python
+to_device(x: list[Tensor], target: list[dict[str, Tensor]]) -> tuple[list[Tensor], list[dict[str, Tensor]]]
+```
+
+Move detection images and target dictionaries to the selected device.
+
+| PARAMETER | DESCRIPTION                                                       |
+| --------- | ----------------------------------------------------------------- |
+| `x`       | input images **TYPE:** `list[Tensor]`                             |
+| `target`  | detection target dictionaries **TYPE:** `list[dict[str, Tensor]]` |
+
+| RETURNS                                        | DESCRIPTION                               |
+| ---------------------------------------------- | ----------------------------------------- |
+| `tuple[list[Tensor], list[dict[str, Tensor]]]` | Images and targets on the trainer device. |
+
+Source code in `holocron/trainer/detection.py`
+
+```python
+def to_device(  # type: ignore[override]
+    self, x: list[Tensor], target: list[dict[str, Tensor]]
+) -> tuple[list[Tensor], list[dict[str, Tensor]]]:
+    """Move detection images and target dictionaries to the selected device.
+
+    Args:
+        x: input images
+        target: detection target dictionaries
+
+    Returns:
+        Images and targets on the trainer device.
+    """
+    x = [x_.to(self.device, non_blocking=self.device.type == "cuda") for x_ in x]
+    target = [{k: v.to(self.device, non_blocking=self.device.type == "cuda") for k, v in t.items()} for t in target]
+    return x, target
 ```
 
 #### evaluate
@@ -1079,7 +1168,7 @@ def evaluate(self, iou_threshold: float = 0.5) -> dict[str, float | None]:
         x, target = self.to_cuda(x, target)
 
         if self.amp:
-            with torch.amp.autocast("cuda"):
+            with torch.amp.autocast(self.device.type):
                 detections = self.model(x)
         else:
             detections = self.model(x)
@@ -1231,3 +1320,68 @@ def freeze_model(
     if not frozen_bn_stat_update:
         freeze_bn(model)
 ````
+
+### resolve_device
+
+```python
+resolve_device(device: int | str | device | None = None) -> device
+```
+
+Resolve CPU, CUDA, MPS, or automatic selection, retaining integer CUDA indices.
+
+| PARAMETER | DESCRIPTION                                                                            |
+| --------- | -------------------------------------------------------------------------------------- |
+| `device`  | device name, CUDA index, or None for CPU; auto prefers CUDA, then MPS. **TYPE:** \`int |
+
+| RETURNS  | DESCRIPTION                       |
+| -------- | --------------------------------- |
+| `device` | Available, explicit torch device. |
+
+| RAISES           | DESCRIPTION                                                |
+| ---------------- | ---------------------------------------------------------- |
+| `AssertionError` | if a requested CUDA device is unavailable.                 |
+| `ValueError`     | if the device name or index is unsupported or unavailable. |
+
+Source code in `holocron/trainer/utils.py`
+
+```python
+def resolve_device(device: int | str | torch.device | None = None) -> torch.device:
+    """Resolve CPU, CUDA, MPS, or automatic selection, retaining integer CUDA indices.
+
+    Args:
+        device: device name, CUDA index, or None for CPU; auto prefers CUDA, then MPS.
+
+    Returns:
+        Available, explicit torch device.
+
+    Raises:
+        AssertionError: if a requested CUDA device is unavailable.
+        ValueError: if the device name or index is unsupported or unavailable.
+    """
+    if device == "auto":
+        device = "cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+    if isinstance(device, int) or (isinstance(device, str) and device.isdecimal()):
+        if int(device) < 0:
+            raise ValueError("Invalid device index")
+        device = f"cuda:{int(device)}"
+    try:
+        device = torch.device("cpu" if device is None else device)
+    except RuntimeError as error:
+        raise ValueError(str(error)) from error
+    if device.type == "cuda":
+        if not torch.cuda.is_available():
+            raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
+        index = 0 if device.index is None else device.index
+        if index >= torch.cuda.device_count():
+            raise ValueError("Invalid device index")
+        return torch.device("cuda", index)
+    if device.type == "mps":
+        if not torch.backends.mps.is_available():
+            raise ValueError("MPS was requested but is not available")
+        if device.index not in {None, 0}:
+            raise ValueError("Invalid MPS device index")
+        return torch.device("mps")
+    if device.type != "cpu":
+        raise ValueError("Device must be cpu, cuda, cuda:N, mps, auto, or a CUDA index")
+    return torch.device("cpu")
+```
