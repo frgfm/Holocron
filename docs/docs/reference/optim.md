@@ -48,6 +48,8 @@ Fusion requires contiguous FP32 parameters, gradients, and optimizer state on MP
 configurations also fall back. Other configurations use ordinary AdamP, including CPU, CUDA, and PyTorch versions
 without the public `torch.mps.compile_shader` API (available since PyTorch 2.7). Compilation failure also falls back before
 any tensor update; execution failures propagate without retrying a partially completed update.
+An execution error may leave parameters and moment buffers partly updated. Restore both the model and optimizer
+from a checkpoint before continuing.
 
 The option defaults to `False` and remains a constructor preference when loading optimizer state. AMP can still
 use fusion when its parameters and unscaled gradients are FP32. Full-training accuracy equivalence is not yet

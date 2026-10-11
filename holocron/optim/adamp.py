@@ -231,7 +231,7 @@ def _mps_adamp_shader() -> Any | None:
             getattr(kernel, "max_threads_per_threadgroup", 0) < 256 for kernel in (shader.moments, shader.statistics)
         ):
             return None
-    except (RuntimeError, SyntaxError):
+    except (RuntimeError, SyntaxError, OSError):
         # Compilation has not touched optimizer state; cache the ordinary fallback.
         return None
     return shader
@@ -283,8 +283,8 @@ def _mps_adamp(
         n = param.numel()
         groups = (n + 255) // 256
         update = torch.empty_like(param)
-        partials = torch.empty((groups, 4), device=param.device, dtype=param.dtype)
-        factor = torch.empty(2, device=param.device, dtype=param.dtype)
+        partials = torch.empty((groups, 2), device=param.device, dtype=param.dtype)
+        factor = torch.empty(3, device=param.device, dtype=param.dtype)
         shader.moments(
             update,
             param,
@@ -300,7 +300,7 @@ def _mps_adamp(
             group_size=256,
         )
         torch.autograd.graph.increment_version((avg, square))
-        shader.statistics(factor, partials, groups, n, eps, delta, threads=256, group_size=256)
-        shader.apply_update(param, update, factor, lr)
+        shader.statistics(factor, param, grad, update, partials, groups, n, eps, delta, threads=256, group_size=256)
+        shader.apply_update(param, update, factor, lr, n, threads=n)
         torch.autograd.graph.increment_version(param)
     return True

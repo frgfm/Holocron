@@ -109,6 +109,17 @@ def test_adamp_shader_unavailable_is_cached(monkeypatch):
         shader.statistics.max_threads_per_threadgroup = 256
         monkeypatch.setattr(torch.mps, "compile_shader", Mock(return_value=shader), raising=False)
         assert module._mps_adamp_shader() is None
+        module._mps_adamp_shader.cache_clear()
+        with monkeypatch.context() as patch:
+            resource = Mock()
+            resource.joinpath.return_value.read_text.side_effect = OSError("Shader file unavailable")
+            patch.setattr(module, "files", Mock(return_value=resource))
+            compiler = Mock()
+            patch.setattr(torch.mps, "compile_shader", compiler)
+            assert module._mps_adamp_shader() is None
+            assert module._mps_adamp_shader() is None
+            compiler.assert_not_called()
+            resource.joinpath.return_value.read_text.assert_called_once()
     finally:
         module._mps_adamp_shader.cache_clear()
 
@@ -117,7 +128,15 @@ def test_adamp_shader_unavailable_is_cached(monkeypatch):
     not torch.backends.mps.is_available() or not hasattr(torch.mps, "compile_shader"),
     reason="Metal shaders unavailable",
 )
-def test_adamp_mps_fused_parity_and_versions():
+def test_adamp_mps_fused_parity_and_versions(monkeypatch):
+    module = importlib.import_module("holocron.optim.adamp")
+    native_adamp = module._mps_adamp
+
+    def require_fusion(*args):
+        assert native_adamp(*args)
+        return True
+
+    monkeypatch.setattr(module, "_mps_adamp", require_fusion)
     torch.manual_seed(9)
     for betas, delta in (((0.9, 0.999), 0.0), ((0.95, 0.99), 10.0)):
         params = [
@@ -149,17 +168,19 @@ def test_adamp_mps_fused_parity_and_versions():
                     assert state._version > version
             if step == 3:
                 candidate.load_state_dict(deepcopy(candidate.state_dict()))
+    cosines = (0.1 / math.sqrt(2) + offset for offset in (-1e-4, 0.0, 1e-4))
+    cases = [
+        ([0.2, 0.1], [0.5093396902084351, -0.8605654835700989]),
+        ([3e38, 3e38], [1e-5, 1e-5]),
+    ] + [([1.0, 0.0], [cosine, math.sqrt(1 - cosine**2)]) for cosine in cosines]
     default_dtype = torch.get_default_dtype()
     try:
         for dtype in (torch.float16, torch.float64):
             torch.set_default_dtype(dtype)
-            for offset in (-1e-4, 0.0, 1e-4):
-                cosine = 0.1 / math.sqrt(2) + offset
-                params = [
-                    torch.nn.Parameter(torch.tensor([1.0, 0.0], device="mps", dtype=torch.float32)) for _ in range(2)
-                ]
+            for values, gradients in cases:
+                params = [torch.nn.Parameter(torch.tensor(values, device="mps", dtype=torch.float32)) for _ in range(2)]
                 for param in params:
-                    param.grad = torch.tensor([cosine, math.sqrt(1 - cosine**2)], device="mps", dtype=torch.float32)
+                    param.grad = torch.tensor(gradients, device="mps", dtype=torch.float32)
                 for param, fused in zip(params, (False, True), strict=True):
                     optim.AdamP([param], lr=1, betas=(0.0, 0.0), mps_fused=fused).step()
                 torch.testing.assert_close(*params, rtol=1e-5, atol=1e-6)
@@ -231,6 +252,12 @@ def test_adamp_mps_fallback_and_amp_skip(monkeypatch):
     scaler.update()
     assert optimizer.state[parameter]["step"] == 1
     assert torch.isfinite(parameter).all()
+    shader = module._mps_adamp_shader()
+    guarded = torch.ones(8, device="mps")
+    shader.apply_update(
+        guarded[:7], torch.ones(7, device="mps"), torch.tensor([0.0, 0.0, 1.0], device="mps"), 1.0, 7, threads=256
+    )
+    torch.testing.assert_close(guarded, torch.tensor([0.0] * 7 + [1.0], device="mps"))
     shader = Mock()
     shader.moments.side_effect = RuntimeError("dispatch failed")
     monkeypatch.setattr(module, "_mps_adamp_shader", lambda: shader)
