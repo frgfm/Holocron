@@ -190,3 +190,12 @@ def test_yolo26_rejects_unavailable_weights_and_invalid_inputs():
         model(torch.rand(2, 3, 64, 64), invalid)
     with pytest.raises(ValueError, match="eval"):
         model.to_deploy()
+
+
+def test_yolo26_postprocess_preserves_saturated_class_order():
+    model = yolo26n(num_classes=3, box_score_thresh=0.0, max_detections=1)
+    boxes = torch.tensor([[[0.1, 0.1, 0.9, 0.9]]])
+    logits = torch.tensor([[[-25.0, -24.0, -23.0]]], dtype=torch.float16)
+    assert not logits.sigmoid().count_nonzero()
+    prediction = model.post_process(boxes, logits)[0]
+    assert prediction["labels"].tolist() == [2]

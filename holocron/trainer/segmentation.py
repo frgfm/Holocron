@@ -30,7 +30,7 @@ class SegmentationTrainer(Trainer):
     def _get_loss(self, x: Tensor, target: Tensor, return_logits: bool = False) -> Tensor | tuple[Tensor, Tensor]:
         if isinstance(self.criterion, torch.nn.Module):
             self.criterion.train(self.model.training)
-        with torch.amp.autocast("cuda", enabled=self.amp):
+        with torch.amp.autocast(self.device.type, enabled=self.amp):
             outputs = self.model(x)
             outputs = outputs if isinstance(outputs, dict) else {"out": outputs}
             valid = target != getattr(self.criterion, "ignore_index", 255)
@@ -71,9 +71,7 @@ class SegmentationTrainer(Trainer):
 
         ignore_index = getattr(self.criterion, "ignore_index", 255) if ignore_index is None else ignore_index
         val_loss, num_valid_samples = 0.0, 0
-        conf_mat = torch.zeros(
-            (self.num_classes, self.num_classes), dtype=torch.int64, device=next(self.model.parameters()).device
-        )
+        conf_mat = torch.zeros((self.num_classes, self.num_classes), dtype=torch.int64, device=self.device)
         for x, target in self.val_loader:
             x, target = self.to_cuda(x, target)
 

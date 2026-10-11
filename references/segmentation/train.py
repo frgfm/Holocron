@@ -162,7 +162,6 @@ def main(args):
             args,
             training=True,
             drop_last=args.source == "torchvision",
-            pin_memory=isinstance(args.device, int),
         )
 
         print(
@@ -188,9 +187,7 @@ def main(args):
             ]),
         )
 
-        val_loader = create_loader(
-            val_set, args, training=False, drop_last=False, pin_memory=isinstance(args.device, int)
-        )
+        val_loader = create_loader(val_set, args, training=False, drop_last=False)
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
@@ -225,8 +222,8 @@ def main(args):
         val_loader,
         criterion,
         optimizer,
-        args.device,
-        args.output_file,
+        output_file=args.output_file,
+        device=args.device,
         num_classes=len(VOC_CLASSES),
         gradient_acc=args.grad_acc,
         amp=args.amp,
@@ -236,7 +233,7 @@ def main(args):
     if args.show_preds:
         x, target = next(iter(train_loader))
         with torch.no_grad():
-            x, target = trainer.to_cuda(x, target)
+            x, target = trainer.to_device(x, target)
             trainer.model.eval()
             _, preds = trainer._get_loss(x, target, return_logits=True)
         plot_predictions(x.cpu(), preds.cpu(), target.cpu(), ignore_index=255)

@@ -8,7 +8,7 @@
 import datetime
 import os
 import time
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from typing import Any
 
 import torch
@@ -18,6 +18,7 @@ from torch.utils.data import DataLoader, Dataset, RandomSampler, SequentialSampl
 
 from holocron.optim import AdaBelief, AdamP, AdEMAMix
 from holocron.trainer import Trainer
+from holocron.trainer.utils import resolve_device
 
 
 def load_checkpoint(trainer: Trainer, path: str) -> None:
@@ -69,7 +70,14 @@ def run_training(
         timestamp = datetime.datetime.now(tz=datetime.UTC).strftime("%Y%m%d-%H%M%S")
         name = f"{args.arch}-{timestamp}" if args.name is None else args.name
         run = wandb.init(name=name, project=project, config=config)
-        trainer.on_epoch_end = wandb.log
+        callback = getattr(trainer, "on_epoch_end", None)
+
+        def log_epoch(metrics):
+            if callback is not None:
+                callback(metrics)
+            wandb.log(metrics)
+
+        trainer.on_epoch_end = log_epoch
 
     print("Start training")
     start_time = time.time()
@@ -82,6 +90,7 @@ def run_training(
         exit_code = 0
     finally:
         if run is not None:
+            trainer.on_epoch_end = callback
             run.finish(exit_code=exit_code)
 
 
@@ -120,7 +129,7 @@ def create_loader(dataset: Dataset, args: Namespace, *, training: bool, **kwargs
     Returns:
         Loader with random training or sequential validation sampling.
     """
-    options = {"drop_last": training, "pin_memory": True, **kwargs}
+    options = {"drop_last": training, "pin_memory": resolve_device(args.device).type == "cuda", **kwargs}
     return DataLoader(
         dataset,
         batch_size=args.batch_size,
@@ -134,8 +143,8 @@ def create_loader(dataset: Dataset, args: Namespace, *, training: bool, **kwargs
 def add_loading_args(parser: ArgumentParser) -> None:
     """Add the common hardware and data-loading argument groups."""
     group = parser.add_argument_group("Hardware")
-    group.add_argument("--device", default=None, type=int, help="device")
-    group.add_argument("--amp", help="Use Automatic Mixed Precision", action="store_true")
+    group.add_argument("--device", default="auto", help="auto, cpu, cuda, cuda:N, mps, or a legacy CUDA index")
+    group.add_argument("--amp", help="Use Automatic Mixed Precision", action=BooleanOptionalAction, default=False)
     group = parser.add_argument_group("Data loading")
     group.add_argument("-b", "--batch-size", default=32, type=int, help="batch size")
     group.add_argument(

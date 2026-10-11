@@ -4,10 +4,52 @@
 # See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0> for full license details.
 
 
+import torch
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm  # noqa: PLC2701
 
-__all__ = ["freeze_bn", "freeze_model", "split_normalization_params"]
+__all__ = ["freeze_bn", "freeze_model", "resolve_device", "split_normalization_params"]
+
+
+def resolve_device(device: int | str | torch.device | None = None) -> torch.device:
+    """Resolve CPU, CUDA, MPS, or automatic selection, retaining integer CUDA indices.
+
+    Args:
+        device: device name, CUDA index, or None for CPU; auto prefers CUDA, then MPS.
+
+    Returns:
+        Available, explicit torch device.
+
+    Raises:
+        AssertionError: if a requested CUDA device is unavailable.
+        ValueError: if the device name or index is unsupported or unavailable.
+    """
+    if device == "auto":
+        device = "cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+    if isinstance(device, int) or (isinstance(device, str) and device.isdecimal()):
+        if int(device) < 0:
+            raise ValueError("Invalid device index")
+        device = f"cuda:{int(device)}"
+    try:
+        device = torch.device("cpu" if device is None else device)
+    except RuntimeError as error:
+        raise ValueError(str(error)) from error
+    if device.type == "cuda":
+        if not torch.cuda.is_available():
+            raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
+        index = 0 if device.index is None else device.index
+        if index >= torch.cuda.device_count():
+            raise ValueError("Invalid device index")
+        return torch.device("cuda", index)
+    if device.type == "mps":
+        if not torch.backends.mps.is_available():
+            raise ValueError("MPS was requested but is not available")
+        if device.index not in {None, 0}:
+            raise ValueError("Invalid MPS device index")
+        return torch.device("mps")
+    if device.type != "cpu":
+        raise ValueError("Device must be cpu, cuda, cuda:N, mps, auto, or a CUDA index")
+    return torch.device("cpu")
 
 
 def freeze_bn(mod: nn.Module) -> None:

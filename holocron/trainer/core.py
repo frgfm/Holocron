@@ -16,7 +16,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler, Multiplicat
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from .utils import freeze_bn, freeze_model, split_normalization_params
+from .utils import freeze_bn, freeze_model, resolve_device, split_normalization_params
 
 ParamSeq = Sequence[torch.nn.Parameter]
 
@@ -40,6 +40,7 @@ class Trainer:
         gradient_acc: number of batches to accumulate the gradient of before performing the update step
         gradient_clip: the gradient clip value
         on_epoch_end: callback triggered at the end of an epoch
+        device: CPU, CUDA, MPS, or auto; cannot be combined with gpu
     """
 
     def __init__(
@@ -57,6 +58,8 @@ class Trainer:
         gradient_acc: int = 1,
         gradient_clip: float | None = None,
         on_epoch_end: Callable[[dict[str, float]], Any] | None = None,
+        *,
+        device: str | torch.device | None = None,
     ) -> None:
         self.model = model
         self.train_loader = train_loader
@@ -84,28 +87,31 @@ class Trainer:
         self._params: tuple[ParamSeq, ParamSeq] = ([], [])
         self.lr_recorder: list[float] = []
         self.loss_recorder: list[float] = []
-        self.set_device(gpu)
+        if device is None:
+            self.set_device(gpu)
+        else:
+            self.set_device(gpu, device=device)
         self._reset_opt(self.optimizer.defaults["lr"])
 
-    def set_device(self, gpu: int | None = None) -> None:
-        """Move tensor objects to the target GPU
+    def set_device(self, gpu: int | None = None, *, device: str | torch.device | None = None) -> None:
+        """Move the model and criterion to CPU, CUDA, or MPS.
 
         Args:
             gpu: index of the target GPU device
+            device: explicit device or auto; legacy gpu=None selects CPU
 
         Raises:
-            AssertionError: if PyTorch cannot access the GPU
-            ValueError: if the device index is invalid
+            ValueError: if both gpu and device are specified
         """
-        if isinstance(gpu, int):
-            if not torch.cuda.is_available():
-                raise AssertionError("PyTorch cannot access your GPU. Please investigate!")
-            if gpu >= torch.cuda.device_count():
-                raise ValueError("Invalid device index")
-            torch.cuda.set_device(gpu)
-            self.model = self.model.cuda()
-            if isinstance(self.criterion, torch.nn.Module):
-                self.criterion = self.criterion.cuda()
+        if gpu is not None and device is not None:
+            raise ValueError("Specify either gpu or device, not both")
+        self.device = resolve_device(gpu if device is None else device)
+        self.gpu = self.device.index if self.device.type == "cuda" else None
+        if self.device.type == "cuda":
+            torch.cuda.set_device(self.device)
+        self.model = self.model.to(self.device)
+        if isinstance(self.criterion, nn.Module):
+            self.criterion = self.criterion.to(self.device)
 
     def save(self, output_file: str) -> None:
         """Save a trainer checkpoint
@@ -173,7 +179,7 @@ class Trainer:
     def to_cuda(
         self, x: Tensor, target: Tensor | list[dict[str, Tensor]]
     ) -> tuple[Tensor, Tensor | list[dict[str, Tensor]]]:
-        """Move input and target to GPU
+        """Compatibility alias for moving input and target to the selected device.
 
         Args:
             x: input tensor
@@ -182,19 +188,23 @@ class Trainer:
         Returns:
             tuple of input and target tensors
 
-        Raises:
-            ValueError: if the device index is invalid
         """
-        if isinstance(self.gpu, int):
-            if self.gpu >= torch.cuda.device_count():
-                raise ValueError("Invalid device index")
-            return self._to_cuda(x, target)  # type: ignore[arg-type]
-        return x, target
+        return self.to_device(x, target)
 
-    @staticmethod
-    def _to_cuda(x: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
-        x = x.cuda(non_blocking=True)
-        target = target.cuda(non_blocking=True)
+    def to_device(
+        self, x: Tensor, target: Tensor | list[dict[str, Tensor]]
+    ) -> tuple[Tensor, Tensor | list[dict[str, Tensor]]]:
+        """Move input and target tensors to the selected device.
+
+        Args:
+            x: input tensor
+            target: class, pixel, or detection targets
+
+        Returns:
+            Inputs and targets on the trainer device.
+        """
+        x = x.to(self.device, non_blocking=self.device.type == "cuda")
+        target = target.to(self.device, non_blocking=self.device.type == "cuda")  # type: ignore[union-attr]
         return x, target
 
     def _backprop_step(self, loss: Tensor, force: bool = False) -> bool:
@@ -213,9 +223,10 @@ class Trainer:
 
         if self.amp:
             self.scaler.unscale_(self.optimizer)
-        for param in self.model.parameters():
-            if param.grad is not None:
-                param.grad.div_(self._grad_count)
+        if self._grad_count > 1:
+            for param in self.model.parameters():
+                if param.grad is not None:
+                    param.grad.div_(self._grad_count)
         if isinstance(self.grad_clip, float):
             nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_clip)
 
@@ -234,7 +245,7 @@ class Trainer:
     def _get_loss(self, x: Tensor, target: Tensor, return_logits: bool = False) -> Tensor | tuple[Tensor, Tensor]:
         # AMP
         if self.amp:
-            with torch.amp.autocast("cuda"):
+            with torch.amp.autocast(self.device.type):
                 # Forward
                 out = self.model(x)
                 # Loss computation
@@ -320,7 +331,7 @@ class Trainer:
         self._reset_scheduler(lr, num_epochs, sched_type, **kwargs)
 
         if self.amp:
-            self.scaler = GradScaler("cuda")
+            self.scaler = GradScaler(self.device.type, enabled=self.device.type != "cpu")
 
         for _ in tqdm(range(num_epochs), desc="Epochs"):
             self._fit_epoch()
@@ -374,7 +385,7 @@ class Trainer:
         self.loss_recorder = []
 
         if self.amp:
-            self.scaler = GradScaler("cuda")
+            self.scaler = GradScaler(self.device.type, enabled=self.device.type != "cpu")
 
         batch_iter = iter(self.train_loader)
         final_step_batches = num_it - self.gradient_acc * (num_steps - 1)
@@ -466,7 +477,7 @@ class Trainer:
         losses = []
 
         if self.amp:
-            self.scaler = GradScaler("cuda")
+            self.scaler = GradScaler(self.device.type, enabled=self.device.type != "cpu")
 
         for idx in range(num_it):
             # Forward

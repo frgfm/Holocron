@@ -245,12 +245,17 @@ def test_small_fixed_batch_learns_character_shapes(records):
     assert loss.item() < initial / 3
 
 
-def test_resume_matches_uninterrupted_optimization(monkeypatch, tmp_path):
+@pytest.mark.parametrize("device", ["cpu", "mps"])
+def test_resume_matches_uninterrupted_optimization(monkeypatch, tmp_path, device):
+    if device == "mps" and not torch.backends.mps.is_available():
+        pytest.skip(f"{device} unavailable")
     font_dir = tmp_path / "fonts"
     font_dir.mkdir()
     for path in (SANS, SERIF):
         (font_dir / path.name).write_bytes(path.read_bytes())
     common = [
+        "--device",
+        device,
         "--font-dir",
         str(font_dir),
         "--held-out",

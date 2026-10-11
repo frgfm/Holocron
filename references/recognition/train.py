@@ -18,6 +18,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from holocron.models.recognition import CharacterClassifier, CTCRecognizer
+from holocron.trainer import resolve_device
 from holocron.utils import CTCCodec
 from references.classification.train_characters import _sha256, resolve_font_records
 from references.recognition.data import ALPHABET, SyntheticTextDataset, collate_lines, inspect_fonts, split_fonts
@@ -29,6 +30,9 @@ def ctc_loss(probabilities, lengths, texts, codec):
     required = [len(text) + sum(a == b for a, b in pairwise(text)) for text in texts]
     if any(need > length for need, length in zip(required, lengths.tolist(), strict=True)):
         raise ValueError("rendered width is too short for CTC including repeated characters")
+    # MPS has no CTC loss kernel; the differentiable transfer retains MPS model gradients.
+    if probabilities.device.type == "mps":
+        probabilities = probabilities.cpu()
     return nn.functional.ctc_loss(
         probabilities,
         torch.cat(targets).to(probabilities.device),
@@ -59,7 +63,7 @@ def get_parser():
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--threads", type=int, default=4)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--device", default="cpu")
+    parser.add_argument("--device", default="cpu", help="cpu, cuda, cuda:N, mps, or auto")
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument(
         "--init", type=Path, help="weights-only warm start; character checkpoints transfer the backbone"
@@ -87,6 +91,7 @@ def main(args):
         raise ValueError("--stop-after-epochs must be between one and --epochs")
     torch.set_num_threads(args.threads)
     torch.manual_seed(args.seed)
+    args.device = str(resolve_device(args.device))
     codec = CTCCodec(args.alphabet)
     records, manifest = resolve_font_records(codec.alphabet.replace(" ", ""), args.font_dir, args.manifest)
     records = inspect_fonts(records, codec.alphabet)
@@ -164,6 +169,8 @@ def main(args):
         torch.set_rng_state(last["rng"])
         if str(args.device).startswith("cuda"):
             torch.cuda.set_rng_state_all(last["cuda_rng"])
+        elif args.device == "mps" and last.get("mps_rng") is not None:
+            torch.mps.set_rng_state(last["mps_rng"])
         start, best, history = last["epoch"], last["best_cer"], last["history"]
         initialized_from = last["initialized_from"]
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -235,6 +242,7 @@ def main(args):
             "scheduler": scheduler.state_dict(),
             "rng": torch.get_rng_state(),
             "cuda_rng": torch.cuda.get_rng_state_all() if str(args.device).startswith("cuda") else [],
+            "mps_rng": torch.mps.get_rng_state() if args.device == "mps" else None,
             "history": history,
         }
         torch.save(checkpoint, args.output_dir / "last.pth")

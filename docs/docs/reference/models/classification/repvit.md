@@ -164,16 +164,73 @@ The Holocron comparison trains from scratch on Imagenette without a teacher:
 effective batch size 32, AMP, AdamP at `1e-3`, OneCycle, Mixup `0.2`, and label
 smoothing `0.1`. MobileOne-S2 uses the identical command as the baseline.
 
-CUDA measurements remain a separate acceptance gate for
-[issue #499](https://github.com/frgfm/holocron/issues/499); they are not inferred
-from local CPU or MPS checks.
+The controlled comparison can run on CPU, CUDA, or Apple Silicon MPS using
+the standard classification training CLI with `--benchmark`.
+Use the same backend, precision, and physical batch size for all four models.
+The [Bash campaign](https://github.com/frgfm/holocron/blob/main/references/classification/benchmark_repvit_imagenette.sh)
+only selects the four architectures; the training CLI owns the recipe:
 
-| Model | Parameters before/after fusion | MACs | Top-1 | Top-5 | Status |
-|---|---:|---:|---:|---:|---|
-| RepViT-M0.9 | 4,722,410 / 4,685,906 | Pending | Pending | Pending | CUDA run required |
-| RepViT-M1.0 | 6,408,390 / 6,365,802 | Pending | Pending | Pending | CUDA run required |
-| RepViT-M1.1 | 7,781,018 / 7,736,442 | Pending | Pending | Pending | CUDA run required |
-| MobileOne-S2 | Pending rerun | Pending | Pending | Pending | CUDA run required |
+```shell
+bash references/classification/benchmark_repvit_imagenette.sh \
+  /path/to/imagenette2-320 /path/to/fresh-results --device mps
+```
+
+The campaign records selected and final validation metrics, parameter counts,
+convolution/linear MACs, synchronized fused inference timing, and memory readings.
+MPS reports sampled tensor and driver allocations rather than CUDA VRAM. A CUDA
+measurement cannot be inferred from a CPU or MPS run.
+The launcher uses a fresh process per model and writes a report beside each
+checkpoint. With a smaller physical batch, set gradient accumulation explicitly
+(for example, `--batch-size 8 --grad-acc 4`).
+
+### Measured Apple Silicon comparison
+
+All four models completed the same 20-epoch scratch recipe on an Apple M3 Pro
+with 36 GiB unified memory, macOS 15.7.7, Python 3.12.13, and PyTorch 2.13.0.
+The campaign used seed 0, four loading workers, four CPU threads, physical and
+effective batch size 32, and FP16 autocasting with gradient scaling. Validation
+contains 3,925 images. Checkpoints are selected by minimum validation loss.
+
+| Model | Params before / after fusion | Fused GMACs | Unfused top-1 | Fused top-1 / top-5 | Selected epoch |
+|---|---:|---:|---:|---:|---:|
+| RepViT-M0.9 | 4,722,410 / 4,685,906 | 0.815 | 76.97% | 76.87% / 96.76% | 19 |
+| RepViT-M1.0 | 6,408,390 / 6,365,802 | 1.106 | 80.33% | 80.31% / 97.38% | 19 |
+| RepViT-M1.1 | 7,781,018 / 7,736,442 | 1.337 | 81.53% | 81.53% / 97.83% | 20 |
+| MobileOne-S2 | 5,854,324 / 5,778,152 | 1.277 | 80.18% | 80.08% / 97.61% | 20 |
+
+The accuracy table includes a complete validation pass before and after fusion.
+FP16 fusion changes a few borderline class decisions; the measurements are not
+assumed identical. Fused inference uses batch 1, 20 warmups, and 100 synchronized
+timing samples. Preprocessing and data transfer are excluded from inference timing.
+
+| Model | Wall min | Median / p95 ms | Images/s | Sampled tensor / driver GiB |
+|---|---:|---:|---:|---:|
+| RepViT-M0.9 | 30.3 | 4.75 / 5.56 | 237.2 | 1.42 / 2.50 |
+| RepViT-M1.0 | 37.0 | 4.42 / 4.88 | 251.3 | 1.66 / 2.78 |
+| RepViT-M1.1 | 39.0 | 5.85 / 7.56 | 165.9 | 1.81 / 2.94 |
+| MobileOne-S2 | 46.3 | 2.56 / 2.99 | 479.3 | 2.29 / 3.32 |
+
+Wall time includes data/model setup, training, and validation. Convolution/linear
+MACs use a 224px image and exclude normalization and activations. MPS memory was
+sampled every 50 ms; it is not an exact peak or CUDA VRAM. The models ran serially
+in one process, and driver allocation includes allocator/graph caches. Process
+RSS in the raw report is a lifetime peak, not a fresh per-model peak.
+These rows come from the original single-process campaign. The current Bash
+launcher isolates each model in a fresh process; this table has not been rerun.
+
+Under this single-seed, short recipe, MobileOne-S2 has the lowest MPS inference
+latency. RepViT-M1.1 has the highest fused validation top-1, about 1.45 points
+higher at roughly 2.3 times the median latency. RepViT-M1.0 trains faster and
+uses less sampled training memory than MobileOne-S2, but its small accuracy gain
+does not establish a clear inference advantage on this backend. These are
+Imagenette/MPS measurements, not ImageNet paper reproduction or CUDA results.
+
+The local `repvit-imagenette-mps.json` report in the repository root records
+the recipe, dataset archive hash, selected/final/deployment metrics,
+learning curves, checkpoint hashes, counts, timing, memory, and validation limits.
+It is ignored by Git; only the curated comparison and recipe are published here.
+Its source revision identifies the training run, not subsequent report or test edits.
+Checkpoints remain local and are not published with this comparison.
 
 These parameter counts use Imagenette's 10 classes. The paper's counts use
 an ImageNet-1K classifier with 1,000 classes.

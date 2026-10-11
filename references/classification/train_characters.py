@@ -31,7 +31,7 @@ from torchvision.transforms.v2 import functional as F
 from torchvision.transforms.v2.functional import InterpolationMode, to_pil_image
 
 from holocron.models import classification
-from holocron.trainer import ClassificationTrainer
+from holocron.trainer import ClassificationTrainer, resolve_device
 from holocron.utils import find_fonts, render_text
 
 DEFAULT_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -404,24 +404,6 @@ def benchmark_loader(loader: DataLoader, warmup_batches: int, measured_batches: 
     )
 
 
-def resolve_device(device: str) -> int | None:
-    if device == "auto":
-        return 0 if torch.cuda.is_available() else None
-    if device == "cpu":
-        return None
-    if device == "cuda":
-        index = 0
-    elif device.startswith("cuda:") and device[5:].isdigit():
-        index = int(device[5:])
-    else:
-        raise ValueError("--device must be 'auto', 'cpu', 'cuda', or 'cuda:N'")
-    if not torch.cuda.is_available():
-        raise ValueError("CUDA was requested but is not available")
-    if index >= torch.cuda.device_count():
-        raise ValueError(f"CUDA device index is out of range: {index}")
-    return index
-
-
 def build_model(name: str, num_classes: int) -> nn.Module:
     if name == "alexnet":
         model = alexnet(weights=None, num_classes=num_classes)
@@ -559,8 +541,8 @@ def get_parser() -> argparse.ArgumentParser:
     optimization.add_argument("--epochs", type=_positive_int, default=10)
     optimization.add_argument("--lr", type=_positive_float, default=1e-3)
     optimization.add_argument("--weight-decay", type=_nonnegative_float, default=1e-4)
-    optimization.add_argument("--device", default="auto", help="auto, cpu, cuda, or cuda:N")
-    optimization.add_argument("--amp", action="store_true", help="use CUDA automatic mixed precision")
+    optimization.add_argument("--device", default="auto", help="auto, cpu, cuda, cuda:N, or mps")
+    optimization.add_argument("--amp", action="store_true", help="use automatic mixed precision")
     optimization.add_argument("--output-dir", type=Path, default=Path("checkpoints/characters"))
     optimization.add_argument("--resume", type=Path, help="checkpoint to resume")
 
@@ -580,9 +562,8 @@ def main(args: argparse.Namespace) -> None:
     if args.arch == "alexnet" and args.image_size < 63:
         raise ValueError("AlexNet requires --image-size of at least 63")
     torch.manual_seed(args.seed)
-    gpu = resolve_device(args.device)
-    if args.amp and gpu is None:
-        raise ValueError("--amp requires a CUDA device")
+    device = resolve_device(args.device)
+    args.device = str(device)
 
     alphabet = tuple(args.alphabet)
     records, manifest_info = resolve_font_records(alphabet, args.font_dir, args.manifest)
@@ -595,7 +576,7 @@ def main(args: argparse.Namespace) -> None:
         args.workers,
         train_sampler,
         args.seed + 1,
-        pin_memory=gpu is not None,
+        pin_memory=device.type == "cuda",
     )
 
     if args.show_samples is not None:
@@ -619,7 +600,7 @@ def main(args: argparse.Namespace) -> None:
         args.workers,
         SequentialSampler(val_set),
         args.seed + 2,
-        pin_memory=gpu is not None,
+        pin_memory=device.type == "cuda",
     )
 
     model = build_model(args.arch, len(alphabet))
@@ -640,8 +621,8 @@ def main(args: argparse.Namespace) -> None:
         val_loader,
         criterion,
         optimizer,
-        gpu,
-        str(checkpoint_path),
+        output_file=str(checkpoint_path),
+        device=device,
         amp=args.amp,
         on_epoch_end=save_metadata,
     )

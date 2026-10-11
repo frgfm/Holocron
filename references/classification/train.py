@@ -76,8 +76,18 @@ def plot_samples(images, targets, num_samples=8):
     plt.show()
 
 
-@track_emissions()
 def main(args):
+    if args.threads is not None:
+        torch.set_num_threads(args.threads)
+    if args.benchmark:
+        from references.classification._benchmark import run_benchmark  # noqa: PLC0415
+
+        return run_benchmark(args, _train)
+    return _train(args)
+
+
+@track_emissions()
+def _train(args, on_epoch_end=None):
     print(args)
 
     torch.manual_seed(args.seed)
@@ -86,10 +96,13 @@ def main(args):
     # Data loading
     train_loader, val_loader = None, None
 
-    normalize = T.Normalize(
-        mean=IMAGENETTE.mean if args.dataset.lower() == "imagenette" else CIF10.mean,
-        std=IMAGENETTE.std if args.dataset.lower() == "imagenette" else CIF10.std,
-    )
+    normalize = T.Compose([
+        T.Lambda(torch.Tensor.contiguous),
+        T.Normalize(
+            mean=IMAGENETTE.mean if args.dataset.lower() == "imagenette" else CIF10.mean,
+            std=IMAGENETTE.std if args.dataset.lower() == "imagenette" else CIF10.std,
+        ),
+    ])
 
     interpolation = InterpolationMode.BILINEAR
 
@@ -129,13 +142,12 @@ def main(args):
         if args.find_size:
             print("Looking for optimal image size")
             find_image_size(train_set)
-            return
+            return None
 
         num_classes = len(train_set.classes)
         collate_fn = default_collate
         if args.mixup_alpha > 0:
-            mix = Mixup(len(train_set.classes), alpha=args.mixup_alpha)
-            collate_fn = lambda batch: mix(*default_collate(batch))
+            collate_fn = Mixup(len(train_set.classes), alpha=args.mixup_alpha).collate
         train_loader = create_loader(
             train_set, args, training=True, worker_init_fn=worker_init_fn, collate_fn=collate_fn
         )
@@ -147,7 +159,7 @@ def main(args):
     if args.show_samples:
         x, target = next(iter(train_loader))
         plot_samples(x, target)
-        return
+        return None
 
     if not (args.find_lr or args.check_setup):
         st = time.time()
@@ -189,17 +201,18 @@ def main(args):
         val_loader,
         criterion,
         optimizer,
-        args.device,
-        args.output_file,
+        output_file=args.output_file,
+        device=args.device,
         gradient_acc=args.grad_acc,
         amp=args.amp,
+        on_epoch_end=on_epoch_end,
     )
     load_checkpoint(trainer, args.resume)
 
     if args.plot_loss and not args.test_only:
         print("Checking top losses")
         trainer.plot_top_losses(IMAGENETTE["mean"], IMAGENETTE["std"], IMAGENETTE["classes"])
-        return
+        return None
 
     run_training(
         trainer,
@@ -225,6 +238,7 @@ def main(args):
         div_factor=100,
         pct_start=0.1,
     )
+    return trainer
 
 
 def get_parser():
@@ -242,6 +256,7 @@ def get_parser():
     group.add_argument("--resume", default="", help="resume from checkpoint")
     group.add_argument("--seed", default=0, type=int, help="random seed")
     add_loading_args(parser)
+    parser.add_argument("--threads", type=int, help="CPU intra-op threads; defaults to PyTorch's current setting")
     # Transformations
     group = parser.add_argument_group("Transformations")
     group.add_argument("--train-crop-size", default=176, type=int, help="training image size")
@@ -268,6 +283,11 @@ def get_parser():
     group.add_argument("--show-samples", action="store_true", help="Whether training samples should be displayed")
     group.add_argument("--test-only", help="Only test the model", action="store_true")
     group.add_argument("--plot-loss", help="Check the top losses of the model", action="store_true")
+    group.add_argument(
+        "--benchmark",
+        action="store_true",
+        help="Record training metrics and deployment profiling beside the checkpoint",
+    )
     # Experiment tracking
     group = parser.add_argument_group("Experiment tracking")
     group.add_argument("--wb", action="store_true", help="Log to Weights & Biases")

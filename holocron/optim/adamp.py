@@ -193,8 +193,11 @@ def adamp(
 
         # Extra step
         pt = exp_avg / bias_correction1 / denom
-        if F.cosine_similarity(param.data.view(1, -1), grad.view(1, -1)).max() < delta / math.sqrt(param.data.numel()):
-            normalized_param = param.data / param.data.norm().add_(eps)
-            pt -= (normalized_param * pt).sum() * normalized_param.data
+        project = F.cosine_similarity(param.data.reshape(1, -1), grad.reshape(1, -1)).max() < delta / math.sqrt(
+            param.data.numel()
+        )
+        normalized_param = param.data / param.data.norm().add_(eps)
+        # Tensor selection avoids synchronizing the accelerator once per parameter.
+        pt = torch.where(project, pt - (normalized_param * pt).sum() * normalized_param, pt)
 
         param.add_(pt, alpha=-lr)
