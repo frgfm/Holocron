@@ -96,10 +96,13 @@ def _train(args, on_epoch_end=None):
     # Data loading
     train_loader, val_loader = None, None
 
-    normalize = T.Normalize(
-        mean=IMAGENETTE.mean if args.dataset.lower() == "imagenette" else CIF10.mean,
-        std=IMAGENETTE.std if args.dataset.lower() == "imagenette" else CIF10.std,
-    )
+    normalize = T.Compose([
+        T.Lambda(torch.Tensor.contiguous),
+        T.Normalize(
+            mean=IMAGENETTE.mean if args.dataset.lower() == "imagenette" else CIF10.mean,
+            std=IMAGENETTE.std if args.dataset.lower() == "imagenette" else CIF10.std,
+        ),
+    ])
 
     interpolation = InterpolationMode.BILINEAR
 

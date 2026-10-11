@@ -29,8 +29,12 @@ uv run --no-sync python -m references.classification.train DATA --arch repvit_m0
 CPU training uses FP32 by default; `--amp` opts into BF16 autocasting. CUDA and
 MPS use FP16 autocasting with gradient scaling when `--amp` is enabled. Measure
 CPU mixed precision on the target processor: it is not faster on every CPU.
-Pinned host memory is used only for CUDA. Start with two to four loading workers
-on a Mac, or `-j 0` when debugging. The Mixup loader supports macOS worker spawning.
+Pinned host memory is used only for CUDA. For Imagenette on MPS, start with one
+or two loading workers (`--workers 1` or `--workers 2`), or `-j 0` when debugging.
+The Mixup loader supports macOS worker spawning. Local M3 Pro diagnostics found
+that `--no-amp` reduced training time for RepViT and MobileOne-S2, but RepViT used
+more Metal driver memory. Measure both modes for your model; these short runs do
+not establish accuracy parity or optimal settings for other hardware or tasks.
 
 For line recognition, use `--device mps` with the recognition script. Its CTC
 loss runs on CPU because PyTorch has no MPS CTC kernel; gradients return to the
@@ -49,7 +53,9 @@ bash references/classification/benchmark_repvit_imagenette.sh \
   /path/to/imagenette2-320 /path/to/fresh-results --device mps
 ```
 
-The default is 20 epochs, seed 0, AMP, and batch size 32. To use a physical batch
+The default is 20 epochs, seed 0, AMP, four workers, and batch size 32. For the MPS
+settings above, append `--workers 1 --no-amp`; this changes the recipe, not the
+historical benchmark results. To use a physical batch
 of 8 with the same effective batch, pass `--batch-size 8 --grad-acc 4`. Other
 options come directly from the training CLI. Each model runs in a fresh process.
 Results include selected and final

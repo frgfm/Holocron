@@ -1,5 +1,6 @@
 import json
 import math
+import pickle  # noqa: S403
 import sys
 from argparse import Namespace
 from pathlib import Path
@@ -191,6 +192,19 @@ def test_benchmark_cli_writes_real_results_and_rejects_overwrite(tmp_path, monke
             folder.mkdir(parents=True)
             for index in range(copies):
                 Image.new("RGB", (64, 64), (label * 20, index * 20, 100)).save(folder / f"{index}.png")
+    original_loader = train.create_loader
+
+    def checked_loader(dataset, *args, **kwargs):
+        normalize = next(op for op in dataset.transform.transforms if isinstance(op, train.T.Compose))
+        image = torch.arange(192, dtype=torch.float32).reshape(8, 8, 3).permute(2, 0, 1) / 255
+        # Only deserialize the transform created by this test.
+        actual = pickle.loads(pickle.dumps(normalize))(image)  # noqa: S301
+        assert actual.is_contiguous()
+        expected = train.T.Normalize(train.IMAGENETTE.mean, train.IMAGENETTE.std)(image)
+        torch.testing.assert_close(actual, expected, rtol=0, atol=0)
+        return original_loader(dataset, *args, **kwargs)
+
+    monkeypatch.setattr(train, "create_loader", checked_loader)
     original_measure = benchmark.measure
     monkeypatch.setattr(
         benchmark,
