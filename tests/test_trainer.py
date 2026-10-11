@@ -487,8 +487,10 @@ def test_binary_classification_trainer():
 
     gpu = 0 if torch.cuda.is_available() else None
     learner = trainer.BinaryClassificationTrainer(
-        model, train_loader, train_loader, criterion, optimizer, gpu=gpu, amp=gpu is not None
+        model, train_loader, train_loader, criterion, optimizer, gpu=gpu, amp=True
     )
+    learner.check_setup(num_it=2, block=False)
+    assert learner.scaler.is_enabled() == (gpu is not None)
 
     res = learner.evaluate()
     assert 0 <= res["acc"] <= 1
