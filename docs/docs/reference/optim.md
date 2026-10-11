@@ -44,8 +44,9 @@ optimizer = holocron.optim.AdamP(model.parameters(), mps_fused=True)
 ```
 
 Fusion requires contiguous FP32 parameters, gradients, and optimizer state on MPS, with zero weight decay and
-`amsgrad=False`. Other configurations use ordinary AdamP, including CPU, CUDA, and PyTorch versions without the
-public `torch.mps.compile_shader` API (available since PyTorch 2.7). Compilation failure also falls back before
+`amsgrad=False`. Each parameter, gradient, and its moment buffers must use distinct storage. Shared-storage
+configurations also fall back. Other configurations use ordinary AdamP, including CPU, CUDA, and PyTorch versions
+without the public `torch.mps.compile_shader` API (available since PyTorch 2.7). Compilation failure also falls back before
 any tensor update; execution failures propagate without retrying a partially completed update.
 
 The option defaults to `False` and remains a constructor preference when loading optimizer state. AMP can still

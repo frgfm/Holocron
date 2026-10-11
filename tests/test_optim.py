@@ -205,6 +205,17 @@ def test_adamp_mps_fallback_and_amp_skip(monkeypatch):
             parameter.grad = torch.ones_like(parameter)
             with pytest.raises(RuntimeError):
                 optimizer.step()
+        params = [torch.nn.Parameter(torch.ones(2, device="mps")) for _ in range(2)]
+        for parameter, fused in zip(params, (False, True), strict=True):
+            parameter.grad = torch.ones_like(parameter)
+            optimizer = optim.AdamP([parameter], mps_fused=fused)
+            optimizer.state[parameter] = {
+                "step": 0,
+                "exp_avg": parameter.grad,
+                "exp_avg_sq": torch.zeros_like(parameter),
+            }
+            optimizer.step()
+        torch.testing.assert_close(*params)
     parameter = torch.nn.Parameter(torch.ones(2, device="mps"))
     optimizer = optim.AdamP([parameter], mps_fused=True)
     assert not getattr(optimizer, "_step_supports_amp_scaling", False)

@@ -323,6 +323,9 @@ def _mps_adamp(
         tensor.shape != tensors[0].shape
         for tensors in zip(params, grads, avgs, squares, strict=True)
         for tensor in tensors[1:]
+    ) or any(
+        len({tensor.untyped_storage().data_ptr() for tensor in tensors}) != 4
+        for tensors in zip(params, grads, avgs, squares, strict=True)
     ):
         return False
     shader = _mps_adamp_shader()
