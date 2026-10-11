@@ -9,10 +9,8 @@ import hashlib
 import json
 import math
 import random
-import re
 import signal
 from argparse import ArgumentParser
-from functools import partial
 from pathlib import Path
 
 import numpy as np
@@ -22,9 +20,10 @@ from torchvision.datasets import ImageFolder
 
 from holocron.experiments import Trial, imagefolder_manifest, sha256, write_json
 from holocron.models import get_model, get_model_info
+from holocron.trainer import resolve_device
+from holocron.utils.data import Mixup
 from references._common import OPTIMIZERS, create_loader, run_training
 from references.classification.train import (
-    collate_mixup,
     create_trainer,
     get_parser,
     imagefolder_transforms,
@@ -117,15 +116,6 @@ def _validate_settings(training, preprocessing):
         raise ValueError("unsupported scheduler")
 
 
-def _validate_device(device, amp):
-    if not isinstance(device, str) or (device != "cpu" and not re.fullmatch(r"cuda:\d+", device)):
-        raise ValueError("training_device must be cpu or cuda:N")
-    if device != "cpu" and (not torch.cuda.is_available() or int(device[5:]) >= torch.cuda.device_count()):
-        raise ValueError("requested CUDA device is unavailable")
-    if type(amp) is not bool or (amp and device == "cpu"):
-        raise ValueError("amp must be a boolean and requires CUDA")
-
-
 def _resolve_config(raw, base, defaults):
     required = ("schema_version", "model", "dataset", "training_device", "deployment_target")
     _object(raw, (*required, "training", "preprocessing", "seed", "tracking"), required)
@@ -139,8 +129,9 @@ def _resolve_config(raw, base, defaults):
         settings[section] = {key: overrides.get(key, defaults[key]) for key in keys}
     training, preprocessing = settings["training"], settings["preprocessing"]
     _validate_settings(training, preprocessing)
-    device = raw["training_device"]
-    _validate_device(device, training["amp"])
+    if not isinstance(raw["training_device"], str) or type(training["amp"]) is not bool:
+        raise ValueError("training_device must be a device name; amp must be a boolean")
+    device = str(resolve_device(raw["training_device"]))
     target = raw["deployment_target"]
     if target is not None and (not isinstance(target, str) or not target.strip()):
         raise ValueError("deployment_target must be null or a nonempty description")
@@ -151,6 +142,7 @@ def _resolve_config(raw, base, defaults):
         raise ValueError("invalid tracking settings")
     return {
         **raw,
+        "training_device": device,
         "model": model,
         "dataset": dataset,
         **settings,
@@ -171,13 +163,13 @@ def run_experiment(config_path, directory):
     config = _resolve_config(json.loads(config_path.read_text(encoding="utf-8")), config_path.parent, vars(args))
     vars(args).update(config["training"], **config["preprocessing"], **config["tracking"])
     args.arch, args.seed = config["model"]["name"], config["seed"]
-    args.device = None if config["training_device"] == "cpu" else int(config["training_device"][5:])
+    args.device = config["training_device"]
     with Trial(Path(directory), config) as trial:
         trial.record_environment()
         random.seed(args.seed)
         np.random.seed(args.seed)  # noqa: NPY002
         torch.manual_seed(args.seed)
-        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.benchmark = True
         train_transform, val_transform = imagefolder_transforms(args)
         trial.record_provenance(
             preprocessing={
@@ -198,7 +190,7 @@ def run_experiment(config_path, directory):
         num_classes = len(splits["train"].classes)
         collate = default_collate
         if args.mixup_alpha > 0:
-            collate = partial(collate_mixup, num_classes=num_classes, alpha=args.mixup_alpha)
+            collate = Mixup(num_classes, alpha=args.mixup_alpha).collate
         train_loader = create_loader(
             splits["train"], args, training=True, worker_init_fn=worker_init_fn, collate_fn=collate
         )
@@ -220,17 +212,19 @@ def run_experiment(config_path, directory):
         trial.record_provenance(initialization=initialization)
         args.output_file = str(trial.directory / "checkpoint.pth")
         trainer = create_trainer(model, train_loader, val_loader, args)
-        trial.result["actual_device"] = str(next(trainer.model.parameters()).device)
+        trial.result["actual_device"] = str(trainer.device)
         trial.record_provenance(
             actual_device=trial.result["actual_device"],
+            autocast_dtype=str(torch.get_autocast_dtype(trainer.device.type)) if args.amp else "torch.float32",
             threads=torch.get_num_threads(),
-            cudnn_benchmark=False,
+            cudnn_benchmark=torch.backends.cudnn.benchmark,
             deterministic_algorithms=torch.are_deterministic_algorithms_enabled(),
             loader={
                 "train_drop_last": True,
                 "validation_drop_last": False,
                 "train_batches": len(train_loader),
                 "validation_batches": len(val_loader),
+                "pin_memory": train_loader.pin_memory,
             },
             optimizer=trainer.optimizer.defaults,
             scheduler={

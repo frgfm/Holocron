@@ -6,7 +6,6 @@
 """Measure a standard classification training run; no separate recipe or CLI."""
 
 import copy
-import hashlib
 import json
 import platform
 import threading
@@ -16,16 +15,9 @@ from pathlib import Path
 import torch
 from torch import nn
 
+from holocron.experiments import sha256, write_json
 from holocron.trainer import resolve_device
 from scripts.eval_latency import measure, peak_rss_mib, synchronize
-
-
-def write_json(path, value):
-    """Replace a benchmark record only after finite JSON has been written."""
-    text = json.dumps(value, indent=2, allow_nan=False) + "\n"
-    temporary = path.with_suffix(".tmp")
-    temporary.write_text(text)
-    temporary.replace(path)
 
 
 def count_macs(model, shape=(1, 3, 224, 224)):
@@ -99,8 +91,7 @@ def run_benchmark(args, train):
     }
     archive = Path(args.data_path).parent / "imagenette2-320.tgz"
     if args.dataset.lower() == "imagenette" and archive.is_file():
-        with archive.open("rb") as stream:
-            report["dataset"]["archive_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
+        report["dataset"]["archive_sha256"] = sha256(archive)
     history = []
     memory = {"sampled_peak_mps_tensor_bytes": 0, "sampled_peak_mps_driver_bytes": 0}
     done = threading.Event()
@@ -157,8 +148,7 @@ def run_benchmark(args, train):
     learner.model.load_state_dict(state["model"])
     result["selected_epoch"] = state["epoch"]
     result["selected_metrics"] = learner.evaluate()
-    with checkpoint.open("rb") as stream:
-        result["checkpoint_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
+    result["checkpoint_sha256"] = sha256(checkpoint)
     unfused = copy.deepcopy(learner.model).cpu().eval()
     fused = copy.deepcopy(unfused)
     if hasattr(fused, "reparametrize"):

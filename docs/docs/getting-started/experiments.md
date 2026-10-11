@@ -10,6 +10,11 @@ uv run --no-sync python -m references.classification.experiment CONFIG.json runs
 The trial path must not exist, including as a symlink. Input paths are relative to
 CONFIG; output paths to the working directory. Use Git-ignored `runs/` or an external directory.
 
+| Entry point | Purpose |
+| --- | --- |
+| Classification CLI `--benchmark` | Measure training throughput/memory and fused-model inference |
+| Experiment JSON | Validate inputs and record data identity, progress and terminal outcome with the same trainer |
+
 ## Input v1
 
 Use [the example](https://github.com/frgfm/Holocron/blob/main/references/classification/experiment.example.json).
@@ -22,7 +27,7 @@ setup/training errors leave a failed record.
 | --- | --- |
 | `model` | Catalog classification `name`; `initialization` is `{"kind":"random"}` or `{"kind":"checkpoint","path":"local.pth"}` |
 | `dataset` | `format: "imagefolder"`; `train`, `validation`, optional `test` directories |
-| `training_device` | `"cpu"` or available `"cuda:N"`; AMP requires CUDA |
+| `training_device` | Shared resolver: `"cpu"`, `"cuda"`, `"cuda:N"`, `"mps"`, `"auto"`; resolved before training; unavailable devices fail |
 | `deployment_target` | null or nonempty description; intent only, never a measurement |
 | `seed` | Integer 0 through 2³²−1; seeds Python, NumPy and PyTorch |
 | `preprocessing` | `train_crop_size`, `val_resize_size`, `val_crop_size`, `random_erase` |
@@ -41,6 +46,8 @@ normalization and random erasing (scale 0.02–0.2). Validation uses resize/cent
 and the same conversion/normalization. Exact transforms and optimizer/scheduler defaults
 are recorded. Training shuffles and drops incomplete batches; validation reads all samples.
 At least one full training batch is required. Mixup and label smoothing remain configurable.
+Mixed precision (`amp`) uses the trainer's CPU BF16 or CUDA/MPS FP16 path. The actual
+device, autocast dtype and CUDA-only pinned memory are recorded. MPS tensors stay contiguous.
 
 ## Output v1
 

@@ -51,7 +51,8 @@ def configuration(tmp_path, monkeypatch):
         (None, "schema_version", True),
         (None, "schema_version", 2),
         (None, "wall_time_seconds", 10),
-        (None, "training_device", "mps"),
+        (None, "training_device", "meta"),
+        (None, "training_device", 0),
         (None, "seed", -1),
         (None, "seed", 1.5),
         ("training", "epochs", 0),
@@ -60,7 +61,7 @@ def configuration(tmp_path, monkeypatch):
         ("training", "opt", "unknown"),
         ("training", "sched", "unknown"),
         ("training", "workers", -1),
-        ("training", "amp", True),
+        ("training", "amp", "yes"),
         ("training", "resume", "old.pth"),
         ("preprocessing", "random_erase", 2),
         ("preprocessing", "mean", [0, 0, 0]),
@@ -81,9 +82,25 @@ def test_configuration_rejection(configuration, section, key, value):
 
 
 @pytest.mark.parametrize("scheduler", ["cosine", "onecycle"])
-def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
+@pytest.mark.parametrize(
+    ("device", "amp"),
+    [
+        ("cpu", False),
+        ("cpu", True),
+        ("auto", False),
+        pytest.param(
+            "mps", True, marks=pytest.mark.skipif(not torch.backends.mps.is_available(), reason="MPS unavailable")
+        ),
+        pytest.param(
+            "cuda:0", True, marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable")
+        ),
+    ],
+)
+def test_success_and_independent_reader(configuration, monkeypatch, scheduler, device, amp):  # noqa: PLR0915
     path, config = configuration
-    config["training"]["sched"] = scheduler
+    actual_device = str(experiment.resolve_device(device))
+    config["training_device"] = device
+    config["training"].update(sched=scheduler, amp=amp)
     path.write_text(json.dumps(config), encoding="utf-8")
     original_getitem = ImageFolder.__getitem__
 
@@ -120,7 +137,12 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
     assert provenance["packages"]["torch"]
     assert "RandomResizedCrop" in provenance["preprocessing"]["train"]
     assert len(provenance["initialization"]["state_dict_sha256"]) == 64
-    assert (result["state"], result["exit_code"], result["actual_device"]) == ("completed", 0, "cpu")
+    assert (result["state"], result["exit_code"], result["actual_device"]) == ("completed", 0, actual_device)
+    assert config["training_device"] == provenance["actual_device"] == actual_device
+    assert provenance["loader"]["pin_memory"] == (actual_device.startswith("cuda"))
+    assert provenance["autocast_dtype"] == (
+        str(torch.get_autocast_dtype(torch.device(actual_device).type)) if amp else "torch.float32"
+    )
     assert result["finished_at"]
     assert result["elapsed_seconds"] > 0
     assert (config["training"]["epochs"], [event["epoch"] for event in events]) == (2, [1, 2])

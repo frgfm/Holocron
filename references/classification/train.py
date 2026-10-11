@@ -9,7 +9,6 @@ import logging
 import math
 import time
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-from functools import partial
 from pathlib import Path
 
 import numpy as np
@@ -46,10 +45,6 @@ logger.setLevel(logging.ERROR)
 
 def worker_init_fn(worker_id: int) -> None:
     np.random.default_rng((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
-
-
-def collate_mixup(batch, *, num_classes, alpha):
-    return Mixup(num_classes, alpha=alpha)(*default_collate(batch))
 
 
 def scheduler_kwargs(args):
@@ -101,7 +96,10 @@ def plot_samples(images, targets, num_samples=8):
 
 
 def imagefolder_transforms(args):
-    normalize = T.Normalize(mean=IMAGENETTE.mean, std=IMAGENETTE.std)
+    normalize = T.Compose([
+        T.Lambda(torch.Tensor.contiguous),
+        T.Normalize(mean=IMAGENETTE.mean, std=IMAGENETTE.std),
+    ])
     interpolation = InterpolationMode.BILINEAR
     return (
         T.Compose([
@@ -316,4 +314,5 @@ if __name__ == "__main__":
     from codecarbon import track_emissions
 
     args = get_parser().parse_args()
-    track_emissions()(main)(args)
+    _train = track_emissions()(_train)
+    main(args)
