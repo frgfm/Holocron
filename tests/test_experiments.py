@@ -14,7 +14,7 @@ from torchvision.datasets import ImageFolder
 
 from holocron.experiments import Trial, imagefolder_manifest, sha256
 from holocron.trainer import ClassificationTrainer
-from references.classification import experiment
+from references.classification import experiment, train
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def configuration(tmp_path, monkeypatch):
     path = tmp_path / "experiment.json"
     path.write_text(json.dumps(config), encoding="utf-8")
     monkeypatch.setattr(
-        experiment,
+        train,
         "get_model",
         lambda *_args, **_kwargs: nn.Sequential(nn.AdaptiveAvgPool2d(1), nn.Flatten(), nn.Linear(3, 2)),
     )
@@ -83,25 +83,9 @@ def test_configuration_rejection(configuration, section, key, value):
 
 
 @pytest.mark.parametrize("scheduler", ["cosine", "onecycle"])
-@pytest.mark.parametrize(
-    ("device", "amp"),
-    [
-        ("cpu", False),
-        ("cpu", True),
-        ("auto", False),
-        pytest.param(
-            "mps", True, marks=pytest.mark.skipif(not torch.backends.mps.is_available(), reason="MPS unavailable")
-        ),
-        pytest.param(
-            "cuda:0", True, marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable")
-        ),
-    ],
-)
-def test_success_and_independent_reader(configuration, monkeypatch, scheduler, device, amp):  # noqa: PLR0915
+def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
     path, config = configuration
-    actual_device = str(experiment.resolve_device(device))
-    config["training_device"] = device
-    config["training"].update(sched=scheduler, amp=amp)
+    config["training"]["sched"] = scheduler
     path.write_text(json.dumps(config), encoding="utf-8")
     original_getitem = ImageFolder.__getitem__
 
@@ -109,83 +93,72 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler, d
         assert dataset.root != str(path.parent / "test")
         return original_getitem(dataset, index)
 
+    def worsening_metrics(learner):
+        running = json.loads(Path(learner.output_file).with_name("result.json").read_text())
+        assert (running["state"], running["actual_device"]) == ("running", "cpu")
+        return {"val_loss": float(learner.epoch), "acc1": 0.5, "acc5": 0.0}
+
     monkeypatch.setattr(ImageFolder, "__getitem__", no_test_reads)
+    monkeypatch.setattr(ClassificationTrainer, "evaluate", worsening_metrics)
     directory = path.parent / "trial"
-    if scheduler == "onecycle":
-
-        def worsening_metrics(learner):
-            running = json.loads(Path(learner.output_file).with_name("result.json").read_text())
-            assert running["state"] == "running"
-            assert running["finished_at"] is None
-            return {"val_loss": float(learner.epoch), "acc1": 0.5, "acc5": 0.0}
-
-        monkeypatch.setattr(ClassificationTrainer, "evaluate", worsening_metrics)
     experiment.run_experiment(path, directory)
-    # The reader uses only JSON and checkpoint bytes from the trial directory.
     config, provenance, data, result = [
-        json.loads((directory / name).read_text())
-        for name in ("config.json", "provenance.json", "data.json", "result.json")
+        json.loads((directory / f"{name}.json").read_text()) for name in ("config", "provenance", "data", "result")
     ]
     events = [json.loads(line) for line in (directory / "progress.jsonl").read_text().splitlines()]
-    assert config["training"]["lr"] == experiment.get_parser().parse_args(["."]).lr
+    model = result["models"][0]
+    assert config["training"]["lr"] == train.get_parser().parse_args(["."]).lr
     assert config["dataset"]["train"] == str(path.parent / "train")
     assert config["deployment_target"] == "owner's CPU"
     assert data["class_to_idx"] == {"a": 0, "b": 1}
-    assert len(data["splits"]["train"]["samples"]) == 4
+    assert all(len(split["samples"]) == 4 for split in data["splits"].values())
     assert provenance["data"]["train"] == data["splits"]["train"]["sha256"]
     assert provenance["source"]["revision"]
     assert type(provenance["source"]["dirty"]) is bool
     assert provenance["packages"]["torch"]
     assert "RandomResizedCrop" in provenance["preprocessing"]["train"]
     assert len(provenance["initialization"]["state_dict_sha256"]) == 64
-    assert (result["state"], result["exit_code"], result["actual_device"]) == ("completed", 0, actual_device)
-    assert config["training_device"] == provenance["actual_device"] == actual_device
-    assert provenance["loader"]["pin_memory"] == (actual_device.startswith("cuda"))
-    assert provenance["autocast_dtype"] == (
-        str(torch.get_autocast_dtype(torch.device(actual_device).type)) if amp else "torch.float32"
-    )
+    assert (result["state"], result["exit_code"], result["actual_device"]) == ("completed", 0, "cpu")
     assert result["finished_at"]
     assert result["elapsed_seconds"] > 0
-    assert (config["training"]["epochs"], [event["epoch"] for event in events]) == (2, [1, 2])
-    assert all(metric["split"] == "validation" for event in events for metric in event["metrics"])
-    assert result["final_epoch_metrics"] == events[-1]["metrics"]
-    selected = result["selected_checkpoint"]
-    assert selected["sha256"] == sha256(directory / selected["path"])
-    checkpoint = torch.load(directory / selected["path"], map_location="cpu", weights_only=True)
-    assert checkpoint["epoch"] == selected["epoch"]
-    assert selected["metrics"] == events[selected["epoch"] - 1]["metrics"]
-    if scheduler == "onecycle":
-        assert selected["epoch"] == 1
-        assert result["epoch"] == 2
-    assert selected["fully_resumable"] is False
-    assert {metric["name"]: metric["direction"] for metric in selected["metrics"]} == {
-        "val_loss": "minimize",
-        "acc1": "maximize",
-    }
-    # A checkpoint from this contract can initialize another trial, without resume claims.
-    raw = json.loads(path.read_text())
-    raw["model"]["initialization"] = {"kind": "checkpoint", "path": str(directory / "checkpoint.pth")}
-    path.write_text(json.dumps(raw), encoding="utf-8")
+    assert [event["epoch"] for event in events] == [1, 2]
+    assert all(event["split"] == result["metrics_split"] == "validation" for event in events)
+    assert (model["final_epoch"], model["selected_epoch"]) == (2, 1)
+    assert model["final_metrics"] == {key: events[-1][key] for key in result["metric_directions"]}
+    assert model["selected_metrics"] == {key: events[0][key] for key in result["metric_directions"]}
+    assert result["metric_directions"] == {"val_loss": "minimize", "acc1": "maximize"}
+    assert model["checkpoint_sha256"] == sha256(directory / model["checkpoint"])
+    assert torch.load(directory / model["checkpoint"], map_location="cpu", weights_only=True)["epoch"] == 1
+    assert model["fully_resumable"] is False
+    config["model"]["initialization"] = {"kind": "checkpoint", "path": str(directory / "checkpoint.pth")}
+    path.write_text(json.dumps(config), encoding="utf-8")
     experiment.run_experiment(path, path.parent / "warm-start")
-    warm_start = json.loads((path.parent / "warm-start" / "provenance.json").read_text())
-    assert warm_start["initialization"]["sha256"] == selected["sha256"]
+    assert (
+        json.loads((path.parent / "warm-start/provenance.json").read_text())["initialization"]["sha256"]
+        == model["checkpoint_sha256"]
+    )
 
 
 @pytest.mark.parametrize(
-    ("error", "state", "exit_code"),
+    ("error", "state", "exit_code", "after_epoch"),
     [
-        (RuntimeError("training broke"), "failed", 1),
-        (KeyboardInterrupt(), "interrupted", 130),
-        (SystemExit(143), "interrupted", 143),
-        (SystemExit(0), "interrupted", 0),
-        (SystemExit(None), "interrupted", 0),
-        (SystemExit("exit message"), "interrupted", 1),
+        (RuntimeError("training broke"), "failed", 1, False),
+        (RuntimeError("training broke"), "failed", 1, True),
+        (KeyboardInterrupt(), "interrupted", 130, False),
+        (SystemExit(143), "interrupted", 143, False),
+        (SystemExit(0), "interrupted", 0, False),
+        (SystemExit(None), "interrupted", 0, False),
+        (SystemExit("exit message"), "interrupted", 1, False),
     ],
 )
-def test_failure_and_interruption(configuration, monkeypatch, error, state, exit_code):
+def test_failure_and_interruption(configuration, monkeypatch, error, state, exit_code, after_epoch):
     path, _ = configuration
 
-    def fail(*_args, **_kwargs):
+    fit = ClassificationTrainer.fit_n_epochs
+
+    def fail(learner, _epochs, *args, **kwargs):
+        if after_epoch:
+            fit(learner, 1, *args, **kwargs)
         raise error
 
     monkeypatch.setattr(ClassificationTrainer, "fit_n_epochs", fail)
@@ -198,9 +171,14 @@ def test_failure_and_interruption(configuration, monkeypatch, error, state, exit
     assert result["error"]["type"] == type(error).__name__
     assert result["error"]["message"] == str(error)
     assert "fail" in result["error"]["traceback"]
-    assert result["selected_checkpoint"] is None
     assert result["finished_at"]
-    assert not (directory / "progress.jsonl").read_text()
+    if after_epoch:
+        model = result["models"][0]
+        assert model["selected_epoch"] == result["epoch"] == 1
+        assert model["checkpoint_sha256"] == sha256(directory / model["checkpoint"])
+    else:
+        assert "checkpoint" not in result["models"][0]
+        assert not (directory / "progress.jsonl").read_text()
 
 
 def test_overwrite_protection(configuration):
@@ -248,14 +226,14 @@ def test_mixup_with_spawn_worker(configuration):
 def test_trial_releases_trainer_without_garbage_collection(configuration, monkeypatch):
     path, _ = configuration
     references = []
-    create_trainer = experiment.create_trainer
+    create_trainer = train.ClassificationTrainer
 
     def observe_trainer(*args, **kwargs):
         learner = create_trainer(*args, **kwargs)
         references.append(weakref.ref(learner))
         return learner
 
-    monkeypatch.setattr(experiment, "create_trainer", observe_trainer)
+    monkeypatch.setattr(train, "ClassificationTrainer", observe_trainer)
     was_enabled = gc.isenabled()
     gc.disable()
     try:

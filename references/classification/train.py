@@ -19,7 +19,7 @@ from torchvision.datasets import CIFAR10, CIFAR100, ImageFolder
 from torchvision.transforms import v2 as T
 from torchvision.transforms.v2.functional import InterpolationMode, to_pil_image
 
-from holocron.models import classification
+from holocron.models import get_model
 from holocron.models.presets import CIFAR10 as CIF10
 from holocron.models.presets import IMAGENETTE
 from holocron.trainer import ClassificationTrainer
@@ -45,25 +45,6 @@ logger.setLevel(logging.ERROR)
 
 def worker_init_fn(worker_id: int) -> None:
     np.random.default_rng((worker_id + torch.initial_seed()) % np.iinfo(np.int32).max)
-
-
-def scheduler_kwargs(args):
-    return {"div_factor": 100, "pct_start": 0.1} if args.sched == "onecycle" else {}
-
-
-def create_trainer(model, train_loader, val_loader, args, on_epoch_end=None):
-    return ClassificationTrainer(
-        model,
-        train_loader,
-        val_loader,
-        nn.CrossEntropyLoss(label_smoothing=args.label_smoothing),
-        create_optimizer(model, args),
-        output_file=args.output_file,
-        device=args.device,
-        gradient_acc=args.grad_acc,
-        amp=args.amp,
-        on_epoch_end=on_epoch_end,
-    )
 
 
 def plot_samples(images, targets, num_samples=8):
@@ -95,32 +76,6 @@ def plot_samples(images, targets, num_samples=8):
     plt.show()
 
 
-def imagefolder_transforms(args):
-    normalize = T.Compose([
-        T.Lambda(torch.Tensor.contiguous),
-        T.Normalize(mean=IMAGENETTE.mean, std=IMAGENETTE.std),
-    ])
-    interpolation = InterpolationMode.BILINEAR
-    return (
-        T.Compose([
-            T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
-            T.RandomHorizontalFlip(),
-            T.TrivialAugmentWide(interpolation=interpolation),
-            T.PILToTensor(),
-            T.ConvertImageDtype(torch.float32),
-            normalize,
-            T.RandomErasing(p=args.random_erase, scale=(0.02, 0.2), value="random"),
-        ]),
-        T.Compose([
-            T.Resize(args.val_resize_size, interpolation=interpolation),
-            T.CenterCrop(args.val_crop_size),
-            T.PILToTensor(),
-            T.ConvertImageDtype(torch.float32),
-            normalize,
-        ]),
-    )
-
-
 def main(args):
     if args.threads is not None:
         torch.set_num_threads(args.threads)
@@ -131,7 +86,7 @@ def main(args):
     return _train(args)
 
 
-def _train(args, on_epoch_end=None):
+def _train(args, on_epoch_end=None, on_setup=None):
     print(args)
 
     torch.manual_seed(args.seed)
@@ -149,15 +104,22 @@ def _train(args, on_epoch_end=None):
     ])
 
     interpolation = InterpolationMode.BILINEAR
-    train_transform, val_transform = imagefolder_transforms(args)
 
     num_classes = None
     if not args.test_only:
         st = time.time()
         if args.dataset.lower() == "imagenette":
             train_set = ImageFolder(
-                Path(args.data_path).joinpath("train"),
-                train_transform,
+                getattr(args, "split_paths", {}).get("train", Path(args.data_path) / "train"),
+                T.Compose([
+                    T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
+                    T.RandomHorizontalFlip(),
+                    T.TrivialAugmentWide(interpolation=interpolation),
+                    T.PILToTensor(),
+                    T.ConvertImageDtype(torch.float32),
+                    normalize,
+                    T.RandomErasing(p=args.random_erase, scale=(0.02, 0.2), value="random"),
+                ]),
             )
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
@@ -202,8 +164,14 @@ def _train(args, on_epoch_end=None):
         st = time.time()
         if args.dataset.lower() == "imagenette":
             val_set = ImageFolder(
-                Path(args.data_path).joinpath("val"),
-                val_transform,
+                getattr(args, "split_paths", {}).get("validation", Path(args.data_path) / "val"),
+                T.Compose([
+                    T.Resize(args.val_resize_size, interpolation=interpolation),
+                    T.CenterCrop(args.val_crop_size),
+                    T.PILToTensor(),
+                    T.ConvertImageDtype(torch.float32),
+                    normalize,
+                ]),
             )
         else:
             cifar_version = CIFAR100 if args.dataset.lower() == "cifar100" else CIFAR10
@@ -219,10 +187,29 @@ def _train(args, on_epoch_end=None):
 
         print(f"Validation set loaded in {time.time() - st:.2f}s ({len(val_set)} samples in {len(val_loader)} batches)")
 
-    model = classification.__dict__[args.arch](args.pretrained, num_classes=num_classes)
+    model = get_model(args.arch, pretrained=args.pretrained, num_classes=num_classes)
 
-    trainer = create_trainer(model, train_loader, val_loader, args, on_epoch_end)
+    criterion = nn.CrossEntropyLoss(label_smoothing=args.label_smoothing)
+
+    # Create the contiguous parameters.
+    optimizer = create_optimizer(model, args)
+
+    trainer = ClassificationTrainer(
+        model,
+        train_loader,
+        val_loader,
+        criterion,
+        optimizer,
+        output_file=args.output_file,
+        device=args.device,
+        gradient_acc=args.grad_acc,
+        amp=args.amp,
+        on_epoch_end=on_epoch_end,
+    )
     load_checkpoint(trainer, args.resume)
+    scheduler_kwargs = {"div_factor": 100, "pct_start": 0.1} if args.sched == "onecycle" else {}
+    if on_setup is not None:
+        on_setup(trainer, scheduler_kwargs)
 
     if args.plot_loss and not args.test_only:
         print("Checking top losses")
@@ -250,7 +237,7 @@ def _train(args, on_epoch_end=None):
             "mixup_alpha": args.mixup_alpha,
             "seed": args.seed,
         },
-        **scheduler_kwargs(args),
+        **scheduler_kwargs,
     )
     return trainer
 

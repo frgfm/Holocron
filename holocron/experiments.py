@@ -7,7 +7,6 @@
 
 import hashlib
 import json
-import math
 import platform
 import subprocess  # noqa: S404
 import time
@@ -18,6 +17,7 @@ from pathlib import Path
 from types import TracebackType
 from typing import Any, Self
 
+import torch
 from torchvision.datasets import ImageFolder
 
 from holocron.trainer import Trainer
@@ -69,6 +69,25 @@ def imagefolder_manifest(splits: dict[str, ImageFolder]) -> dict[str, Any]:
     return {"schema_version": 1, "class_to_idx": mapping, "splits": manifests}
 
 
+def checkpoint_record(path: Path, history: list[dict[str, Any]]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Read the selected checkpoint and its original epoch metrics.
+
+    Returns:
+        Saved state and benchmark-compatible checkpoint metadata.
+    """
+    state = torch.load(path, map_location="cpu", weights_only=True)
+    metrics = {
+        key: value for key, value in history[state["epoch"] - 1].items() if key not in {"epoch", "elapsed_seconds"}
+    }
+    return state, {
+        "checkpoint": path.name,
+        "checkpoint_sha256": sha256(path),
+        "selected_epoch": state["epoch"],
+        "selected_metrics": metrics,
+        "fully_resumable": False,
+    }
+
+
 class Trial:
     """Own one new directory and record a trial's lifecycle and epoch callback.
 
@@ -78,6 +97,7 @@ class Trial:
     """
 
     def __init__(self, directory: Path, configuration: dict[str, Any]) -> None:
+        self.configuration = configuration
         self.provenance: dict[str, Any] = {"schema_version": 1}
         self._record_environment()
         directory.mkdir(parents=True, exist_ok=False)
@@ -90,8 +110,6 @@ class Trial:
             "finished_at": None,
             "epoch": 0,
             "actual_device": None,
-            "final_epoch_metrics": [],
-            "selected_checkpoint": None,
             "exit_code": None,
             "error": None,
         }
@@ -120,9 +138,37 @@ class Trial:
         self.result.update(state=state, exit_code=code, error=error, finished_at=datetime.now(UTC).isoformat())
         self._write_result()
 
-    def record_provenance(self, **records: Any) -> None:
-        """Atomically add preparation records and refresh the current result."""
-        self.provenance.update(records)
+    def prepare(self, trainer: Trainer) -> None:
+        """Fingerprint the reference's actual data, transforms and initial weights.
+
+        Raises:
+            ValueError: If no full training batch exists or splits are inconsistent.
+        """
+        self.result["actual_device"] = str(trainer.device)
+        splits = {"train": trainer.train_loader.dataset, "validation": trainer.val_loader.dataset}
+        if "test" in self.configuration["dataset"]:
+            splits["test"] = ImageFolder(self.configuration["dataset"]["test"])
+        data = imagefolder_manifest(splits)
+        write_json(self.directory / "data.json", data)
+        if not len(trainer.train_loader):
+            raise ValueError("training split must contain at least one full batch")
+        initialization = dict(self.configuration["model"]["initialization"])
+        if initialization["kind"] == "checkpoint":
+            path = Path(initialization["path"])
+            initialization["sha256"] = sha256(path)
+            state = torch.load(path, map_location="cpu", weights_only=True)
+            trainer.model.load_state_dict(state.get("model", state))
+        digest = hashlib.sha256()
+        for name, tensor in sorted(trainer.model.state_dict().items()):
+            digest.update(json.dumps([name, str(tensor.dtype), list(tensor.shape)]).encode("utf-8"))
+            digest.update(tensor.cpu().contiguous().reshape(-1).view(torch.uint8).numpy().tobytes())
+        initialization["state_dict_sha256"] = digest.hexdigest()
+        self.provenance.update(
+            data={split: manifest["sha256"] for split, manifest in data["splits"].items()},
+            initialization=initialization,
+            preprocessing={split: repr(dataset.transform) for split, dataset in splits.items() if split != "test"},
+            optimizer=trainer.optimizer.defaults,
+        )
         write_json(self.directory / "provenance.json", self.provenance)
         self._write_result()
 
@@ -153,45 +199,16 @@ class Trial:
             source=source, python=platform.python_version(), platform=platform.platform(), packages=packages
         )
 
-    def record_epoch(self, trainer: Trainer, metrics: dict[str, float]) -> None:
-        """Record validation metrics after checkpoint selection.
-
-        Raises:
-            ValueError: If any recorded metric is not finite.
-        """
-        if not all(math.isfinite(value) for value in metrics.values()):
-            raise ValueError("non-finite epoch metrics")
-        rows = [
-            {
-                "name": name,
-                "value": value,
-                "split": "validation",
-                "epoch": trainer.epoch,
-                "direction": "minimize" if name == "val_loss" else "maximize",
-            }
-            for name, value in metrics.items()
-        ]
-        self.result.update(epoch=trainer.epoch, final_epoch_metrics=rows)
-        selected = self.result["selected_checkpoint"]
-        if selected is None or metrics["val_loss"] < selected["validation_loss"]:
-            self.result["selected_checkpoint"] = {
-                "path": "checkpoint.pth",
-                "sha256": sha256(Path(trainer.output_file)),
-                "epoch": trainer.epoch,
-                "validation_loss": metrics["val_loss"],
-                "metrics": rows,
-                "fully_resumable": False,
-            }
-        event = {
-            "schema_version": 1,
-            "event": "epoch_end",
-            "timestamp": datetime.now(UTC).isoformat(),
-            "elapsed_seconds": time.monotonic() - self.started,
-            "epoch": trainer.epoch,
-            "metrics": rows,
-        }
+    def record_epoch(self, trainer: Trainer, event: dict[str, Any]) -> None:
+        """Append the benchmark's epoch event and record the trainer's saved selection."""
+        model = self.result["models"][0]
+        model["final_epoch"] = self.result["epoch"] = event["epoch"]
+        model["final_metrics"] = {key: value for key, value in event.items() if key not in {"epoch", "elapsed_seconds"}}
+        if event["val_loss"] == trainer.min_loss:
+            _, selected = checkpoint_record(Path(trainer.output_file), model["history"])
+            model.update(selected)
         with (self.directory / "progress.jsonl").open("a", encoding="utf-8") as stream:
-            stream.write(json.dumps(event, allow_nan=False) + "\n")
+            stream.write(json.dumps({"schema_version": 1, "split": "validation", **event}, allow_nan=False) + "\n")
         self._write_result()
 
     def _write_result(self) -> None:
