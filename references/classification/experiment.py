@@ -72,7 +72,7 @@ def _recipe(raw, parser):
                 if key in {"epochs", "batch_size", "grad_acc", "train_crop_size", "val_crop_size", "val_resize_size"}
                 else 0
             )
-            upper = 2**32 - 1 if key == "seed" else 1 if key in {"label_smoothing", "random_erase"} else math.inf
+            upper = {"seed": 2**32 - 1, "label_smoothing": 1, "random_erase": 1}.get(key, math.inf)
             if not math.isfinite(value) or not lower <= value <= upper:
                 raise ValueError(f"invalid {key}: {value}")
     if recipe["lr"] == 0 or recipe["sched"] not in {"onecycle", "cosine"}:
