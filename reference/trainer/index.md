@@ -207,7 +207,7 @@ def to_device(
 save(output_file: str) -> None
 ```
 
-Save a trainer checkpoint
+Save a trainer checkpoint atomically
 
 | PARAMETER     | DESCRIPTION                           |
 | ------------- | ------------------------------------- |
@@ -217,22 +217,28 @@ Source code in `holocron/trainer/core.py`
 
 ```python
 def save(self, output_file: str) -> None:
-    """Save a trainer checkpoint
+    """Save a trainer checkpoint atomically
 
     Args:
         output_file: destination file path
     """
-    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
-    torch.save(
-        {
-            "epoch": self.epoch,
-            "step": self.step,
-            "min_loss": self.min_loss,
-            "model": self.model.state_dict(),
-        },
-        output_file,
-        _use_new_zipfile_serialization=False,
-    )
+    path = Path(output_file).resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(dir=path.parent) as directory:
+        candidate = Path(directory) / path.name
+        torch.save(
+            {
+                "epoch": self.epoch,
+                "step": self.step,
+                "min_loss": self.min_loss,
+                "model": self.model.state_dict(),
+            },
+            candidate,
+            _use_new_zipfile_serialization=False,
+        )
+        if path.exists():
+            copymode(path, candidate)
+        candidate.replace(path)
 ```
 
 #### load
@@ -639,6 +645,10 @@ Evaluate the model on the validation set
 | ------------------ | ------------------------------------------------------------------ |
 | `dict[str, float]` | evaluation metrics (validation loss, top1 accuracy, top5 accuracy) |
 
+| RAISES       | DESCRIPTION                                  |
+| ------------ | -------------------------------------------- |
+| `ValueError` | If any validation batch has non-finite loss. |
+
 Source code in `holocron/trainer/classification.py`
 
 ```python
@@ -648,6 +658,9 @@ def evaluate(self) -> dict[str, float]:
 
     Returns:
         evaluation metrics (validation loss, top1 accuracy, top5 accuracy)
+
+    Raises:
+        ValueError: If any validation batch has non-finite loss.
     """
     self.model.eval()
 
@@ -657,10 +670,10 @@ def evaluate(self) -> dict[str, float]:
 
         loss, out = self._get_loss(x, target, return_logits=True)  # ty: ignore[invalid-argument-type]
 
-        # Safeguard for NaN loss
-        if not torch.isnan(loss) and not torch.isinf(loss):
-            val_loss += loss.item()
-            num_valid_batches += 1
+        if not torch.isfinite(loss):
+            raise ValueError("non-finite validation loss")
+        val_loss += loss.item()
+        num_valid_batches += 1
 
         pred = out.topk(5, dim=1)[1] if out.shape[1] >= 5 else out.argmax(dim=1, keepdim=True)
         correct = pred.eq(target.view(-1, 1).expand_as(pred))

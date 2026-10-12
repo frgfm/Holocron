@@ -6,6 +6,7 @@
 
 - [Installation](https://frgfm.github.io/holocron/getting-started/installation/index.md)
 - [Fine-tune a classifier](https://frgfm.github.io/holocron/getting-started/classification/index.md)
+- [Local experiments](https://frgfm.github.io/holocron/getting-started/experiments/index.md)
 - [Holocron Notebooks](https://frgfm.github.io/holocron/getting-started/notebooks/index.md)
 
 ## Package Reference
