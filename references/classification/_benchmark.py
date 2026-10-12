@@ -195,6 +195,16 @@ def run_benchmark(args, train, *, trial=None):
     state, selected = checkpoint_record(checkpoint, history)
     result.update(selected)
     learner.model.load_state_dict(state["model"])
+    _profile(learner, shape, result, args.amp)
+    write_json(output, report)
+    print(
+        json.dumps({"architecture": args.arch, "selected": result["selected_metrics"], "seconds": elapsed}), flush=True
+    )
+
+
+def _profile(learner, shape, result, amp):
+    """Measure the selected model's fused deployment form."""
+    device = learner.device
     unfused = copy.deepcopy(learner.model).cpu().eval()
     fused = copy.deepcopy(unfused)
     if hasattr(fused, "reparametrize"):
@@ -212,11 +222,7 @@ def run_benchmark(args, train, *, trial=None):
     learner.model = fused.to(device)
     result["deployment_metrics"] = learner.evaluate()
     image = torch.randn(shape, device=device)
-    with torch.inference_mode(), torch.amp.autocast(device.type, enabled=args.amp):
+    with torch.inference_mode(), torch.amp.autocast(device.type, enabled=amp):
         result["deployment_latency"], _ = measure(
             lambda: learner.model(image), 1, 100, 20, sync=lambda: synchronize(device)
         )
-    write_json(output, report)
-    print(
-        json.dumps({"architecture": args.arch, "selected": result["selected_metrics"], "seconds": elapsed}), flush=True
-    )
