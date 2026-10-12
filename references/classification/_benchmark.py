@@ -173,20 +173,7 @@ def run_benchmark(args, train, *, trial=None):
         "validation_samples": len(learner.val_loader.dataset),
         "class_to_index": learner.train_loader.dataset.class_to_idx,
     })
-    shape = (1, *learner.val_loader.dataset[0][0].shape)
-    result.update({
-        "input_shape": shape,
-        "training_elapsed_seconds": elapsed,
-        "training_samples_per_wall_second": args.epochs * len(learner.train_loader) * args.batch_size / elapsed,
-        "final_epoch": learner.epoch,
-        "final_metrics": {key: value for key, value in history[-1].items() if key not in {"epoch", "elapsed_seconds"}},
-        "memory": {
-            **(memory if device.type == "mps" else {}),
-            "process_lifetime_peak_rss_mib": peak_rss_mib(),
-            "sampling_interval_seconds": 0.05 if device.type == "mps" else None,
-            "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(device) if device.type == "cuda" else None,
-        },
-    })
+    result.update(_training_result(learner, history, elapsed, memory))
     if trial is not None:
         if "checkpoint" not in result:
             raise RuntimeError("training ended without a selected checkpoint")
@@ -195,7 +182,7 @@ def run_benchmark(args, train, *, trial=None):
     state, selected = checkpoint_record(checkpoint, history)
     result.update(selected)
     learner.model.load_state_dict(state["model"])
-    _profile(learner, shape, result, args.amp)
+    _profile(learner, result["input_shape"], result, args.amp)
     write_json(output, report)
     print(
         json.dumps({"architecture": args.arch, "selected": result["selected_metrics"], "seconds": elapsed}), flush=True
@@ -226,3 +213,23 @@ def _profile(learner, shape, result, amp):
         result["deployment_latency"], _ = measure(
             lambda: learner.model(image), 1, 100, 20, sync=lambda: synchronize(device)
         )
+
+
+def _training_result(learner, history, elapsed, memory):
+    device = learner.device
+    return {
+        "input_shape": (1, *learner.val_loader.dataset[0][0].shape),
+        "training_elapsed_seconds": elapsed,
+        "training_samples_per_wall_second": learner.epoch
+        * len(learner.train_loader)
+        * learner.train_loader.batch_size
+        / elapsed,
+        "final_epoch": learner.epoch,
+        "final_metrics": {key: value for key, value in history[-1].items() if key not in {"epoch", "elapsed_seconds"}},
+        "memory": {
+            **(memory if device.type == "mps" else {}),
+            "process_lifetime_peak_rss_mib": peak_rss_mib(),
+            "sampling_interval_seconds": 0.05 if device.type == "mps" else None,
+            "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(device) if device.type == "cuda" else None,
+        },
+    }
