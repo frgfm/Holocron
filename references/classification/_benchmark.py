@@ -50,8 +50,7 @@ def count_macs(model, shape=(1, 3, 224, 224)):
     return total
 
 
-def run_benchmark(args, train, *, trial=None):
-    device = resolve_device(args.device)
+def _validate_run(args):
     if min(args.epochs, args.batch_size, args.grad_acc) < 1 or args.workers < 0:
         raise ValueError("Epochs, batch size, and gradient accumulation must be positive; workers cannot be negative")
     if any(
@@ -71,6 +70,12 @@ def run_benchmark(args, train, *, trial=None):
     ):
         raise ValueError("Expected Imagenette train and val directories")
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    return checkpoint, output, progress
+
+
+def run_benchmark(args, train, *, trial=None):
+    device = resolve_device(args.device)
+    checkpoint, output, progress = _validate_run(args)
     report = {
         "scope": "Controlled classification training; not paper accuracy reproduction",
         "runtime": {
