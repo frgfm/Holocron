@@ -20,6 +20,8 @@ from holocron.optim import AdaBelief, AdamP, AdEMAMix
 from holocron.trainer import Trainer
 from holocron.trainer.utils import resolve_device
 
+OPTIMIZERS = {"sgd": SGD, "radam": RAdam, "adamw": AdamW, "adamp": AdamP, "adabelief": AdaBelief, "ademamix": AdEMAMix}
+
 
 def load_checkpoint(trainer: Trainer, path: str) -> None:
     """Load the requested reference checkpoint before a task-specific action."""
@@ -103,22 +105,14 @@ def create_optimizer(model: nn.Module, args: Namespace) -> Optimizer:
     Raises:
         ValueError: If the optimizer name is unknown.
     """
-    optimizers = {
-        "sgd": SGD,
-        "radam": RAdam,
-        "adamw": AdamW,
-        "adamp": AdamP,
-        "adabelief": AdaBelief,
-        "ademamix": AdEMAMix,
-    }
-    if args.opt not in optimizers:
+    if args.opt not in OPTIMIZERS:
         raise ValueError(f"Unknown optimizer: {args.opt}")
     options = {}
     if args.opt == "sgd":
         options["momentum"] = getattr(args, "momentum", 0.9)
     elif args.opt != "adamw":
         options.update(betas=(0.95, 0.99, 0.9999) if args.opt == "ademamix" else (0.95, 0.99), eps=1e-6)
-    return optimizers[args.opt](
+    return OPTIMIZERS[args.opt](
         [p for p in model.parameters() if p.requires_grad], args.lr, weight_decay=args.weight_decay, **options
     )
 

@@ -6,8 +6,8 @@
 """Measure a standard classification training run; no separate recipe or CLI."""
 
 import copy
-import hashlib
 import json
+import math
 import platform
 import threading
 import time
@@ -16,16 +16,9 @@ from pathlib import Path
 import torch
 from torch import nn
 
+from holocron.experiments import checkpoint_record, sha256, write_json
 from holocron.trainer import resolve_device
 from scripts.eval_latency import measure, peak_rss_mib, synchronize
-
-
-def write_json(path, value):
-    """Replace a benchmark record only after finite JSON has been written."""
-    text = json.dumps(value, indent=2, allow_nan=False) + "\n"
-    temporary = path.with_suffix(".tmp")
-    temporary.write_text(text)
-    temporary.replace(path)
 
 
 def count_macs(model, shape=(1, 3, 224, 224)):
@@ -57,8 +50,7 @@ def count_macs(model, shape=(1, 3, 224, 224)):
     return total
 
 
-def run_benchmark(args, train):
-    device = resolve_device(args.device)
+def _validate_run(args):
     if min(args.epochs, args.batch_size, args.grad_acc) < 1 or args.workers < 0:
         raise ValueError("Epochs, batch size, and gradient accumulation must be positive; workers cannot be negative")
     if any(
@@ -76,6 +68,12 @@ def run_benchmark(args, train):
     ):
         raise ValueError("Expected Imagenette train and val directories")
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    return checkpoint, output, progress
+
+
+def run_benchmark(args, train, *, trial=None):
+    device = resolve_device(args.device)
+    checkpoint, output, progress = _validate_run(args)
     report = {
         "scope": "Controlled classification training; not paper accuracy reproduction",
         "runtime": {
@@ -96,12 +94,18 @@ def run_benchmark(args, train):
         "macs_scope": "Convolution and linear MACs at the validation input shape; normalization and activations excluded",
         "timing_scope": "Wall time includes dataset/model setup, training and validation; excludes deployment profiling",
         "models": [],
+        "metrics_split": "validation",
+        "metric_directions": {"val_loss": "minimize", "acc1": "maximize", "acc5": "maximize"},
     }
     archive = Path(args.data_path).parent / "imagenette2-320.tgz"
-    if args.dataset.lower() == "imagenette" and archive.is_file():
-        with archive.open("rb") as stream:
-            report["dataset"]["archive_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
+    if trial is None and args.dataset.lower() == "imagenette" and archive.is_file():
+        report["dataset"]["archive_sha256"] = sha256(archive)
     history = []
+    result = {"architecture": args.arch, "history": history}
+    report["models"].append(result)
+    if trial is not None:
+        trial.result.update(report)
+    learner = None
     memory = {"sampled_peak_mps_tensor_bytes": 0, "sampled_peak_mps_driver_bytes": 0}
     done = threading.Event()
     start = time.perf_counter()
@@ -117,9 +121,34 @@ def run_benchmark(args, train):
                 )
             done.wait(0.05)
 
+    def setup(instance, scheduler_kwargs):
+        nonlocal learner
+        learner = instance
+        report["recipe"]["scheduler_kwargs"] = scheduler_kwargs
+        report["runtime"].update(
+            device=str(learner.device),
+            pin_memory=learner.train_loader.pin_memory,
+            cudnn_benchmark=torch.backends.cudnn.benchmark,
+            deterministic_algorithms=torch.are_deterministic_algorithms_enabled(),
+        )
+        if len(learner.val_loader.dataset.classes) < 5:
+            report["metric_directions"].pop("acc5")
+        if trial is not None:
+            trial.prepare(learner)
+
     def record(metrics):
+        metrics = {
+            key: value
+            for key, value in metrics.items()
+            if key != "acc5" or len(learner.val_loader.dataset.classes) >= 5
+        }
+        if not all(math.isfinite(value) for value in metrics.values()):
+            raise ValueError("non-finite epoch metrics")
         history.append({"epoch": len(history) + 1, **metrics, "elapsed_seconds": time.perf_counter() - start})
-        write_json(progress, history)
+        if trial is None:
+            write_json(progress, history)
+        else:
+            trial.record_epoch(learner, history[-1])
 
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
@@ -127,38 +156,40 @@ def run_benchmark(args, train):
     synchronize(device)
     sampler.start()
     try:
-        learner = train(args, on_epoch_end=record)
+        learner = train(args, on_epoch_end=record, on_setup=setup)
         synchronize(device)
         elapsed = time.perf_counter() - start
     finally:
         done.set()
         sampler.join()
+        if learner is not None and learner.on_epoch_end is record:
+            learner.on_epoch_end = None
+    if learner.epoch != args.epochs:
+        raise RuntimeError("training ended without the requested epochs")
     report["dataset"].update({
         "train_samples": len(learner.train_loader.dataset),
         "validation_samples": len(learner.val_loader.dataset),
         "class_to_index": learner.train_loader.dataset.class_to_idx,
     })
-    shape = (1, *learner.val_loader.dataset[0][0].shape)
-    result = {
-        "architecture": args.arch,
-        "input_shape": shape,
-        "training_elapsed_seconds": elapsed,
-        "training_samples_per_wall_second": args.epochs * len(learner.train_loader) * args.batch_size / elapsed,
-        "history": history,
-        "final_metrics": {key: history[-1][key] for key in ("val_loss", "acc1", "acc5")},
-        "memory": {
-            **(memory if device.type == "mps" else {}),
-            "process_lifetime_peak_rss_mib": peak_rss_mib(),
-            "sampling_interval_seconds": 0.05 if device.type == "mps" else None,
-            "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(device) if device.type == "cuda" else None,
-        },
-    }
-    state = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    result.update(_training_result(learner, history, elapsed, memory))
+    if trial is not None:
+        if "checkpoint" not in result:
+            raise RuntimeError("training ended without a selected checkpoint")
+        report["dataset"].update(trial.provenance["data"])
+        return
+    state, selected = checkpoint_record(checkpoint, history)
+    result.update(selected)
     learner.model.load_state_dict(state["model"])
-    result["selected_epoch"] = state["epoch"]
-    result["selected_metrics"] = learner.evaluate()
-    with checkpoint.open("rb") as stream:
-        result["checkpoint_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
+    _profile(learner, result["input_shape"], result, args.amp)
+    write_json(output, report)
+    print(
+        json.dumps({"architecture": args.arch, "selected": result["selected_metrics"], "seconds": elapsed}), flush=True
+    )
+
+
+def _profile(learner, shape, result, amp):
+    """Measure the selected model's fused deployment form."""
+    device = learner.device
     unfused = copy.deepcopy(learner.model).cpu().eval()
     fused = copy.deepcopy(unfused)
     if hasattr(fused, "reparametrize"):
@@ -176,12 +207,27 @@ def run_benchmark(args, train):
     learner.model = fused.to(device)
     result["deployment_metrics"] = learner.evaluate()
     image = torch.randn(shape, device=device)
-    with torch.inference_mode(), torch.amp.autocast(device.type, enabled=args.amp):
+    with torch.inference_mode(), torch.amp.autocast(device.type, enabled=amp):
         result["deployment_latency"], _ = measure(
             lambda: learner.model(image), 1, 100, 20, sync=lambda: synchronize(device)
         )
-    report["models"].append(result)
-    write_json(output, report)
-    print(
-        json.dumps({"architecture": args.arch, "selected": result["selected_metrics"], "seconds": elapsed}), flush=True
-    )
+
+
+def _training_result(learner, history, elapsed, memory):
+    device = learner.device
+    return {
+        "input_shape": (1, *learner.val_loader.dataset[0][0].shape),
+        "training_elapsed_seconds": elapsed,
+        "training_samples_per_wall_second": learner.epoch
+        * len(learner.train_loader)
+        * learner.train_loader.batch_size
+        / elapsed,
+        "final_epoch": learner.epoch,
+        "final_metrics": {key: value for key, value in history[-1].items() if key not in {"epoch", "elapsed_seconds"}},
+        "memory": {
+            **(memory if device.type == "mps" else {}),
+            "process_lifetime_peak_rss_mib": peak_rss_mib(),
+            "sampling_interval_seconds": 0.05 if device.type == "mps" else None,
+            "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(device) if device.type == "cuda" else None,
+        },
+    }

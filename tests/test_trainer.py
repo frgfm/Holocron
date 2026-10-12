@@ -3,6 +3,7 @@ import sys
 import warnings
 from argparse import Namespace
 from io import StringIO
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pytest
@@ -216,6 +217,13 @@ def _linear_trainer(x, target, gradient_acc, optimizer_cls=torch.optim.SGD):
     model = nn.Linear(1, 1, bias=False)
     optimizer = optimizer_cls(model.parameters(), lr=0.1)
     return trainer.Trainer(model, loader, loader, nn.MSELoss(), optimizer, gradient_acc=gradient_acc)
+
+
+def test_onecycle_rejects_single_warmup_update():
+    x = torch.ones(10, 1)
+    learner = _linear_trainer(x, x, gradient_acc=1)
+    with pytest.raises(ValueError, match="exactly one warmup update"):
+        learner._reset_scheduler(0.1, 1, "onecycle", pct_start=0.1)
 
 
 def test_gradient_accumulation_matches_large_batch():
@@ -481,6 +489,37 @@ def test_classification_trainer_few_classes():
     learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
     # Fewer than 5 classes
     assert learner.evaluate()["acc5"] == 0
+
+
+def test_classification_validation_rejects_partial_nonfinite_loss():
+    model = nn.Linear(1, 2)
+    with torch.no_grad():
+        model.weight.fill_(1)
+        model.bias.fill_(1)
+    model.register_forward_hook(lambda _module, _inputs, output: output.log())
+    loader = DataLoader(TensorDataset(torch.tensor([[0.0], [-2.0]]), torch.zeros(2, dtype=torch.long)))
+    learner = trainer.ClassificationTrainer(
+        model, loader, loader, nn.CrossEntropyLoss(), torch.optim.SGD(model.parameters(), lr=0.01)
+    )
+    with pytest.raises(ValueError, match="non-finite validation loss"):
+        learner.evaluate()
+
+
+def test_checkpoint_save_failure_preserves_previous_file(monkeypatch, tmp_path):
+    learner = _linear_trainer(torch.zeros(1, 1), torch.zeros(1, 1), gradient_acc=1)
+    path = tmp_path / "checkpoint.pth"
+    learner.save(str(path))
+    previous = path.read_bytes()
+
+    def fail_save(_state, destination, **_kwargs):
+        Path(destination).write_bytes(b"partial checkpoint")
+        raise OSError("save failed")
+
+    monkeypatch.setattr(torch, "save", fail_save)
+    with pytest.raises(OSError, match="save failed"):
+        learner.save(str(path))
+    assert path.read_bytes() == previous
+    assert list(tmp_path.iterdir()) == [path]
 
 
 def test_binary_classification_trainer():

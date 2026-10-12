@@ -129,6 +129,7 @@ flagged/
 checkpoints/
 /repvit-imagenette-mps.json
 /mps-training-diagnostics.json
+runs/
 
 # Docs
 docs/site
