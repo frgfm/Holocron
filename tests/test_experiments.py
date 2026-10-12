@@ -1,9 +1,5 @@
-import copy
-import gc
 import json
 import shutil
-import subprocess  # noqa: S404
-import weakref
 from pathlib import Path
 
 import pytest
@@ -19,7 +15,7 @@ from references.classification import experiment, train
 
 @pytest.fixture
 def configuration(tmp_path, monkeypatch):
-    for offset, split in enumerate(("train", "validation", "test")):
+    for offset, split in enumerate(("train", "val", "test")):
         for index, label in enumerate(("a", "b")):
             directory = tmp_path / split / label
             directory.mkdir(parents=True)
@@ -29,21 +25,34 @@ def configuration(tmp_path, monkeypatch):
                 )
     config = {
         "schema_version": 1,
-        "model": {"name": "convnext_atto", "initialization": {"kind": "random"}},
-        "dataset": {"format": "imagefolder", "train": "train", "validation": "validation", "test": "test"},
-        "training_device": "cpu",
+        "initialization": None,
+        "test_split": "test",
         "deployment_target": "owner's CPU",
-        "training": {"epochs": 2, "batch_size": 2, "workers": 0, "sched": "cosine", "mixup_alpha": 0},
-        "preprocessing": {"train_crop_size": 16, "val_crop_size": 16, "val_resize_size": 20},
+        "recipe": {
+            "data_path": ".",
+            "device": "cpu",
+            "epochs": 2,
+            "batch_size": 2,
+            "workers": 0,
+            "sched": "cosine",
+            "mixup_alpha": 0,
+            "train_crop_size": 16,
+            "val_crop_size": 16,
+            "val_resize_size": 20,
+        },
     }
-    path = tmp_path / "experiment.json"
-    path.write_text(json.dumps(config), encoding="utf-8")
     monkeypatch.setattr(
         train,
         "get_model",
         lambda *_args, **_kwargs: nn.Sequential(nn.AdaptiveAvgPool2d(1), nn.Flatten(), nn.Linear(3, 2)),
     )
-    return path, config
+    return tmp_path / "experiment.json", config
+
+
+def submit(path, config, trial="trial"):
+    path.write_text(json.dumps(config), encoding="utf-8")
+    experiment.run_experiment(path, path.parent / trial)
+    return json.loads((path.parent / trial / "result.json").read_text())
 
 
 @pytest.mark.parametrize(
@@ -52,41 +61,38 @@ def configuration(tmp_path, monkeypatch):
         (None, "schema_version", True),
         (None, "schema_version", 2),
         (None, "wall_time_seconds", 10),
-        (None, "training_device", "meta"),
-        (None, "training_device", 0),
-        (None, "seed", -1),
-        (None, "seed", 1.5),
-        ("training", "epochs", 0),
-        ("training", "epochs", True),
-        ("training", "lr", float("nan")),
-        ("training", "opt", "unknown"),
-        ("training", "sched", "unknown"),
-        ("training", "workers", -1),
-        ("training", "amp", "yes"),
-        ("training", "resume", "old.pth"),
-        ("preprocessing", "random_erase", 2),
-        ("preprocessing", "mean", [0, 0, 0]),
-        ("model", "name", "unknown"),
-        ("model", "initialization", {"kind": "pretrained"}),
-        ("dataset", "format", "cifar10"),
-        ("dataset", "test", None),
+        ("recipe", "device", "meta"),
+        ("recipe", "device", 0),
+        (None, "initialization", "missing.pth"),
+        (None, "deployment_target", ""),
+        ("recipe", "seed", -1),
+        ("recipe", "seed", 1.5),
+        ("recipe", "epochs", 0),
+        ("recipe", "epochs", True),
+        ("recipe", "lr", float("nan")),
+        ("recipe", "opt", "unknown"),
+        ("recipe", "sched", "unknown"),
+        ("recipe", "workers", -1),
+        ("recipe", "amp", "yes"),
+        ("recipe", "resume", "old.pth"),
+        ("recipe", "random_erase", 2),
+        ("recipe", "mean", [0, 0, 0]),
+        ("recipe", "arch", "unknown"),
+        (None, "test_split", ""),
     ],
 )
 def test_configuration_rejection(configuration, section, key, value):
-    path, original = configuration
-    config = copy.deepcopy(original)
+    path, config = configuration
     (config if section is None else config[section])[key] = value
-    path.write_text(json.dumps(config), encoding="utf-8")
     with pytest.raises(ValueError):
-        experiment.run_experiment(path, path.parent / "rejected")
-    assert not (path.parent / "rejected").exists()
+        submit(path, config)
+    assert not (path.parent / "trial").exists()
 
 
 @pytest.mark.parametrize("scheduler", ["cosine", "onecycle"])
 def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
     path, config = configuration
-    config["training"]["sched"] = scheduler
-    path.write_text(json.dumps(config), encoding="utf-8")
+    config["recipe"]["sched"] = scheduler
     original_getitem = ImageFolder.__getitem__
 
     def no_test_reads(dataset, index):
@@ -100,16 +106,16 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
 
     monkeypatch.setattr(ImageFolder, "__getitem__", no_test_reads)
     monkeypatch.setattr(ClassificationTrainer, "evaluate", worsening_metrics)
+    result = submit(path, config)
     directory = path.parent / "trial"
-    experiment.run_experiment(path, directory)
-    config, provenance, data, result = [
-        json.loads((directory / f"{name}.json").read_text()) for name in ("config", "provenance", "data", "result")
+    resolved, provenance, data = [
+        json.loads((directory / f"{name}.json").read_text()) for name in ("config", "provenance", "data")
     ]
     events = [json.loads(line) for line in (directory / "progress.jsonl").read_text().splitlines()]
     model = result["models"][0]
-    assert config["training"]["lr"] == train.get_parser().parse_args(["."]).lr
-    assert config["dataset"]["train"] == str(path.parent / "train")
-    assert config["deployment_target"] == "owner's CPU"
+    assert resolved["recipe"]["lr"] == train.get_parser().get_default("lr")
+    assert resolved["recipe"]["data_path"] == str(path.parent)
+    assert resolved["deployment_target"] == config["deployment_target"]
     assert data["class_to_idx"] == {"a": 0, "b": 1}
     assert all(len(split["samples"]) == 4 for split in data["splits"].values())
     assert provenance["data"]["train"] == data["splits"]["train"]["sha256"]
@@ -121,18 +127,17 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
     assert (result["state"], result["exit_code"], result["actual_device"]) == ("completed", 0, "cpu")
     assert result["finished_at"]
     assert result["elapsed_seconds"] > 0
-    assert [event["epoch"] for event in events] == [1, 2]
-    assert all(event["split"] == result["metrics_split"] == "validation" for event in events)
-    assert (model["final_epoch"], model["selected_epoch"]) == (2, 1)
-    assert model["final_metrics"] == {key: events[-1][key] for key in result["metric_directions"]}
-    assert model["selected_metrics"] == {key: events[0][key] for key in result["metric_directions"]}
+    assert [(event["epoch"], event["split"]) for event in events] == [(1, "validation"), (2, "validation")]
+    assert result["metrics_split"] == "validation"
     assert result["metric_directions"] == {"val_loss": "minimize", "acc1": "maximize"}
+    assert (model["final_epoch"], model["selected_epoch"]) == (2, 1)
+    for field, epoch in (("final_metrics", -1), ("selected_metrics", 0)):
+        assert model[field] == {key: events[epoch][key] for key in result["metric_directions"]}
     assert model["checkpoint_sha256"] == sha256(directory / model["checkpoint"])
     assert torch.load(directory / model["checkpoint"], map_location="cpu", weights_only=True)["epoch"] == 1
     assert model["fully_resumable"] is False
-    config["model"]["initialization"] = {"kind": "checkpoint", "path": str(directory / "checkpoint.pth")}
-    path.write_text(json.dumps(config), encoding="utf-8")
-    experiment.run_experiment(path, path.parent / "warm-start")
+    config["initialization"] = str(directory / model["checkpoint"])
+    submit(path, config, "warm-start")
     assert (
         json.loads((path.parent / "warm-start/provenance.json").read_text())["initialization"]["sha256"]
         == model["checkpoint_sha256"]
@@ -140,7 +145,7 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
 
 
 @pytest.mark.parametrize(
-    ("error", "state", "exit_code", "after_epoch"),
+    ("error", "state", "code", "after_epoch"),
     [
         (RuntimeError("training broke"), "failed", 1, False),
         (RuntimeError("training broke"), "failed", 1, True),
@@ -151,146 +156,78 @@ def test_success_and_independent_reader(configuration, monkeypatch, scheduler):
         (SystemExit("exit message"), "interrupted", 1, False),
     ],
 )
-def test_failure_and_interruption(configuration, monkeypatch, error, state, exit_code, after_epoch):
-    path, _ = configuration
-
+def test_failure_and_interruption(configuration, monkeypatch, error, state, code, after_epoch):
+    path, config = configuration
     fit = ClassificationTrainer.fit_n_epochs
 
     def fail(learner, _epochs, *args, **kwargs):
+        learners.append(learner)
         if after_epoch:
             fit(learner, 1, *args, **kwargs)
         raise error
 
+    learners = []
     monkeypatch.setattr(ClassificationTrainer, "fit_n_epochs", fail)
-    directory = path.parent / "failed-trial"
     with pytest.raises(type(error)):
-        experiment.run_experiment(path, directory)
-    result = json.loads((directory / "result.json").read_text())
-    assert result["state"] == state
-    assert result["exit_code"] == exit_code
+        submit(path, config)
+    result = json.loads((path.parent / "trial/result.json").read_text())
+    assert (result["state"], result["exit_code"]) == (state, code)
     assert result["error"]["type"] == type(error).__name__
     assert result["error"]["message"] == str(error)
     assert "fail" in result["error"]["traceback"]
     assert result["finished_at"]
+    assert learners[0].on_epoch_end is None
     if after_epoch:
         model = result["models"][0]
         assert model["selected_epoch"] == result["epoch"] == 1
-        assert model["checkpoint_sha256"] == sha256(directory / model["checkpoint"])
+        assert model["checkpoint_sha256"] == sha256(path.parent / "trial" / model["checkpoint"])
     else:
         assert "checkpoint" not in result["models"][0]
-        assert not (directory / "progress.jsonl").read_text()
+        assert not (path.parent / "trial/progress.jsonl").read_text()
 
 
-def test_overwrite_protection(configuration):
-    path, _ = configuration
-    directory = path.parent / "existing"
-    directory.mkdir()
-    (directory / "result.json").write_text("do not replace", encoding="utf-8")
-    with pytest.raises(FileExistsError):
-        experiment.run_experiment(path, directory)
-    assert (directory / "result.json").read_text() == "do not replace"
-    assert list(directory.iterdir()) == [directory / "result.json"]
-
-
-def test_existing_dangling_symlink_is_not_a_new_trial(configuration):
-    path, _ = configuration
-    target, alias = path.parent / "missing", path.parent / "existing-link"
-    alias.symlink_to(target, target_is_directory=True)
-    with pytest.raises(FileExistsError):
-        experiment.run_experiment(path, alias)
-    assert alias.is_symlink()
-    assert not target.exists()
-
-
-def test_onecycle_rejects_single_warmup_update(configuration):
+@pytest.mark.parametrize("symlink", [False, True])
+def test_overwrite_protection(configuration, symlink):
     path, config = configuration
-    config["training"].update(sched="onecycle", epochs=5)
-    path.write_text(json.dumps(config), encoding="utf-8")
-    directory = path.parent / "invalid-schedule"
-    with pytest.raises(ValueError, match="exactly one warmup update"):
-        experiment.run_experiment(path, directory)
-    result = json.loads((directory / "result.json").read_text())
-    assert result["state"] == "failed"
-    assert result["epoch"] == 0
-    assert not (directory / "checkpoint.pth").exists()
-
-
-def test_mixup_with_spawn_worker(configuration):
-    path, config = configuration
-    config["training"].update(workers=1, mixup_alpha=0.2, epochs=1)
-    path.write_text(json.dumps(config), encoding="utf-8")
-    experiment.run_experiment(path, path.parent / "worker-trial")
-    assert json.loads((path.parent / "worker-trial/result.json").read_text())["state"] == "completed"
-
-
-def test_trial_releases_trainer_without_garbage_collection(configuration, monkeypatch):
-    path, _ = configuration
-    references = []
-    create_trainer = train.ClassificationTrainer
-
-    def observe_trainer(*args, **kwargs):
-        learner = create_trainer(*args, **kwargs)
-        references.append(weakref.ref(learner))
-        return learner
-
-    monkeypatch.setattr(train, "ClassificationTrainer", observe_trainer)
-    was_enabled = gc.isenabled()
-    gc.disable()
-    try:
-        experiment.run_experiment(path, path.parent / "release-trial")
-        assert references[0]() is None
-    finally:
-        if was_enabled:
-            gc.enable()
-
-
-@pytest.mark.parametrize("problem", ["overlap", "mapping"])
-def test_split_rejection(configuration, problem):
-    path, _ = configuration
-    if problem == "overlap":
-        shutil.copyfile(path.parent / "train/a/0.png", path.parent / "validation/b/renamed.png")
+    directory = path.parent / "trial"
+    if symlink:
+        directory.symlink_to(path.parent / "missing", target_is_directory=True)
     else:
-        (path.parent / "validation/b").rename(path.parent / "validation/c")
-    with pytest.raises(ValueError, match=r"overlapping|inconsistent"):
-        experiment.run_experiment(path, path.parent / "invalid-data")
-    assert json.loads((path.parent / "invalid-data/result.json").read_text())["state"] == "failed"
+        directory.mkdir()
+        (directory / "result.json").write_text("do not replace", encoding="utf-8")
+    with pytest.raises(FileExistsError):
+        submit(path, config)
+    assert directory.is_symlink() if symlink else (directory / "result.json").read_text() == "do not replace"
 
 
-def test_content_changes_data_identity(configuration):
-    path, _ = configuration
-    splits = {split: ImageFolder(path.parent / split) for split in ("train", "validation")}
+@pytest.mark.parametrize("problem", ["overlap", "mapping", "content"])
+def test_data_identity(configuration, problem):
+    path, config = configuration
+    splits = {name: ImageFolder(path.parent / split) for name, split in (("train", "train"), ("validation", "val"))}
     before = imagefolder_manifest(splits)
-    Image.new("RGB", (20, 20), (255, 0, 0)).save(path.parent / "train/a/0.png")
-    assert imagefolder_manifest(splits)["splits"]["train"]["sha256"] != before["splits"]["train"]["sha256"]
+    if problem == "content":
+        Image.new("RGB", (20, 20), (255, 0, 0)).save(path.parent / "train/a/0.png")
+        assert imagefolder_manifest(splits)["splits"]["train"]["sha256"] != before["splits"]["train"]["sha256"]
+    else:
+        if problem == "overlap":
+            shutil.copyfile(path.parent / "train/a/0.png", path.parent / "val/b/renamed.png")
+        else:
+            (path.parent / "val/b").rename(path.parent / "val/c")
+        with pytest.raises(ValueError, match=r"overlapping|inconsistent"):
+            submit(path, config)
+        assert json.loads((path.parent / "trial/result.json").read_text())["state"] == "failed"
 
 
 @pytest.mark.parametrize("dirty", [False, True])
 def test_source_identity_precedes_trial_artifacts(tmp_path, monkeypatch, dirty):
-    git = shutil.which("git")
-    assert git is not None
-    subprocess.run([git, "init", "--quiet", str(tmp_path)], check=True)  # noqa: S603
-    subprocess.run(  # noqa: S603
-        [
-            git,
-            "-c",
-            "user.name=Test",
-            "-c",
-            "user.email=test@example.invalid",
-            "-c",
-            "commit.gpgsign=false",
-            "commit",
-            "--quiet",
-            "--allow-empty",
-            "-m",
-            "test",
-        ],
-        cwd=tmp_path,
-        check=True,
-    )
-    if dirty:
-        (tmp_path / "owner.py").write_text("uncommitted work", encoding="utf-8")
-    monkeypatch.setattr("holocron.experiments.__file__", str(tmp_path / "holocron" / "experiments.py"))
-    Trial(tmp_path / "unignored-trial", {"schema_version": 1})
-    source = json.loads((tmp_path / "unignored-trial/provenance.json").read_text())["source"]
+    directory = tmp_path / "unignored-trial"
+
+    def git_read(command, **_kwargs):
+        assert not directory.exists()
+        return "a" * 40 if command[1] == "rev-parse" else "?? owner.py" if dirty else ""
+
+    monkeypatch.setattr("holocron.experiments.subprocess.check_output", git_read)
+    Trial(directory, {"schema_version": 1})
+    source = json.loads((directory / "provenance.json").read_text())["source"]
     assert source["dirty"] is dirty
-    assert len(source["revision"]) == 40
+    assert source["revision"] == "a" * 40

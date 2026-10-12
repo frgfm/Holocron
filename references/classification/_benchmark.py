@@ -63,10 +63,8 @@ def _validate_run(args):
     progress = checkpoint.with_name(checkpoint.stem + "-progress.json")
     if any(path.exists() for path in (checkpoint, output, progress)):
         raise ValueError("Refusing to overwrite benchmark checkpoint, results, or progress")
-    if (
-        args.dataset.lower() == "imagenette"
-        and not hasattr(args, "split_paths")
-        and not all((Path(args.data_path) / split).is_dir() for split in ("train", "val"))
+    if args.dataset.lower() == "imagenette" and not all(
+        (Path(args.data_path) / split).is_dir() for split in ("train", "val")
     ):
         raise ValueError("Expected Imagenette train and val directories")
     checkpoint.parent.mkdir(parents=True, exist_ok=True)

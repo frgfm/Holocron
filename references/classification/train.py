@@ -110,7 +110,7 @@ def _train(args, on_epoch_end=None, on_setup=None):
         st = time.time()
         if args.dataset.lower() == "imagenette":
             train_set = ImageFolder(
-                getattr(args, "split_paths", {}).get("train", Path(args.data_path) / "train"),
+                Path(args.data_path).joinpath("train"),
                 T.Compose([
                     T.RandomResizedCrop(args.train_crop_size, scale=(0.3, 1.0), interpolation=interpolation),
                     T.RandomHorizontalFlip(),
@@ -164,7 +164,7 @@ def _train(args, on_epoch_end=None, on_setup=None):
         st = time.time()
         if args.dataset.lower() == "imagenette":
             val_set = ImageFolder(
-                getattr(args, "split_paths", {}).get("validation", Path(args.data_path) / "val"),
+                Path(args.data_path).joinpath("val"),
                 T.Compose([
                     T.Resize(args.val_resize_size, interpolation=interpolation),
                     T.CenterCrop(args.val_crop_size),

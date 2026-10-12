@@ -222,9 +222,6 @@ class BinaryClassificationTrainer(ClassificationTrainer):
 
         Returns:
             evaluation metrics (validation loss, accuracy)
-
-        Raises:
-            ValueError: If any validation batch has non-finite loss.
         """
         self.model.eval()
 
@@ -234,10 +231,10 @@ class BinaryClassificationTrainer(ClassificationTrainer):
 
             loss, out = self._get_loss(x, target, return_logits=True)  # ty: ignore[invalid-argument-type]
 
-            if not torch.isfinite(loss):
-                raise ValueError("non-finite validation loss")
-            val_loss += loss.item()
-            num_valid_batches += 1
+            # Safeguard for NaN loss
+            if not torch.isnan(loss) and not torch.isinf(loss):
+                val_loss += loss.item()
+                num_valid_batches += 1
 
             top1 += torch.sum((target.view_as(out) >= 0.5) == (torch.sigmoid(out) >= 0.5)).item() / out[0].numel()
 

@@ -7,7 +7,6 @@
 
 import hashlib
 import json
-import platform
 import subprocess  # noqa: S404
 import time
 import traceback
@@ -24,10 +23,10 @@ from holocron.trainer import Trainer
 
 
 def sha256(path: Path) -> str:
-    """Hash file bytes with SHA-256.
+    """Hash raw file bytes.
 
     Returns:
-        Lowercase hexadecimal digest.
+        SHA-256 digest.
     """
     with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
@@ -89,12 +88,7 @@ def checkpoint_record(path: Path, history: list[dict[str, Any]]) -> tuple[dict[s
 
 
 class Trial:
-    """Own one new directory and record a trial's lifecycle and epoch callback.
-
-    Args:
-        directory: New output directory; an existing path is always rejected.
-        configuration: Resolved JSON configuration.
-    """
+    """Record a trial in a new directory; never overwrite an existing path."""
 
     def __init__(self, directory: Path, configuration: dict[str, Any]) -> None:
         self.configuration = configuration
@@ -146,15 +140,15 @@ class Trial:
         """
         self.result["actual_device"] = str(trainer.device)
         splits = {"train": trainer.train_loader.dataset, "validation": trainer.val_loader.dataset}
-        if "test" in self.configuration["dataset"]:
-            splits["test"] = ImageFolder(self.configuration["dataset"]["test"])
+        if self.configuration.get("test_split") is not None:
+            splits["test"] = ImageFolder(self.configuration["test_split"])
         data = imagefolder_manifest(splits)
         write_json(self.directory / "data.json", data)
         if not len(trainer.train_loader):
             raise ValueError("training split must contain at least one full batch")
-        initialization = dict(self.configuration["model"]["initialization"])
-        if initialization["kind"] == "checkpoint":
-            path = Path(initialization["path"])
+        initialization = {"checkpoint": self.configuration["initialization"]}
+        if initialization["checkpoint"] is not None:
+            path = Path(initialization["checkpoint"])
             initialization["sha256"] = sha256(path)
             state = torch.load(path, map_location="cpu", weights_only=True)
             trainer.model.load_state_dict(state.get("model", state))
@@ -176,28 +170,19 @@ class Trial:
         """Capture source and package versions before creating trial artifacts."""
         root = Path(__file__).resolve().parents[1]
         source = {"root": str(root), "revision": None, "dirty": None}
+        options = {"cwd": root, "text": True, "stderr": subprocess.PIPE}
         try:
-            source["revision"] = subprocess.check_output(
-                ["git", "rev-parse", "HEAD"],  # noqa: S607
-                cwd=root,
-                text=True,
-                stderr=subprocess.PIPE,
-            ).strip()
-            source["dirty"] = bool(
-                subprocess.check_output(["git", "status", "--porcelain"], cwd=root, text=True, stderr=subprocess.PIPE)  # noqa: S607
-            )
+            source["revision"] = subprocess.check_output(["git", "rev-parse", "HEAD"], **options).strip()  # noqa: S607
+            source["dirty"] = bool(subprocess.check_output(["git", "status", "--porcelain"], **options))  # noqa: S607
         except (OSError, subprocess.CalledProcessError):
-            # Installed wheels may have no Git checkout; unknown is not clean.
-            pass
+            pass  # Installed wheels may have no Git metadata; unknown is not clean.
         packages = {}
         for name in ("pylocron", "torch", "torchvision", "numpy", "Pillow", "wandb"):
             try:
                 packages[name] = version(name)
             except PackageNotFoundError:
                 packages[name] = None
-        self.provenance.update(
-            source=source, python=platform.python_version(), platform=platform.platform(), packages=packages
-        )
+        self.provenance.update(source=source, packages=packages)
 
     def record_epoch(self, trainer: Trainer, event: dict[str, Any]) -> None:
         """Append the benchmark's epoch event and record the trainer's saved selection."""

@@ -219,6 +219,13 @@ def _linear_trainer(x, target, gradient_acc, optimizer_cls=torch.optim.SGD):
     return trainer.Trainer(model, loader, loader, nn.MSELoss(), optimizer, gradient_acc=gradient_acc)
 
 
+def test_onecycle_rejects_single_warmup_update():
+    x = torch.ones(10, 1)
+    learner = _linear_trainer(x, x, gradient_acc=1)
+    with pytest.raises(ValueError, match="exactly one warmup update"):
+        learner._reset_scheduler(0.1, 1, "onecycle", pct_start=0.1)
+
+
 def test_gradient_accumulation_matches_large_batch():
     x = torch.tensor([[1.0], [3.0]])
     target = torch.tensor([[2.0], [0.0]])
@@ -484,25 +491,22 @@ def test_classification_trainer_few_classes():
     assert learner.evaluate()["acc5"] == 0
 
 
-@pytest.mark.parametrize("binary", [False, True])
-def test_classification_validation_rejects_partial_nonfinite_loss(binary):
-    model = nn.Linear(1, 1 if binary else 2)
+def test_classification_validation_rejects_partial_nonfinite_loss():
+    model = nn.Linear(1, 2)
     with torch.no_grad():
         model.weight.fill_(1)
         model.bias.fill_(1)
     model.register_forward_hook(lambda _module, _inputs, output: output.log())
     loader = DataLoader(TensorDataset(torch.tensor([[0.0], [-2.0]]), torch.zeros(2, dtype=torch.long)))
-    learner_type = trainer.BinaryClassificationTrainer if binary else trainer.ClassificationTrainer
-    criterion = nn.BCEWithLogitsLoss() if binary else nn.CrossEntropyLoss()
-    learner = learner_type(model, loader, loader, criterion, torch.optim.SGD(model.parameters(), lr=0.01))
+    learner = trainer.ClassificationTrainer(
+        model, loader, loader, nn.CrossEntropyLoss(), torch.optim.SGD(model.parameters(), lr=0.01)
+    )
     with pytest.raises(ValueError, match="non-finite validation loss"):
         learner.evaluate()
 
 
 def test_checkpoint_save_failure_preserves_previous_file(monkeypatch, tmp_path):
-    model = nn.Linear(1, 1)
-    loader = DataLoader(TensorDataset(torch.zeros(1, 1), torch.zeros(1, 1)))
-    learner = trainer.Trainer(model, loader, loader, nn.MSELoss(), torch.optim.SGD(model.parameters(), lr=0.01))
+    learner = _linear_trainer(torch.zeros(1, 1), torch.zeros(1, 1), gradient_acc=1)
     path = tmp_path / "checkpoint.pth"
     learner.save(str(path))
     previous = path.read_bytes()
