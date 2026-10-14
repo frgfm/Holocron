@@ -13,6 +13,7 @@ import torch
 from huggingface_hub import DryRunFileInfo, hf_hub_download
 from torch import nn
 from torch.hub import load_state_dict_from_url
+from torchvision.transforms.functional import InterpolationMode
 
 from holocron import models
 from holocron.nn import BlurPool2d
@@ -222,6 +223,9 @@ def _checkpoint_from_hub_config(hub_config: dict[str, Any]) -> Checkpoint:
     )
 
 
+_IMAGENETTE_VAL_RESIZE = 232
+
+
 def _imagenette_recipe(arch: str, batch_size: int = 64) -> str:
     """Return the fixed Imagenette training arguments for published v0.2.1 checkpoints.
 
@@ -232,7 +236,7 @@ def _imagenette_recipe(arch: str, batch_size: int = 64) -> str:
     return (
         f"./imagenette2-320/ --arch {arch} --batch-size {batch_args} --mixup-alpha 0.2 --amp"
         " --device 0 --epochs 100 --lr 1e-3 --label-smoothing 0.1 --random-erase 0.1 --train-crop-size 176"
-        " --val-resize-size 232 --opt adamw --weight-decay 5e-2"
+        f" --val-resize-size {_IMAGENETTE_VAL_RESIZE} --opt adamw --weight-decay 5e-2"
     )
 
 
@@ -261,8 +265,9 @@ def _checkpoint(
             input_shape=(3, 224, 224),
             mean=preset.mean,
             std=preset.std,
-            # Imagenette metrics were evaluated with _imagenette_recipe's --val-resize-size
-            resize_size=232 if dataset == Dataset.IMAGENETTE else None,
+            # ImageNet-1K weights are timm ports, evaluated with a bicubic 256 resize (crop_pct 0.875)
+            resize_size=_IMAGENETTE_VAL_RESIZE if dataset == Dataset.IMAGENETTE else 256,
+            interpolation=InterpolationMode.BILINEAR if dataset == Dataset.IMAGENETTE else InterpolationMode.BICUBIC,
         ),
         recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
     )

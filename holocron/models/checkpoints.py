@@ -110,12 +110,12 @@ class Checkpoint:
         """
         pre = self.pre_processing
         size = pre.input_shape[1:]
-        if train:
-            resize = [T.RandomResizedCrop(size, interpolation=pre.interpolation), T.RandomHorizontalFlip()]
-        elif pre.resize_size is None:
-            resize = [T.Resize(size, interpolation=pre.interpolation)]
-        else:
-            resize = [T.Resize(pre.resize_size, interpolation=pre.interpolation), T.CenterCrop(size)]
+        resize = (
+            [T.RandomResizedCrop(size, interpolation=pre.interpolation), T.RandomHorizontalFlip()]
+            if train
+            # Without a resize size, the crop is a no-op after resizing straight to the input shape
+            else [T.Resize(pre.resize_size or size, interpolation=pre.interpolation), T.CenterCrop(size)]
+        )
         return T.Compose([
             *resize,
             T.PILToTensor(),

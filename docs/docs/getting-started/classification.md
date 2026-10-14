@@ -55,7 +55,8 @@ train_loader = DataLoader(train_set, batch_size=32, shuffle=True, num_workers=4)
 val_loader = DataLoader(val_set, batch_size=32, num_workers=4)
 ```
 
-`original_labels` describes the checkpoint's Imagenette outputs before the
+`transforms(train=True)` is a crop-and-flip starter, not the full reference
+training recipe. `original_labels` describes the checkpoint's Imagenette outputs before the
 head is replaced. `train_set.classes` describes your custom outputs.
 
 ## Load the weights, then replace the head

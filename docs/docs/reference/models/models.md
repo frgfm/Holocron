@@ -162,7 +162,7 @@ Pass a `Checkpoint` object, for example
 explicitly. For models with checkpoint enums, `pretrained=True`
 selects `DEFAULT.value`; it does not always select Imagenette. The checkpoint
 defines the preprocessing, output categories and evaluation metrics;
-`checkpoint.transforms()` builds its evaluation transform. See the
+`checkpoint.transforms()` builds its evaluation resize and crop. See the
 [quick start](../../index.md#quick-start) for inference and the
 [transfer-learning guide](../../getting-started/classification.md) to replace the
 classifier after loading weights.
