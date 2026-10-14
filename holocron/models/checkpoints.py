@@ -7,6 +7,8 @@ import logging
 from dataclasses import dataclass
 from enum import StrEnum
 
+import torch
+from torchvision.transforms import v2 as T
 from torchvision.transforms.functional import InterpolationMode
 
 __all__ = [
@@ -93,6 +95,29 @@ class Checkpoint:
     pre_processing: PreProcessing
     # How to reproduce
     recipe: TrainingRecipe
+
+    def transforms(self, train: bool = False) -> T.Compose:
+        """Build the image transform matching this checkpoint.
+
+        Args:
+            train: whether to use random resized crops and horizontal flips instead of a plain resize.
+
+        Returns:
+            a transform that maps a PIL image to a normalized float tensor.
+        """
+        pre = self.pre_processing
+        size = pre.input_shape[1:]
+        resize = (
+            [T.RandomResizedCrop(size, interpolation=pre.interpolation), T.RandomHorizontalFlip()]
+            if train
+            else [T.Resize(size, interpolation=pre.interpolation)]
+        )
+        return T.Compose([
+            *resize,
+            T.PILToTensor(),
+            T.ToDtype(torch.float32, scale=True),
+            T.Normalize(pre.mean, pre.std),
+        ])
 
 
 def _handle_legacy_pretrained(

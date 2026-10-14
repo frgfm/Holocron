@@ -29,9 +29,9 @@ def test_homepage_quickstart(monkeypatch, tmp_path, document):
 
     checkpoint = namespace["checkpoint"]
     probabilities = namespace["probabilities"]
-    resize, _, _, normalize = namespace["transform"].transforms
-    assert namespace["preprocessing"] is checkpoint.pre_processing
-    assert tuple(resize.size) == checkpoint.pre_processing.input_shape[1:]
+    resize, _, _, normalize = checkpoint.transforms().transforms
+    crop, _, _, _, _ = checkpoint.transforms(train=True).transforms
+    assert tuple(resize.size) == tuple(crop.size) == checkpoint.pre_processing.input_shape[1:]
     assert resize.interpolation == checkpoint.pre_processing.interpolation
     assert tuple(normalize.mean) == checkpoint.pre_processing.mean
     assert tuple(normalize.std) == checkpoint.pre_processing.std

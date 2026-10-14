@@ -33,23 +33,13 @@ Load a checkpoint and use its preprocessing and category metadata:
 ```python
 import torch
 from PIL import Image
-from torchvision.transforms.v2 import Compose, ConvertImageDtype, Normalize, PILToTensor, Resize
 from holocron.models.classification import ResNet18_Checkpoint, resnet18
 
 checkpoint = ResNet18_Checkpoint.IMAGENETTE.value
 model = resnet18(checkpoint=checkpoint).eval()
 
 image = Image.open(path_to_an_image).convert("RGB")
-preprocessing = checkpoint.pre_processing
-
-transform = Compose([
-    Resize(preprocessing.input_shape[1:], interpolation=preprocessing.interpolation),
-    PILToTensor(),
-    ConvertImageDtype(torch.float32),
-    Normalize(preprocessing.mean, preprocessing.std),
-])
-
-input_tensor = transform(image).unsqueeze(0)
+input_tensor = checkpoint.transforms()(image).unsqueeze(0)
 
 with torch.inference_mode():
     probabilities = model(input_tensor).squeeze(0).softmax(dim=0)
