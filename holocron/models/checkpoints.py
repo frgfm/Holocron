@@ -81,6 +81,8 @@ class PreProcessing:
     mean: tuple[float, ...]
     std: tuple[float, ...]
     interpolation: InterpolationMode = InterpolationMode.BILINEAR
+    # Shorter-side resize before the evaluation center crop; None resizes straight to input_shape
+    resize_size: int | None = None
 
 
 @dataclass
@@ -100,18 +102,20 @@ class Checkpoint:
         """Build the image transform matching this checkpoint.
 
         Args:
-            train: whether to use random resized crops and horizontal flips instead of a plain resize.
+            train: whether to use random resized crops and horizontal flips, a fine-tuning starter rather than the
+                full reference recipe, instead of the evaluation resize and crop.
 
         Returns:
             a transform that maps a PIL image to a normalized float tensor.
         """
         pre = self.pre_processing
         size = pre.input_shape[1:]
-        resize = (
-            [T.RandomResizedCrop(size, interpolation=pre.interpolation), T.RandomHorizontalFlip()]
-            if train
-            else [T.Resize(size, interpolation=pre.interpolation)]
-        )
+        if train:
+            resize = [T.RandomResizedCrop(size, interpolation=pre.interpolation), T.RandomHorizontalFlip()]
+        elif pre.resize_size is None:
+            resize = [T.Resize(size, interpolation=pre.interpolation)]
+        else:
+            resize = [T.Resize(pre.resize_size, interpolation=pre.interpolation), T.CenterCrop(size)]
         return T.Compose([
             *resize,
             T.PILToTensor(),

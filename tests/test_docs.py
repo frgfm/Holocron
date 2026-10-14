@@ -5,7 +5,9 @@ from pathlib import Path
 from xml.etree import ElementTree as ET  # noqa: S405
 
 import pytest
+import torch
 from PIL import Image
+from torchvision.transforms import v2 as T
 
 from holocron.nn import PolyLoss
 
@@ -21,7 +23,8 @@ def test_homepage_quickstart(monkeypatch, tmp_path, document):
     assert match is not None
 
     image_path = tmp_path / "image.png"
-    Image.new("RGB", (320, 240)).save(image_path)
+    # Non-square and non-uniform, so stretching or missing pixel scaling changes the tensor
+    Image.linear_gradient("L").resize((320, 240)).convert("RGB").save(image_path)
 
     monkeypatch.setattr("holocron.models.utils.load_pretrained_params", lambda *_args, **_kwargs: None)
     namespace = {"path_to_an_image": image_path}
@@ -29,13 +32,17 @@ def test_homepage_quickstart(monkeypatch, tmp_path, document):
 
     checkpoint = namespace["checkpoint"]
     probabilities = namespace["probabilities"]
-    resize, _, _, normalize = checkpoint.transforms().transforms
-    crop, _, _, _, _ = checkpoint.transforms(train=True).transforms
-    assert tuple(resize.size) == tuple(crop.size) == checkpoint.pre_processing.input_shape[1:]
-    assert resize.interpolation == checkpoint.pre_processing.interpolation
-    assert tuple(normalize.mean) == checkpoint.pre_processing.mean
-    assert tuple(normalize.std) == checkpoint.pre_processing.std
-    assert namespace["input_tensor"].shape == (1, *checkpoint.pre_processing.input_shape)
+    pre = checkpoint.pre_processing
+    expected = T.Compose([
+        T.Resize(232, interpolation=pre.interpolation),
+        T.CenterCrop(224),
+        T.PILToTensor(),
+        T.ToDtype(torch.float32, scale=True),
+        T.Normalize(pre.mean, pre.std),
+    ])
+    image = Image.open(image_path).convert("RGB")
+    assert torch.equal(namespace["input_tensor"], expected(image).unsqueeze(0))
+    assert checkpoint.transforms(train=True)(image).shape == pre.input_shape
     assert probabilities.shape == (len(checkpoint.meta.categories),)
     assert namespace["label"] in checkpoint.meta.categories
     assert 0 <= namespace["confidence"] <= 1

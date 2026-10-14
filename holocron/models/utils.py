@@ -257,6 +257,12 @@ def _checkpoint(
         meta=LoadingMeta(
             url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=preset.classes
         ),
-        pre_processing=PreProcessing(input_shape=(3, 224, 224), mean=preset.mean, std=preset.std),
+        pre_processing=PreProcessing(
+            input_shape=(3, 224, 224),
+            mean=preset.mean,
+            std=preset.std,
+            # Imagenette metrics were evaluated with _imagenette_recipe's --val-resize-size
+            resize_size=232 if dataset == Dataset.IMAGENETTE else None,
+        ),
         recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
     )

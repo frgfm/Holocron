@@ -161,7 +161,8 @@ Pass a `Checkpoint` object, for example
 `rexnet1_0x(checkpoint=ReXNet1_0x_Checkpoint.IMAGENETTE.value)`, to select weights
 explicitly. For models with checkpoint enums, `pretrained=True`
 selects `DEFAULT.value`; it does not always select Imagenette. The checkpoint
-defines the preprocessing, output categories and evaluation metrics. See the
+defines the preprocessing, output categories and evaluation metrics;
+`checkpoint.transforms()` builds its evaluation transform. See the
 [quick start](../../index.md#quick-start) for inference and the
 [transfer-learning guide](../../getting-started/classification.md) to replace the
 classifier after loading weights.
