@@ -77,7 +77,7 @@ docs = [
     # cf. https://github.com/mkdocs/catalog
     "mkdocs==1.6.1",
     "mkdocs-material[imaging]==9.7.7",
-    "mkdocstrings[python]==1.0.6",
+    "mkdocstrings[python]==1.0.7",
     "griffe-typingdoc==0.3.1",
     "mkdocs-llmstxt==0.4.0",
 ]
