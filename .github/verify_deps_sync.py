@@ -20,7 +20,6 @@ from pathlib import Path
 import yaml
 
 DOCKERFILES = ["api/Dockerfile"]
-PRECOMMIT_CONFIG = ".pre-commit-config.yaml"
 PYPROJECTS = ["./pyproject.toml", "api/pyproject.toml"]
 REQUIREMENTS_TXT = ["demo/requirements.txt"]
 
@@ -67,14 +66,6 @@ def main():  # noqa: PLR0912
         dockerfile_content_ = Path(dockerfile).read_text(encoding="utf-8")
         uv_version = re.search(r"ghcr\.io/astral-sh/uv:(\d+\.\d+\.\d+)", dockerfile_content_).group(1)  # ty: ignore[possibly-unbound-attribute]
         deps_dict["uv"].append({"file": dockerfile, "version": f"=={uv_version}"})
-    # Parse precommit
-    with Path(PRECOMMIT_CONFIG).open("r", encoding="utf-8") as f:
-        precommit = yaml.safe_load(f)
-    for repo in precommit["repos"]:
-        if repo["repo"] == "https://github.com/astral-sh/uv-pre-commit":
-            deps_dict["uv"].append({"file": PRECOMMIT_CONFIG, "version": f"=={repo['rev'].lstrip('v')}"})
-        elif repo["repo"] == "https://github.com/charliermarsh/ruff-pre-commit":
-            deps_dict["ruff"].append({"file": PRECOMMIT_CONFIG, "version": f"=={repo['rev'].lstrip('v')}"})
     # Parse pyproject.toml
     for pyproject_path in PYPROJECTS:
         with Path(pyproject_path).open("rb") as f:
