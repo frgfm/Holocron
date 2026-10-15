@@ -182,7 +182,22 @@ Full CUDA/VOC training on the repaired implementation remains pending; the synth
 
 ### Latency benchmark
 
-Compare every model on your own hardware with the [local inference measurements](https://frgfm.github.io/holocron/reference/models/models/#local-inference-measurements).
+These Imagenette checkpoints have no rival that is both more accurate and faster on CPU:
+
+| Model | Acc@1 | Params | CPU (ms) |
+|---|---|---|---|
+| `mobileone_s0` | 88.08% | 4.3M | 6.7 |
+| `mobileone_s1` | 91.26% | 3.6M | 11.8 |
+| `mobileone_s2` | 91.31% | 5.9M | 14.4 |
+| `resnet18` | 93.61% | 11.2M | 16.4 |
+| `darknet19` | 93.86% | 19.8M | 19.2 |
+| `rexnet1_0x` | 94.39% | 3.5M | 19.8 |
+| `rexnet1_3x` | 94.88% | 5.9M | 26.1 |
+| `rexnet2_0x` | 95.24% | 13.8M | 39.5 |
+| `rexnet2_2x` | 95.44% | 16.7M | 43.8 |
+
+CPU is the median batch-1 latency at 224×224 on one Apple M3 Pro thread (PyTorch 2.13), after reparametrization for MobileOne. Compare rows, not machines.
+See the [checkpoint table](https://frgfm.github.io/holocron/reference/models/models/#available-checkpoints) for all 31 checkpoints.
 
 Measure a classification model on your hardware:
 
