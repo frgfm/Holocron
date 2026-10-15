@@ -1,31 +1,90 @@
-# Batch routine version updates weekly across all ecosystems.
-# Security updates are alert-driven and do not follow this schedule.
-# https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/configuring-multi-ecosystem-updates
+# Schedule updates for the selected development and API dependencies.
+# https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
 
 version: 2
-multi-ecosystem-groups:
-  weekly-dependencies:
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    labels:
+      - "dependencies"
+      - "type: misc"
+    commit-message:
+      prefix: "ci(github)"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "08:00"
       timezone: "Europe/Paris"
+    groups:
+      actions:
+        patterns:
+          - "*"
+  - package-ecosystem: "uv"
+    directory: "/"
     labels:
       - "dependencies"
       - "type: misc"
     commit-message:
       prefix: "build(deps)"
-
-updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    patterns: ["*"]
-    multi-ecosystem-group: "weekly-dependencies"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "Europe/Paris"
+    allow:
+      # Safe updates
+      - dependency-name: "ruff"
+      - dependency-name: "ty"
+      - dependency-name: "prek"
+      - dependency-name: "mkdocs"
+      - dependency-name: "mkdocs-material"
+      - dependency-name: "mkdocstrings"
+      - dependency-name: "griffe-typingdoc"
+      - dependency-name: "pytest"
+      - dependency-name: "pytest-cov"
+      - dependency-name: "pytest-pretty"
+      - dependency-name: "torch"
+      - dependency-name: "torchvision"
+    groups:
+      quality:
+        patterns:
+          - "ruff"
+          - "ty"
+          - "prek"
+      docs:
+        patterns:
+          - "mkdocs"
+          - "mkdocs-material*"
+          - "mkdocstrings*"
+          - "griffe-typingdoc"
+      tests:
+        patterns:
+          - "pytest"
+          - "pytest-cov"
+          - "pytest-pretty"
+      pytorch:
+        patterns:
+          - "torch"
+          - "torchvision"
   - package-ecosystem: "uv"
-    directories: ["/", "/api"]
-    patterns: ["*"]
-    multi-ecosystem-group: "weekly-dependencies"
+    directory: "/api"
+    schedule:
+      interval: "monthly"
+      time: "08:00"
+      timezone: "Europe/Paris"
+    allow:
+      - dependency-name: "fastapi"
+      - dependency-name: "onnxruntime"
+    groups:
+      api:
+        patterns:
+          - "fastapi"
+          - "onnxruntime"
   - package-ecosystem: "docker"
     directory: "/api"
-    patterns: ["*"]
-    multi-ecosystem-group: "weekly-dependencies"
+    schedule:
+      interval: "monthly"
+      time: "08:00"
+      timezone: "Europe/Paris"
+    allow:
+      - dependency-name: "ghcr.io/astral-sh/uv"
