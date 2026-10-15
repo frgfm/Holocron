@@ -75,11 +75,6 @@ updates:
     allow:
       - dependency-name: "fastapi"
       - dependency-name: "onnxruntime"
-    groups:
-      api:
-        patterns:
-          - "fastapi"
-          - "onnxruntime"
   - package-ecosystem: "docker"
     directory: "/api"
     schedule:
