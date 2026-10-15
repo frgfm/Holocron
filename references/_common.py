@@ -5,7 +5,7 @@
 
 """Common setup for the reference training scripts."""
 
-import datetime
+import datetime as dt
 import os
 import time
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
@@ -69,7 +69,7 @@ def run_training(
     if args.wb:
         import wandb  # noqa: PLC0415
 
-        timestamp = datetime.datetime.now(tz=datetime.UTC).strftime("%Y%m%d-%H%M%S")
+        timestamp = dt.datetime.now(tz=dt.UTC).strftime("%Y%m%d-%H%M%S")
         name = f"{args.arch}-{timestamp}" if args.name is None else args.name
         run = wandb.init(name=name, project=project, config=config)
         callback = getattr(trainer, "on_epoch_end", None)
@@ -88,7 +88,7 @@ def run_training(
         trainer.fit_n_epochs(
             args.epochs, args.lr, args.freeze_until, args.sched, norm_weight_decay=args.norm_wd, **scheduler_kwargs
         )
-        print(f"Training time {datetime.timedelta(seconds=int(time.time() - start_time))}")
+        print(f"Training time {dt.timedelta(seconds=int(time.time() - start_time))}")
         exit_code = 0
     finally:
         if run is not None:

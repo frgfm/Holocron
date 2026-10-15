@@ -26,13 +26,6 @@ repos:
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.16.5'
-    hooks:
-      - id: ruff
-        args: ["--fix", "--config", "./pyproject.toml"]
-      - id: ruff-format
-        args: ["--config", "./pyproject.toml"]
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.24.1
     hooks:
@@ -40,6 +33,12 @@ repos:
         args: ["./pyproject.toml", "./api/pyproject.toml"]
   - repo: local
     hooks:
+      - id: lint-format
+        name: Fix lint and format code
+        entry: make lint-format
+        language: system
+        types_or: [python, pyi, jupyter]
+        pass_filenames: false
       - id: lmh
         name: Lint My Headers
         entry: make headers-check
@@ -49,7 +48,9 @@ repos:
         name: check deps version sync
         entry: make deps-check
         language: system
+        pass_filenames: false
       - id: typing-check
         name: check typing
         entry: make typing-check
         language: system
+        pass_filenames: false
