@@ -66,7 +66,7 @@ uv run --python 3.12 --extra training \
 
 ## Personal leaderboard
 
-The updated list of available checkpoints can be found in the [documentation](https://frgfm.github.io/Holocron/latest/models.html#classification).
+The updated list of available checkpoints can be found in the [documentation](https://frgfm.github.io/holocron/reference/models/models/#available-checkpoints).
 
 
 ## Imagenette

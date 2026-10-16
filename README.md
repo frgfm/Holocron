@@ -58,23 +58,13 @@ This example uses an explicit checkpoint and its preprocessing and labels:
 ```python
 import torch
 from PIL import Image
-from torchvision.transforms.v2 import Compose, ConvertImageDtype, Normalize, PILToTensor, Resize
 from holocron.models.classification import ResNet18_Checkpoint, resnet18
 
 checkpoint = ResNet18_Checkpoint.IMAGENETTE.value
 model = resnet18(checkpoint=checkpoint).eval()
 
 image = Image.open(path_to_an_image).convert("RGB")
-preprocessing = checkpoint.pre_processing
-
-transform = Compose([
-    Resize(preprocessing.input_shape[1:], interpolation=preprocessing.interpolation),
-    PILToTensor(),
-    ConvertImageDtype(torch.float32),
-    Normalize(preprocessing.mean, preprocessing.std),
-])
-
-input_tensor = transform(image).unsqueeze(0)
+input_tensor = checkpoint.transforms()(image).unsqueeze(0)
 
 with torch.inference_mode():
     probabilities = model(input_tensor).squeeze(0).softmax(dim=0)
@@ -192,81 +182,31 @@ Full CUDA/VOC training on the repaired implementation remains pending; the synth
 
 ### Latency benchmark
 
-You crave for SOTA performances, but you don't know whether it fits your needs in terms of latency?
+Pareto-optimal Imagenette checkpoints for accuracy and latency, on CPU or GPU:
 
-The table below contains historical results from an older timing method. Use the script below for
-current comparisons. Its GPU timer waits for execution to finish.
+| Model | Acc@1 | Params | CPU (ms) | MPS (ms) |
+|---|---|---|---|---|
+| `mobileone_s0` | 88.08% | 4.3M | 6.7 | 1.7 |
+| `mobileone_s1` | 91.26% | 3.6M | 11.8 | 1.9 |
+| `mobileone_s2` | 91.31% | 5.9M | 14.4 | 2.4 |
+| `resnet18` | 93.61% | 11.2M | 16.4 | 2.7 |
+| `darknet19` | 93.86% | 19.8M | 19.2 | 3.1 |
+| `rexnet1_0x` | 94.39% | 3.5M | 19.8 | 6.5 |
+| `rexnet1_5x` | 94.47% | 7.8M | 30.3 | 6.6 |
+| `resnext50_32x4d` | 94.55% | 23.0M | 33.2 | 7.4 |
+| `resnet50d` | 94.65% | 23.5M | 28.4 | 7.6 |
+| `rexnet1_3x` | 94.88% | 5.9M | 26.1 | 8.2 |
+| `rexnet2_0x` | 95.24% | 13.8M | 39.5 | 7.7 |
+| `rexnet2_2x` | 95.44% | 16.7M | 43.8 | 8.6 |
 
-| Arch                                                         | GPU mean (std)    | CPU mean (std)     |
-| ------------------------------------------------------------ | ----------------- | ------------------ |
-| [repvgg_a0](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.repvgg_a0)* | 3.14ms (0.87ms)   | 23.28ms (1.21ms)   |
-| [repvgg_a1](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.repvgg_a1)* | 4.13ms (1.00ms)   | 29.61ms (0.46ms)   |
-| [repvgg_a2](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.repvgg_a2)* | 7.35ms (1.11ms)   | 46.87ms (1.27ms)   |
-| [repvgg_b0](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.repvgg_b0)* | 4.23ms (1.04ms)   | 33.16ms (0.58ms)   |
-| [repvgg_b1](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.repvgg_b1)* | 12.48ms (0.96ms)  | 100.66ms (1.46ms)  |
-| [repvgg_b2](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.repvgg_b2)* | 20.12ms (0.31ms)  | 155.90ms (1.59ms)  |
-| [repvgg_b3](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.repvgg_b3)* | 24.94ms (1.70ms)  | 224.68ms (14.27ms) |
-| [rexnet1_0x](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.rexnet1_0x) | 6.01ms (0.26ms)   | 13.66ms (0.21ms)   |
-| [rexnet1_3x](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.rexnet1_3x) | 6.43ms (0.10ms)   | 19.13ms (2.05ms)   |
-| [rexnet1_5x](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.rexnet1_5x) | 6.46ms (0.28ms)   | 21.06ms (0.24ms)   |
-| [rexnet2_0x](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.rexnet2_0x) | 6.75ms (0.21ms)   | 31.77ms (3.28ms)   |
-| [rexnet2_2x](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.rexnet2_2x) | 6.92ms (0.51ms)   | 33.61ms (0.60ms)   |
-| [sknet50](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.sknet50) | 11.40ms (0.38ms)  | 54.03ms (3.35ms)   |
-| [sknet101](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.sknet101) | 23.55 ms (1.11ms) | 94.89ms (5.61ms)   |
-| [sknet152](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.sknet152) | 69.81ms (0.60ms)  | 253.07ms (3.33ms)  |
-| [tridentnet50](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.tridentnet50) | 16.62ms (1.21ms)  | 142.85ms (5.33ms)  |
-| [res2net50_26w_4s](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.res2net50_26w_4s) | 9.25ms (0.22ms)   | 41.84ms (0.80ms)   |
-| [resnet50d](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.resnet50d) | 36.97ms (3.58ms)  | 36.97ms (3.58ms)   |
-| [pyconv_resnet50](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.pyconv_resnet50) | 20.03ms (0.28ms)  | 178.85ms (2.35ms)  |
-| [pyconvhg_resnet50](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.pyconvhg_resnet50) | 38.41ms (0.33ms)  | 301.03ms (12.39ms) |
-| [darknet24](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.darknet24) | 3.94ms (1.08ms)   | 29.39ms (0.78ms)   |
-| [darknet19](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.darknet19) | 3.17ms (0.59ms)   | 26.36ms (2.80ms)   |
-| [darknet53](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.darknet53) | 7.12ms (1.35ms)   | 53.20ms (1.17ms)   |
-| [cspdarknet53](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.cspdarknet53) | 6.41ms (0.21ms)   | 48.05ms (3.68ms)   |
-| [cspdarknet53_mish](https://frgfm.github.io/Holocron/latest/models.html#holocron.models.cspdarknet53_mish) | 6.88ms (0.51ms)   | 67.78ms (2.90ms)   |
-
-**The reported latency for RepVGG models is the one of the reparametrized version**
-
-This benchmark was performed over 100 iterations on (224, 224) inputs, on a laptop to better reflect performances that can be expected by common users. The hardware setup includes an [Intel(R) Core(TM) i7-10750H](https://ark.intel.com/content/www/us/en/ark/products/201837/intel-core-i710750h-processor-12m-cache-up-to-5-00-ghz.html) for the CPU, and a [NVIDIA GeForce RTX 2070 with Max-Q Design](https://www.nvidia.com/fr-fr/geforce/graphics-cards/rtx-2070/) for the GPU.
-
-Measure a classification model on your hardware:
+Median batch-1 latency per architecture at 224×224 on an Apple M3 Pro (one CPU thread, or its GPU via MPS), PyTorch 2.13.
+See the [checkpoint table](https://frgfm.github.io/holocron/reference/models/models/#available-checkpoints) for all 31 checkpoints
+and the [measurement guide](https://frgfm.github.io/holocron/reference/models/models/#local-inference-measurements) to reproduce on your hardware:
 
 ```bash
 uv sync --locked --extra scripts
-uv run --no-sync python scripts/eval_latency.py rexnet1_0x --device cpu --output /tmp/latency.json
+uv run --no-sync python scripts/eval_latency.py rexnet1_0x --device cpu
 ```
-
-The command measures PyTorch on CPU by default. Use `--device cuda:0` or `--device mps` to measure a GPU.
-Use `--backend onnx` to measure ONNX Runtime on CPU. Its export runs in a separate process and uses temporary files.
-The ONNX worker checks its output against the PyTorch export reference.
-
-Each command runs five fresh worker processes by default. It reports the first forward call, median and 95th-percentile
-warmed batch latency, and sustained throughput in images per second. GPU timing waits for work to finish.
-The summary uses medians across workers for timings and throughput. It shows the range of worker medians.
-Peak RSS is the highest resident process memory across workers, recorded after inference.
-It includes imports, model setup, and warm-up. It excludes the parent process, ONNX export, and output checks.
-RSS is unavailable on Windows.
-CUDA workers also save peak tensor allocations and allocator reservations in the JSON file.
-RSS and CUDA memory are separate measurements. First-call timing excludes imports and model setup.
-Compare RSS only between runs using the same runtime and device.
-
-Use `--batch-size`, `--size`, `--threads`, `--it`, `--warmup`, and `--repeat` to set the workload.
-Inputs use float32. Inference uses evaluation mode, disables gradient tracking, and converts reparametrizable
-models to their inference form. CPU operations use one thread by default.
-The fixed seed improves repeatability; it does not prove identical weights or inputs across PyTorch versions.
-These measurements cover prepared-tensor inference. They exclude image loading, preprocessing, and transfers.
-They do not measure training or model accuracy.
-
-To compare main with a dependency PR, install each checkout into a separate environment with `uv sync --locked`.
-Use the same Python version, machine, runtime, device, and settings. Run the same version of this script against
-both installations, using an absolute path to the script. Save a JSON file from each environment.
-The files record the package revision and dirty state, dependency versions, runtime settings, script hash,
-and individual trials. Check that the CUDA math settings match before comparing GPU results.
-Alternate baseline and candidate commands, and first run main twice to check normal measurement variation.
-Compare latency, throughput, and peak RSS per workload; avoid treating small changes within that variation as gains.
-CI runs short CPU checks for PyTorch and ONNX and uploads their JSON results. CI timing is advisory.
-
-*All arguments are listed by `python scripts/eval_latency.py --help`.*
 
 ### Docker container
 
