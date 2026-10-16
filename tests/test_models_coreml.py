@@ -33,15 +33,20 @@ def coreml():
         ("mobileone_s0", False, True, "fp32", "cpu_only"),
         ("mobileone_s0", True, False, "fp32", "cpu_only"),
         ("resnet18", False, True, "fp16", "all"),
+        ("mobileone_s0", True, False, "fp16", "cpu_only"),
         ("mobileone_s0", True, False, "fp16", "cpu_and_ne"),
     ],
 )
-def test_coreml_classifier(arch, reparameterized, trainer_checkpoint, precision, compute_units, coreml, tmp_path):
+def test_coreml_classifier(arch, reparameterized, trainer_checkpoint, precision, compute_units, coreml, tmp_path):  # noqa: PLR0915
     torch.manual_seed(42)
     model = models.get_model(arch, num_classes=3).eval()
     images = torch.rand(1, 3, 64, 64)
     samples = (images, torch.zeros_like(images), torch.rand(images.shape, generator=torch.Generator().manual_seed(0)))
     with torch.no_grad():
+        if arch == "mobileone_s0" and precision == "fp16":
+            # Fresh normalization stats amplify this synthetic model enough to overflow FP16 CPU inference.
+            model.train()(torch.cat((images, torch.zeros_like(images))))
+            model.eval()
         if reparameterized:
             model.reparametrize()
         references = [model(sample) for sample in samples]
@@ -60,7 +65,8 @@ def test_coreml_classifier(arch, reparameterized, trainer_checkpoint, precision,
         command.append("--reparameterized")
     if not verify:
         command.append("--unverified")
-    result = subprocess.run(command, cwd=Path(__file__).parents[1], capture_output=True, text=True, check=True)  # noqa: S603
+    result = subprocess.run(command, cwd=Path(__file__).parents[1], capture_output=True, text=True, check=False)  # noqa: S603
+    assert result.returncode == 0, result.stderr
     assert ("match PyTorch" if verify else "NOT checked") in result.stdout
     if arch == "resnet18":
         command[command.index("--num-classes") + 1] = "4"
@@ -201,8 +207,8 @@ def test_coreml_rejects_wrong_runtime(precision, coreml, monkeypatch, tmp_path):
     assert not list(tmp_path.iterdir())
 
 
-@pytest.mark.parametrize("actual", [[[1.0, 1.001]], [[1.1, 1.0]]])
-def test_coreml_fp16_rejects_changed_class_or_probability(actual):
+@pytest.mark.parametrize("actual", [[[1.0, 1.001]], [[1.1, 1.0]], [[float("inf"), 0.0]]])
+def test_coreml_fp16_rejects_invalid_prediction(actual):
     expected = torch.tensor([[1.001, 1.0]])
     _check_prediction(torch.tensor([[1.002, 1.0]]), expected, "FP16", 0, fp16=True)
     with pytest.raises(RuntimeError, match="FP16 verification"):

@@ -57,6 +57,7 @@ jobs:
       - name: Record dependencies and require runtime prediction
         run: |
           python -c "import platform, torch, coremltools; assert platform.machine() == 'arm64'; print(platform.platform(), platform.python_version(), torch.__version__, coremltools.__version__)"
+          python -c "from coremltools.models.compute_device import MLComputeDevice; print('Core ML devices:', [type(device).__name__ for device in MLComputeDevice.get_all_compute_devices()])"
           pytest tests/test_models_coreml.py --cov-report=xml -v -s
       - uses: codecov/codecov-action@v7
         with:
