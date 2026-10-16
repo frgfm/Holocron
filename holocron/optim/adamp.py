@@ -5,6 +5,9 @@
 
 import math
 from collections.abc import Callable, Iterable
+from functools import lru_cache
+from importlib.resources import files
+from typing import Any
 
 import torch
 from torch import Tensor
@@ -60,6 +63,8 @@ class AdamP(Adam):
         weight_decay: weight decay (L2 penalty)
         amsgrad: whether to use the AMSGrad variant
         delta: delta threshold for projection
+        mps_fused: opt into Metal fusion for contiguous FP32 MPS tensors without weight decay or AMSGrad;
+            other configurations use the ordinary implementation
     """
 
     def __init__(
@@ -71,9 +76,11 @@ class AdamP(Adam):
         weight_decay: float = 0.0,
         amsgrad: bool = False,
         delta: float = 0.1,
+        mps_fused: bool = False,
     ) -> None:
         super().__init__(params, lr, betas, eps, weight_decay, amsgrad)
         self.delta = delta
+        self.mps_fused = mps_fused
 
     @torch.no_grad()
     def step(self, closure: Callable[[], float] | None = None) -> float | None:  # type: ignore[override]
@@ -126,6 +133,9 @@ class AdamP(Adam):
                         max_exp_avg_sqs.append(state["max_exp_avg_sq"])
 
                     # update the steps for each param group update
+                    if isinstance(state["step"], Tensor):
+                        # Native Adam restores legacy integer steps as CPU tensors.
+                        state["step"] = int(state["step"].item())
                     state["step"] += 1
                     # record the step after step update
                     state_steps.append(state["step"])
@@ -145,6 +155,7 @@ class AdamP(Adam):
                 group["weight_decay"],
                 group["eps"],
                 self.delta,
+                mps_fused=self.mps_fused,
             )
 
         return loss
@@ -164,10 +175,16 @@ def adamp(
     weight_decay: float,
     eps: float,
     delta: float,
+    *,
+    mps_fused: bool = False,
 ) -> None:
     r"""Functional API that performs AdamP algorithm computation.
     See [`AdamP`][holocron.optim.AdamP] for details.
     """
+    if mps_fused and _mps_adamp(
+        params, grads, exp_avgs, exp_avg_sqs, state_steps, amsgrad, beta1, beta2, lr, weight_decay, eps, delta
+    ):
+        return
     for i, param in enumerate(params):
         grad = grads[i]
         exp_avg = exp_avgs[i]
@@ -201,3 +218,89 @@ def adamp(
         pt = torch.where(project, pt - (normalized_param * pt).sum() * normalized_param, pt)
 
         param.add_(pt, alpha=-lr)
+
+
+@lru_cache(maxsize=1)
+def _mps_adamp_shader() -> Any | None:
+    compiler = getattr(torch.mps, "compile_shader", None)
+    if compiler is None:
+        return None
+    try:
+        shader = compiler(files("holocron.optim").joinpath("adamp.metal").read_text(encoding="utf-8"))
+        if any(
+            getattr(kernel, "max_threads_per_threadgroup", 0) < 256 for kernel in (shader.moments, shader.statistics)
+        ):
+            return None
+    except Exception:  # noqa: BLE001 - Optional shader compilers can raise version-specific exceptions.
+        # Compilation has not touched optimizer state; cache the ordinary fallback.
+        return None
+    return shader
+
+
+def _mps_adamp(
+    params: list[Tensor],
+    grads: list[Tensor],
+    avgs: list[Tensor],
+    squares: list[Tensor],
+    steps: list[int],
+    amsgrad: bool,
+    beta1: float,
+    beta2: float,
+    lr: float,
+    weight_decay: float,
+    eps: float,
+    delta: float,
+) -> bool:
+    if torch.is_grad_enabled() or amsgrad or not params:
+        return False
+    if any(isinstance(value, Tensor) for value in (beta1, beta2, lr, weight_decay, eps, delta)):
+        return False
+    if weight_decay != 0 or any(
+        tensor.device.type != "mps"
+        or tensor.dtype != torch.float32
+        or not tensor.is_contiguous()
+        or tensor.is_neg()
+        or not 0 < tensor.numel() < 2**32
+        for tensors in zip(params, grads, avgs, squares, strict=True)
+        for tensor in tensors
+    ):
+        return False
+    if any(
+        tensor.shape != tensors[0].shape
+        for tensors in zip(params, grads, avgs, squares, strict=True)
+        for tensor in tensors[1:]
+    ) or any(
+        len({tensor.untyped_storage().data_ptr() for tensor in tensors}) != 4
+        for tensors in zip(params, grads, avgs, squares, strict=True)
+    ):
+        return False
+    shader = _mps_adamp_shader()
+    if shader is None:
+        return False
+    # Metal bindings distinguish integer and float constants, including vector elements.
+    beta1, beta2, lr, eps, delta = (float(value) for value in (beta1, beta2, lr, eps, delta))
+    for param, grad, avg, square, step in zip(params, grads, avgs, squares, steps, strict=True):
+        n = param.numel()
+        groups = (n + 255) // 256
+        update = torch.empty_like(param)
+        partials = torch.empty((groups, 2), device=param.device, dtype=param.dtype)
+        factor = torch.empty(3, device=param.device, dtype=param.dtype)
+        shader.moments(
+            update,
+            param,
+            grad,
+            avg,
+            square,
+            partials,
+            [beta1, beta2, 1 - beta1, 1 - beta2],
+            [1 - beta1**step, math.sqrt(1 - beta2**step)],
+            eps,
+            n,
+            threads=groups * 256,
+            group_size=256,
+        )
+        torch.autograd.graph.increment_version((avg, square))
+        shader.statistics(factor, param, grad, update, partials, groups, n, eps, delta, threads=256, group_size=256)
+        shader.apply_update(param, update, factor, lr, n, threads=n)
+        torch.autograd.graph.increment_version(param)
+    return True

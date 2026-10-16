@@ -9,12 +9,12 @@ maintainers = [{ name = "François-Guillaume Fernandez", email = "fg-feedback@pr
 readme = "README.md"
 keywords = ["backend", "api", "computer vision", "fastapi", "onnx"]
 dependencies = [
-    "fastapi>=0.141.1,<1.0.0",
+    "fastapi>=0.143.0,<1.0.0",
     "pydantic-settings>=2.0.0,<3.0.0",
     "uvicorn>=0.23.0,<1.0.0",
     "python-multipart>=0.0.27,<1.0.0",
     "Pillow>=12.3.0,<13.0.0",
-    "onnxruntime>=1.22.0,<2.0.0",
+    "onnxruntime>=1.31.0,<2.0.0",
     "huggingface-hub>=1.0.0,<2.0.0",
     "numpy>=1.19.5,<3.0.0"
 ]

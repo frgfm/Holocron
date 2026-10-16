@@ -54,15 +54,15 @@ install-quality: ${PY_DIR} ${PYPROJECT_FILE} ## Install with quality dependencie
 	uv sync --locked --extra quality
 
 lint-check: ${PYPROJECT_FILE} ## Check code formatting and linting
-	ruff check . --config ${PYPROJECT_FILE}
-	ruff format --check . --config ${PYPROJECT_FILE}
+	uv run --no-sync ruff check . --config ${PYPROJECT_FILE}
+	uv run --no-sync ruff format --check . --config ${PYPROJECT_FILE}
 
 lint-format: ${PYPROJECT_FILE} ## Format code and fix linting issues
-	ruff check --fix . --config ${PYPROJECT_FILE}
-	ruff format . --config ${PYPROJECT_FILE}
+	uv run --no-sync ruff check --fix . --config ${PYPROJECT_FILE}
+	uv run --no-sync ruff format . --config ${PYPROJECT_FILE}
 
 precommit: ${PYPROJECT_FILE} .pre-commit-config.yaml ## Run pre-commit hooks
-	prek run --all-files
+	uv run --no-sync prek run --all-files
 
 typing-check: ${PYPROJECT_FILE} ## Check type annotations
 	uv run --no-sync ty check .

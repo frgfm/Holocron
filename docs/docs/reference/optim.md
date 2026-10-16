@@ -37,6 +37,22 @@ Implementations of recent parameter optimizer for Pytorch modules.
         heading_level: 3
         members: no
 
+AdamP offers optional Metal kernel fusion on Apple Silicon:
+
+```python
+optimizer = holocron.optim.AdamP(model.parameters(), mps_fused=True)
+```
+
+A parameter group uses fusion only with contiguous FP32 MPS parameters, gradients, and state, zero weight decay,
+and `amsgrad=False`. Each parameter, its gradient, and its moment buffers must use distinct storage.
+Unsupported groups, missing `torch.mps.compile_shader`, and compilation failures use ordinary AdamP.
+Execution errors propagate without retrying and can leave parameters and moments partly updated. Restore both
+the model and optimizer from a checkpoint before continuing.
+
+`mps_fused` defaults to `False` and remains a constructor preference when loading optimizer state. Mixed precision
+can still use fusion when parameters and unscaled gradients are FP32. Full-training accuracy equivalence remains
+unverified.
+
 ::: holocron.optim.Adan
     options:
         heading_level: 3
