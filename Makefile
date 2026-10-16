@@ -16,6 +16,7 @@ API_REQ_FILE = ${BACKEND_DIR}/requirements.txt
 DEMO_REQ_FILE = ${DEMO_DIR}/requirements.txt
 DEMO_FILE = ${DEMO_DIR}/app.py
 LATENCY_SCRIPT = ${SCRIPTS_DIR}/eval_latency.py
+LATENCY_ARCH ?= rexnet1_0x
 LATENCY_ARGS ?=
 REPO_OWNER ?= frgfm
 REPO_NAME ?= holocron
@@ -53,15 +54,15 @@ install-quality: ${PY_DIR} ${PYPROJECT_FILE} ## Install with quality dependencie
 	uv sync --locked --extra quality
 
 lint-check: ${PYPROJECT_FILE} ## Check code formatting and linting
-	ruff check . --config ${PYPROJECT_FILE}
-	ruff format --check . --config ${PYPROJECT_FILE}
+	uv run --no-sync ruff check . --config ${PYPROJECT_FILE}
+	uv run --no-sync ruff format --check . --config ${PYPROJECT_FILE}
 
 lint-format: ${PYPROJECT_FILE} ## Format code and fix linting issues
-	ruff check --fix . --config ${PYPROJECT_FILE}
-	ruff format . --config ${PYPROJECT_FILE}
+	uv run --no-sync ruff check --fix . --config ${PYPROJECT_FILE}
+	uv run --no-sync ruff format . --config ${PYPROJECT_FILE}
 
 precommit: ${PYPROJECT_FILE} .pre-commit-config.yaml ## Run pre-commit hooks
-	prek run --all-files
+	uv run --no-sync prek run --all-files
 
 typing-check: ${PYPROJECT_FILE} ## Check type annotations
 	uv run --no-sync ty check .
@@ -108,7 +109,7 @@ install-scripts: ${PY_DIR} ${PYPROJECT_FILE} ## Install with test dependencies
 	uv sync --locked --extra scripts
 
 bench-latency: ${PYPROJECT_FILE} ${LATENCY_SCRIPT} ## Measure model inference latency, throughput, and peak RSS
-	uv run --no-sync python ${LATENCY_SCRIPT} rexnet1_0x ${LATENCY_ARGS}
+	uv run --no-sync python ${LATENCY_SCRIPT} ${LATENCY_ARCH} ${LATENCY_ARGS}
 
 
 ########################################################

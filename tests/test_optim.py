@@ -1,5 +1,6 @@
 from copy import deepcopy
 from typing import Any
+from unittest.mock import Mock
 
 import pytest
 import torch
@@ -7,6 +8,7 @@ from torch.nn import functional as F
 from torchvision.models import mobilenet_v3_small
 
 from holocron import optim
+from holocron.optim import adamp
 
 
 def _test_optimizer(name: str, **kwargs: Any) -> None:
@@ -61,8 +63,110 @@ def test_adabelief():
     _test_optimizer("AdaBelief")
 
 
-def test_adamp():
+def test_adamp(monkeypatch):
     _test_optimizer("AdamP")
+    monkeypatch.setattr(adamp, "_mps_adamp_shader", lambda: pytest.fail("CPU must not compile Metal"))
+    _test_optimizer("AdamP", mps_fused=True)
+
+
+def test_adamp_shader_unavailable_is_cached(monkeypatch):
+    adamp._mps_adamp_shader.cache_clear()
+    try:
+        for error in (RuntimeError, SyntaxError, OSError, TypeError, ValueError, Exception):
+            compiler = Mock(side_effect=error("Metal compiler unavailable"))
+            monkeypatch.setattr(torch.mps, "compile_shader", compiler, raising=False)
+            assert adamp._mps_adamp_shader() is None
+            assert adamp._mps_adamp_shader() is None
+            compiler.assert_called_once()
+            adamp._mps_adamp_shader.cache_clear()
+    finally:
+        adamp._mps_adamp_shader.cache_clear()
+
+
+@pytest.mark.skipif(
+    not torch.backends.mps.is_available() or not hasattr(torch.mps, "compile_shader"),
+    reason="Metal shaders unavailable",
+)
+@pytest.mark.parametrize(("betas", "lr"), [((0.0, 0.0), 1.0), ((0.9, 0.999), 1e-3)])
+def test_adamp_mps_fused_parity_and_versions(monkeypatch, betas, lr):
+    native_adamp = adamp._mps_adamp
+
+    def require_fusion(*args):
+        assert native_adamp(*args)
+        return True
+
+    monkeypatch.setattr(adamp, "_mps_adamp", require_fusion)
+    cases = [
+        (range(257), [1.0, -1.0] * 128 + [1.0]),
+        ([0.2, 0.1], [0.5093396902084351, -0.8605654835700989]),
+        ([3e38, 3e38], [1e-5, 1e-5]),
+    ]
+    default_dtype = torch.get_default_dtype()
+    try:
+        torch.set_default_dtype(torch.float64)
+        for values, gradients in cases:
+            params = [torch.nn.Parameter(torch.tensor(values, device="mps", dtype=torch.float32)) for _ in range(2)]
+            reference, candidate = [
+                optim.AdamP([param], lr=lr, betas=betas, mps_fused=fused)
+                for param, fused in zip(params, (False, True), strict=True)
+            ]
+            for param in params:
+                param.grad = torch.tensor(gradients, device="mps", dtype=torch.float32)
+            reference.step()
+            candidate.step()
+            torch.testing.assert_close(*params, rtol=1e-5, atol=1e-6)
+            assert params[1]._version > 0
+            for key in ("exp_avg", "exp_avg_sq"):
+                torch.testing.assert_close(reference.state[params[0]][key], candidate.state[params[1]][key])
+                assert candidate.state[params[1]][key]._version > 0
+            candidate.load_state_dict(deepcopy(candidate.state_dict()))
+            reference.step()
+            candidate.step()
+            torch.testing.assert_close(*params, rtol=1e-5, atol=1e-6)
+    finally:
+        torch.set_default_dtype(default_dtype)
+
+
+@pytest.mark.skipif(
+    not torch.backends.mps.is_available() or not hasattr(torch.mps, "compile_shader"),
+    reason="Metal shaders unavailable",
+)
+def test_adamp_mps_fallback_and_amp_skip(monkeypatch):
+    parameter = torch.nn.Parameter(torch.ones(2, device="mps"))
+    optimizer = optim.AdamP([parameter], mps_fused=True)
+    scaler = torch.amp.GradScaler("mps", init_scale=128.0)
+    scaler.scale(parameter.square().sum() * float("inf")).backward()
+    scaler.step(optimizer)
+    scaler.update()
+    assert not optimizer.state
+    torch.testing.assert_close(parameter, torch.ones_like(parameter))
+    optimizer.zero_grad()
+    scaler.scale(parameter.square().sum()).backward()
+    scaler.step(optimizer)
+    scaler.update()
+    assert optimizer.state[parameter]["step"] == 1
+    assert torch.isfinite(parameter).all()
+    optimizer.state[parameter]["exp_avg"] = parameter.grad
+    with monkeypatch.context() as patch:
+        patch.setattr(adamp, "_mps_adamp_shader", lambda: pytest.fail("Aliased state must fall back"))
+        optimizer.step()
+    optimizer.state[parameter]["exp_avg"] = parameter.grad.clone()
+    shader = adamp._mps_adamp_shader()
+    guarded = torch.ones(8, device="mps")
+    shader.apply_update(
+        guarded[:7], torch.ones(7, device="mps"), torch.tensor([0.0, 0.0, 1.0], device="mps"), 1.0, 7, threads=256
+    )
+    torch.testing.assert_close(guarded, torch.tensor([0.0] * 7 + [1.0], device="mps"))
+    shader = Mock()
+    shader.moments.side_effect = RuntimeError("dispatch failed")
+    monkeypatch.setattr(adamp, "_mps_adamp_shader", lambda: shader)
+    parameter.grad = torch.ones_like(parameter)
+    before = parameter.detach().clone()
+    with pytest.raises(RuntimeError, match="dispatch failed"):
+        optimizer.step()
+    shader.moments.assert_called_once()
+    shader.statistics.assert_not_called()
+    torch.testing.assert_close(parameter, before)
 
 
 def test_adan():

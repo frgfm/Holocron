@@ -3,7 +3,9 @@ import sys
 import warnings
 from argparse import Namespace
 from io import StringIO
+from pathlib import Path
 
+import matplotlib.pyplot as plt
 import pytest
 import torch
 from torch import nn
@@ -20,15 +22,17 @@ from references._common import run_training  # noqa: PLC2701
 @pytest.mark.parametrize("failure", [False, True])
 def test_reference_tracking_reports_training_status(monkeypatch, failure):
     exit_codes = []
+    recorded, logged = [], []
 
     run = Namespace(finish=lambda exit_code=0: exit_codes.append(exit_code))
-    monkeypatch.setitem(sys.modules, "wandb", Namespace(init=lambda **_kwargs: run, log=lambda _metrics: None))
+    monkeypatch.setitem(sys.modules, "wandb", Namespace(init=lambda **_kwargs: run, log=logged.append))
 
     def fit(*_args, **_kwargs):
         if failure:
             raise RuntimeError("training failed")
+        learner.on_epoch_end({"val_loss": 0.5})
 
-    learner = Namespace(fit_n_epochs=fit)
+    learner = Namespace(fit_n_epochs=fit, on_epoch_end=recorded.append)
     args = Namespace(
         test_only=False,
         find_lr=False,
@@ -48,6 +52,25 @@ def test_reference_tracking_reports_training_status(monkeypatch, failure):
     else:
         run_training(learner, args, project="test", config={})
     assert exit_codes == [int(failure)]
+    assert recorded == logged == ([] if failure else [{"val_loss": 0.5}])
+    assert learner.on_epoch_end == recorded.append
+
+
+def test_legacy_trainer_device_hooks():
+    class _LegacyTrainer(trainer.Trainer):
+        def set_device(self, gpu=None):
+            assert self.gpu == gpu
+            super().set_device(gpu)
+
+        def to_cuda(self, x, target):
+            return super().to_cuda(x, torch.as_tensor(target))
+
+    model = nn.Linear(1, 1)
+    loader = [(torch.ones(1, 1), [[0.0]])]
+    learner = _LegacyTrainer(model, loader, loader, nn.MSELoss(), torch.optim.SGD(model.parameters(), lr=0.1))
+    learner._reset_scheduler(0.1, 1, "cosine")
+    learner._fit_epoch()
+    assert learner.step == 1
 
 
 class MockClassificationDataset(Dataset):
@@ -194,6 +217,13 @@ def _linear_trainer(x, target, gradient_acc, optimizer_cls=torch.optim.SGD):
     model = nn.Linear(1, 1, bias=False)
     optimizer = optimizer_cls(model.parameters(), lr=0.1)
     return trainer.Trainer(model, loader, loader, nn.MSELoss(), optimizer, gradient_acc=gradient_acc)
+
+
+def test_onecycle_rejects_single_warmup_update():
+    x = torch.ones(10, 1)
+    learner = _linear_trainer(x, x, gradient_acc=1)
+    with pytest.raises(ValueError, match="exactly one warmup update"):
+        learner._reset_scheduler(0.1, 1, "onecycle", pct_start=0.1)
 
 
 def test_gradient_accumulation_matches_large_batch():
@@ -423,11 +453,29 @@ def test_classification_trainer(tmpdir_factory):
         optimizer,
         output_file=file_path,
         gpu=0 if torch.cuda.is_available() else None,
-        amp=True,
+        amp=torch.cuda.is_available(),
     )
     # Top losses
     learner.plot_top_losses((0, 0, 0), (1, 1, 1), [str(idx) for idx in range(5)], block=False)
     _test_trainer(learner, num_it, "3.weight", None)
+
+
+def test_top_loss_confidence_matches_selected_samples(monkeypatch):
+    logits = torch.zeros(16, 3)
+    logits[:, 1] = torch.arange(16)
+    loader = DataLoader(TensorDataset(logits.view(16, 3, 1, 1), torch.zeros(16, dtype=torch.long)), batch_size=16)
+    model = nn.Sequential(nn.Flatten(), nn.Linear(3, 3, bias=False))
+    with torch.no_grad():
+        model[1].weight.copy_(torch.eye(3))
+    learner = trainer.ClassificationTrainer(
+        model, loader, loader, nn.CrossEntropyLoss(), torch.optim.SGD(model.parameters(), lr=0.01)
+    )
+    monkeypatch.setattr(plt, "show", lambda **_kwargs: None)
+    learner.plot_top_losses((0, 0, 0), (1, 1, 1), ["A", "B", "C"], num_samples=8)
+    figure = plt.gcf()
+    expected = logits.softmax(1).max(1).values[-8:].flip(0)
+    assert all(f"({prob:.1%})" in axis.get_title() for prob, axis in zip(expected, figure.axes, strict=True))
+    plt.close(figure)
 
 
 def test_classification_trainer_few_classes():
@@ -441,6 +489,37 @@ def test_classification_trainer_few_classes():
     learner = trainer.ClassificationTrainer(model, train_loader, train_loader, criterion, optimizer)
     # Fewer than 5 classes
     assert learner.evaluate()["acc5"] == 0
+
+
+def test_classification_validation_rejects_partial_nonfinite_loss():
+    model = nn.Linear(1, 2)
+    with torch.no_grad():
+        model.weight.fill_(1)
+        model.bias.fill_(1)
+    model.register_forward_hook(lambda _module, _inputs, output: output.log())
+    loader = DataLoader(TensorDataset(torch.tensor([[0.0], [-2.0]]), torch.zeros(2, dtype=torch.long)))
+    learner = trainer.ClassificationTrainer(
+        model, loader, loader, nn.CrossEntropyLoss(), torch.optim.SGD(model.parameters(), lr=0.01)
+    )
+    with pytest.raises(ValueError, match="non-finite validation loss"):
+        learner.evaluate()
+
+
+def test_checkpoint_save_failure_preserves_previous_file(monkeypatch, tmp_path):
+    learner = _linear_trainer(torch.zeros(1, 1), torch.zeros(1, 1), gradient_acc=1)
+    path = tmp_path / "checkpoint.pth"
+    learner.save(str(path))
+    previous = path.read_bytes()
+
+    def fail_save(_state, destination, **_kwargs):
+        Path(destination).write_bytes(b"partial checkpoint")
+        raise OSError("save failed")
+
+    monkeypatch.setattr(torch, "save", fail_save)
+    with pytest.raises(OSError, match="save failed"):
+        learner.save(str(path))
+    assert path.read_bytes() == previous
+    assert list(tmp_path.iterdir()) == [path]
 
 
 def test_binary_classification_trainer():
@@ -462,7 +541,12 @@ def test_binary_classification_trainer():
     optimizer = torch.optim.Adam(model.parameters())
     criterion = nn.BCEWithLogitsLoss()
 
-    learner = trainer.BinaryClassificationTrainer(model, train_loader, train_loader, criterion, optimizer, amp=True)
+    gpu = 0 if torch.cuda.is_available() else None
+    learner = trainer.BinaryClassificationTrainer(
+        model, train_loader, train_loader, criterion, optimizer, gpu=gpu, amp=True
+    )
+    learner.check_setup(num_it=2, block=False)
+    assert learner.scaler.is_enabled() == (gpu is not None)
 
     res = learner.evaluate()
     assert 0 <= res["acc"] <= 1
@@ -505,7 +589,7 @@ def test_segmentation_trainer(tmpdir_factory):
         num_classes=5,
         output_file=file_path,
         gpu=0 if torch.cuda.is_available() else None,
-        amp=True,
+        amp=torch.cuda.is_available(),
     )
     _test_trainer(learner, num_it, "2.weight", None)
 
@@ -543,7 +627,7 @@ def test_detection_trainer(tmpdir_factory):
         optimizer,
         output_file=file_path,
         gpu=0 if torch.cuda.is_available() else None,
-        amp=True,
+        amp=torch.cuda.is_available(),
         gradient_clip=0.1,
     )
     _test_trainer(learner, num_it, "roi_heads.box_predictor.cls_score.weight", "backbone", 5e-4)

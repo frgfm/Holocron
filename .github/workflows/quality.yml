@@ -59,4 +59,4 @@ jobs:
         with:
           persist-credentials: false
       - name: Check the headers
-        uses: frgfm/lint-my-headers@b2cbf9115943aa4b1407c3c944cc7c51250e7673 # v0.6.0
+        uses: frgfm/lint-my-headers@212e4f9d0b863ea869c41ae315b5c6cc5cf6ad2e # v0.7.0

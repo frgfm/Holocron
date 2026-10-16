@@ -6,15 +6,16 @@ from holocron.nn import functional as F
 from holocron.nn.modules import downsample
 
 
-def test_concatdownsample2d():
+@pytest.mark.parametrize("scale_factor", [1, 2, 3])
+def test_concatdownsample2d(scale_factor):
     num_batches = 2
     num_chan = 4
-    scale_factor = 2
-    x = torch.arange(num_batches * num_chan * 4**2).view(num_batches, num_chan, 4, 4)
+    size = 2 * scale_factor
+    x = torch.arange(num_batches * num_chan * size**2).view(num_batches, num_chan, size, size)
 
     # Test functional API
     with pytest.raises(AssertionError):
-        F.concat_downsample2d(x, 3)
+        F.concat_downsample2d(x, size + 1)
     out = F.concat_downsample2d(x, scale_factor)
     assert out.shape == (
         num_batches,
@@ -24,8 +25,8 @@ def test_concatdownsample2d():
     )
 
     # Check first and last values
-    assert torch.equal(out[0][0], torch.tensor([[0, 2], [8, 10]]))
-    assert torch.equal(out[0][-num_chan], torch.tensor([[5, 7], [13, 15]]))
+    assert torch.equal(out[0][0], x[0, 0, ::scale_factor, ::scale_factor])
+    assert torch.equal(out[0][-num_chan], x[0, 0, scale_factor - 1 :: scale_factor, scale_factor - 1 :: scale_factor])
     # Test module
     mod = downsample.ConcatDownsample2d(scale_factor)
     assert torch.equal(mod(x), out)

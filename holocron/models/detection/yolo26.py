@@ -74,7 +74,8 @@ class PredictionHead(nn.Module):
                 torch.arange(width, device=feature.device, dtype=torch.float32),
                 indexing="ij",
             )
-            scale = feature.new_tensor((1 / width, 1 / height), dtype=torch.float32)
+            one = feature.new_ones((), dtype=torch.float32)
+            scale = torch.stack((one / width, one / height))
             points.append((torch.stack((x, y), -1).reshape(-1, 2) + 0.5) * scale)
             scales.append(scale.expand(height * width, 2))
         raw = torch.cat(distances, 1).float()
@@ -284,7 +285,8 @@ class YOLO26(nn.Module):
         predictions = []
         for raw_boxes, image_logits in zip(boxes, logits, strict=True):
             image_boxes = raw_boxes.clamp(0, 1)
-            scores, labels = image_logits.sigmoid().max(-1)
+            score_logits, labels = image_logits.max(-1)
+            scores = score_logits.sigmoid()
             valid_boxes = (image_boxes[:, 2:] > image_boxes[:, :2]).all(-1)
             selection_scores = scores.masked_fill(~valid_boxes, -torch.inf)
             candidate_limit = 3000 if self.nms else self.max_detections

@@ -164,7 +164,7 @@ class YoloLayer(nn.Module):
 
         self.anchors: Tensor
         # B x (num_anchors * (5 + num_classes)) x H x W --> B x H x W x num_anchors x (5 + num_classes)
-        output = output.reshape(b, len(self.anchors), 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
+        output = output.reshape(b, self.anchors.shape[0], 5 + self.num_classes, h, w).permute(0, 3, 4, 1, 2)
 
         # Box center
         # Half precision can overflow CIoU gradients for small, elongated boxes.

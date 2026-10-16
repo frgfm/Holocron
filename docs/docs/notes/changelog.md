@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Support CPU, CUDA, and Apple Silicon MPS training. Reference recipes now default to `--device auto`; use `--device cpu` to retain the previous CPU default.
+- Add opt-in AdamP Metal kernel fusion with ordinary fallback for unsupported configurations. Leave fusion disabled by default.
+
 ## v0.3.0 (2026-10-03)
 Release note: [v0.3.0](https://github.com/frgfm/Holocron/releases/tag/v0.3.0)
 

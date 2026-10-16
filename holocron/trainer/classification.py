@@ -44,6 +44,9 @@ class ClassificationTrainer(Trainer):
 
         Returns:
             evaluation metrics (validation loss, top1 accuracy, top5 accuracy)
+
+        Raises:
+            ValueError: If any validation batch has non-finite loss.
         """
         self.model.eval()
 
@@ -53,10 +56,10 @@ class ClassificationTrainer(Trainer):
 
             loss, out = self._get_loss(x, target, return_logits=True)  # ty: ignore[invalid-argument-type]
 
-            # Safeguard for NaN loss
-            if not torch.isnan(loss) and not torch.isinf(loss):
-                val_loss += loss.item()
-                num_valid_batches += 1
+            if not torch.isfinite(loss):
+                raise ValueError("non-finite validation loss")
+            val_loss += loss.item()
+            num_valid_batches += 1
 
             pred = out.topk(5, dim=1)[1] if out.shape[1] >= 5 else out.argmax(dim=1, keepdim=True)
             correct = pred.eq(target.view(-1, 1).expand_as(pred))
@@ -134,7 +137,7 @@ class ClassificationTrainer(Trainer):
                 added_idcs = [idx - num_samples for idx in idcs if idx >= num_samples]
                 # Update
                 losses = np.concatenate((losses[kept_idcs], batch_loss.cpu().numpy()[added_idcs]))
-                probs = np.concatenate((probs[kept_idcs], probs_.cpu().numpy()))
+                probs = np.concatenate((probs[kept_idcs], probs_.float().cpu().numpy()[added_idcs]))
                 if not self.is_binary:
                     preds = np.concatenate((preds[kept_idcs], logits[added_idcs].argmax(dim=1).cpu().numpy()))
                 targets = np.concatenate((targets[kept_idcs], target[added_idcs].cpu().numpy()))  # ty: ignore[invalid-argument-type]
@@ -197,7 +200,7 @@ class BinaryClassificationTrainer(ClassificationTrainer):
 
         # AMP
         if self.amp:
-            with torch.amp.autocast("cuda"):
+            with torch.amp.autocast(self.device.type):
                 # Forward
                 out = self.model(x)
                 # Loss computation
