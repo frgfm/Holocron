@@ -144,7 +144,7 @@ uv run --no-sync python scripts/export_to_coreml.py resnet18 \
 Raw state dictionaries and trainer checkpoints containing `model` both load strictly on CPU;
 use the architecture and class count from training. The CLI supports `resnet18` and `mobileone_s0`.
 For a MobileOne checkpoint saved after `eval().reparametrize()`, add `--reparameterized`.
-The reusable API also accepts custom classifiers; other Holocron architectures are not validated:
+The reusable API also accepts custom classifiers; validate each architecture and checkpoint on the target runtime:
 
 ```python
 from holocron.models.coreml import export_coreml
@@ -152,17 +152,37 @@ from holocron.models.coreml import export_coreml
 export_coreml(model, preprocessed_images, "classifier.mlpackage")
 ```
 
-The ML Program targets **macOS 12+ / iOS 15+**, with fixed dimensions, batch one and FP32 compute.
+The ML Program targets **macOS 12+ / iOS 15+**, with fixed dimensions and batch one. FP32 computation is the default.
 By default, Apple Silicon macOS compares actual Core ML CPU predictions with PyTorch on the
 supplied tensor, zeros and deterministic random input (`rtol=1e-3, atol=3e-5`). It checks shapes,
 dtype and finite logits, preserves the caller's model, and refuses existing destinations.
 Linux requires `--unverified` (API: `verify=False`): tracing is checked, but Core ML inference is
 **not checked**. iOS deployment is intended; numerical validation is on macOS, without iOS device tests.
 
+For FP16 computation, keep the source model and input in FP32 and select a verification runtime:
+
+```bash
+uv run --no-sync python scripts/export_to_coreml.py mobileone_s0 \
+    --checkpoint checkpoints/model.pth --num-classes 10 --precision fp16 \
+    --compute-units cpu_and_ne --path classifier-fp16.mlpackage
+```
+
+The API accepts the same options: `export_coreml(model, images, path, precision="fp16", compute_units="cpu_and_ne")`.
+FP16 keeps the `images`/`logits` interface in FP32. Tracing still uses the strict FP32 logit check;
+Core ML verification requires finite logits, the same top-1 class, and at most **0.005 absolute softmax
+probability error** on each of the three inputs. These probes do not establish dataset accuracy.
+Validate a trained checkpoint on representative images before deployment.
+
+`--compute-units` accepts `cpu_only` (default), `cpu_and_gpu`, `cpu_and_ne`, and `all`.
+It selects the devices allowed during verification; the app chooses its own policy when loading the package.
+CPU+Neural Engine requires macOS 13+ (iOS 16+ in an app), and permits CPU fallback. It does not guarantee Neural Engine placement.
+FP32 ML Programs can run on CPU/GPU; FP16 also permits the Neural Engine. Compare the policies on the target device:
+`.all` can be faster than `.cpuAndNeuralEngine`. See Apple's [typed execution guide](https://apple.github.io/coremltools/docs-guides/source/typed-execution.html).
+
 Use Python 3.11–3.13 and optional coremltools 9.0. The compatibility probe and macOS tests used
-Python 3.11 and PyTorch 2.13.0; coremltools warns that upstream testing ends at PyTorch 2.7.0.
+Python 3.11 and PyTorch 2.14.1; coremltools warns that upstream testing ends at PyTorch 2.7.0.
 Tests validate the two architectures with three classes and 64×64 inputs, including fused/repeated
-MobileOne. Dynamic shapes, quantization, benchmarks and other tasks/architectures are deferred.
+MobileOne, FP16 `.all`, and FP16 CPU+Neural Engine. Dynamic shapes, integer quantization and broader model coverage are deferred.
 ONNX remains the separate cloud CPU deployment path.
 
 Add `classifier.mlpackage` to an Xcode app target. Xcode compiles it to `classifier.mlmodelc`.
@@ -177,21 +197,25 @@ Custom training may require different values. Re-export for a different resoluti
 ```swift
 import CoreML
 
+// Load once, then reuse model for each prediction.
+let config = MLModelConfiguration()
+config.computeUnits = .cpuOnly // FP32 baseline; benchmark .all / .cpuAndNeuralEngine for FP16.
+let url = Bundle.main.url(forResource: "classifier", withExtension: "mlmodelc")!
+let model = try MLModel(contentsOf: url, configuration: config)
+
 // rgb contains resized/cropped 224×224 RGB pixels, interleaved, each Float in [0, 1].
-func classify(rgb: [Float]) throws -> MLMultiArray {
+func classify(rgb: [Float], model: MLModel) throws -> MLMultiArray {
     precondition(rgb.count == 224 * 224 * 3)
-    let config = MLModelConfiguration()
-    config.computeUnits = .cpuOnly // Matches the numerical baseline.
-    let url = Bundle.main.url(forResource: "classifier", withExtension: "mlmodelc")!
-    let model = try MLModel(contentsOf: url, configuration: config)
     let images = try MLMultiArray(shape: [1, 3, 224, 224], dataType: .float32)
+    let data = images.dataPointer.assumingMemoryBound(to: Float.self)
+    let strides = images.strides.map(\.intValue)
     let mean: [Float] = [0.485, 0.456, 0.406]
     let std: [Float] = [0.229, 0.224, 0.225]
     for c in 0..<3 {
         for y in 0..<224 {
             for x in 0..<224 {
                 let value = (rgb[(y * 224 + x) * 3 + c] - mean[c]) / std[c]
-                images[[0, c, y, x] as [NSNumber]] = NSNumber(value: value)
+                data[c * strides[1] + y * strides[2] + x * strides[3]] = value
             }
         }
     }

@@ -11,7 +11,7 @@ import torch
 from torch import nn
 
 from holocron import models
-from holocron.models.coreml import export_coreml
+from holocron.models.coreml import _check_prediction, export_coreml  # noqa: PLC2701
 
 
 @pytest.fixture(scope="module")
@@ -27,10 +27,16 @@ def coreml():
 
 
 @pytest.mark.parametrize(
-    ("arch", "reparameterized", "trainer_checkpoint"),
-    [("resnet18", False, False), ("mobileone_s0", False, True), ("mobileone_s0", True, False)],
+    ("arch", "reparameterized", "trainer_checkpoint", "precision", "compute_units"),
+    [
+        ("resnet18", False, False, "fp32", "cpu_only"),
+        ("mobileone_s0", False, True, "fp32", "cpu_only"),
+        ("mobileone_s0", True, False, "fp32", "cpu_only"),
+        ("resnet18", False, True, "fp16", "all"),
+        ("mobileone_s0", True, False, "fp16", "cpu_and_ne"),
+    ],
 )
-def test_coreml_classifier(arch, reparameterized, trainer_checkpoint, coreml, tmp_path):
+def test_coreml_classifier(arch, reparameterized, trainer_checkpoint, precision, compute_units, coreml, tmp_path):
     torch.manual_seed(42)
     model = models.get_model(arch, num_classes=3).eval()
     images = torch.rand(1, 3, 64, 64)
@@ -49,6 +55,7 @@ def test_coreml_classifier(arch, reparameterized, trainer_checkpoint, coreml, tm
     command = [sys.executable, "scripts/export_to_coreml.py", arch]
     command += ["--checkpoint", str(checkpoint), "--path", str(path)]
     command += ["--num-classes", "3", "--height", "64", "--width", "64"]
+    command += ["--precision", precision, "--compute-units", compute_units]
     if reparameterized:
         command.append("--reparameterized")
     if not verify:
@@ -65,27 +72,33 @@ def test_coreml_classifier(arch, reparameterized, trainer_checkpoint, coreml, tm
     architecture = repr(model)
     model.train()
     for iteration in range(2 if reparameterized else 1):
-        export_coreml(model, images, path, verify=verify)
+        export_coreml(model, images, path, verify=verify, precision=precision, compute_units=compute_units)
         assert all(module.training for module in model.modules())
         assert repr(model) == architecture
         for key, value in model.state_dict().items():
             torch.testing.assert_close(value, original[key], rtol=0, atol=0)
         if reparameterized and iteration == 0:
             shutil.rmtree(path)
-    package = coreml.models.MLModel(str(path), skip_model_load=not verify, compute_units=coreml.ComputeUnit.CPU_ONLY)
+    package = coreml.models.MLModel(
+        str(path), skip_model_load=not verify, compute_units=coreml.ComputeUnit[compute_units.upper()]
+    )
     spec = package.get_spec()
     assert spec.WhichOneof("Type") == "mlProgram"
+    assert any(
+        output.type.tensorType.dataType == coreml.proto.MIL_pb2.FLOAT16
+        for function in spec.mlProgram.functions.values()
+        for block in function.block_specializations.values()
+        for operation in block.operations
+        for output in operation.outputs
+    ) == (precision == "fp16")
     assert list(spec.description.input[0].type.multiArrayType.shape) == list(images.shape)
+    for feature in (*spec.description.input, *spec.description.output):
+        assert feature.type.multiArrayType.dataType == coreml.proto.FeatureTypes_pb2.ArrayFeatureType.FLOAT32
     if verify:
         with torch.no_grad():
             for index, (sample, expected) in enumerate(zip(samples, references, strict=True)):
                 actual = torch.from_numpy(package.predict({"images": sample.numpy()})["logits"])
-                torch.testing.assert_close(actual, expected, rtol=1e-3, atol=3e-5)
-                error = (actual - expected).abs()
-                print(  # noqa: T201
-                    f"{arch} reparameterized={reparameterized} input={index}: max_abs={error.max().item():.8g} "
-                    f"max_rel={(error / expected.abs().clamp_min(1e-12)).max().item():.8g}"
-                )
+                _check_prediction(actual, expected, "Test", index, fp16=precision == "fp16")
     shutil.rmtree(path)
 
 
@@ -168,11 +181,12 @@ def test_coreml_unavailable(monkeypatch, tmp_path):
         export_coreml(nn.Identity(), images, path, verify=False)
 
 
-def test_coreml_rejects_wrong_runtime(coreml, monkeypatch, tmp_path):
+@pytest.mark.parametrize("precision", ["fp32", "fp16"])
+def test_coreml_rejects_wrong_runtime(precision, coreml, monkeypatch, tmp_path):
     if platform.system() != "Darwin" or platform.machine() != "arm64":
         pytest.skip("Actual Core ML runtime test requires Apple Silicon")
     model = nn.Sequential(nn.AdaptiveAvgPool2d(1), nn.Flatten(1))
-    images = torch.ones(1, 3, 4, 4)
+    images = torch.tensor([1.0, 2.0, 3.0]).reshape(1, 3, 1, 1).expand(1, 3, 4, 4).contiguous()
     convert = coreml.convert
 
     def incorrect(_traced, **kwargs):
@@ -182,6 +196,20 @@ def test_coreml_rejects_wrong_runtime(coreml, monkeypatch, tmp_path):
         return convert(torch.jit.trace(wrong, images), **kwargs)
 
     monkeypatch.setattr(coreml, "convert", incorrect)
-    with pytest.raises(RuntimeError, match="Core ML CPU verification input 0"):
-        export_coreml(model, images, tmp_path / "model.mlpackage")
+    with pytest.raises(RuntimeError, match="Core ML CPU_ONLY verification input 0"):
+        export_coreml(model, images, tmp_path / "model.mlpackage", precision=precision)
     assert not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize("actual", [[[1.0, 1.001]], [[1.1, 1.0]]])
+def test_coreml_fp16_rejects_changed_class_or_probability(actual):
+    expected = torch.tensor([[1.001, 1.0]])
+    _check_prediction(torch.tensor([[1.002, 1.0]]), expected, "FP16", 0, fp16=True)
+    with pytest.raises(RuntimeError, match="FP16 verification"):
+        _check_prediction(torch.tensor(actual), expected, "FP16", 0, fp16=True)
+
+
+@pytest.mark.parametrize("options", [{"precision": "int8"}, {"compute_units": "neural_engine"}])
+def test_coreml_rejects_invalid_options(options, tmp_path):
+    with pytest.raises(ValueError, match=r"Core ML (precision|compute_units) must"):
+        export_coreml(nn.Identity(), torch.ones(1, 3, 4, 4), tmp_path / "model.mlpackage", verify=False, **options)

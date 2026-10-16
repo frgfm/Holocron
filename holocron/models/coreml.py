@@ -18,16 +18,28 @@ __all__ = ["export_coreml"]
 _RTOL, _ATOL = 1e-3, 3e-5
 
 
-def _check_prediction(actual: torch.Tensor, expected: torch.Tensor, stage: str, index: int) -> None:
+def _check_prediction(
+    actual: torch.Tensor, expected: torch.Tensor, stage: str, index: int, *, fp16: bool = False
+) -> None:
     if not torch.isfinite(actual).all() or not torch.isfinite(expected).all():
         raise RuntimeError(f"{stage} verification input {index}: non-finite logits")
     try:
-        torch.testing.assert_close(actual, expected, rtol=_RTOL, atol=_ATOL)
+        if fp16:
+            torch.testing.assert_close(actual.softmax(-1), expected.softmax(-1), rtol=0, atol=0.005)
+            torch.testing.assert_close(actual.argmax(-1), expected.argmax(-1), rtol=0, atol=0)
+        else:
+            torch.testing.assert_close(actual, expected, rtol=_RTOL, atol=_ATOL)
     except AssertionError as exc:
         raise RuntimeError(f"{stage} verification input {index}: {exc}") from exc
 
 
-def _check_input(model: nn.Module, example_input: torch.Tensor, path: Path, verify: bool) -> None:
+def _check_input(
+    model: nn.Module, example_input: torch.Tensor, path: Path, verify: bool, precision: str, compute_units: str
+) -> None:
+    if precision not in {"fp32", "fp16"}:
+        raise ValueError("Core ML precision must be fp32 or fp16")
+    if compute_units not in {"cpu_only", "cpu_and_gpu", "cpu_and_ne", "all"}:
+        raise ValueError("Core ML compute_units must be cpu_only, cpu_and_gpu, cpu_and_ne, or all")
     if path.exists() or path.is_symlink():
         raise FileExistsError(f"Refusing to overwrite Core ML destination: {path}")
     if path.suffix != ".mlpackage":
@@ -50,14 +62,25 @@ def _check_input(model: nn.Module, example_input: torch.Tensor, path: Path, veri
 
 
 @torch.no_grad()
-def export_coreml(model: nn.Module, example_input: torch.Tensor, path: str | Path, *, verify: bool = True) -> Path:
+def export_coreml(
+    model: nn.Module,
+    example_input: torch.Tensor,
+    path: str | Path,
+    *,
+    verify: bool = True,
+    precision: str = "fp32",
+    compute_units: str = "cpu_only",
+) -> Path:
     """Save a new ML Program package from a batch-one, FP32 NCHW tensor.
 
     The model must return FP32 logits shaped (1, classes). Uses an independent CPU
     evaluation copy; the caller's model and input are untouched. Checks tracing on
     the example, zeros and deterministic random input. By default, also requires
-    actual Core ML CPU prediction parity on Apple Silicon macOS 12+; verify=False
-    explicitly permits unverified conversion. The destination must end in .mlpackage
+    actual Core ML prediction parity on Apple Silicon macOS 12+. FP32 uses strict
+    logit tolerances; FP16 requires the same top-1 class and at most 0.005 absolute
+    softmax probability error. Inputs and outputs remain FP32. compute_units selects
+    the verification runtime: cpu_only, cpu_and_gpu, cpu_and_ne (macOS 13+), or all.
+    verify=False explicitly permits unverified conversion. The destination must end in .mlpackage
     and its parent must exist. Existing paths are refused; failures leave them intact.
 
     Validated architectures: ResNet18 and MobileOne-S0, including reparameterized models.
@@ -72,7 +95,7 @@ def export_coreml(model: nn.Module, example_input: torch.Tensor, path: str | Pat
         RuntimeError: Tracing/conversion/verification failure or unavailable runtime.
     """
     path = Path(path)
-    _check_input(model, example_input, path, verify)
+    _check_input(model, example_input, path, verify, precision, compute_units)
     if not verify:
         warnings.warn("Core ML inference was not checked (verify=False). Only tracing is verified.", stacklevel=2)
     try:
@@ -116,7 +139,7 @@ def export_coreml(model: nn.Module, example_input: torch.Tensor, path: str | Pat
                 convert_to="mlprogram",
                 inputs=[ct.TensorType(name="images", shape=tuple(images.shape), dtype=np.float32)],
                 outputs=[ct.TensorType(name="logits", dtype=np.float32)],
-                compute_precision=ct.precision.FLOAT32,
+                compute_precision=ct.precision.FLOAT16 if precision == "fp16" else ct.precision.FLOAT32,
                 compute_units=ct.ComputeUnit.CPU_ONLY,
                 minimum_deployment_target=ct.target.iOS15,
                 skip_model_load=True,
@@ -126,10 +149,12 @@ def export_coreml(model: nn.Module, example_input: torch.Tensor, path: str | Pat
             raise RuntimeError(f"Core ML conversion failed: {exc}") from exc
         if verify:
             try:
-                runtime = ct.models.MLModel(str(candidate), compute_units=ct.ComputeUnit.CPU_ONLY)
+                runtime = ct.models.MLModel(str(candidate), compute_units=ct.ComputeUnit[compute_units.upper()])
                 for index, (sample, expected) in enumerate(zip(samples, references, strict=True)):
                     actual = torch.from_numpy(runtime.predict({"images": sample.numpy()})["logits"])
-                    _check_prediction(actual, expected, "Core ML CPU", index)
+                    _check_prediction(
+                        actual, expected, f"Core ML {compute_units.upper()}", index, fp16=precision == "fp16"
+                    )
             except Exception as exc:
                 raise RuntimeError(f"Core ML runtime verification failed: {exc}") from exc
         if path.exists() or path.is_symlink():
