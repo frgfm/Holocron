@@ -23,6 +23,7 @@ DOCKERFILES = ["api/Dockerfile"]
 PRECOMMIT_CONFIG = ".pre-commit-config.yaml"
 PYPROJECTS = ["./pyproject.toml", "api/pyproject.toml"]
 REQUIREMENTS_TXT = ["demo/requirements.txt"]
+LOCKFILES = ["uv.lock", "api/uv.lock"]
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -85,6 +86,7 @@ def main():  # noqa: PLR0912
             pyproject["project"]["dependencies"],
             optional_deps.get("quality", []),
             optional_deps.get("test", []),
+            optional_deps.get("scripts", []),
         ):
             parsed_deps = [parse_dep_str(dep) for dep in requirements]
             parsed_deps = {dep["pkg"]: dep for dep in parsed_deps}
@@ -101,6 +103,21 @@ def main():  # noqa: PLR0912
         for dep in deps_dict:  # noqa: PLC0206
             if dep in txt_deps:
                 deps_dict[dep].append({"file": req_txt, "version": txt_deps[dep]["version"]})
+
+    # Ensure the separately locked services resolve shared runtime dependencies identically.
+    onnxruntime_versions = []
+    for lockfile in LOCKFILES:
+        with Path(lockfile).open("rb") as f:
+            lock = tomllib.load(f)
+        versions = {
+            package["version"]
+            for package in lock.get("package", [])
+            if package["name"] == "onnxruntime"
+        }
+        if not versions:
+            onnxruntime_versions.append({"file": lockfile, "version": "not locked"})
+        else:
+            onnxruntime_versions.extend({"file": lockfile, "version": version} for version in versions)
 
     # Parse github/workflows/...
     for workflow_file in Path(".github/workflows").glob("*.yml"):
@@ -124,6 +141,16 @@ def main():  # noqa: PLR0912
                 f"\033[31m{dep}\033[0m:",
                 "\n".join(f"- '{v}': {', '.join(files)}" for v, files in inv_dict.items()),
             ])
+
+    locked_onnxruntime_versions = {v["version"] for v in onnxruntime_versions}
+    if len(locked_onnxruntime_versions) > 1 or "not locked" in locked_onnxruntime_versions:
+        inv_dict = {v: set() for v in locked_onnxruntime_versions}
+        for version in onnxruntime_versions:
+            inv_dict[version["version"]].add(version["file"])
+        troubles.extend([
+            "\033[31monnxruntime lockfiles\033[0m:",
+            "\n".join(f"- '{v}': {', '.join(files)}" for v, files in inv_dict.items()),
+        ])
 
     if len(troubles) > 0:
         raise AssertionError("Some dependencies are out of sync:\n\n" + "\n".join(troubles))
