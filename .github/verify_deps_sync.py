@@ -76,6 +76,7 @@ def main():  # noqa: PLR0912
             pyproject["project"]["dependencies"],
             optional_deps.get("quality", []),
             optional_deps.get("test", []),
+            optional_deps.get("scripts", []),
         ):
             parsed_deps = [parse_dep_str(dep) for dep in requirements]
             parsed_deps = {dep["pkg"]: dep for dep in parsed_deps}
