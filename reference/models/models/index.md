@@ -32,9 +32,9 @@ Replace `all` with a model name, or use `--list-models` to inspect coverage. The
 
 Models use FP32 evaluation forwards under `torch.inference_mode()`, with seeded random weights/inputs and no backbone downloads. RepVGG, MobileOne and RepViT are reparametrized; other models use ordinary evaluation forwards, including detection postprocessing. Preprocessing and recognition decoding are excluded.
 
-Inputs default to `(batch, 3, 224, 224)`, except YOLOv1 requires 448 pixels and recognition uses `(batch, 1, 32, 128)` with full-width lengths and 83 characters. `--size` overrides the image side or recognition width; omit it for the full suite. Use `--help` for class, batch, device, seed and thread settings (CPU threads default to one). Single-classification ONNX measurements use `--backend onnx`.
+Inputs default to `(batch, 3, 224, 224)`, except YOLOv1 requires 448 pixels and recognition uses `(batch, 1, 32, 128)` with full-width lengths and 83 characters. `--size` overrides the image side or recognition width; omit it for the full suite. Use `--help` for class, batch, device, seed and thread settings (CPU threads default to one). Use `--device cuda:0` or `--device mps` for GPUs; GPU timing waits for completion. `--backend onnx` measures ONNX Runtime on CPU for one classification model, after checking its output against PyTorch. Summaries report first-call, median and p95 latency, and throughput, as medians across workers.
 
-JSON records contain UTC time, Git revision/dirty state, CPU hardware/affinity, OS/runtime versions, tested forward/source path, input settings, latency, throughput and peak RSS in MiB, with raw repeats. Latency excludes setup and transfer; RSS includes imports and model construction and is unavailable on Windows. Fresh processes isolate memory peaks. Progress is saved with `complete: false` until every model succeeds; errors exit nonzero. These are synthetic performance checks; compare runs on the same hardware, OS, runtime versions and input settings.
+JSON records contain UTC time, Git revision/dirty state, CPU hardware/affinity, OS/runtime versions, tested forward/source path, input settings, latency, throughput and peak RSS in MiB, with raw repeats. Latency excludes setup and transfer; RSS includes imports and model construction and is unavailable on Windows. Fresh processes isolate memory peaks. Progress is saved with `complete: false` until every model succeeds; errors exit nonzero. These are synthetic performance checks; compare runs on the same hardware, OS, runtime versions and input settings. To compare dependency versions, use one `uv sync --locked` environment per version, then alternate runs with identical settings; run the baseline twice first to gauge noise.
 
 ## Support status
 
@@ -100,7 +100,7 @@ Classification models expect a 4D image tensor as an input (N x C x H x W) and r
 
 Most classification checkpoints were trained on [Imagenette](https://github.com/fastai/imagenette), a ten-class subset of ImageNet. Selected ReXNet variants also provide ImageNet-1K weights with 1,000 output classes. Choose a checkpoint by its dataset, not just its architecture name. Accuracy values from these two datasets are not comparable.
 
-Pass a `Checkpoint` object, for example `rexnet1_0x(checkpoint=ReXNet1_0x_Checkpoint.IMAGENETTE.value)`, to select weights explicitly. For models with checkpoint enums, `pretrained=True` selects `DEFAULT.value`; it does not always select Imagenette. The checkpoint defines the preprocessing, output categories and evaluation metrics. See the [quick start](../../../#quick-start) for inference and the [transfer-learning guide](../../../getting-started/classification/) to replace the classifier after loading weights.
+Pass a `Checkpoint` object, for example `rexnet1_0x(checkpoint=ReXNet1_0x_Checkpoint.IMAGENETTE.value)`, to select weights explicitly. For models with checkpoint enums, `pretrained=True` selects `DEFAULT.value`; it does not always select Imagenette. The checkpoint defines the preprocessing (`checkpoint.transforms()`), output categories and evaluation metrics. See the [quick start](../../../#quick-start) for inference and the [transfer-learning guide](../../../getting-started/classification/) to replace the classifier after loading weights.
 
 Weights may be trained in Holocron or ported from another implementation. A matching architecture name does not make a torchvision or `timm` state dictionary compatible: parameter names, shapes and preprocessing may differ. Use the published Holocron checkpoint or a documented adapter, such as [RepViT's official checkpoint import](../classification/repvit/#use-the-authors-checkpoint).
 
@@ -108,41 +108,43 @@ An implemented architecture does not guarantee pretrained weights. When no weigh
 
 The table below lists classification checkpoints with recorded metrics. `darknet24` and `tridentnet50` also have legacy Imagenette weights, but no recorded evaluation metrics. Their `model.default_cfg` is a dictionary with `input_shape`, `mean`, `std` and `classes` keys, rather than a `Checkpoint` object.
 
+CPU and MPS: median batch-1 latency per architecture at 224×224 on an Apple M3 Pro (one CPU thread, or its GPU), with PyTorch 2.13, from [`eval_latency.py`](#local-inference-measurements).
+
 The chart compares only the 27 Imagenette checkpoints. ImageNet-1K rows remain in the table for reference but use a different evaluation dataset.
 
-| **Checkpoint**                          | **Acc@1** | **Acc@5** | **Params** | **Size (MB)** |
-| --------------------------------------- | --------- | --------- | ---------- | ------------- |
-| CSPDarknet53_Checkpoint.IMAGENETTE      | 94.50%    | 99.64%    | 26.6M      | 101.8         |
-| CSPDarknet53_Mish_Checkpoint.IMAGENETTE | 94.65%    | 99.69%    | 26.6M      | 101.8         |
-| ConvNeXt_Atto_Checkpoint.IMAGENETTE     | 87.59%    | 98.32%    | 3.4M       | 12.9          |
-| Darknet19_Checkpoint.IMAGENETTE         | 93.86%    | 99.36%    | 19.8M      | 75.7          |
-| Darknet53_Checkpoint.IMAGENETTE         | 94.17%    | 99.57%    | 40.6M      | 155.1         |
-| MobileOne_S0_Checkpoint.IMAGENETTE      | 88.08%    | 98.83%    | 4.3M       | 16.9          |
-| MobileOne_S1_Checkpoint.IMAGENETTE      | 91.26%    | 99.18%    | 3.6M       | 13.9          |
-| MobileOne_S2_Checkpoint.IMAGENETTE      | 91.31%    | 99.21%    | 5.9M       | 22.8          |
-| MobileOne_S3_Checkpoint.IMAGENETTE      | 91.06%    | 99.31%    | 8.1M       | 31.5          |
-| ReXNet1_0x_Checkpoint.IMAGENET1K        | 77.86%    | 93.87%    | 4.8M       | 13.7          |
-| ReXNet1_0x_Checkpoint.IMAGENETTE        | 94.39%    | 99.62%    | 3.5M       | 13.7          |
-| ReXNet1_3x_Checkpoint.IMAGENET1K        | 79.50%    | 94.68%    | 7.6M       | 13.7          |
-| ReXNet1_3x_Checkpoint.IMAGENETTE        | 94.88%    | 99.39%    | 5.9M       | 22.8          |
-| ReXNet1_5x_Checkpoint.IMAGENET1K        | 80.31%    | 95.17%    | 9.7M       | 13.7          |
-| ReXNet1_5x_Checkpoint.IMAGENETTE        | 94.47%    | 99.62%    | 7.8M       | 30.2          |
-| ReXNet2_0x_Checkpoint.IMAGENET1K        | 80.31%    | 95.17%    | 16.4M      | 13.7          |
-| ReXNet2_0x_Checkpoint.IMAGENETTE        | 95.24%    | 99.57%    | 13.8M      | 53.1          |
-| ReXNet2_2x_Checkpoint.IMAGENETTE        | 95.44%    | 99.46%    | 16.7M      | 64.1          |
-| RepVGG_A0_Checkpoint.IMAGENETTE         | 92.92%    | 99.46%    | 24.7M      | 94.6          |
-| RepVGG_A1_Checkpoint.IMAGENETTE         | 93.78%    | 99.18%    | 30.1M      | 115.1         |
-| RepVGG_A2_Checkpoint.IMAGENETTE         | 93.63%    | 99.39%    | 48.6M      | 185.8         |
-| RepVGG_B0_Checkpoint.IMAGENETTE         | 92.69%    | 99.21%    | 31.8M      | 121.8         |
-| RepVGG_B1_Checkpoint.IMAGENETTE         | 93.96%    | 99.39%    | 100.8M     | 385.1         |
-| RepVGG_B2_Checkpoint.IMAGENETTE         | 94.14%    | 99.57%    | 157.5M     | 601.2         |
-| Res2Net50_26w_4s_Checkpoint.IMAGENETTE  | 93.94%    | 99.41%    | 23.7M      | 90.6          |
-| ResNeXt50_32x4d_Checkpoint.IMAGENETTE   | 94.55%    | 99.49%    | 23.0M      | 88.1          |
-| ResNet18_Checkpoint.IMAGENETTE          | 93.61%    | 99.46%    | 11.2M      | 42.7          |
-| ResNet34_Checkpoint.IMAGENETTE          | 93.81%    | 99.49%    | 21.3M      | 81.3          |
-| ResNet50D_Checkpoint.IMAGENETTE         | 94.65%    | 99.52%    | 23.5M      | 90.1          |
-| ResNet50_Checkpoint.IMAGENETTE          | 93.78%    | 99.54%    | 23.5M      | 90            |
-| SKNet50_Checkpoint.IMAGENETTE           | 94.37%    | 99.54%    | 35.2M      | 134.7         |
+| **Checkpoint**                          | **Acc@1** | **Acc@5** | **Params** | **Size (MB)** | **CPU (ms)** | **MPS (ms)** |
+| --------------------------------------- | --------- | --------- | ---------- | ------------- | ------------ | ------------ |
+| CSPDarknet53_Checkpoint.IMAGENETTE      | 94.50%    | 99.64%    | 26.6M      | 101.8         | 34.7         | 8.5          |
+| CSPDarknet53_Mish_Checkpoint.IMAGENETTE | 94.65%    | 99.69%    | 26.6M      | 101.8         | 136.4        | 9.3          |
+| ConvNeXt_Atto_Checkpoint.IMAGENETTE     | 87.59%    | 98.32%    | 3.4M       | 12.9          | 131.4        | 2.1          |
+| Darknet19_Checkpoint.IMAGENETTE         | 93.86%    | 99.36%    | 19.8M      | 75.7          | 19.2         | 3.1          |
+| Darknet53_Checkpoint.IMAGENETTE         | 94.17%    | 99.57%    | 40.6M      | 155.1         | 35.8         | 8.7          |
+| MobileOne_S0_Checkpoint.IMAGENETTE      | 88.08%    | 98.83%    | 4.3M       | 16.9          | 6.7          | 1.7          |
+| MobileOne_S1_Checkpoint.IMAGENETTE      | 91.26%    | 99.18%    | 3.6M       | 13.9          | 11.8         | 1.9          |
+| MobileOne_S2_Checkpoint.IMAGENETTE      | 91.31%    | 99.21%    | 5.9M       | 22.8          | 14.4         | 2.4          |
+| MobileOne_S3_Checkpoint.IMAGENETTE      | 91.06%    | 99.31%    | 8.1M       | 31.5          | 17.8         | 3.0          |
+| ReXNet1_0x_Checkpoint.IMAGENET1K        | 77.86%    | 93.87%    | 4.8M       | 18.5          | 19.8         | 6.5          |
+| ReXNet1_0x_Checkpoint.IMAGENETTE        | 94.39%    | 99.62%    | 3.5M       | 13.7          | 19.8         | 6.5          |
+| ReXNet1_3x_Checkpoint.IMAGENET1K        | 79.50%    | 94.68%    | 7.6M       | 29.1          | 26.1         | 8.2          |
+| ReXNet1_3x_Checkpoint.IMAGENETTE        | 94.88%    | 99.39%    | 5.9M       | 22.8          | 26.1         | 8.2          |
+| ReXNet1_5x_Checkpoint.IMAGENET1K        | 80.31%    | 95.17%    | 9.7M       | 37.4          | 30.3         | 6.6          |
+| ReXNet1_5x_Checkpoint.IMAGENETTE        | 94.47%    | 99.62%    | 7.8M       | 30.2          | 30.3         | 6.6          |
+| ReXNet2_0x_Checkpoint.IMAGENET1K        | 81.64%    | 95.67%    | 16.4M      | 62.8          | 39.5         | 7.7          |
+| ReXNet2_0x_Checkpoint.IMAGENETTE        | 95.24%    | 99.57%    | 13.8M      | 53.1          | 39.5         | 7.7          |
+| ReXNet2_2x_Checkpoint.IMAGENETTE        | 95.44%    | 99.46%    | 16.7M      | 64.1          | 43.8         | 8.6          |
+| RepVGG_A0_Checkpoint.IMAGENETTE         | 92.92%    | 99.46%    | 24.7M      | 94.6          | 17.8         | 3.5          |
+| RepVGG_A1_Checkpoint.IMAGENETTE         | 93.78%    | 99.18%    | 30.1M      | 115.1         | 24.2         | 4.6          |
+| RepVGG_A2_Checkpoint.IMAGENETTE         | 93.63%    | 99.39%    | 48.6M      | 185.8         | 35.8         | 7.9          |
+| RepVGG_B0_Checkpoint.IMAGENETTE         | 92.69%    | 99.21%    | 31.8M      | 121.8         | 28.6         | 5.0          |
+| RepVGG_B1_Checkpoint.IMAGENETTE         | 93.96%    | 99.39%    | 100.8M     | 385.1         | 62.4         | 13.6         |
+| RepVGG_B2_Checkpoint.IMAGENETTE         | 94.14%    | 99.57%    | 157.5M     | 601.2         | 88.1         | 19.5         |
+| Res2Net50_26w_4s_Checkpoint.IMAGENETTE  | 93.94%    | 99.41%    | 23.7M      | 90.6          | 29.1         | 9.2          |
+| ResNeXt50_32x4d_Checkpoint.IMAGENETTE   | 94.55%    | 99.49%    | 23.0M      | 88.1          | 33.2         | 7.4          |
+| ResNet18_Checkpoint.IMAGENETTE          | 93.61%    | 99.46%    | 11.2M      | 42.7          | 16.4         | 2.7          |
+| ResNet34_Checkpoint.IMAGENETTE          | 93.81%    | 99.49%    | 21.3M      | 81.3          | 24.9         | 4.4          |
+| ResNet50D_Checkpoint.IMAGENETTE         | 94.65%    | 99.52%    | 23.5M      | 90.1          | 28.4         | 7.6          |
+| ResNet50_Checkpoint.IMAGENETTE          | 93.78%    | 99.54%    | 23.5M      | 90            | 26.7         | 7.1          |
+| SKNet50_Checkpoint.IMAGENETTE           | 94.37%    | 99.54%    | 35.2M      | 134.7         | 46.9         | 36.1         |
 
 ## Object Detection
 

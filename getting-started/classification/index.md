@@ -28,42 +28,14 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
-from torchvision.transforms.v2 import (
-    Compose,
-    ConvertImageDtype,
-    Normalize,
-    PILToTensor,
-    RandomHorizontalFlip,
-    RandomResizedCrop,
-    Resize,
-)
 
 from holocron.models.classification import ResNet18_Checkpoint, resnet18
 from holocron.trainer import ClassificationTrainer
 
 checkpoint = ResNet18_Checkpoint.DEFAULT.value
-preprocessing = checkpoint.pre_processing
 original_labels = checkpoint.meta.categories
-
-train_transform = Compose([
-    RandomResizedCrop(
-        preprocessing.input_shape[1:],
-        interpolation=preprocessing.interpolation,
-    ),
-    RandomHorizontalFlip(),
-    PILToTensor(),
-    ConvertImageDtype(torch.float32),
-    Normalize(preprocessing.mean, preprocessing.std),
-])
-val_transform = Compose([
-    Resize(
-        preprocessing.input_shape[1:],
-        interpolation=preprocessing.interpolation,
-    ),
-    PILToTensor(),
-    ConvertImageDtype(torch.float32),
-    Normalize(preprocessing.mean, preprocessing.std),
-])
+train_transform = checkpoint.transforms(train=True)
+val_transform = checkpoint.transforms()
 
 train_set = ImageFolder("dataset/train", transform=train_transform)
 val_set = ImageFolder("dataset/val", transform=val_transform)
@@ -100,7 +72,7 @@ trainer = ClassificationTrainer(
     val_loader,
     criterion,
     optimizer,
-    gpu=0 if torch.cuda.is_available() else None,
+    device="auto",  # CUDA, MPS, then CPU
     output_file="resnet18-custom.pth",
 )
 trainer.fit_n_epochs(5, lr=3e-4, freeze_until="features")

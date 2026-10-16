@@ -2766,14 +2766,18 @@ postprocessing. Preprocessing and recognition decoding are excluded.</p>
 recognition uses <code>(batch, 1, 32, 128)</code> with full-width lengths and 83 characters.
 <code>--size</code> overrides the image side or recognition width; omit it for the full suite.
 Use <code>--help</code> for class, batch, device, seed and thread settings (CPU threads default
-to one). Single-classification ONNX measurements use <code>--backend onnx</code>.</p>
+to one). Use <code>--device cuda:0</code> or <code>--device mps</code> for GPUs; GPU timing waits for completion.
+<code>--backend onnx</code> measures ONNX Runtime on CPU for one classification model, after checking its output against PyTorch.
+Summaries report first-call, median and p95 latency, and throughput, as medians across workers.</p>
 <p>JSON records contain UTC time, Git revision/dirty state, CPU hardware/affinity,
 OS/runtime versions, tested forward/source path, input settings, latency, throughput
 and peak RSS in MiB, with raw repeats. Latency excludes setup and transfer; RSS
 includes imports and model construction and is unavailable on Windows. Fresh
 processes isolate memory peaks. Progress is saved with <code>complete: false</code> until
 every model succeeds; errors exit nonzero. These are synthetic performance checks;
-compare runs on the same hardware, OS, runtime versions and input settings.</p>
+compare runs on the same hardware, OS, runtime versions and input settings.
+To compare dependency versions, use one <code>uv sync --locked</code> environment per version, then
+alternate runs with identical settings; run the baseline twice first to gauge noise.</p>
 <h2 id="support-status">Support status<a class="headerlink" href="#support-status" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2897,7 +2901,7 @@ its architecture name. Accuracy values from these two datasets are not comparabl
 <code>rexnet1_0x(checkpoint=ReXNet1_0x_Checkpoint.IMAGENETTE.value)</code>, to select weights
 explicitly. For models with checkpoint enums, <code>pretrained=True</code>
 selects <code>DEFAULT.value</code>; it does not always select Imagenette. The checkpoint
-defines the preprocessing, output categories and evaluation metrics. See the
+defines the preprocessing (<code>checkpoint.transforms()</code>), output categories and evaluation metrics. See the
 <a href="../../../#quick-start">quick start</a> for inference and the
 <a href="../../../getting-started/classification/">transfer-learning guide</a> to replace the
 classifier after loading weights.</p>
@@ -2917,6 +2921,8 @@ before using it for inference; train models without weights with the
 <code>darknet24</code> and <code>tridentnet50</code> also have legacy Imagenette weights, but no
 recorded evaluation metrics. Their <code>model.default_cfg</code> is a dictionary with
 <code>input_shape</code>, <code>mean</code>, <code>std</code> and <code>classes</code> keys, rather than a <code>Checkpoint</code> object.</p>
+<p>CPU and MPS: median batch-1 latency per architecture at 224×224 on an Apple M3 Pro (one CPU thread, or its GPU),
+with PyTorch 2.13, from <a href="#local-inference-measurements"><code>eval_latency.py</code></a>.</p>
 <p>The chart compares only the 27 Imagenette checkpoints. ImageNet-1K rows remain
 in the table for reference but use a different evaluation dataset.</p>
 <p><img alt="Scatter plot of Imagenette top-one accuracy against parameter count, with the Pareto frontier and default ResNet-18 checkpoint highlighted." src="../../../img/checkpoint-accuracy-vs-parameters.svg" /></p>
@@ -2928,6 +2934,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <th><strong>Acc@5</strong></th>
 <th><strong>Params</strong></th>
 <th><strong>Size (MB)</strong></th>
+<th><strong>CPU (ms)</strong></th>
+<th><strong>MPS (ms)</strong></th>
 </tr>
 </thead>
 <tbody>
@@ -2943,6 +2951,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.64%</td>
 <td>26.6M</td>
 <td>101.8</td>
+<td>34.7</td>
+<td>8.5</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -2956,6 +2966,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.69%</td>
 <td>26.6M</td>
 <td>101.8</td>
+<td>136.4</td>
+<td>9.3</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -2969,6 +2981,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>98.32%</td>
 <td>3.4M</td>
 <td>12.9</td>
+<td>131.4</td>
+<td>2.1</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -2982,6 +2996,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.36%</td>
 <td>19.8M</td>
 <td>75.7</td>
+<td>19.2</td>
+<td>3.1</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -2995,6 +3011,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.57%</td>
 <td>40.6M</td>
 <td>155.1</td>
+<td>35.8</td>
+<td>8.7</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3008,6 +3026,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>98.83%</td>
 <td>4.3M</td>
 <td>16.9</td>
+<td>6.7</td>
+<td>1.7</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3021,6 +3041,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.18%</td>
 <td>3.6M</td>
 <td>13.9</td>
+<td>11.8</td>
+<td>1.9</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3034,6 +3056,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.21%</td>
 <td>5.9M</td>
 <td>22.8</td>
+<td>14.4</td>
+<td>2.4</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3047,6 +3071,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.31%</td>
 <td>8.1M</td>
 <td>31.5</td>
+<td>17.8</td>
+<td>3.0</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENET1K&lt;/span&gt;
@@ -3059,7 +3085,9 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>77.86%</td>
 <td>93.87%</td>
 <td>4.8M</td>
-<td>13.7</td>
+<td>18.5</td>
+<td>19.8</td>
+<td>6.5</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3073,6 +3101,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.62%</td>
 <td>3.5M</td>
 <td>13.7</td>
+<td>19.8</td>
+<td>6.5</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENET1K&lt;/span&gt;
@@ -3085,7 +3115,9 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>79.50%</td>
 <td>94.68%</td>
 <td>7.6M</td>
-<td>13.7</td>
+<td>29.1</td>
+<td>26.1</td>
+<td>8.2</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3099,6 +3131,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.39%</td>
 <td>5.9M</td>
 <td>22.8</td>
+<td>26.1</td>
+<td>8.2</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENET1K&lt;/span&gt;
@@ -3111,7 +3145,9 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>80.31%</td>
 <td>95.17%</td>
 <td>9.7M</td>
-<td>13.7</td>
+<td>37.4</td>
+<td>30.3</td>
+<td>6.6</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3125,6 +3161,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.62%</td>
 <td>7.8M</td>
 <td>30.2</td>
+<td>30.3</td>
+<td>6.6</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENET1K&lt;/span&gt;
@@ -3134,10 +3172,12 @@ in the table for reference but use a different evaluation dataset.</p>
       &lt;small class=&quot;doc doc-label doc-label-class-attribute&quot;&gt;&lt;code&gt;class-attribute&lt;/code&gt;&lt;/small&gt;
       &lt;small class=&quot;doc doc-label doc-label-instance-attribute&quot;&gt;&lt;code&gt;instance-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt;" href="../classification/rexnet/#holocron.models.ReXNet2_0x_Checkpoint.IMAGENET1K"><code>ReXNet2_0x_Checkpoint.IMAGENET1K</code></a></td>
-<td>80.31%</td>
-<td>95.17%</td>
+<td>81.64%</td>
+<td>95.67%</td>
 <td>16.4M</td>
-<td>13.7</td>
+<td>62.8</td>
+<td>39.5</td>
+<td>7.7</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3151,6 +3191,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.57%</td>
 <td>13.8M</td>
 <td>53.1</td>
+<td>39.5</td>
+<td>7.7</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3164,6 +3206,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.46%</td>
 <td>16.7M</td>
 <td>64.1</td>
+<td>43.8</td>
+<td>8.6</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3177,6 +3221,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.46%</td>
 <td>24.7M</td>
 <td>94.6</td>
+<td>17.8</td>
+<td>3.5</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3190,6 +3236,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.18%</td>
 <td>30.1M</td>
 <td>115.1</td>
+<td>24.2</td>
+<td>4.6</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3203,6 +3251,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.39%</td>
 <td>48.6M</td>
 <td>185.8</td>
+<td>35.8</td>
+<td>7.9</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3216,6 +3266,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.21%</td>
 <td>31.8M</td>
 <td>121.8</td>
+<td>28.6</td>
+<td>5.0</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3229,6 +3281,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.39%</td>
 <td>100.8M</td>
 <td>385.1</td>
+<td>62.4</td>
+<td>13.6</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3242,6 +3296,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.57%</td>
 <td>157.5M</td>
 <td>601.2</td>
+<td>88.1</td>
+<td>19.5</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3255,6 +3311,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.41%</td>
 <td>23.7M</td>
 <td>90.6</td>
+<td>29.1</td>
+<td>9.2</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3268,6 +3326,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.49%</td>
 <td>23.0M</td>
 <td>88.1</td>
+<td>33.2</td>
+<td>7.4</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3281,6 +3341,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.46%</td>
 <td>11.2M</td>
 <td>42.7</td>
+<td>16.4</td>
+<td>2.7</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3294,6 +3356,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.49%</td>
 <td>21.3M</td>
 <td>81.3</td>
+<td>24.9</td>
+<td>4.4</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3307,6 +3371,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.52%</td>
 <td>23.5M</td>
 <td>90.1</td>
+<td>28.4</td>
+<td>7.6</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3320,6 +3386,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.54%</td>
 <td>23.5M</td>
 <td>90</td>
+<td>26.7</td>
+<td>7.1</td>
 </tr>
 <tr>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;IMAGENETTE&lt;/span&gt;
@@ -3333,6 +3401,8 @@ in the table for reference but use a different evaluation dataset.</p>
 <td>99.54%</td>
 <td>35.2M</td>
 <td>134.7</td>
+<td>46.9</td>
+<td>36.1</td>
 </tr>
 </tbody>
 </table>
