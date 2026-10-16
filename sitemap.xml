@@ -2,130 +2,130 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://frgfm.github.io/holocron/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/getting-started/classification/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/getting-started/experiments/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/getting-started/installation/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/getting-started/notebooks/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/notes/changelog/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/nn/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/ops/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/optim/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/trainer/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/transforms/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/utils.data/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/utils/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/models/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/recognition/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/convnext/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/darknet/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/darknetv2/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/darknetv3/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/darknetv4/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/mobileone/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/pyconv_resnet/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/repvgg/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/repvit/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/res2net/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/resnet/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/resnext/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/rexnet/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/sknet/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/classification/tridentnet/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/detection/yolo26/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
     <url>
          <loc>https://frgfm.github.io/holocron/reference/models/segmentation/yolo26/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-16</lastmod>
     </url>
 </urlset>
