@@ -13,13 +13,13 @@ from scripts.export_to_onnx import _match_detections, _outputs, export_model, ma
 
 
 @torch.no_grad()
-def _calibrate(model, side):
+def _calibrate(model, side, momentum=0.99):
     # Fresh running stats can make deep networks almost constant; emulate a training batch.
     norms = [module for module in model.modules() if isinstance(module, (nn.BatchNorm1d, nn.BatchNorm2d))]
     if norms:
         for module in norms:
             module.train()
-            module.momentum = 0.99  # Retain initial variance to avoid enormous normalization gains.
+            module.momentum = momentum  # Retain initial variance to avoid enormous normalization gains.
         images = torch.rand(2, 3, side, side)
         images[0] = 0
         model(images)
@@ -58,18 +58,31 @@ def test_model_onnx_inference(arch, tmp_path):
                     # Give class logits a margin instead of rounding to the same confidence.
                     nn.init.normal_(module.bias, std=0.1)
         model.box_score_thresh = 0
+    if arch == "yolo26n":
+        # Keep synthetic class scores sensitive to inputs instead of near zero.
+        for branch in model.one_to_one.classes:
+            nn.init.zeros_(branch[-1].bias)
+        _calibrate(model, side, momentum=0.95)
     path = tmp_path / "model.onnx"
     images = torch.rand(1, 3, side, side)
     responds = _responds_to_input(model, images)
     for _ in range(2):
         if responds:
             break
-        _calibrate(model, side)
+        # Retain extra variance for stable normalization folding in the deep YOLO head.
+        _calibrate(model, side, momentum=0.95 if arch == "yolo26n" else 0.99)
         responds = _responds_to_input(model, images)
     assert responds
     if task == "detection":
         with torch.inference_mode():
             assert len(model(images)[0]["boxes"]) > 0
+            if arch == "yolo26n":
+                assert not torch.allclose(
+                    model(images)[0]["scores"],
+                    model(torch.zeros_like(images))[0]["scores"],
+                    rtol=1e-3,
+                    atol=3e-5,
+                )
     export_model(model, images, path)
     graph = onnx.load(path, load_external_data=False)
     assert graph.opset_import[0].version == 20

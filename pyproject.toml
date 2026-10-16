@@ -48,6 +48,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+coreml = [
+    "coremltools==9.0; python_version < '3.14'",
+]
 test = [
     "pytest==9.1.1",
     "pytest-cov==7.1.0",

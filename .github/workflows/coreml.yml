@@ -1,0 +1,67 @@
+name: coreml
+
+on:
+  pull_request:
+    branches: main
+    paths:
+      - '.github/workflows/coreml.yml'
+      - '.github/workflows/package.yml'
+      - 'holocron/**'
+      - 'scripts/export_to_coreml.py'
+      - 'scripts/export_to_onnx.py'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+  push:
+    branches: main
+    paths:
+      - '.github/workflows/coreml.yml'
+      - '.github/workflows/package.yml'
+      - 'holocron/**'
+      - 'scripts/export_to_coreml.py'
+      - 'scripts/export_to_onnx.py'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+
+concurrency:
+  group: coreml-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.12.5"
+  HOLOCRON_REQUIRE_COREML_RUNTIME: "1"
+  OMP_NUM_THREADS: "2"
+
+jobs:
+  predict:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Require Apple Silicon and record hardware
+        run: |
+          test "$(uname -m)" = arm64
+          sw_vers
+          sysctl -n machdep.cpu.brand_string
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          architecture: arm64
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: ${{ env.UV_VERSION }}
+          activate-environment: true
+      - name: Install optional export dependencies
+        run: uv sync --locked --extra coreml --extra test
+      - name: Record dependencies and require runtime prediction
+        run: |
+          python -c "import platform, torch, coremltools; assert platform.machine() == 'arm64'; print(platform.platform(), platform.python_version(), torch.__version__, coremltools.__version__)"
+          python -c "from coremltools.models.compute_device import MLComputeDevice; print('Core ML devices:', [type(device).__name__ for device in MLComputeDevice.get_all_compute_devices()])"
+          pytest tests/test_models_coreml.py --cov-report=xml -v -s
+      - uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests
+          files: ./coverage.xml
+          fail_ci_if_error: true
