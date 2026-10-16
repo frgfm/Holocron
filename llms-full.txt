@@ -3347,7 +3347,7 @@ where (\\theta_t) is the parameter value at step (t) ((\\theta_0) being the init
 ### AdamP
 
 ```python
-AdamP(params: Iterable[Parameter], lr: float = 0.001, betas: tuple[float, float] = (0.9, 0.999), eps: float = 1e-08, weight_decay: float = 0.0, amsgrad: bool = False, delta: float = 0.1)
+AdamP(params: Iterable[Parameter], lr: float = 0.001, betas: tuple[float, float] = (0.9, 0.999), eps: float = 1e-08, weight_decay: float = 0.0, amsgrad: bool = False, delta: float = 0.1, mps_fused: bool = False)
 ```
 
 Bases: `Adam`
@@ -3370,15 +3370,16 @@ And finally the update step is performed using the following rule:
 
 where (\\theta_t) is the parameter value at step (t) ((\\theta_0) being the initialization value), (\\prod\_{\\theta_t}(p_t)) is the projection of (p_t) onto the tangent space of (\\theta_t), (cos(\\theta_t, g_t)) is the cosine similarity between (\\theta_t) and (g_t), (\\alpha) is the learning rate, (\\delta > 0), (\\epsilon > 0).
 
-| PARAMETER      | DESCRIPTION                                                                                           |
-| -------------- | ----------------------------------------------------------------------------------------------------- |
-| `params`       | iterable of parameters to optimize or dicts defining parameter groups **TYPE:** `Iterable[Parameter]` |
-| `lr`           | learning rate **TYPE:** `float` **DEFAULT:** `0.001`                                                  |
-| `betas`        | coefficients used for running averages **TYPE:** `tuple[float, float]` **DEFAULT:** `(0.9, 0.999)`    |
-| `eps`          | term added to the denominator to improve numerical stability **TYPE:** `float` **DEFAULT:** `1e-08`   |
-| `weight_decay` | weight decay (L2 penalty) **TYPE:** `float` **DEFAULT:** `0.0`                                        |
-| `amsgrad`      | whether to use the AMSGrad variant **TYPE:** `bool` **DEFAULT:** `False`                              |
-| `delta`        | delta threshold for projection **TYPE:** `float` **DEFAULT:** `0.1`                                   |
+| PARAMETER      | DESCRIPTION                                                                                                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `params`       | iterable of parameters to optimize or dicts defining parameter groups **TYPE:** `Iterable[Parameter]`                                                                             |
+| `lr`           | learning rate **TYPE:** `float` **DEFAULT:** `0.001`                                                                                                                              |
+| `betas`        | coefficients used for running averages **TYPE:** `tuple[float, float]` **DEFAULT:** `(0.9, 0.999)`                                                                                |
+| `eps`          | term added to the denominator to improve numerical stability **TYPE:** `float` **DEFAULT:** `1e-08`                                                                               |
+| `weight_decay` | weight decay (L2 penalty) **TYPE:** `float` **DEFAULT:** `0.0`                                                                                                                    |
+| `amsgrad`      | whether to use the AMSGrad variant **TYPE:** `bool` **DEFAULT:** `False`                                                                                                          |
+| `delta`        | delta threshold for projection **TYPE:** `float` **DEFAULT:** `0.1`                                                                                                               |
+| `mps_fused`    | opt into Metal fusion for contiguous FP32 MPS tensors without weight decay or AMSGrad; other configurations use the ordinary implementation **TYPE:** `bool` **DEFAULT:** `False` |
 
 Source code in `holocron/optim/adamp.py`
 
@@ -3392,10 +3393,22 @@ def __init__(
     weight_decay: float = 0.0,
     amsgrad: bool = False,
     delta: float = 0.1,
+    mps_fused: bool = False,
 ) -> None:
     super().__init__(params, lr, betas, eps, weight_decay, amsgrad)
     self.delta = delta
+    self.mps_fused = mps_fused
 ```
+
+AdamP offers optional Metal kernel fusion on Apple Silicon:
+
+```python
+optimizer = holocron.optim.AdamP(model.parameters(), mps_fused=True)
+```
+
+A parameter group uses fusion only with contiguous FP32 MPS parameters, gradients, and state, zero weight decay, and `amsgrad=False`. Each parameter, its gradient, and its moment buffers must use distinct storage. Unsupported groups, missing `torch.mps.compile_shader`, and compilation failures use ordinary AdamP. Execution errors propagate without retrying and can leave parameters and moments partly updated. Restore both the model and optimizer from a checkpoint before continuing.
+
+`mps_fused` defaults to `False` and remains a constructor preference when loading optimizer state. Mixed precision can still use fusion when parameters and unscaled gradients are FP32. Full-training accuracy equivalence remains unverified.
 
 ### Adan
 
@@ -5704,6 +5717,7 @@ def collate(self, batch: list[tuple[Tensor, int]]) -> tuple[Tensor, Tensor]:
 ## Unreleased
 
 - Support CPU, CUDA, and Apple Silicon MPS training. Reference recipes now default to `--device auto`; use `--device cpu` to retain the previous CPU default.
+- Add opt-in AdamP Metal kernel fusion with ordinary fallback for unsupported configurations. Leave fusion disabled by default.
 
 ## v0.3.0 (2026-10-03)
 
