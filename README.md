@@ -182,21 +182,24 @@ Full CUDA/VOC training on the repaired implementation remains pending; the synth
 
 ### Latency benchmark
 
-Pareto-optimal Imagenette checkpoints for accuracy and CPU latency:
+Pareto-optimal Imagenette checkpoints for accuracy and latency, on CPU or GPU:
 
-| Model | Acc@1 | Params | CPU (ms) |
-|---|---|---|---|
-| `mobileone_s0` | 88.08% | 4.3M | 6.7 |
-| `mobileone_s1` | 91.26% | 3.6M | 11.8 |
-| `mobileone_s2` | 91.31% | 5.9M | 14.4 |
-| `resnet18` | 93.61% | 11.2M | 16.4 |
-| `darknet19` | 93.86% | 19.8M | 19.2 |
-| `rexnet1_0x` | 94.39% | 3.5M | 19.8 |
-| `rexnet1_3x` | 94.88% | 5.9M | 26.1 |
-| `rexnet2_0x` | 95.24% | 13.8M | 39.5 |
-| `rexnet2_2x` | 95.44% | 16.7M | 43.8 |
+| Model | Acc@1 | Params | CPU (ms) | MPS (ms) |
+|---|---|---|---|---|
+| `mobileone_s0` | 88.08% | 4.3M | 6.7 | 1.7 |
+| `mobileone_s1` | 91.26% | 3.6M | 11.8 | 1.9 |
+| `mobileone_s2` | 91.31% | 5.9M | 14.4 | 2.4 |
+| `resnet18` | 93.61% | 11.2M | 16.4 | 2.7 |
+| `darknet19` | 93.86% | 19.8M | 19.2 | 3.1 |
+| `rexnet1_0x` | 94.39% | 3.5M | 19.8 | 6.5 |
+| `rexnet1_5x` | 94.47% | 7.8M | 30.3 | 6.6 |
+| `resnext50_32x4d` | 94.55% | 23.0M | 33.2 | 7.4 |
+| `resnet50d` | 94.65% | 23.5M | 28.4 | 7.6 |
+| `rexnet1_3x` | 94.88% | 5.9M | 26.1 | 8.2 |
+| `rexnet2_0x` | 95.24% | 13.8M | 39.5 | 7.7 |
+| `rexnet2_2x` | 95.44% | 16.7M | 43.8 | 8.6 |
 
-CPU: median batch-1 latency at 224×224 on one Apple M3 Pro thread (PyTorch 2.13).
+Median batch-1 latency at 224×224 on an Apple M3 Pro (one CPU thread, or its GPU via MPS), PyTorch 2.13.
 See the [checkpoint table](https://frgfm.github.io/holocron/reference/models/models/#available-checkpoints) for all 31 checkpoints
 and the [measurement guide](https://frgfm.github.io/holocron/reference/models/models/#local-inference-measurements) to reproduce on your hardware:
 
