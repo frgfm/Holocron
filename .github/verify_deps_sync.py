@@ -109,11 +109,7 @@ def main():  # noqa: PLR0912
     for lockfile in LOCKFILES:
         with Path(lockfile).open("rb") as f:
             lock = tomllib.load(f)
-        versions = {
-            package["version"]
-            for package in lock.get("package", [])
-            if package["name"] == "onnxruntime"
-        }
+        versions = {package["version"] for package in lock.get("package", []) if package["name"] == "onnxruntime"}
         if not versions:
             onnxruntime_versions.append({"file": lockfile, "version": "not locked"})
         else:
