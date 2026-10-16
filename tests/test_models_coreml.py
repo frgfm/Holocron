@@ -145,7 +145,9 @@ def test_coreml_failures_preserve_destination(coreml, monkeypatch, tmp_path):
         raise ValueError("unsupported operation")
 
     monkeypatch.setattr(coreml, "convert", fail)
+    # A non-CPU default must not change the export's verification device.
     with (
+        torch.device("meta"),
         pytest.warns(UserWarning, match="inference was not checked"),
         pytest.raises(RuntimeError, match="conversion failed: unsupported"),
     ):

@@ -62,6 +62,7 @@ def test_model_onnx_inference(arch, tmp_path):
         # Keep synthetic class scores sensitive to inputs instead of near zero.
         for branch in model.one_to_one.classes:
             nn.init.zeros_(branch[-1].bias)
+        _calibrate(model, side, momentum=0.95)
     path = tmp_path / "model.onnx"
     images = torch.rand(1, 3, side, side)
     responds = _responds_to_input(model, images)

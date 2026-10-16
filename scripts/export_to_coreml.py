@@ -21,7 +21,7 @@ def main(args):
         model.reparametrize()
     state = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
     model.load_state_dict(state.get("model", state), strict=True)
-    images = torch.rand(1, 3, args.height, args.width, generator=torch.Generator().manual_seed(42))
+    images = torch.rand(1, 3, args.height, args.width, device="cpu", generator=torch.Generator().manual_seed(42))
     export_coreml(model, images, args.path, verify=not args.unverified)
     status = (
         "Core ML CPU predictions match PyTorch on three inputs"

@@ -87,7 +87,7 @@ def export_coreml(model: nn.Module, example_input: torch.Tensor, path: str | Pat
     samples = (
         images,
         torch.zeros_like(images),
-        torch.rand(images.shape, dtype=torch.float32, generator=torch.Generator().manual_seed(0)),
+        torch.rand(images.shape, dtype=torch.float32, device="cpu", generator=torch.Generator().manual_seed(0)),
     )
     references = []
     for sample in samples:
