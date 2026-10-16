@@ -199,7 +199,7 @@ Pareto-optimal Imagenette checkpoints for accuracy and latency, on CPU or GPU:
 | `rexnet2_0x` | 95.24% | 13.8M | 39.5 | 7.7 |
 | `rexnet2_2x` | 95.44% | 16.7M | 43.8 | 8.6 |
 
-Median batch-1 latency at 224×224 on an Apple M3 Pro (one CPU thread, or its GPU via MPS), PyTorch 2.13.
+Median batch-1 latency per architecture at 224×224 on an Apple M3 Pro (one CPU thread, or its GPU via MPS), PyTorch 2.13.
 See the [checkpoint table](https://frgfm.github.io/holocron/reference/models/models/#available-checkpoints) for all 31 checkpoints
 and the [measurement guide](https://frgfm.github.io/holocron/reference/models/models/#local-inference-measurements) to reproduce on your hardware:
 

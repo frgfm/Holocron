@@ -189,7 +189,7 @@ The table below lists classification checkpoints with recorded metrics.
 recorded evaluation metrics. Their `model.default_cfg` is a dictionary with
 `input_shape`, `mean`, `std` and `classes` keys, rather than a `Checkpoint` object.
 
-CPU and MPS: median batch-1 latency at 224×224 on an Apple M3 Pro (one CPU thread, or its GPU),
+CPU and MPS: median batch-1 latency per architecture at 224×224 on an Apple M3 Pro (one CPU thread, or its GPU),
 with PyTorch 2.13, from [`eval_latency.py`](#local-inference-measurements).
 
 The chart compares only the 27 Imagenette checkpoints. ImageNet-1K rows remain
@@ -208,13 +208,13 @@ in the table for reference but use a different evaluation dataset.
 | [`MobileOne_S1_Checkpoint.IMAGENETTE`][holocron.models.MobileOne_S1_Checkpoint.IMAGENETTE] | 91.26% | 99.18% | 3.6M | 13.9 | 11.8 | 1.9 |
 | [`MobileOne_S2_Checkpoint.IMAGENETTE`][holocron.models.MobileOne_S2_Checkpoint.IMAGENETTE] | 91.31% | 99.21% | 5.9M | 22.8 | 14.4 | 2.4 |
 | [`MobileOne_S3_Checkpoint.IMAGENETTE`][holocron.models.MobileOne_S3_Checkpoint.IMAGENETTE] | 91.06% | 99.31% | 8.1M | 31.5 | 17.8 | 3.0 |
-| [`ReXNet1_0x_Checkpoint.IMAGENET1K`][holocron.models.ReXNet1_0x_Checkpoint.IMAGENET1K] | 77.86% | 93.87% | 4.8M | 13.7 | 19.8 | 6.5 |
+| [`ReXNet1_0x_Checkpoint.IMAGENET1K`][holocron.models.ReXNet1_0x_Checkpoint.IMAGENET1K] | 77.86% | 93.87% | 4.8M | 18.5 | 19.8 | 6.5 |
 | [`ReXNet1_0x_Checkpoint.IMAGENETTE`][holocron.models.ReXNet1_0x_Checkpoint.IMAGENETTE] | 94.39% | 99.62% | 3.5M | 13.7 | 19.8 | 6.5 |
-| [`ReXNet1_3x_Checkpoint.IMAGENET1K`][holocron.models.ReXNet1_3x_Checkpoint.IMAGENET1K] | 79.50% | 94.68% | 7.6M | 13.7 | 26.1 | 8.2 |
+| [`ReXNet1_3x_Checkpoint.IMAGENET1K`][holocron.models.ReXNet1_3x_Checkpoint.IMAGENET1K] | 79.50% | 94.68% | 7.6M | 29.1 | 26.1 | 8.2 |
 | [`ReXNet1_3x_Checkpoint.IMAGENETTE`][holocron.models.ReXNet1_3x_Checkpoint.IMAGENETTE] | 94.88% | 99.39% | 5.9M | 22.8 | 26.1 | 8.2 |
-| [`ReXNet1_5x_Checkpoint.IMAGENET1K`][holocron.models.ReXNet1_5x_Checkpoint.IMAGENET1K] | 80.31% | 95.17% | 9.7M | 13.7 | 30.3 | 6.6 |
+| [`ReXNet1_5x_Checkpoint.IMAGENET1K`][holocron.models.ReXNet1_5x_Checkpoint.IMAGENET1K] | 80.31% | 95.17% | 9.7M | 37.4 | 30.3 | 6.6 |
 | [`ReXNet1_5x_Checkpoint.IMAGENETTE`][holocron.models.ReXNet1_5x_Checkpoint.IMAGENETTE] | 94.47% | 99.62% | 7.8M | 30.2 | 30.3 | 6.6 |
-| [`ReXNet2_0x_Checkpoint.IMAGENET1K`][holocron.models.ReXNet2_0x_Checkpoint.IMAGENET1K] | 80.31% | 95.17% | 16.4M | 13.7 | 39.5 | 7.7 |
+| [`ReXNet2_0x_Checkpoint.IMAGENET1K`][holocron.models.ReXNet2_0x_Checkpoint.IMAGENET1K] | 81.64% | 95.67% | 16.4M | 62.8 | 39.5 | 7.7 |
 | [`ReXNet2_0x_Checkpoint.IMAGENETTE`][holocron.models.ReXNet2_0x_Checkpoint.IMAGENETTE] | 95.24% | 99.57% | 13.8M | 53.1 | 39.5 | 7.7 |
 | [`ReXNet2_2x_Checkpoint.IMAGENETTE`][holocron.models.ReXNet2_2x_Checkpoint.IMAGENETTE] | 95.44% | 99.46% | 16.7M | 64.1 | 43.8 | 8.6 |
 | [`RepVGG_A0_Checkpoint.IMAGENETTE`][holocron.models.RepVGG_A0_Checkpoint.IMAGENETTE] | 92.92% | 99.46% | 24.7M | 94.6 | 17.8 | 3.5 |

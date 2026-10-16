@@ -250,7 +250,7 @@ class ReXNet1_0x_Checkpoint(Enum):
         acc1=0.7786,
         acc5=0.93870,
         sha256="ab7b973341a59832099f6ee2a41eb51121b287ad4adaae8b2cd8dd92ef058f01",
-        size=14351299,
+        size=19424064,
         num_params=4796186,
     )
 
@@ -308,7 +308,7 @@ class ReXNet1_3x_Checkpoint(Enum):
         acc1=0.7950,
         acc5=0.9468,
         sha256="95479104024ce294abbdd528df62bd1a23e67a9db2956e1d6cdb9a9759dc1c69",
-        size=14351299,
+        size=30513885,
         num_params=7556198,
     )
 
@@ -366,7 +366,7 @@ class ReXNet1_5x_Checkpoint(Enum):
         acc1=0.8031,
         acc5=0.9517,
         sha256="c42a16ac73470d64852b8317ba9e875c833595a90a086b90490a696db9bb6a96",
-        size=14351299,
+        size=39232451,
         num_params=9727562,
     )
 
@@ -421,10 +421,10 @@ class ReXNet2_0x_Checkpoint(Enum):
         arch="rexnet2_0x",
         url="https://github.com/frgfm/Holocron/releases/download/v0.1.2/rexnet2_0x_224-c8802402.pth",
         dataset=Dataset.IMAGENET1K,
-        acc1=0.8031,
-        acc5=0.9517,
+        acc1=0.8164,
+        acc5=0.9567,
         sha256="c8802402442551c77fe3874f84d4d7eb1bd67cce274375db11a869ed074a1089",
-        size=14351299,
+        size=65865977,
         num_params=16365244,
     )
 
