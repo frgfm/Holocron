@@ -55,8 +55,7 @@ train_loader = DataLoader(train_set, batch_size=32, shuffle=True, num_workers=4)
 val_loader = DataLoader(val_set, batch_size=32, num_workers=4)
 ```
 
-`transforms(train=True)` is a crop-and-flip starter, not the full reference
-training recipe. `original_labels` describes the checkpoint's Imagenette outputs before the
+`original_labels` describes the checkpoint's Imagenette outputs before the
 head is replaced. `train_set.classes` describes your custom outputs.
 
 ## Load the weights, then replace the head
@@ -85,7 +84,7 @@ trainer = ClassificationTrainer(
     val_loader,
     criterion,
     optimizer,
-    device="auto",  # CUDA, then Apple Silicon MPS, then CPU
+    device="auto",  # CUDA, MPS, then CPU
     output_file="resnet18-custom.pth",
 )
 trainer.fit_n_epochs(5, lr=3e-4, freeze_until="features")

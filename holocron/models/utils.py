@@ -261,13 +261,9 @@ def _checkpoint(
         meta=LoadingMeta(
             url=url, sha256=sha256, size=size, num_params=num_params, arch=arch, categories=preset.classes
         ),
-        pre_processing=PreProcessing(
-            input_shape=(3, 224, 224),
-            mean=preset.mean,
-            std=preset.std,
-            # ImageNet-1K weights are timm ports, evaluated with a bicubic 256 resize (crop_pct 0.875)
-            resize_size=_IMAGENETTE_VAL_RESIZE if dataset == Dataset.IMAGENETTE else 256,
-            interpolation=InterpolationMode.BILINEAR if dataset == Dataset.IMAGENETTE else InterpolationMode.BICUBIC,
-        ),
+        # ImageNet-1K weights are timm ports, evaluated with bicubic resizing and crop_pct 0.875
+        pre_processing=PreProcessing((3, 224, 224), preset.mean, preset.std, resize_size=_IMAGENETTE_VAL_RESIZE)
+        if dataset == Dataset.IMAGENETTE
+        else PreProcessing((3, 224, 224), preset.mean, preset.std, InterpolationMode.BICUBIC, resize_size=256),
         recipe=TrainingRecipe(commit=commit, script="references/classification/train.py", args=train_args),
     )

@@ -51,7 +51,9 @@ Inputs default to `(batch, 3, 224, 224)`, except YOLOv1 requires 448 pixels and
 recognition uses `(batch, 1, 32, 128)` with full-width lengths and 83 characters.
 `--size` overrides the image side or recognition width; omit it for the full suite.
 Use `--help` for class, batch, device, seed and thread settings (CPU threads default
-to one). Single-classification ONNX measurements use `--backend onnx`.
+to one). Use `--device cuda:0` or `--device mps` for GPUs; GPU timing waits for completion.
+`--backend onnx` measures ONNX Runtime on CPU for one classification model, after checking its output against PyTorch.
+Summaries report first-call, median and p95 latency, and throughput, as medians across workers.
 
 JSON records contain UTC time, Git revision/dirty state, CPU hardware/affinity,
 OS/runtime versions, tested forward/source path, input settings, latency, throughput
@@ -60,6 +62,8 @@ includes imports and model construction and is unavailable on Windows. Fresh
 processes isolate memory peaks. Progress is saved with `complete: false` until
 every model succeeds; errors exit nonzero. These are synthetic performance checks;
 compare runs on the same hardware, OS, runtime versions and input settings.
+To compare dependency versions, use one `uv sync --locked` environment per version, then
+alternate runs with identical settings; run the baseline twice first to gauge noise.
 
 ## Support status
 
@@ -161,8 +165,7 @@ Pass a `Checkpoint` object, for example
 `rexnet1_0x(checkpoint=ReXNet1_0x_Checkpoint.IMAGENETTE.value)`, to select weights
 explicitly. For models with checkpoint enums, `pretrained=True`
 selects `DEFAULT.value`; it does not always select Imagenette. The checkpoint
-defines the preprocessing, output categories and evaluation metrics;
-`checkpoint.transforms()` builds its evaluation resize and crop. See the
+defines the preprocessing (`checkpoint.transforms()`), output categories and evaluation metrics. See the
 [quick start](../../index.md#quick-start) for inference and the
 [transfer-learning guide](../../getting-started/classification.md) to replace the
 classifier after loading weights.
@@ -186,9 +189,8 @@ The table below lists classification checkpoints with recorded metrics.
 recorded evaluation metrics. Their `model.default_cfg` is a dictionary with
 `input_shape`, `mean`, `std` and `classes` keys, rather than a `Checkpoint` object.
 
-CPU is the median batch-1 latency of the architecture at 224×224, measured on one
-thread of an Apple M3 Pro with PyTorch 2.13 using
-[`eval_latency.py`](#local-inference-measurements). Compare rows, not machines.
+CPU: median batch-1 latency at 224×224 on one Apple M3 Pro thread (PyTorch 2.13),
+from [`eval_latency.py`](#local-inference-measurements).
 
 The chart compares only the 27 Imagenette checkpoints. ImageNet-1K rows remain
 in the table for reference but use a different evaluation dataset.

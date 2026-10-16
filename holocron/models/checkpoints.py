@@ -81,7 +81,7 @@ class PreProcessing:
     mean: tuple[float, ...]
     std: tuple[float, ...]
     interpolation: InterpolationMode = InterpolationMode.BILINEAR
-    # Shorter-side resize before the evaluation center crop; None resizes straight to input_shape
+    # Evaluation resize of the shorter side before center cropping (None: resize to input_shape)
     resize_size: int | None = None
 
 
@@ -99,29 +99,23 @@ class Checkpoint:
     recipe: TrainingRecipe
 
     def transforms(self, train: bool = False) -> T.Compose:
-        """Build the image transform matching this checkpoint.
+        """Build the checkpoint's image transform.
 
         Args:
-            train: whether to use random resized crops and horizontal flips, a fine-tuning starter rather than the
-                full reference recipe, instead of the evaluation resize and crop.
+            train: random crop and flip for fine-tuning, instead of the evaluation resize and crop.
 
         Returns:
-            a transform that maps a PIL image to a normalized float tensor.
+            a transform from PIL image to normalized float tensor.
         """
         pre = self.pre_processing
         size = pre.input_shape[1:]
         resize = (
             [T.RandomResizedCrop(size, interpolation=pre.interpolation), T.RandomHorizontalFlip()]
             if train
-            # Without a resize size, the crop is a no-op after resizing straight to the input shape
             else [T.Resize(pre.resize_size or size, interpolation=pre.interpolation), T.CenterCrop(size)]
         )
-        return T.Compose([
-            *resize,
-            T.PILToTensor(),
-            T.ToDtype(torch.float32, scale=True),
-            T.Normalize(pre.mean, pre.std),
-        ])
+        to_tensor = [T.PILToTensor(), T.ToDtype(torch.float32, scale=True), T.Normalize(pre.mean, pre.std)]
+        return T.Compose(resize + to_tensor)
 
 
 def _handle_legacy_pretrained(

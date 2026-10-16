@@ -7,9 +7,7 @@ from xml.etree import ElementTree as ET  # noqa: S405
 import pytest
 import torch
 from PIL import Image
-from torchvision.transforms import v2 as T
 
-from holocron.models.classification import ReXNet1_0x_Checkpoint
 from holocron.nn import PolyLoss
 
 
@@ -24,7 +22,6 @@ def test_homepage_quickstart(monkeypatch, tmp_path, document):
     assert match is not None
 
     image_path = tmp_path / "image.png"
-    # Non-square and non-uniform, so stretching or missing pixel scaling changes the tensor
     Image.linear_gradient("L").resize((320, 240)).convert("RGB").save(image_path)
 
     monkeypatch.setattr("holocron.models.utils.load_pretrained_params", lambda *_args, **_kwargs: None)
@@ -33,27 +30,8 @@ def test_homepage_quickstart(monkeypatch, tmp_path, document):
 
     checkpoint = namespace["checkpoint"]
     probabilities = namespace["probabilities"]
-    pre = checkpoint.pre_processing
-    expected = T.Compose([
-        T.Resize(232, interpolation=pre.interpolation),
-        T.CenterCrop(224),
-        T.PILToTensor(),
-        T.ToDtype(torch.float32, scale=True),
-        T.Normalize(pre.mean, pre.std),
-    ])
-    image = Image.open(image_path).convert("RGB")
-    assert torch.equal(namespace["input_tensor"], expected(image).unsqueeze(0))
-    assert checkpoint.transforms(train=True)(image).shape == pre.input_shape
-    # ImageNet-1K ReXNet weights are timm ports: bicubic 256 resize, then a 224 center crop
-    imagenet = ReXNet1_0x_Checkpoint.IMAGENET1K.value.pre_processing
-    timm_eval = T.Compose([
-        T.Resize(256, interpolation=T.InterpolationMode.BICUBIC),
-        T.CenterCrop(224),
-        T.PILToTensor(),
-        T.ToDtype(torch.float32, scale=True),
-        T.Normalize(imagenet.mean, imagenet.std),
-    ])
-    assert torch.equal(ReXNet1_0x_Checkpoint.IMAGENET1K.value.transforms()(image), timm_eval(image))
+    expected = checkpoint.transforms()(Image.open(image_path).convert("RGB")).unsqueeze(0)
+    assert torch.equal(namespace["input_tensor"], expected)
     assert probabilities.shape == (len(checkpoint.meta.categories),)
     assert namespace["label"] in checkpoint.meta.categories
     assert 0 <= namespace["confidence"] <= 1

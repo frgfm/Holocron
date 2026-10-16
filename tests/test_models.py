@@ -3,9 +3,13 @@ from types import SimpleNamespace
 
 import pytest
 import torch
+from PIL import Image
 from torch import nn
+from torchvision.transforms.v2 import InterpolationMode
+from torchvision.transforms.v2 import functional as F
 
 from holocron.models import get_model, get_model_info, list_checkpoints, list_models, utils
+from holocron.models.classification import ResNet18_Checkpoint, ReXNet1_0x_Checkpoint
 from holocron.nn import SAM, BlurPool2d, DropBlock2d
 
 
@@ -167,3 +171,20 @@ def test_get_model(monkeypatch):
     checkpoint = list_checkpoints("resnet34")[0]
     assert model.default_cfg is checkpoint
     assert calls[-1] == (model, checkpoint.meta.url, {"progress": False})
+
+
+@pytest.mark.parametrize(
+    ("checkpoint", "resize", "interpolation"),
+    [
+        (ResNet18_Checkpoint.IMAGENETTE, 232, InterpolationMode.BILINEAR),  # reference recipe
+        (ReXNet1_0x_Checkpoint.IMAGENET1K, 256, InterpolationMode.BICUBIC),  # timm evaluation
+    ],
+)
+def test_checkpoint_transforms(checkpoint, resize, interpolation):
+    pre = checkpoint.value.pre_processing
+    image = Image.linear_gradient("L").resize((320, 240)).convert("RGB")
+    cropped = F.pil_to_tensor(F.center_crop(F.resize(image, resize, interpolation), 224))
+    assert torch.equal(
+        checkpoint.value.transforms()(image), F.normalize(F.to_dtype(cropped, scale=True), pre.mean, pre.std)
+    )
+    assert checkpoint.value.transforms(train=True)(image).shape == pre.input_shape
