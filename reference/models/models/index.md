@@ -70,9 +70,78 @@ images = np.load("preprocessed_images.npy").astype(np.float32)  # shape (1, 3, 2
 outputs = dict(zip((output.name for output in session.get_outputs()), session.run(None, {"images": images})))
 ```
 
-The exporter checks the ONNX graph and compares runtime shapes, dtypes and finite values with PyTorch on the sample, blank and fresh random inputs. Float outputs use `rtol=1e-3, atol=3e-5`; labels must match exactly. Detection records are compared independent of their order. Near-tied class scores or equal-score top-k/NMS can change labels or selected boxes across runtimes; such differences fail verification. These checks establish numerical parity for the tested inputs, not dataset accuracy. The output file is replaced only after verification passes. Dynamic shapes, quantization and Core ML conversion remain future work.
+The exporter checks the ONNX graph and compares runtime shapes, dtypes and finite values with PyTorch on the sample, blank and fresh random inputs. Float outputs use `rtol=1e-3, atol=3e-5`; labels must match exactly. Detection records are compared independent of their order. Near-tied class scores or equal-score top-k/NMS can change labels or selected boxes across runtimes; such differences fail verification. These checks establish numerical parity for the tested inputs, not dataset accuracy. The output file is replaced only after verification passes. Dynamic shapes and quantization remain future work. For Apple applications, see [Core ML export](#core-ml-export).
 
 For a custom architecture, call `export_model(model, images, path)` from `scripts.export_to_onnx.py` with an evaluation model on CPU and FP32 inputs. It accepts the same tensor or detection-list outputs as the built-in models and raises on incompatible export or runtime differences. The helper puts the model in evaluation mode; it leaves its inference branches intact, so the same model can be exported again. For a smaller deployment graph, optionally call the architecture's `reparametrize()` or `fuse()` method first. YOLO26 detection uses its independent `to_deploy()` copy automatically. CI discovers vision factories through `list_models()` and exercises every factory with three classes and fixed inputs (64 pixels, or 448 for YOLOv1). Fixtures with nearly constant outputs get up to two blank/random BatchNorm calibration batches. Each fixture must respond to its input beyond the comparison tolerance; regressions also exercise deliberately broken exports that ignore the image.
+
+## Core ML export
+
+Train with the [classification reference script](https://github.com/frgfm/holocron/blob/main/references/classification/train.py), or use a checkpoint you already trained. From a repository checkout on Apple Silicon:
+
+```bash
+uv sync --locked --python 3.11 --extra training --extra coreml
+uv run --no-sync python references/classification/train.py ./imagenette2-320/ \
+    --arch resnet18 --output-file checkpoints/model.pth
+uv run --no-sync python scripts/export_to_coreml.py resnet18 \
+    --checkpoint checkpoints/model.pth --num-classes 10 --height 224 --width 224 --path classifier.mlpackage
+```
+
+Raw state dictionaries and trainer checkpoints containing `model` both load strictly on CPU; use the architecture and class count from training. The CLI supports `resnet18` and `mobileone_s0`. For a MobileOne checkpoint saved after `eval().reparametrize()`, add `--reparameterized`. The reusable API also accepts custom classifiers; validate each architecture and checkpoint on the target runtime:
+
+```python
+from holocron.models.coreml import export_coreml
+
+export_coreml(model, preprocessed_images, "classifier.mlpackage")
+```
+
+The ML Program targets **macOS 12+ / iOS 15+**, with fixed dimensions and batch one. FP32 computation is the default. By default, Apple Silicon macOS compares actual Core ML CPU predictions with PyTorch on the supplied tensor, zeros and deterministic random input (`rtol=1e-3, atol=3e-5`). It checks shapes, dtype and finite logits, preserves the caller's model, and refuses existing destinations. Linux requires `--unverified` (API: `verify=False`): tracing is checked, but Core ML inference is **not checked**. iOS deployment is intended; numerical validation is on macOS, without iOS device tests.
+
+For FP16 computation, keep the source model and input in FP32 and select a verification runtime:
+
+```bash
+uv run --no-sync python scripts/export_to_coreml.py mobileone_s0 \
+    --checkpoint checkpoints/model.pth --num-classes 10 --precision fp16 \
+    --compute-units cpu_and_ne --path classifier-fp16.mlpackage
+```
+
+The API accepts the same options: `export_coreml(model, images, path, precision="fp16", compute_units="cpu_and_ne")`. FP16 keeps the `images`/`logits` interface in FP32. Tracing still uses the strict FP32 logit check; Core ML verification requires finite logits, the same top-1 class, and at most **0.005 absolute softmax probability error** on each of the three inputs. These probes do not establish dataset accuracy. Validate a trained checkpoint on representative images before deployment.
+
+`--compute-units` accepts `cpu_only` (default), `cpu_and_gpu`, `cpu_and_ne`, and `all`. It selects the devices allowed during verification; the app chooses its own policy when loading the package. CPU+Neural Engine requires macOS 13+ (iOS 16+ in an app), and permits CPU fallback. It does not guarantee Neural Engine placement. FP32 ML Programs can run on CPU/GPU; FP16 also permits the Neural Engine. Compare the policies on the target device: `.all` can be faster than `.cpuAndNeuralEngine`. See Apple's [typed execution guide](https://apple.github.io/coremltools/docs-guides/source/typed-execution.html).
+
+Use Python 3.11–3.13 and optional coremltools 9.0. The compatibility probe and macOS tests used Python 3.11 and PyTorch 2.14.1; coremltools warns that upstream testing ends at PyTorch 2.7.0. Tests validate the two architectures with three classes and 64×64 inputs, including fused/repeated MobileOne, FP16 `.all`, and FP16 CPU+Neural Engine. Dynamic shapes, integer quantization and broader model coverage are deferred. ONNX remains the separate cloud CPU deployment path.
+
+Add `classifier.mlpackage` to an Xcode app target. Xcode compiles it to `classifier.mlmodelc`. The input `images` is a Float32 `MLMultiArray` in **NCHW** order `(1, 3, height, width)`; the output `logits` is `(1, num_classes)`, before softmax. Supply the same RGB resize/crop, interpolation and normalization as PyTorch evaluation. There is no image preprocessing or class label mapping inside the package. For the Imagenette reference recipe, resize the shorter edge to 232 with bilinear interpolation, then take a 224×224 center crop. Convert RGB bytes to `[0, 1]`, then subtract `(0.485, 0.456, 0.406)` and divide by `(0.229, 0.224, 0.225)` per channel. Custom training may require different values. Re-export for a different resolution.
+
+```swift
+import CoreML
+
+// Load once, then reuse model for each prediction.
+let config = MLModelConfiguration()
+config.computeUnits = .cpuOnly // FP32 baseline; benchmark .all / .cpuAndNeuralEngine for FP16.
+let url = Bundle.main.url(forResource: "classifier", withExtension: "mlmodelc")!
+let model = try MLModel(contentsOf: url, configuration: config)
+
+// rgb contains resized/cropped 224×224 RGB pixels, interleaved, each Float in [0, 1].
+func classify(rgb: [Float], model: MLModel) throws -> MLMultiArray {
+    precondition(rgb.count == 224 * 224 * 3)
+    let images = try MLMultiArray(shape: [1, 3, 224, 224], dataType: .float32)
+    let data = images.dataPointer.assumingMemoryBound(to: Float.self)
+    let strides = images.strides.map(\.intValue)
+    let mean: [Float] = [0.485, 0.456, 0.406]
+    let std: [Float] = [0.229, 0.224, 0.225]
+    for c in 0..<3 {
+        for y in 0..<224 {
+            for x in 0..<224 {
+                let value = (rgb[(y * 224 + x) * 3 + c] - mean[c]) / std[c]
+                data[c * strides[1] + y * strides[2] + x * strides[3]] = value
+            }
+        }
+    }
+    let input = try MLDictionaryFeatureProvider(dictionary: ["images": images])
+    return try model.prediction(from: input).featureValue(for: "logits")!.multiArrayValue!
+}
+// The index of the largest logit selects a class in your training class order.
+```
 
 ## Classification
 
