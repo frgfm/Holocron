@@ -1,4 +1,3 @@
-import importlib
 from copy import deepcopy
 from typing import Any
 from unittest.mock import Mock
@@ -9,6 +8,7 @@ from torch.nn import functional as F
 from torchvision.models import mobilenet_v3_small
 
 from holocron import optim
+from holocron.optim import adamp
 
 
 def _test_optimizer(name: str, **kwargs: Any) -> None:
@@ -65,39 +65,37 @@ def test_adabelief():
 
 def test_adamp(monkeypatch):
     _test_optimizer("AdamP")
-    module = importlib.import_module("holocron.optim.adamp")
-    monkeypatch.setattr(module, "_mps_adamp_shader", lambda: pytest.fail("CPU must not compile Metal"))
+    monkeypatch.setattr(adamp, "_mps_adamp_shader", lambda: pytest.fail("CPU must not compile Metal"))
     _test_optimizer("AdamP", mps_fused=True)
 
 
 def test_adamp_shader_unavailable_is_cached(monkeypatch):
-    module = importlib.import_module("holocron.optim.adamp")
-    module._mps_adamp_shader.cache_clear()
+    adamp._mps_adamp_shader.cache_clear()
     try:
         for error in (RuntimeError, SyntaxError, OSError):
             compiler = Mock(side_effect=error("Metal compiler unavailable"))
             monkeypatch.setattr(torch.mps, "compile_shader", compiler, raising=False)
-            assert module._mps_adamp_shader() is None
-            assert module._mps_adamp_shader() is None
+            assert adamp._mps_adamp_shader() is None
+            assert adamp._mps_adamp_shader() is None
             compiler.assert_called_once()
-            module._mps_adamp_shader.cache_clear()
+            adamp._mps_adamp_shader.cache_clear()
     finally:
-        module._mps_adamp_shader.cache_clear()
+        adamp._mps_adamp_shader.cache_clear()
 
 
 @pytest.mark.skipif(
     not torch.backends.mps.is_available() or not hasattr(torch.mps, "compile_shader"),
     reason="Metal shaders unavailable",
 )
-def test_adamp_mps_fused_parity_and_versions(monkeypatch):
-    module = importlib.import_module("holocron.optim.adamp")
-    native_adamp = module._mps_adamp
+@pytest.mark.parametrize(("betas", "lr"), [((0.0, 0.0), 1.0), ((0.9, 0.999), 1e-3)])
+def test_adamp_mps_fused_parity_and_versions(monkeypatch, betas, lr):
+    native_adamp = adamp._mps_adamp
 
     def require_fusion(*args):
         assert native_adamp(*args)
         return True
 
-    monkeypatch.setattr(module, "_mps_adamp", require_fusion)
+    monkeypatch.setattr(adamp, "_mps_adamp", require_fusion)
     cases = [
         (range(257), [1.0, -1.0] * 128 + [1.0]),
         ([0.2, 0.1], [0.5093396902084351, -0.8605654835700989]),
@@ -109,7 +107,7 @@ def test_adamp_mps_fused_parity_and_versions(monkeypatch):
         for values, gradients in cases:
             params = [torch.nn.Parameter(torch.tensor(values, device="mps", dtype=torch.float32)) for _ in range(2)]
             reference, candidate = [
-                optim.AdamP([param], lr=1, betas=(0.0, 0.0), mps_fused=fused)
+                optim.AdamP([param], lr=lr, betas=betas, mps_fused=fused)
                 for param, fused in zip(params, (False, True), strict=True)
             ]
             for param in params:
@@ -134,7 +132,6 @@ def test_adamp_mps_fused_parity_and_versions(monkeypatch):
     reason="Metal shaders unavailable",
 )
 def test_adamp_mps_fallback_and_amp_skip(monkeypatch):
-    module = importlib.import_module("holocron.optim.adamp")
     parameter = torch.nn.Parameter(torch.ones(2, device="mps"))
     optimizer = optim.AdamP([parameter], mps_fused=True)
     scaler = torch.amp.GradScaler("mps", init_scale=128.0)
@@ -151,10 +148,10 @@ def test_adamp_mps_fallback_and_amp_skip(monkeypatch):
     assert torch.isfinite(parameter).all()
     optimizer.state[parameter]["exp_avg"] = parameter.grad
     with monkeypatch.context() as patch:
-        patch.setattr(module, "_mps_adamp_shader", lambda: pytest.fail("Aliased state must fall back"))
+        patch.setattr(adamp, "_mps_adamp_shader", lambda: pytest.fail("Aliased state must fall back"))
         optimizer.step()
     optimizer.state[parameter]["exp_avg"] = parameter.grad.clone()
-    shader = module._mps_adamp_shader()
+    shader = adamp._mps_adamp_shader()
     guarded = torch.ones(8, device="mps")
     shader.apply_update(
         guarded[:7], torch.ones(7, device="mps"), torch.tensor([0.0, 0.0, 1.0], device="mps"), 1.0, 7, threads=256
@@ -162,7 +159,7 @@ def test_adamp_mps_fallback_and_amp_skip(monkeypatch):
     torch.testing.assert_close(guarded, torch.tensor([0.0] * 7 + [1.0], device="mps"))
     shader = Mock()
     shader.moments.side_effect = RuntimeError("dispatch failed")
-    monkeypatch.setattr(module, "_mps_adamp_shader", lambda: shader)
+    monkeypatch.setattr(adamp, "_mps_adamp_shader", lambda: shader)
     parameter.grad = torch.ones_like(parameter)
     before = parameter.detach().clone()
     with pytest.raises(RuntimeError, match="dispatch failed"):
