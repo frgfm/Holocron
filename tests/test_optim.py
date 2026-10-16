@@ -72,7 +72,7 @@ def test_adamp(monkeypatch):
 def test_adamp_shader_unavailable_is_cached(monkeypatch):
     adamp._mps_adamp_shader.cache_clear()
     try:
-        for error in (RuntimeError, SyntaxError, OSError):
+        for error in (RuntimeError, SyntaxError, OSError, TypeError, ValueError, Exception):
             compiler = Mock(side_effect=error("Metal compiler unavailable"))
             monkeypatch.setattr(torch.mps, "compile_shader", compiler, raising=False)
             assert adamp._mps_adamp_shader() is None

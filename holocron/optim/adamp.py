@@ -231,7 +231,7 @@ def _mps_adamp_shader() -> Any | None:
             getattr(kernel, "max_threads_per_threadgroup", 0) < 256 for kernel in (shader.moments, shader.statistics)
         ):
             return None
-    except (RuntimeError, SyntaxError, OSError):
+    except Exception:  # noqa: BLE001 - Optional shader compilers can raise version-specific exceptions.
         # Compilation has not touched optimizer state; cache the ordinary fallback.
         return None
     return shader
