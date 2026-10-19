@@ -64,8 +64,8 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff==0.17.0",
-    "ty==0.0.86",
+    "ruff==0.17.1",
+    "ty==0.0.88",
     "lint-my-headers==0.6.0",
     "types-tqdm",
     "types-Pillow",
