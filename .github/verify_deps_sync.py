@@ -75,8 +75,7 @@ def main():  # noqa: PLR0912
 
         if pyproject_path == "./pyproject.toml":
             build_requires = [
-                parse_dep_str(requirement)
-                for requirement in pyproject.get("build-system", {}).get("requires", [])
+                parse_dep_str(requirement) for requirement in pyproject.get("build-system", {}).get("requires", [])
             ]
             uv_build_version = next(
                 (requirement["version"] for requirement in build_requires if requirement["pkg"] == "uv_build"),
