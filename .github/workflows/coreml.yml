@@ -29,7 +29,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  UV_VERSION: "0.12.5"
+  UV_VERSION: "0.13.4"
   HOLOCRON_REQUIRE_COREML_RUNTIME: "1"
   OMP_NUM_THREADS: "2"
 

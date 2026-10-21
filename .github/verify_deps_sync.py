@@ -22,6 +22,8 @@ import yaml
 DOCKERFILES = ["api/Dockerfile"]
 PYPROJECTS = ["./pyproject.toml", "api/pyproject.toml"]
 REQUIREMENTS_TXT = ["demo/requirements.txt"]
+UV_VERSION = "0.13.4"
+UV_BUILD_REQUIREMENT = ">=0.13.4,<1.0.0"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -49,7 +51,7 @@ def parse_dep_str(dep_str: str) -> dict[str, str]:
 def main():  # noqa: PLR0912
     # Retrieve & parse all deps files
     deps_dict = {
-        "uv": [],
+        "uv": [{"file": "required", "version": f"=={UV_VERSION}"}],
         "ruff": [],
         "ty": [],
         "pre-commit": [],
@@ -70,6 +72,17 @@ def main():  # noqa: PLR0912
     for pyproject_path in PYPROJECTS:
         with Path(pyproject_path).open("rb") as f:
             pyproject = tomllib.load(f)
+
+        if pyproject_path == "./pyproject.toml":
+            build_requires = [
+                parse_dep_str(requirement) for requirement in pyproject.get("build-system", {}).get("requires", [])
+            ]
+            uv_build_version = next(
+                (requirement["version"] for requirement in build_requires if requirement["pkg"] == "uv_build"),
+                None,
+            )
+            if uv_build_version != UV_BUILD_REQUIREMENT:
+                raise AssertionError(f"{pyproject_path} must require uv_build{UV_BUILD_REQUIREMENT}")
 
         optional_deps = pyproject["project"]["optional-dependencies"]
         for requirements in (
@@ -98,7 +111,12 @@ def main():  # noqa: PLR0912
     for workflow_file in Path(".github/workflows").glob("*.yml"):
         with workflow_file.open("r") as f:
             workflow = yaml.safe_load(f)
-            if "env" in workflow and "UV_VERSION" in workflow["env"]:
+            installs_uv = any(
+                str(step.get("uses", "")).startswith("astral-sh/setup-uv@")
+                for job in workflow.get("jobs", {}).values()
+                for step in job.get("steps", [])
+            )
+            if installs_uv and "env" in workflow and "UV_VERSION" in workflow["env"]:
                 deps_dict["uv"].append({
                     "file": str(workflow_file),
                     "version": f"=={workflow['env']['UV_VERSION'].lstrip('v')}",
