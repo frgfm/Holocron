@@ -26,6 +26,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 concurrency:
   group: package-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
@@ -47,12 +50,14 @@ jobs:
           - os: windows-latest
             python: '3.13'
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: ${{ matrix.python }}
           architecture: x64
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
         with:
           version: ${{ env.UV_VERSION }}
           activate-environment: true
@@ -70,12 +75,14 @@ jobs:
     if: github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
         with:
           version: ${{ env.UV_VERSION }}
           activate-environment: true
@@ -85,7 +92,7 @@ jobs:
         run: |
           UV_TORCH_BACKEND='cpu' make install-test
           UV_TORCH_BACKEND='cpu' make test
-      - uses: codecov/codecov-action@v7
+      - uses: codecov/codecov-action@f9fe539f5290016afa014f8ef31597d3a61c2dea # v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
@@ -96,17 +103,20 @@ jobs:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       # For PyPI's trusted publishing.
       id-token: write
     outputs:
       package_version: ${{ steps.set_version.outputs.package_version }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
         with:
           version: ${{ env.UV_VERSION }}
       - name: Set package version
@@ -139,11 +149,11 @@ jobs:
             python: '3.13'
     needs: publish
     steps:
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: ${{ matrix.python }}
           architecture: x64
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
         with:
           version: ${{ env.UV_VERSION }}
       - name: Install package

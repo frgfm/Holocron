@@ -2,6 +2,9 @@ name: page-build
 on:
   page_build
 
+permissions:
+  contents: read
+
 env:
   PYTHON_VERSION: "3.11"
   UV_VERSION: "0.12.5"
@@ -10,7 +13,7 @@ jobs:
   check-gh-pages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64

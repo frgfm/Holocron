@@ -6,12 +6,17 @@ on:
     paths:
       - '.github/workflows/demo.yml'
       - 'demo/**'
+      - 'api/**'
   pull_request:
     branches: main
     paths:
       - '.github/workflows/demo.yml'
       - 'demo/**'
+      - 'api/**'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   PYTHON_VERSION: "3.11"
@@ -21,15 +26,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: x64
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
         with:
           version: ${{ env.UV_VERSION }}
           activate-environment: true
+      - name: Run offline API and demo regressions
+        run: |
+          make install-backend-test
+          uv --project api run --no-sync python -m pytest -c api/pyproject.toml api/tests demo/tests
       - name: Run demo app
         env:
           UV_TORCH_BACKEND: cpu
