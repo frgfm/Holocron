@@ -234,6 +234,13 @@ def test_cli_grid_training_resume_and_provenance(monkeypatch, tmp_path):
         "evaluate",
         lambda _self: {"val_loss": float("inf"), "acc1": 0.0, "acc5": 0.0},
     )
+    torch_load = torch.load
+
+    def restricted_load(path, **kwargs):
+        assert kwargs["weights_only"] is True
+        return torch_load(path, **kwargs)
+
+    monkeypatch.setattr(characters.torch, "load", restricted_load)
     characters.main(characters.get_parser().parse_args([*training_args, "--resume", str(checkpoint)]))
     assert metadata_path.read_text(encoding="utf-8") == metadata_before_resume
 

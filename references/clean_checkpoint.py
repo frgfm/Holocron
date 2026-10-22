@@ -11,7 +11,7 @@ import torch
 
 
 def main(args):
-    checkpoint = torch.load(args.checkpoint, map_location="cpu")["model"]
+    checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)["model"]
     torch.save(checkpoint, args.outfile, _use_new_zipfile_serialization=False)
 
     sha_hash = hashlib.sha256(Path(args.outfile).read_bytes()).hexdigest()
