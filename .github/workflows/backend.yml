@@ -89,6 +89,26 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: Check unprivileged startup and health without downloads
+        run: |
+          trap 'docker logs holocron-api-smoke; docker rm --force holocron-api-smoke' EXIT
+          docker run --detach --network none --name holocron-api-smoke --entrypoint python \
+            "${{ github.event.repository.name }}-backend:latest" -c '
+          import json, os, tempfile
+          from pathlib import Path
+          import huggingface_hub, onnxruntime, uvicorn
+          assert os.getuid() != 0
+          cache = Path(os.environ["HF_HOME"]) / "startup-check"
+          cache.write_text("ok")
+          cache.unlink()
+          with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as config:
+              json.dump({"classes": ["test"], "input_shape": [3, 224, 224], "mean": [0, 0, 0], "std": [1, 1, 1]}, config)
+          huggingface_hub.hf_hub_download = lambda *args, **kwargs: config.name
+          onnxruntime.InferenceSession = lambda *args, **kwargs: object()
+          from app.main import app
+          uvicorn.run(app, host="127.0.0.1", port=8080)
+          '
+          timeout 30 sh -c 'until docker exec holocron-api-smoke curl --fail --silent http://127.0.0.1:8080/health; do sleep 1; done'
 
   pytest:
     runs-on: ubuntu-latest
