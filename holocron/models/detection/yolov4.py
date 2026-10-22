@@ -68,7 +68,7 @@ class PAN(nn.Module):
             *conv(in_channels, in_channels // 2, kernel_size=1),
         )
 
-    def forward(self, x: Tensor, up: Tensor) -> Tensor:
+    def forward(self, x: Tensor, up: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         out = self.conv1(x)
 
         out = torch.cat([self.conv2(up), self.up(out)], dim=1)
@@ -105,7 +105,7 @@ class Neck(nn.Module):
         self.pan2 = PAN(in_planes[2], act_layer, norm_layer, drop_layer, conv_layer)
         init_module(self, "leaky_relu")
 
-    def forward(self, feats: list[Tensor]) -> tuple[Tensor, Tensor, Tensor]:
+    def forward(self, feats: list[Tensor]) -> tuple[Tensor, Tensor, Tensor]:  # ty: ignore[invalid-mutable-override]
         out = self.fpn(feats[2])
 
         aux1 = self.pan1(out, feats[1])
@@ -280,7 +280,7 @@ class YoloLayer(nn.Module):
             / b_o.shape[0],
         }
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x: Tensor, target: list[dict[str, Tensor]] | None = None
     ) -> dict[str, Tensor] | list[dict[str, Tensor]]:
         """Perform detection on an image tensor and returns either the loss dictionary in training mode
@@ -417,7 +417,7 @@ class Yolov4Head(nn.Module):
         for layer in layers:
             layer.all_anchors = all_anchors
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, feats: list[Tensor], target: list[dict[str, Tensor]] | None = None
     ) -> list[dict[str, Tensor]] | dict[str, Tensor]:
         o1 = self.head1(feats[0])
@@ -490,7 +490,7 @@ class YOLOv4(nn.Module):
         # head
         self.head = Yolov4Head(num_classes, anchors, act_layer, norm_layer, drop_layer, conv_layer)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x: Tensor, target: list[dict[str, Tensor]] | None = None
     ) -> list[dict[str, Tensor]] | dict[str, Tensor]:
         if not isinstance(x, torch.Tensor):

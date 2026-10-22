@@ -60,7 +60,7 @@ class SEBlock(nn.Module):
             *conv_sequence(channels // se_ratio, channels, nn.Sigmoid(), None, drop_layer, kernel_size=1, stride=1),
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         y = self.pool(x)
         y = self.conv(y)
         return x * y
@@ -135,7 +135,7 @@ class ReXBlock(nn.Module):
         )
         self.conv = nn.Sequential(*layers)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         out = self.conv(x)
         if self.use_shortcut:
             out[:, : self.in_channels] += x

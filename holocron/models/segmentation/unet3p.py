@@ -71,7 +71,7 @@ class FSAggreg(nn.Module):
             )
         )
 
-    def forward(self, downfeats: list[Tensor], feat: Tensor, upfeats: list[Tensor]) -> Tensor:
+    def forward(self, downfeats: list[Tensor], feat: Tensor, upfeats: list[Tensor]) -> Tensor:  # ty: ignore[invalid-mutable-override]
         if len(downfeats) != len(self.downsamples) or len(upfeats) != len(self.upsamples):
             raise ValueError(
                 f"Expected {len(self.downsamples)} encoding & {len(self.upsamples)} decoding features, "
@@ -154,7 +154,7 @@ class UNet3p(nn.Module):
         # The classifier has no ReLU; keep logit variance independent of the number of classes.
         nn.init.kaiming_normal_(self.classifier.weight, mode="fan_in", nonlinearity="linear")
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         xs: list[Tensor] = []
         # Contracting path
         for encoder in self.encoder:

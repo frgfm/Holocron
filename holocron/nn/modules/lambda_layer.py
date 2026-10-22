@@ -63,7 +63,7 @@ class LambdaLayer(nn.Module):
                 raise AssertionError("You must specify the total sequence length (h x w)")
             self.pos_emb = nn.Parameter(torch.randn(n, n, dim_k, dim_u))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         b, _, h, w = x.shape
 
         # Project inputs & context to retrieve queries, keys and values

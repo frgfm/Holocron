@@ -33,7 +33,7 @@ class ConcatDownsample2d(nn.Module):
         super().__init__()
         self.scale_factor: int = scale_factor
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.concat_downsample2d(x, self.scale_factor)
 
 
@@ -63,7 +63,7 @@ class GlobalAvgPool2d(nn.Module):
         super().__init__()
         self.flatten: bool = flatten
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         if self.flatten:
             in_size = x.size()
             return x.view((in_size[0], in_size[1], -1)).mean(dim=2)
@@ -84,7 +84,7 @@ class GlobalMaxPool2d(nn.Module):
         super().__init__()
         self.flatten: bool = flatten
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         if self.flatten:
             in_size = x.size()
             return x.view((in_size[0], in_size[1], -1)).max(dim=2).values
@@ -131,7 +131,7 @@ class BlurPool2d(nn.Module):
         self.kernel: dict[str, Tensor] = {}
         super()._apply(fn)
 
-    def forward(self, input_tensor: Tensor) -> Tensor:
+    def forward(self, input_tensor: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         blur_filter = self.kernel.get(str(input_tensor.device), self._create_filter(input_tensor))
         return nn.functional.conv2d(
             self.padding(input_tensor), blur_filter, stride=self.stride, groups=input_tensor.shape[1]
@@ -151,7 +151,7 @@ class SPP(nn.ModuleList):
     def __init__(self, kernel_sizes: list[int]) -> None:
         super().__init__([nn.MaxPool2d(k_size, stride=1, padding=k_size // 2) for k_size in kernel_sizes])
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         feats = [x] + [pool_layer(x) for pool_layer in self]
         return torch.cat(feats, dim=1)
 
@@ -167,5 +167,5 @@ class ZPool(nn.Module):
         super().__init__()
         self.dim: int = dim
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.z_pool(x, self.dim)

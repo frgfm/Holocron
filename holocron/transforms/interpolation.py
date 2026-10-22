@@ -140,7 +140,7 @@ class RandomZoomOut(nn.Module):
 
         return h_, w_
 
-    def forward(self, image: Image.Image | torch.Tensor) -> Image.Image | torch.Tensor:  # noqa: D102
+    def forward(self, image: Image.Image | torch.Tensor) -> Image.Image | torch.Tensor:  # noqa: D102  # ty: ignore[invalid-mutable-override]
         # Skip dummy cases
         if self.scale[0] == 1:
             return image

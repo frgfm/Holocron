@@ -51,7 +51,7 @@ class YOLO26Semantic(nn.Module):
         self.classifier = nn.Sequential(ConvNormAct(64, 64), nn.Conv2d(64, num_classes, 1))
         self.aux_classifier = nn.Sequential(ConvNormAct(128, 64), nn.Conv2d(64, num_classes, 1)) if auxiliary else None
 
-    def forward(self, images: Tensor) -> Tensor | dict[str, Tensor]:
+    def forward(self, images: Tensor) -> Tensor | dict[str, Tensor]:  # ty: ignore[invalid-mutable-override]
         p3, p4, p5 = self.backbone(images)
         p4 = self.neck_p4(torch.cat((F.interpolate(p5, size=p4.shape[-2:], mode="nearest"), p4), dim=1))
         p3 = self.neck_p3(torch.cat((F.interpolate(p4, size=p3.shape[-2:], mode="nearest"), p3), dim=1))

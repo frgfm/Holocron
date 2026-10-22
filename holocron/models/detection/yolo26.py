@@ -32,7 +32,7 @@ class YOLO26Neck(nn.Module):
         self.down_middle = ConvNormAct(128, 128, stride=2)
         self.bottom_large = C3k2(384, 256, attention=True)
 
-    def forward(self, features: tuple[Tensor, Tensor, Tensor]) -> tuple[Tensor, Tensor, Tensor]:
+    def forward(self, features: tuple[Tensor, Tensor, Tensor]) -> tuple[Tensor, Tensor, Tensor]:  # ty: ignore[invalid-mutable-override]
         small, middle, large = features
         middle = self.top_middle(torch.cat((F.interpolate(large, size=middle.shape[-2:], mode="nearest"), middle), 1))
         small = self.top_small(torch.cat((F.interpolate(middle, size=small.shape[-2:], mode="nearest"), small), 1))
@@ -63,7 +63,7 @@ class PredictionHead(nn.Module):
             self.boxes.append(box_branch)
             self.classes.append(class_branch)
 
-    def forward(self, features: tuple[Tensor, Tensor, Tensor]) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+    def forward(self, features: tuple[Tensor, Tensor, Tensor]) -> tuple[Tensor, Tensor, Tensor, Tensor]:  # ty: ignore[invalid-mutable-override]
         distances, logits, points, scales = [], [], [], []
         for feature, box_branch, class_branch in zip(features, self.boxes, self.classes, strict=True):
             height, width = feature.shape[-2:]
@@ -234,7 +234,7 @@ class YOLO26(nn.Module):
                 ).sum() / normalizer
         return self.box_weight * box_loss / len(boxes), self.class_weight * class_loss / len(boxes)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, images: Tensor | Sequence[Tensor], target: list[dict[str, Tensor]] | None = None
     ) -> dict[str, Tensor] | list[dict[str, Tensor]]:
         if isinstance(images, (list, tuple)):

@@ -31,7 +31,7 @@ class CharacterBackbone(nn.Module):
             channels = output
         self.features = nn.Sequential(*layers)
 
-    def forward(self, images: Tensor) -> Tensor:
+    def forward(self, images: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         if images.ndim != 4 or images.shape[1] != 1 or images.shape[2] != 32:
             raise ValueError("images must have shape (N, 1, 32, W)")
         if images.shape[0] == 0 or images.shape[3] < 4 or images.shape[3] % 4:
@@ -58,7 +58,7 @@ class CharacterClassifier(nn.Module):
         self.backbone = CharacterBackbone()
         self.head = nn.Linear(384, num_classes)
 
-    def forward(self, images: Tensor, lengths: Tensor) -> Tensor:
+    def forward(self, images: Tensor, lengths: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         features = self.backbone(images)
         _validate_lengths(lengths, images.shape[0], features.shape[-1])
         mask = torch.arange(features.shape[-1], device=images.device)[None, :] < lengths.to(images.device)[:, None]
@@ -89,7 +89,7 @@ class CTCRecognizer(nn.Module):
         self.context = nn.GRU(128, 96, num_layers=2, batch_first=True, bidirectional=True, dropout=0.1)
         self.head = nn.Linear(192, num_classes + 1)
 
-    def forward(self, images: Tensor, lengths: Tensor) -> Tensor:
+    def forward(self, images: Tensor, lengths: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         features = self.backbone(images).permute(0, 3, 1, 2).flatten(2)
         _validate_lengths(lengths, images.shape[0], features.shape[1])
         packed = pack_padded_sequence(self.projection(features), lengths.cpu(), batch_first=True, enforce_sorted=False)

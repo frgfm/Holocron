@@ -88,7 +88,7 @@ class FocalLoss(Loss):
         super().__init__(**kwargs)
         self.gamma: float = gamma
 
-    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.focal_loss(x, target, self.weight, self.ignore_index, self.reduction, self.gamma)
 
     def __repr__(self) -> str:
@@ -106,7 +106,7 @@ class MultiLabelCrossEntropy(Loss):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.multilabel_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction)
 
     def __repr__(self) -> str:
@@ -126,7 +126,7 @@ class ComplementCrossEntropy(Loss):
         super().__init__(**kwargs)
         self.gamma: float = gamma
 
-    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.complement_cross_entropy(x, target, self.weight, self.ignore_index, self.reduction, self.gamma)
 
     def __repr__(self) -> str:
@@ -162,7 +162,7 @@ class ClassBalancedWrapper(nn.Module):
         else:
             self.criterion.weight *= cb_weights.to(device=self.criterion.weight.device)  # ty: ignore[invalid-argument-type]
 
-    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return cast(Tensor, self.criterion.forward(x, target))
 
     def __repr__(self) -> str:
@@ -193,7 +193,7 @@ class MutualChannelLoss(Loss):
         self.xi: int = xi
         self.alpha: float = alpha
 
-    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.mutual_channel_loss(
             x, target, self.weight, self.ignore_index, self.reduction, self.xi, self.alpha, training=self.training
         )
@@ -222,7 +222,7 @@ class DiceLoss(Loss):
         self.gamma: float = gamma
         self.eps: float = eps
 
-    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.dice_loss(x, target, self.weight, self.gamma, self.eps)
 
     def __repr__(self) -> str:
@@ -271,7 +271,7 @@ class PolyLoss(Loss):
         super().__init__(*args, **kwargs)
         self.eps: float = eps
 
-    def forward(self, x: Tensor, target: Tensor) -> Tensor:
+    def forward(self, x: Tensor, target: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.poly_loss(x, target, self.eps, self.weight, self.ignore_index, self.reduction)
 
     def __repr__(self) -> str:

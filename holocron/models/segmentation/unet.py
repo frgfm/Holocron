@@ -90,7 +90,7 @@ class UpPath(nn.Module):
             ),
         )
 
-    def forward(self, downfeats: Tensor | list[Tensor], upfeat: Tensor) -> Tensor:
+    def forward(self, downfeats: Tensor | list[Tensor], upfeat: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         downfeats = list(downfeats) if isinstance(downfeats, list) else [downfeats]
         # Upsample expansive features
         if self.padding > 0 and self.bilinear_upsampling:
@@ -240,7 +240,7 @@ class UNet(nn.Module):
 
         init_module(self, "relu")
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         xs: list[Tensor] = []
         # Contracting path
         for encoder in self.encoder:
@@ -296,7 +296,7 @@ class UBlock(nn.Module):
             ),
         )
 
-    def forward(self, downfeat: Tensor, upfeat: Tensor) -> Tensor:
+    def forward(self, downfeat: Tensor, upfeat: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         # Upsample expansive features
         upfeat_ = self.upsample(upfeat)
 
@@ -386,7 +386,7 @@ class DynamicUNet(nn.Module):
             if module is not None:
                 init_module(module, "relu")
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         input_size = x.shape[-2:]
         # Contracting path
         xs: list[Tensor] = list(self.encoder(x).values())

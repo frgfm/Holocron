@@ -31,7 +31,7 @@ class DropBlock2d(nn.Module):
     def drop_prob(self) -> float:
         return self.p / self.block_size**2
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.dropblock2d(x, self.drop_prob, self.block_size, self.inplace, self.training)
 
     def extra_repr(self) -> str:

@@ -68,7 +68,7 @@ class RepBlock(nn.Module):
                 raise ValueError("The number of input and output channels must be identical if identity is used")
             self.branches.append(norm_layer(planes))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         out = self.branches(x) if isinstance(self.branches, nn.Conv2d) else sum(branch(x) for branch in self.branches)
         return self.activation(out)
 

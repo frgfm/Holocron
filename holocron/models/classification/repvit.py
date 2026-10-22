@@ -112,7 +112,7 @@ class _Residual(nn.Module):
         super().__init__()
         self.block = block
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return x + self.block(x)
 
 
@@ -123,7 +123,7 @@ class _RepVGGDW(nn.Module):
         self.conv1 = nn.Conv2d(channels, channels, 1, groups=channels)
         self.norm = nn.BatchNorm2d(channels)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return self.norm(self.conv3(x) + self.conv1(x) + x)
 
     @torch.no_grad()
@@ -169,7 +169,7 @@ class _RepViTBlock(nn.Module):
             )
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return self.channel_mixer(self.token_mixer(x))
 
     def reparametrize(self) -> None:
