@@ -34,8 +34,8 @@ ENV TMPDIR="/tmp"
 
 LABEL maintainer="F-G Fernandez <fg-feedback@protonmail.com>"
 
-# Install curl for the health check
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+# Package installation happens in the builder, so remove unused runtime installers.
+RUN python -m pip uninstall --yes pip setuptools wheel
 
 # Copy installed dependencies from builder
 COPY --from=builder /opt/venv /opt/venv
@@ -51,5 +51,5 @@ USER app
 
 # Entrypoint
 EXPOSE 8080
-HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=5 CMD ["curl", "--fail", "--silent", "--show-error", "--max-time", "3", "http://localhost:8080/health"]
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=5 CMD ["python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8080/health', timeout=3).close()"]
 CMD ["uvicorn", "app.main:app", "--host=0.0.0.0", "--port=8080", "--proxy-headers", "--use-colors", "--log-level=info"]
