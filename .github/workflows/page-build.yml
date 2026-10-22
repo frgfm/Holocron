@@ -2,18 +2,20 @@ name: page-build
 on:
   page_build
 
-env:
-  PYTHON_VERSION: "3.11"
-  UV_VERSION: "0.12.5"
+permissions:
+  contents: read
+
 
 jobs:
   check-gh-pages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: x64
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
+        with:
+          activate-environment: 'false'
       - name: check status
         run: |
           import os

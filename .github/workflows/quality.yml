@@ -4,25 +4,20 @@ on:
   pull_request:
     branches: main
 
-env:
-  UV_VERSION: "0.13.4"
-  PYTHON_VERSION: "3.11"
+permissions:
+  contents: read
+
 
 
 jobs:
   astral:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
-          activate-environment: true
-      - uses: actions/cache@v6
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ~/.cache/uv
           key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
@@ -39,14 +34,12 @@ jobs:
   deps-sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
         with:
-          version: ${{ env.UV_VERSION }}
+          activate-environment: 'false'
       - name: Run dependency sync checker
         run: make deps-check
 
@@ -55,7 +48,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Check the headers

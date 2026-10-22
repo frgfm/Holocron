@@ -5,6 +5,7 @@ on:
     branches: main
     paths:
       - '.github/workflows/scripts.yml'
+      - '.github/actions/setup-python-uv/**'
       - 'scripts/**'
       - 'Makefile'
       - 'pyproject.toml'
@@ -13,28 +14,24 @@ on:
     branches: main
     paths:
       - '.github/workflows/scripts.yml'
+      - '.github/actions/setup-python-uv/**'
       - 'scripts/**'
       - 'Makefile'
       - 'pyproject.toml'
       - 'uv.lock'
 
-env:
-  PYTHON_VERSION: "3.11"
-  UV_VERSION: "0.13.4"
+permissions:
+  contents: read
+
 
 jobs:
   eval-latency:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
-          activate-environment: true
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
       - name: Run script
         env:
           UV_TORCH_BACKEND: cpu
@@ -42,7 +39,7 @@ jobs:
           make install-scripts
           make bench-latency LATENCY_ARGS="--it 5 --warmup 1 --repeat 1 --output latency.json"
           make bench-latency LATENCY_ARGS="--backend onnx --it 5 --warmup 1 --repeat 1 --output latency-onnx.json"
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
           name: latency

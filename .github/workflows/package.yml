@@ -5,6 +5,7 @@ on:
     branches: main
     paths:
       - '.github/workflows/package.yml'
+      - '.github/actions/setup-python-uv/**'
       - '.github/workflows/coreml.yml'
       - 'holocron/**'
       - 'tests/**'
@@ -16,6 +17,7 @@ on:
     branches: main
     paths:
       - '.github/workflows/package.yml'
+      - '.github/actions/setup-python-uv/**'
       - '.github/workflows/coreml.yml'
       - 'holocron/**'
       - 'tests/**'
@@ -26,13 +28,13 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 concurrency:
   group: package-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-env:
-  UV_VERSION: "0.13.4"
-  PYTHON_VERSION: "3.11"
 
 
 jobs:
@@ -47,15 +49,12 @@ jobs:
           - os: windows-latest
             python: '3.13'
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
         with:
           python-version: ${{ matrix.python }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
-          activate-environment: true
       - name: Build the package
         run: make build
       - name: Install the engine
@@ -70,22 +69,17 @@ jobs:
     if: github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
-          activate-environment: true
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
       - name: Run tests
         env:
           UV_TORCH_BACKEND: cpu
         run: |
           UV_TORCH_BACKEND='cpu' make install-test
           UV_TORCH_BACKEND='cpu' make test
-      - uses: codecov/codecov-action@v7
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
@@ -96,19 +90,18 @@ jobs:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       # For PyPI's trusted publishing.
       id-token: write
     outputs:
       package_version: ${{ steps.set_version.outputs.package_version }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
         with:
-          version: ${{ env.UV_VERSION }}
+          activate-environment: 'false'
       - name: Set package version
         id: set_version
         run: |
@@ -139,14 +132,15 @@ jobs:
             python: '3.13'
     needs: publish
     steps:
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
         with:
           python-version: ${{ matrix.python }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
+          activate-environment: 'false'
       - name: Install package
+        working-directory: ${{ runner.temp }}
         env:
           UV_TORCH_BACKEND: cpu
         run: |

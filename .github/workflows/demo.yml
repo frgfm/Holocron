@@ -5,31 +5,28 @@ on:
     branches: main
     paths:
       - '.github/workflows/demo.yml'
+      - '.github/actions/setup-python-uv/**'
       - 'demo/**'
   pull_request:
     branches: main
     paths:
       - '.github/workflows/demo.yml'
+      - '.github/actions/setup-python-uv/**'
       - 'demo/**'
   workflow_dispatch:
 
-env:
-  PYTHON_VERSION: "3.11"
-  UV_VERSION: "0.13.4"
+permissions:
+  contents: read
+
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
-          activate-environment: true
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-uv
       - name: Run demo app
         env:
           UV_TORCH_BACKEND: cpu
