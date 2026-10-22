@@ -94,10 +94,11 @@ jobs:
           trap 'docker logs holocron-api-smoke; docker rm --force holocron-api-smoke' EXIT
           docker run --detach --network none --name holocron-api-smoke --entrypoint python \
             "${{ github.event.repository.name }}-backend:latest" -c '
-          import json, os, tempfile
+          import json, os, ssl, tempfile
           from pathlib import Path
           import huggingface_hub, onnxruntime, uvicorn
           assert os.getuid() != 0
+          assert ssl.create_default_context().cert_store_stats()["x509_ca"] > 0
           cache = Path(os.environ["HF_HOME"]) / "startup-check"
           cache.write_text("ok")
           cache.unlink()
@@ -108,7 +109,7 @@ jobs:
           from app.main import app
           uvicorn.run(app, host="127.0.0.1", port=8080)
           '
-          timeout 30 sh -c 'until docker exec holocron-api-smoke curl --fail --silent http://127.0.0.1:8080/health; do sleep 1; done'
+          timeout 45 sh -c 'until test "$(docker inspect --format "{{.State.Health.Status}}" holocron-api-smoke)" = healthy; do sleep 1; done'
 
   pytest:
     runs-on: ubuntu-latest
