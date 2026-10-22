@@ -61,12 +61,12 @@ training = [
     "codecarbon>=2.0.0,<3.0.0",
 ]
 quality = [
-    "ruff==0.17.0",
-    "ty==0.0.86",
+    "ruff==0.17.2",
+    "ty==0.0.91",
     "lint-my-headers==0.6.0",
     "types-tqdm",
     "types-Pillow",
-    "prek==0.5.5",
+    "prek==0.5.7",
 ]
 scripts = [
     "onnx>=1.22.0,<2.0.0",
@@ -229,7 +229,7 @@ python-version = "3.11"
 python-platform = "linux"
 
 [tool.ty.rules]
-# ponytail: PyTorch's dynamic module API remains too imprecise for these checks; tighten as its stubs improve.
+# shortcut: PyTorch types Module.forward as writable; remove its narrow method ignores when upstream fixes the annotation.
 call-non-callable = "ignore"
 invalid-argument-type = "ignore"
 invalid-assignment = "ignore"

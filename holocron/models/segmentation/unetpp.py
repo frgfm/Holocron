@@ -98,7 +98,7 @@ class UNetp(nn.Module):
 
         init_module(self, "relu")
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         xs: list[Tensor] = []
         # Contracting path
         for encoder in self.encoder:
@@ -173,7 +173,7 @@ class UNetpp(nn.Module):
 
         init_module(self, "relu")
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         xs: list[list[Tensor]] = []
         # Contracting path
         for encoder in self.encoder:

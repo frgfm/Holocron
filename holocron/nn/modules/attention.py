@@ -25,7 +25,7 @@ class SAM(nn.Module):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, 1, 1)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return x * torch.sigmoid(self.conv(x))
 
 
@@ -46,7 +46,7 @@ class DimAttention(nn.Module):
         )
         self.dim: int = dim
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         if self.dim != 1:
             x = x.transpose(self.dim, 1).contiguous()
         out = cast(Tensor, x * self.compress(x))
@@ -67,7 +67,7 @@ class TripletAttention(nn.Module):
         self.h_branch = DimAttention(dim=2)
         self.w_branch = DimAttention(dim=3)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         x_c = cast(Tensor, self.c_branch(x))
         x_h = cast(Tensor, self.h_branch(x))
         x_w = cast(Tensor, self.w_branch(x))

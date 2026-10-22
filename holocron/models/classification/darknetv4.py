@@ -110,7 +110,7 @@ class CSPStage(nn.Module):
             )
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         x = self.base_layer(x)
         x1, x2 = x.chunk(2, dim=1)
         return self.transition(torch.cat([x1, self.main(x2)], dim=1))

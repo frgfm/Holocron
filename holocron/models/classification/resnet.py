@@ -72,7 +72,7 @@ class _ResBlock(nn.Module):
         if isinstance(act_layer, nn.Module):
             self.activation = act_layer
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         identity = x
 
         out = self.conv(x)
@@ -214,7 +214,7 @@ class ChannelRepeat(nn.Module):
         super().__init__()
         self.chan_repeats: int = chan_repeats
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         repeats = [1] * x.ndim
         # Repeat the tensor along the channel dimension
         repeats[1] = self.chan_repeats

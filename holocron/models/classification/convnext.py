@@ -48,7 +48,7 @@ class LayerScale(nn.Module):
         super().__init__()
         self.register_parameter("weight", nn.Parameter(scale * torch.ones(chans)))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         return x * self.weight.reshape(1, -1, *((1,) * (x.ndim - 2)))  # ty: ignore[call-non-callable]
 
 

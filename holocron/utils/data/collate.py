@@ -37,7 +37,7 @@ class Mixup(torch.nn.Module):
             raise ValueError("`alpha` only takes positive values")
         self.alpha: float = alpha
 
-    def forward(self, inputs: Tensor, targets: Tensor) -> tuple[Tensor, Tensor]:  # noqa: D102
+    def forward(self, inputs: Tensor, targets: Tensor) -> tuple[Tensor, Tensor]:  # noqa: D102  # ty: ignore[invalid-mutable-override]
         # Convert target to one-hot
         if targets.ndim == 1:
             # (N,) --> (N, C)

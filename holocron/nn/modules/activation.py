@@ -37,7 +37,7 @@ class HardMish(_Activation):
         inplace: should the operation be performed inplace
     """
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.hard_mish(x, inplace=self.inplace)
 
 
@@ -60,7 +60,7 @@ class NLReLU(_Activation):
         super().__init__(inplace)
         self.beta: float = beta
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         return F.nl_relu(x, beta=self.beta, inplace=self.inplace)
 
 
@@ -86,7 +86,7 @@ class FReLU(nn.Module):
         self.conv = nn.Conv2d(in_channels, in_channels, kernel_size, padding=kernel_size // 2, groups=in_channels)
         self.bn = nn.BatchNorm2d(in_channels)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         out = self.conv(x)
         out = self.bn(out)
         return torch.max(x, out)

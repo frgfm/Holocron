@@ -81,7 +81,7 @@ class _ResidualBottleneck(nn.Module):
         hidden = int(channels * expansion)
         self.transform = nn.Sequential(ConvNormAct(channels, hidden), ConvNormAct(hidden, channels))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         return x + self.transform(x)
 
 
@@ -97,7 +97,7 @@ class _C3k(nn.Module):
         self.bypass = ConvNormAct(channels, hidden, 1)
         self.combine = ConvNormAct(2 * hidden, channels, 1)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         return self.combine(torch.cat((self.process(x), self.bypass(x)), dim=1))
 
 
@@ -114,7 +114,7 @@ class _PositionAttention(nn.Module):
             ConvNormAct(channels, 2 * channels, 1), ConvNormAct(2 * channels, channels, 1, activation=False)
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         batch, channels, height, width = x.shape
         packed = self.qkv(x).reshape(batch, self.num_heads, 2 * self.key_dim + self.value_dim, height * width)
         query, key, value = packed.split((self.key_dim, self.key_dim, self.value_dim), dim=2)
@@ -161,7 +161,7 @@ class C3k2(nn.Module):
             self.blocks.append(block)
         self.combine = ConvNormAct((2 + num_blocks) * hidden, out_channels, 1)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         """Return the fused split and refined feature maps.
 
         Returns:
@@ -180,7 +180,7 @@ class _PyramidPool(nn.Module):
         self.pool = nn.MaxPool2d(5, stride=1, padding=2)
         self.combine = ConvNormAct(2 * channels, channels, 1)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         pooled = [self.reduce(x)]
         for _ in range(3):
             pooled.append(self.pool(pooled[-1]))
@@ -194,7 +194,7 @@ class _PartialAttention(nn.Module):
         self.attention = _PositionAttention(channels // 2)
         self.combine = ConvNormAct(channels, channels, 1)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         bypass, attended = self.split(x).chunk(2, dim=1)
         return self.combine(torch.cat((bypass, self.attention(attended)), dim=1))
 
@@ -229,7 +229,7 @@ class YOLO26Backbone(nn.Module):
             ConvNormAct(128, 256, stride=2), C3k2(256, 256), _PyramidPool(256), _PartialAttention(256)
         )
 
-    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:  # ty: ignore[invalid-mutable-override]
         """Return the three feature maps in increasing stride order.
 
         Returns:

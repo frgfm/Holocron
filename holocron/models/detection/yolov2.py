@@ -212,7 +212,7 @@ class YOLOv2(_YOLO):
 
         return self.head(out)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x: Tensor | list[Tensor] | tuple[Tensor, ...], target: list[dict[str, Tensor]] | None = None
     ) -> dict[str, Tensor] | list[dict[str, Tensor]]:
         """Perform detection on an image tensor and returns either the loss dictionary in training mode

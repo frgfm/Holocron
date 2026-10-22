@@ -44,7 +44,6 @@ class _YOLO(nn.Module):
         self.lambda_noobj: float = lambda_noobj
         self.lambda_class: float = lambda_class
         self.lambda_coords: float = lambda_coords
-        self.num_anchors: int
 
     def _compute_losses(
         self,
@@ -342,7 +341,7 @@ class YOLOv1(_YOLO):
         out = self.block4(out)
         return self.classifier(out)
 
-    def forward(
+    def forward(  # ty: ignore[invalid-mutable-override]
         self, x: Tensor, target: list[dict[str, Tensor]] | None = None
     ) -> dict[str, Tensor] | list[dict[str, Tensor]]:
         """Perform detection on an image tensor and returns either the loss dictionary in training mode

@@ -116,7 +116,7 @@ class NormConv2d(_NormConvNd):
             eps,
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         padding = self.padding
         if self.padding_mode != "zeros":
             x = pad(x, self._reversed_padding_repeated_twice, mode=self.padding_mode)
@@ -197,7 +197,7 @@ class Add2d(_NormConvNd):
             eps,
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         padding = self.padding
         if self.padding_mode != "zeros":
             x = pad(x, self._reversed_padding_repeated_twice, mode=self.padding_mode)
@@ -305,7 +305,7 @@ class SlimConv2d(nn.Module):
             in_channels // 4, in_channels // 4, kernel_size, stride, padding, dilation, groups, bias, padding_mode
         )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         # Channel-wise weights
         z = x.mean(dim=(2, 3), keepdim=True)
         z = self.bn(self.fc1(z))
@@ -386,7 +386,7 @@ class PyConv2d(nn.ModuleList):
             ])
         self.num_levels: int = num_levels
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         if self.num_levels == 1:
             return cast(Tensor, self[0].forward(x))
         return torch.cat([conv(x) for conv in self], dim=1)
@@ -429,7 +429,7 @@ class Involution2d(nn.Module):
         self.span = nn.Conv2d(int(in_channels // reduction_ratio), kernel_size**2 * groups, 1)
         self.unfold = nn.Unfold(kernel_size, dilation, padding, stride)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # ty: ignore[invalid-mutable-override]
         # Kernel generation
         # (N, C, H, W) --> (N, C, H // s, W // s)
         kernel = cast(Tensor, self.pool(x)) if isinstance(self.pool, nn.Module) else x

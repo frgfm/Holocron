@@ -105,7 +105,7 @@ class SKConv2d(nn.Module):
         ])
         self.sa = SoftAttentionLayer(out_channels, sa_ratio, m, act_layer, norm_layer, drop_layer)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # ty: ignore[invalid-mutable-override]
         paths = torch.stack([path_conv(x) for path_conv in self.path_convs], dim=1)
 
         b, m, c = paths.shape[:3]
