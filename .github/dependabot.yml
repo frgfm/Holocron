@@ -31,6 +31,20 @@ updates:
       day: "monday"
       time: "08:00"
       timezone: "Europe/Paris"
+    allow:
+      # Safe updates
+      - dependency-name: "ruff"
+      - dependency-name: "ty"
+      - dependency-name: "prek"
+      - dependency-name: "mkdocs"
+      - dependency-name: "mkdocs-material"
+      - dependency-name: "mkdocstrings"
+      - dependency-name: "griffe-typingdoc"
+      - dependency-name: "pytest"
+      - dependency-name: "pytest-cov"
+      - dependency-name: "pytest-pretty"
+      - dependency-name: "torch"
+      - dependency-name: "torchvision"
     groups:
       quality:
         patterns:
@@ -55,28 +69,17 @@ updates:
   - package-ecosystem: "uv"
     directory: "/api"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       time: "08:00"
       timezone: "Europe/Paris"
-    groups:
-      runtime:
-        patterns:
-          - "*"
-  - package-ecosystem: "pip"
-    directory: "/demo"
-    labels:
-      - "dependencies"
-      - "type: misc"
-    commit-message:
-      prefix: "build(deps)"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "08:00"
-      timezone: "Europe/Paris"
+    allow:
+      - dependency-name: "fastapi"
+      - dependency-name: "onnxruntime"
   - package-ecosystem: "docker"
     directory: "/api"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
       time: "08:00"
       timezone: "Europe/Paris"
+    allow:
+      - dependency-name: "ghcr.io/astral-sh/uv"
