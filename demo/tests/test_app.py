@@ -26,6 +26,7 @@ def isolated_api_modules(monkeypatch):
     for name in modules:
         del sys.modules[name]
     monkeypatch.syspath_prepend(str(demo.API_DIR))
+    monkeypatch.syspath_prepend(str(demo.API_DIR.parent / "demo"))
     monkeypatch.setenv("CLF_HUB_REPO", demo.DEFAULT_REPO)
     monkeypatch.setenv("CLF_HUB_REVISION", demo.DEFAULT_REVISION)
     yield
