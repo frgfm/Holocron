@@ -43,6 +43,17 @@ was deployed or that a hosting platform's external CA configuration was
 checked. Track source fixes, rebuilt artifacts, deployed artifacts, and closed
 alerts as separate states.
 
+The initial image scan also found Debian 13 package advisories, including
+`CVE-2026-76642` (util-linux), `CVE-2026-16742` (systemd), and
+`CVE-2025-69720` (ncurses). Debian's tracker still lists the shipped trixie
+versions as vulnerable, with fixes available only in newer distribution
+branches. Keep the image scan blocking while reviewing those findings; no
+ignore or unsupported cross-distribution package upgrade is included. These
+are package findings, not proof that the API exposes each affected component.
+See the [util-linux status](https://security-tracker.debian.org/tracker/CVE-2026-76642),
+[systemd status](https://security-tracker.debian.org/tracker/CVE-2026-16742), and
+[ncurses status](https://security-tracker.debian.org/tracker/CVE-2025-69720).
+
 ## Release guidance
 
 Prepare the next `0.3.x` patch release from the current `0.3.1.dev0` development
