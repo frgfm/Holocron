@@ -40,11 +40,8 @@ dependencies = [
     "numpy>=1.19.5,<3.0.0",
     "matplotlib>=3.0.0,<4.0.0",
     "huggingface-hub>=1.0.0,<2.0.0",
-    # Indirect deps
-    # cf. https://github.com/advisories/GHSA-98vv-pw6r-q6q4
-    # cf. https://github.com/pytorch/vision/issues/4934
-    # https://github.com/frgfm/Holocron/security/dependabot/5
-    "Pillow>=12.3.0,<13.0.0",
+    # Security floor: https://github.com/advisories/GHSA-65qm-jvmh-6pqg
+    "Pillow>=13.0.0",
 ]
 
 [project.optional-dependencies]
