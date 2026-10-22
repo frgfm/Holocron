@@ -629,7 +629,7 @@ def main(args: argparse.Namespace) -> None:
 
     if args.resume is not None:
         validate_resume_metadata(args.resume, args.arch, train_set.classes)
-        trainer.load(torch.load(args.resume, map_location="cpu"))
+        trainer.load(torch.load(args.resume, map_location="cpu", weights_only=True))
     best_loss = trainer.min_loss
     if args.check_setup:
         trainer.check_setup(lr=args.lr, num_it=100)

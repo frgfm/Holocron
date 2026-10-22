@@ -18,6 +18,7 @@ from holocron.utils import CTCCodec
 from holocron.utils.data import Mixup
 from references._common import create_loader  # noqa: PLC2701
 from references.classification import _benchmark as benchmark  # noqa: PLC2701
+from references.clean_checkpoint import main as clean_checkpoint
 from references.recognition.train import ctc_loss
 
 DEVICES = [
@@ -25,6 +26,21 @@ DEVICES = [
     pytest.param("mps", marks=pytest.mark.skipif(not torch.backends.mps.is_available(), reason="MPS unavailable")),
     pytest.param("cuda:0", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable")),
 ]
+
+
+def test_clean_checkpoint_uses_restricted_loading(monkeypatch, tmp_path):
+    checkpoint, output = tmp_path / "checkpoint.pth", tmp_path / "weights.pth"
+    weights = {"weight": torch.ones(2)}
+    torch.save({"model": weights}, checkpoint)
+    torch_load = torch.load
+
+    def restricted_load(path, **kwargs):
+        assert kwargs["weights_only"] is True
+        return torch_load(path, **kwargs)
+
+    monkeypatch.setattr(torch, "load", restricted_load)
+    clean_checkpoint(Namespace(checkpoint=str(checkpoint), outfile=str(output)))
+    assert torch.equal(torch_load(output, weights_only=True)["weight"], weights["weight"])
 
 
 @pytest.mark.parametrize("device", DEVICES)
