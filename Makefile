@@ -137,7 +137,7 @@ push-docs: ${DOCS_DIR}
 install-demo: ${DEMO_FILE}
 	uv sync --script ${DEMO_FILE}
 
-# Run the Gradio demo
+# Run the image classification demo
 run-demo: ${DEMO_FILE}
 	uv run --script ${DEMO_FILE} --port 3000
 

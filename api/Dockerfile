@@ -29,6 +29,8 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH="/app"
 # Set the path to use our installed packages
 ENV PATH="/opt/venv/bin:$PATH"
+ENV HF_HOME="/home/app/.cache/huggingface"
+ENV TMPDIR="/tmp"
 
 LABEL maintainer="F-G Fernandez <fg-feedback@protonmail.com>"
 
@@ -41,6 +43,11 @@ COPY --from=builder /opt/venv /opt/venv
 # Copy project code
 COPY pyproject.toml /app/pyproject.toml
 COPY app /app/app
+
+RUN useradd --create-home --uid 10001 app \
+    && mkdir -p /home/app/.cache/huggingface /tmp \
+    && chown -R app:app /home/app/.cache/huggingface
+USER app
 
 # Entrypoint
 EXPOSE 8080

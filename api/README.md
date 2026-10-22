@@ -23,6 +23,8 @@ Once completed, your [FastAPI](https://fastapi.tiangolo.com/) server should be r
 
 To build and run the container instead, use `make start-backend`. Run the API tests with `make test-backend`.
 
+The API template has no built-in authentication. Do not expose its listener directly to the Internet. For a private deployment, bind it to a private interface and require HTTPS plus authentication at a trusted reverse proxy or gateway before it forwards requests; prevent direct access to the backend so clients cannot bypass that boundary. The API buffers request bodies up to 10 MiB before multipart parsing, returns 408 when reading takes over 10 seconds, and permits at most two concurrent parsing/inference requests per process (each worker has its own limit). It returns 503 when those slots are occupied. Only JPEG and PNG images up to 25 megapixels and 8192 pixels per side are accepted. Model files are loaded from one immutable Hugging Face commit. Set `CLF_HUB_REPO` to an `owner/model` ID and `CLF_HUB_REVISION` to a 40-character commit SHA when selecting another model. Invalid settings fail during startup before downloads.
+
 ### Documentation and swagger
 
 FastAPI comes with many advantages including speed and OpenAPI features. Once the server is running, open the generated documentation at: http://localhost:8080/docs
