@@ -44,7 +44,7 @@ dependencies = [
     # cf. https://github.com/advisories/GHSA-98vv-pw6r-q6q4
     # cf. https://github.com/pytorch/vision/issues/4934
     # https://github.com/frgfm/Holocron/security/dependabot/5
-    "Pillow>=12.3.0,<13.0.0",
+    "Pillow>=13.0.0",
 ]
 
 [project.optional-dependencies]

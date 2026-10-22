@@ -104,6 +104,9 @@ def main():  # noqa: PLR0912
         txt_deps = [parse_dep_str(dep.strip("\n")) for dep in reqs]
         txt_deps = {dep["pkg"]: dep for dep in txt_deps}
         for dep in deps_dict:  # noqa: PLC0206
+            # Gradio still requires Pillow <13 in its separate demo environment.
+            if dep == "Pillow" and req_txt == "demo/requirements.txt":
+                continue
             if dep in txt_deps:
                 deps_dict[dep].append({"file": req_txt, "version": txt_deps[dep]["version"]})
 
