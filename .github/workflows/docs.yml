@@ -5,6 +5,7 @@ on:
     branches: main
     paths:
       - '.github/workflows/docs.yml'
+      - '.github/actions/setup-python-uv/**'
       - 'docs/**'
       - 'pyproject.toml'
       - 'uv.lock'
@@ -12,29 +13,27 @@ on:
     branches: main
     paths:
       - '.github/workflows/docs.yml'
+      - '.github/actions/setup-python-uv/**'
       - 'docs/**'
       - 'pyproject.toml'
       - 'uv.lock'
 
-env:
-  PYTHON_VERSION: "3.11"
-  UV_VERSION: "0.13.4"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'push' && 'pages' || github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v7
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: x64
-      - uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
-          activate-environment: true
+      - uses: ./.github/actions/setup-python-uv
       - name: Build documentation
         env:
           UV_TORCH_BACKEND: cpu
@@ -43,16 +42,25 @@ jobs:
           make build-docs
       - name: Documentation sanity check
         run: test -e docs/site/index.html || exit
-      - name: Install SSH Client 🔑
+      - name: Upload documentation artifact
         if: github.event_name == 'push'
-        uses: webfactory/ssh-agent@v0.10.0
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
-          ssh-private-key: ${{ secrets.SSH_DEPLOY_KEY }}
-      - name: Deploy to Github Pages
-        if: github.event_name == 'push'
-        uses: JamesIves/github-pages-deploy-action@v4.9.0
-        with:
-          branch: gh-pages
-          folder: 'docs/site'
-          commit-message: '[skip ci] Documentation updates'
-          clean: true
+          path: docs/site
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5

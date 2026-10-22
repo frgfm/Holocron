@@ -5,6 +5,7 @@ on:
     branches: main
     paths:
       - '.github/workflows/coreml.yml'
+      - '.github/actions/setup-python-uv/**'
       - '.github/workflows/package.yml'
       - 'holocron/**'
       - 'scripts/export_to_coreml.py'
@@ -16,6 +17,7 @@ on:
     branches: main
     paths:
       - '.github/workflows/coreml.yml'
+      - '.github/actions/setup-python-uv/**'
       - '.github/workflows/package.yml'
       - 'holocron/**'
       - 'scripts/export_to_coreml.py'
@@ -24,12 +26,14 @@ on:
       - 'pyproject.toml'
       - 'uv.lock'
 
+permissions:
+  contents: read
+
 concurrency:
   group: coreml-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 env:
-  UV_VERSION: "0.13.4"
   HOLOCRON_REQUIRE_COREML_RUNTIME: "1"
   OMP_NUM_THREADS: "2"
 
@@ -38,20 +42,17 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Require Apple Silicon and record hardware
         run: |
           test "$(uname -m)" = arm64
           sw_vers
           sysctl -n machdep.cpu.brand_string
-      - uses: actions/setup-python@v7
+      - uses: ./.github/actions/setup-python-uv
         with:
-          python-version: '3.11'
           architecture: arm64
-      - uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
-          activate-environment: true
       - name: Install optional export dependencies
         run: uv sync --locked --extra coreml --extra test
       - name: Record dependencies and require runtime prediction
@@ -59,7 +60,7 @@ jobs:
           python -c "import platform, torch, coremltools; assert platform.machine() == 'arm64'; print(platform.platform(), platform.python_version(), torch.__version__, coremltools.__version__)"
           python -c "from coremltools.models.compute_device import MLComputeDevice; print('Core ML devices:', [type(device).__name__ for device in MLComputeDevice.get_all_compute_devices()])"
           pytest tests/test_models_coreml.py --cov-report=xml -v -s
-      - uses: codecov/codecov-action@v7
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests

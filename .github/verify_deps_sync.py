@@ -22,8 +22,7 @@ import yaml
 DOCKERFILES = ["api/Dockerfile"]
 PYPROJECTS = ["./pyproject.toml", "api/pyproject.toml"]
 REQUIREMENTS_TXT = ["demo/requirements.txt"]
-UV_VERSION = "0.13.4"
-UV_BUILD_REQUIREMENT = ">=0.13.4,<1.0.0"
+SETUP_ACTION = ".github/actions/setup-python-uv/action.yml"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -50,8 +49,16 @@ def parse_dep_str(dep_str: str) -> dict[str, str]:
 
 def main():  # noqa: PLR0912
     # Retrieve & parse all deps files
+    with Path(SETUP_ACTION).open("r", encoding="utf-8") as f:
+        setup_action = yaml.safe_load(f)
+    uv_version = next(
+        step["with"]["version"]
+        for step in setup_action["runs"]["steps"]
+        if step["uses"].startswith("astral-sh/setup-uv@")
+    )
+    uv_build_requirement = f">={uv_version},<1.0.0"
     deps_dict = {
-        "uv": [{"file": "required", "version": f"=={UV_VERSION}"}],
+        "uv": [{"file": SETUP_ACTION, "version": f"=={uv_version}"}],
         "ruff": [],
         "ty": [],
         "pre-commit": [],
@@ -66,8 +73,8 @@ def main():  # noqa: PLR0912
     # Parse dockerfiles
     for dockerfile in DOCKERFILES:
         dockerfile_content_ = Path(dockerfile).read_text(encoding="utf-8")
-        uv_version = re.search(r"ghcr\.io/astral-sh/uv:(\d+\.\d+\.\d+)", dockerfile_content_).group(1)  # ty: ignore[possibly-unbound-attribute]
-        deps_dict["uv"].append({"file": dockerfile, "version": f"=={uv_version}"})
+        docker_uv_version = re.search(r"ghcr\.io/astral-sh/uv:(\d+\.\d+\.\d+)", dockerfile_content_).group(1)  # ty: ignore[possibly-unbound-attribute]
+        deps_dict["uv"].append({"file": dockerfile, "version": f"=={docker_uv_version}"})
     # Parse pyproject.toml
     for pyproject_path in PYPROJECTS:
         with Path(pyproject_path).open("rb") as f:
@@ -81,8 +88,8 @@ def main():  # noqa: PLR0912
                 (requirement["version"] for requirement in build_requires if requirement["pkg"] == "uv_build"),
                 None,
             )
-            if uv_build_version != UV_BUILD_REQUIREMENT:
-                raise AssertionError(f"{pyproject_path} must require uv_build{UV_BUILD_REQUIREMENT}")
+            if uv_build_version != uv_build_requirement:
+                raise AssertionError(f"{pyproject_path} must require uv_build{uv_build_requirement}")
 
         optional_deps = pyproject["project"]["optional-dependencies"]
         for requirements in (
@@ -106,21 +113,6 @@ def main():  # noqa: PLR0912
         for dep in deps_dict:  # noqa: PLC0206
             if dep in txt_deps:
                 deps_dict[dep].append({"file": req_txt, "version": txt_deps[dep]["version"]})
-
-    # Parse github/workflows/...
-    for workflow_file in Path(".github/workflows").glob("*.yml"):
-        with workflow_file.open("r") as f:
-            workflow = yaml.safe_load(f)
-            installs_uv = any(
-                str(step.get("uses", "")).startswith("astral-sh/setup-uv@")
-                for job in workflow.get("jobs", {}).values()
-                for step in job.get("steps", [])
-            )
-            if installs_uv and "env" in workflow and "UV_VERSION" in workflow["env"]:
-                deps_dict["uv"].append({
-                    "file": str(workflow_file),
-                    "version": f"=={workflow['env']['UV_VERSION'].lstrip('v')}",
-                })
 
     # Assert all deps are in sync
     troubles = []
