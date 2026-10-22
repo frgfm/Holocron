@@ -35,5 +35,7 @@ jobs:
           UV_TORCH_BACKEND: cpu
         run: |
           make install-demo
-          screen -dm make run-demo
-          timeout 60 sh -c 'until nc -z localhost 3000; do sleep 1; done'
+          make run-demo > "$RUNNER_TEMP/demo.log" 2>&1 &
+          demo_pid=$!
+          trap 'cat "$RUNNER_TEMP/demo.log"; kill "$demo_pid" 2>/dev/null || true' EXIT
+          timeout 60 sh -c 'until curl --fail --silent http://127.0.0.1:3000/health; do sleep 1; done'
